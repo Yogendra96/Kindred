@@ -27,6 +27,14 @@ DerivedData
 *.xcuserstate
 ios/.xcode.env.local
 
+# Additional React Native specific
+ios/Index/
+ios/Pods/
+*.mobileprovision
+*.cert
+*.p12
+*.cer
+
 # Android/IntelliJ
 #
 build/
@@ -38,6 +46,14 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+
+# Android additional
+android/app/release/
+android/captures/
+android/.project
+android/.settings
+android/app/.project
+android/app/.settings
 
 # node.js
 #
@@ -78,6 +94,10 @@ coverage/
 .nyc_output/
 *.lcov
 
+# React Native specific
+.watchmanconfig
+.flowconfig
+
 # IDE
 .idea/
 .vscode/
@@ -107,3 +127,10 @@ jspm_packages/
 *.temp
 .metro-health-check*
 .cache/
+
+# Misc
+.env.development
+.env.test
+.env.production
+*.jks
+._*
