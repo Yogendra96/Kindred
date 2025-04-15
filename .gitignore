@@ -134,3 +134,22 @@ jspm_packages/
 .env.production
 *.jks
 ._*
+
+# Project Configuration
+*.config.js
+tsconfig.json
+app.json
+*.properties
+*.pbxproj
+*.xcworkspace
+*.xcodeproj
+*.plist
+*.storyboard
+*.xcassets
+*.lock
+gradle/
+*.gradle
+
+# Keep package.json tracked
+!package.json
+!app.json
