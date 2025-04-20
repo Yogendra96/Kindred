@@ -1,6 +1,26 @@
- import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ActivityIndicator,
+  ScrollView,
+  Dimensions,
+  Platform
+} from 'react-native';
+import { LineChart, BarChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateFootprint } from '../store/slices/carbonSlice';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveActivityData } from '../utils/carbonCalculator';
+import NetInfo from '@react-native-community/netinfo';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format, subDays, eachDayOfInterval, isWithinInterval } from 'date-fns';
+import { useTheme } from '../theme/ThemeProvider';
 
 interface Activity {
   id: string;
@@ -8,85 +28,432 @@ interface Activity {
   description: string;
   points: number;
   completed: boolean;
+  type: 'transportation' | 'food' | 'energy' | 'waste';
+  impact: number;
+  timestamp: number;
 }
 
-const activities: Activity[] = [
-  {
-    id: '1',
-    title: 'Used Public Transport',
-    description: 'Take public transport instead of driving',
-    points: 50,
-    completed: false,
-  },
-  {
-    id: '2',
-    title: 'Meat-Free Meal',
-    description: 'Have a vegetarian or vegan meal',
-    points: 30,
-    completed: false,
-  },
-  {
-    id: '3',
-    title: 'Recycled Waste',
-    description: 'Properly sort and recycle your waste',
-    points: 20,
-    completed: false,
-  },
-  {
-    id: '4',
-    title: 'Energy Saving',
-    description: 'Turn off lights and electronics when not in use',
-    points: 40,
-    completed: false,
-  },
-];
+interface ActivitySummary {
+  totalPoints: number;
+  completedActivities: number;
+  carbonSaved: number;
+  streakDays: number;
+  categoryBreakdown: {
+    [key: string]: number;
+  };
+}
+
+const CACHE_KEY = 'activities_cache';
+const OFFLINE_ACTIONS_KEY = 'offline_actions';
+const screenWidth = Dimensions.get('window').width;
 
 const ActivityTracker: React.FC = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Today's Activities</Text>
-      <View style={styles.activitiesContainer}>
-        {activities.map((activity) => (
-          <TouchableOpacity
-            key={activity.id}
-            style={[
-              styles.activityCard,
-              activity.completed && styles.completedCard,
-            ]}
-          >
-            <View style={styles.activityHeader}>
-              <Text style={styles.activityTitle}>{activity.title}</Text>
-              <Text style={styles.points}>+{activity.points} pts</Text>
-            </View>
-            <Text style={styles.activityDescription}>{activity.description}</Text>
-            <View style={styles.activityFooter}>
-              <TouchableOpacity style={styles.checkButton}>
-                <Ionicons
-                  name={activity.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
-                  size={24}
-                  color={activity.completed ? '#2ecc71' : '#666'}
-                />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
+  const { theme } = useTheme();
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [dateRange, setDateRange] = useState({
+    start: subDays(new Date(), 30),
+    end: new Date()
+  });
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  const dispatch = useDispatch();
+
+  // Calculate activity summary metrics
+  const summary = useMemo((): ActivitySummary => {
+    const filteredActivities = activities.filter(activity => 
+      isWithinInterval(new Date(activity.timestamp), dateRange) &&
+      (!selectedCategory || activity.type === selectedCategory)
+    );
+
+    return {
+      totalPoints: filteredActivities.reduce((sum, activity) => 
+        sum + (activity.completed ? activity.points : 0), 0
+      ),
+      completedActivities: filteredActivities.filter(a => a.completed).length,
+      carbonSaved: filteredActivities.reduce((sum, activity) => 
+        sum + (activity.completed ? activity.impact : 0), 0
+      ),
+      streakDays: calculateStreak(filteredActivities),
+      categoryBreakdown: filteredActivities.reduce((acc, activity) => ({
+        ...acc,
+        [activity.type]: (acc[activity.type] || 0) + (activity.completed ? 1 : 0)
+      }), {})
+    };
+  }, [activities, dateRange, selectedCategory]);
+
+  // Chart data preparation
+  const chartData = useMemo(() => {
+    const dates = eachDayOfInterval(dateRange);
+    const data = dates.map(date => {
+      const dayActivities = activities.filter(activity => 
+        format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') &&
+        activity.completed &&
+        (!selectedCategory || activity.type === selectedCategory)
+      );
+
+      return {
+        date: format(date, 'MMM dd'),
+        impact: dayActivities.reduce((sum, activity) => sum + activity.impact, 0)
+      };
+    });
+
+    return {
+      labels: data.map(d => d.date),
+      datasets: [{
+        data: data.map(d => d.impact),
+        color: (opacity = 1) => theme.colors.primary,
+        strokeWidth: 2
+      }]
+    };
+  }, [activities, dateRange, selectedCategory, theme]);
+
+  // Load cached data and check connectivity
+  useEffect(() => {
+    const loadCachedData = async () => {
+      try {
+        const cached = await AsyncStorage.getItem(CACHE_KEY);
+        if (cached) {
+          setActivities(JSON.parse(cached));
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error loading cached data:', err);
+      }
+    };
+
+    const unsubscribeNetInfo = NetInfo.addEventListener(state => {
+      setIsOnline(!!state.isConnected);
+      if (state.isConnected) {
+        syncOfflineActions();
+      }
+    });
+
+    loadCachedData();
+    fetchActivities();
+
+    return () => {
+      unsubscribeNetInfo();
+    };
+  }, []);
+
+  const syncOfflineActions = async () => {
+    try {
+      const offlineActions = await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY);
+      if (offlineActions) {
+        const actions = JSON.parse(offlineActions);
+        for (const action of actions) {
+          await handleActivityCompletion(action.activity, true);
+        }
+        await AsyncStorage.removeItem(OFFLINE_ACTIONS_KEY);
+      }
+    } catch (err) {
+      console.error('Error syncing offline actions:', err);
+    }
+  };
+
+  const fetchActivities = async () => {
+    const user = auth().currentUser;
+    if (!user) return;
+
+    try {
+      const snapshot = await firestore()
+        .collection('daily_activities')
+        .doc(user.uid)
+        .get();
+
+      if (snapshot.exists) {
+        const data = snapshot.data()?.activities || [];
+        setActivities(data);
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to load activities');
+      console.error('Error fetching activities:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleActivityCompletion = async (activity: Activity, isSync = false) => {
+    const user = auth().currentUser;
+    if (!user) return;
+
+    try {
+      const updatedActivities = activities.map((a) =>
+        a.id === activity.id ? { ...a, completed: !a.completed } : a
+      );
+
+      if (!isOnline && !isSync) {
+        // Store action for later sync
+        const offlineActions = JSON.parse(await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY) || '[]');
+        offlineActions.push({ activity, timestamp: Date.now() });
+        await AsyncStorage.setItem(OFFLINE_ACTIONS_KEY, JSON.stringify(offlineActions));
+        
+        // Update local state
+        setActivities(updatedActivities);
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
+        return;
+      }
+
+      // Update Firestore
+      await firestore()
+        .collection('daily_activities')
+        .doc(user.uid)
+        .set({ activities: updatedActivities });
+
+      // Update carbon footprint if completing activity
+      if (!activity.completed) {
+        const impactData = {
+          [activity.type]: activity.impact
+        };
+        await saveActivityData(impactData);
+        dispatch(updateFootprint({ [activity.type]: activity.impact }));
+      }
+
+      setActivities(updatedActivities);
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
+      setError(null);
+    } catch (err) {
+      console.error('Error updating activity:', err);
+      setError('Failed to update activity');
+    }
+  };
+
+  const calculateStreak = (filteredActivities: Activity[]): number => {
+    let streak = 0;
+    let currentDate = new Date();
+    
+    while (true) {
+      const hasActivities = filteredActivities.some(activity => 
+        format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd') &&
+        activity.completed
+      );
+
+      if (!hasActivities) break;
+      
+      streak++;
+      currentDate = subDays(currentDate, 1);
+    }
+
+    return streak;
+  };
+
+  const renderActivity = useCallback(({ item: activity }: { item: Activity }) => (
+    <TouchableOpacity
+      style={[
+        styles.activityCard,
+        activity.completed && styles.completedCard,
+      ]}
+      onPress={() => handleActivityCompletion(activity)}
+      disabled={loading}
+    >
+      <View style={styles.activityHeader}>
+        <Text style={styles.activityTitle}>{activity.title}</Text>
+        <Text style={styles.points}>+{activity.points} pts</Text>
+      </View>
+      <Text style={styles.activityDescription}>{activity.description}</Text>
+      <View style={styles.activityFooter}>
+        <TouchableOpacity 
+          style={styles.checkButton}
+          onPress={() => handleActivityCompletion(activity)}
+          disabled={loading}
+        >
+          <Ionicons
+            name={activity.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
+            size={24}
+            color={activity.completed ? '#2ecc71' : '#666'}
+          />
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  ), [loading]);
+
+  const renderSummaryCard = () => (
+    <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
+        Activity Summary
+      </Text>
+      <View style={styles.summaryGrid}>
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>
+            {summary.totalPoints}
+          </Text>
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+            Total Points
+          </Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryValue, { color: theme.colors.success }]}>
+            {summary.carbonSaved.toFixed(1)}t
+          </Text>
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+            CO₂ Saved
+          </Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>
+            {summary.streakDays}
+          </Text>
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+            Day Streak
+          </Text>
+        </View>
       </View>
     </View>
+  );
+
+  const renderCharts = () => (
+    <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
+        Impact Timeline
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <LineChart
+          data={chartData}
+          width={screenWidth * 1.5}
+          height={220}
+          chartConfig={{
+            backgroundColor: theme.colors.surface,
+            backgroundGradient: theme.colors.surface,
+            decimalPlaces: 1,
+            color: (opacity = 1) => theme.colors.primary,
+            labelColor: (opacity = 1) => theme.colors.text.primary,
+            style: {
+              borderRadius: 16
+            },
+            propsForDots: {
+              r: "6",
+              strokeWidth: "2",
+              stroke: theme.colors.primary
+            }
+          }}
+          bezier
+          style={styles.chart}
+        />
+      </ScrollView>
+    </View>
+  );
+
+  const renderCategoryBreakdown = () => (
+    <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
+        Category Breakdown
+      </Text>
+      <BarChart
+        data={{
+          labels: Object.keys(summary.categoryBreakdown),
+          datasets: [{
+            data: Object.values(summary.categoryBreakdown)
+          }]
+        }}
+        width={screenWidth - 40}
+        height={220}
+        chartConfig={{
+          backgroundColor: theme.colors.surface,
+          backgroundGradient: theme.colors.surface,
+          decimalPlaces: 0,
+          color: (opacity = 1) => theme.colors.secondary,
+          labelColor: (opacity = 1) => theme.colors.text.primary,
+        }}
+        style={styles.chart}
+        showValuesOnTopOfBars
+      />
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.surface }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+      {!isOnline && (
+        <View style={styles.offlineContainer}>
+          <Text style={styles.offlineText}>
+            You're offline - changes will sync when back online
+          </Text>
+        </View>
+      )}
+      
+      {renderSummaryCard()}
+      {renderCharts()}
+      {renderCategoryBreakdown()}
+      
+      <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+        <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
+          Recent Activities
+        </Text>
+        <FlatList
+          data={activities}
+          renderItem={renderActivity}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.activitiesContainer}
+        />
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  card: {
     borderRadius: 15,
     padding: 20,
-    margin: 20,
+    margin: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
-  title: {
+  cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 15,
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  summaryItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  summaryValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  summaryLabel: {
+    fontSize: 12,
+  },
+  chart: {
+    borderRadius: 16,
+    marginVertical: 8,
   },
   activitiesContainer: {
     gap: 15,
@@ -95,6 +462,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
     borderRadius: 10,
     padding: 15,
+    marginBottom: 10,
   },
   completedCard: {
     backgroundColor: '#e8f5e9',
@@ -127,6 +495,37 @@ const styles = StyleSheet.create({
   checkButton: {
     padding: 5,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    margin: 20,
+  },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  offlineContainer: {
+    backgroundColor: '#fff3e0',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  offlineText: {
+    color: '#ef6c00',
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
 
-export default ActivityTracker;
+export default React.memo(ActivityTracker);

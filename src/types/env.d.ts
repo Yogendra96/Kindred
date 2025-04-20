@@ -1,0 +1,29 @@
+declare module '@env' {
+  export interface Env {
+    EXPO_PUBLIC_FIREBASE_API_KEY: string;
+    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: string;
+    EXPO_PUBLIC_FIREBASE_PROJECT_ID: string;
+    EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: string;
+    EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: string;
+    EXPO_PUBLIC_FIREBASE_APP_ID: string;
+    EXPO_PUBLIC_FIREBASE_VAPID_KEY: string;
+    EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID: string;
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: string;
+    EXPO_PUBLIC_FACEBOOK_APP_ID: string;
+    EXPO_PUBLIC_TWITTER_CONSUMER_KEY: string;
+    EXPO_PUBLIC_TWITTER_CONSUMER_SECRET: string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_IOS_CLIENT_ID: string;
+    GOOGLE_WEB_CLIENT_ID: string;
+    EXPO_PUBLIC_API_KEY: string;
+    EXPO_PUBLIC_API_URL: string;
+    EXPO_PUBLIC_ENVIRONMENT: 'development' | 'staging' | 'production';
+    EXPO_PUBLIC_ANALYTICS_KEY: string;
+    EXPO_PUBLIC_SENTRY_DSN: string;
+    EXPO_PUBLIC_CARBON_API_KEY: string;
+    EXPO_PUBLIC_CARBON_API_URL: string;
+  }
+
+  declare const Env: Env;
+  export default Env;
+}
