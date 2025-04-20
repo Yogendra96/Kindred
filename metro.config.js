@@ -4,10 +4,6 @@ import path from 'path';
 const defaultConfig = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = defaultConfig.resolver;
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- */
 const config = {
   transformer: {
     babelTransformerPath: require.resolve('react-native-svg-transformer'),
@@ -23,6 +19,7 @@ const config = {
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
       },
     },
   },
@@ -42,11 +39,32 @@ const config = {
       '@assets': path.resolve(__dirname, 'assets'),
       '@types': path.resolve(__dirname, 'src/types'),
     },
+    resolveRequest: (context, moduleName, platform) => {
+      if (moduleName.startsWith('@/')) {
+        return {
+          filePath: path.resolve(__dirname, 'src', moduleName.substring(2)),
+          type: 'sourceFile',
+        };
+      }
+      return context.resolveRequest(context, moduleName, platform);
+    },
   },
   watchFolders: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'assets')],
   maxWorkers: Math.max(2, Math.floor(require('os').cpus().length / 2)),
   cacheVersion: '1.0',
   resetCache: false,
+  // Add new options
+  server: {
+    port: 8081,
+    enhanceMiddleware: middleware => {
+      return (req, res, next) => {
+        if (req.url.startsWith('/assets/')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+        }
+        return middleware(req, res, next);
+      };
+    },
+  },
 };
 
 export default mergeConfig(defaultConfig, config);
