@@ -11,8 +11,10 @@ import { enableScreens } from 'react-native-screens';
 enableScreens();
 
 // Register the app with strict mode enabled
-AppRegistry.registerComponent(appName, () => () => (
+const AppWithStrictMode = () => (
   <StrictMode>
     <App />
   </StrictMode>
-));
+);
+
+AppRegistry.registerComponent(appName, () => AppWithStrictMode);

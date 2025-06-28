@@ -65,13 +65,15 @@ const { width } = Dimensions.get('window');
 export const RealTimeSocialDashboard: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  
+
   const [friends, setFriends] = useState<Friend[]>([]);
   const [liveChallenges, setLiveChallenges] = useState<LiveChallenge[]>([]);
   const [activityFeed, setActivityFeed] = useState<ActivityFeedItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<'feed' | 'friends' | 'challenges'>('feed');
+  const [selectedTab, setSelectedTab] = useState<
+    'feed' | 'friends' | 'challenges'
+  >('feed');
 
   // Animated values for real-time updates
   const pulseAnim = useMemo(() => new Animated.Value(1), []);
@@ -105,19 +107,22 @@ export const RealTimeSocialDashboard: React.FC = () => {
   const setupEventSubscriptions = () => {
     // Friend status updates
     webSocketService.subscribe('friend_status', handleFriendStatusUpdate);
-    
+
     // Activity feed updates
     webSocketService.subscribe('friend_activity', handleFriendActivity);
-    
+
     // Achievement notifications
-    webSocketService.subscribe('achievement_unlocked', handleAchievementUnlocked);
-    
+    webSocketService.subscribe(
+      'achievement_unlocked',
+      handleAchievementUnlocked,
+    );
+
     // Challenge updates
     webSocketService.subscribe('challenge_update', handleChallengeUpdate);
-    
+
     // Live leaderboard updates
     webSocketService.subscribe('leaderboard_update', handleLeaderboardUpdate);
-    
+
     // Connection status
     webSocketService.subscribe('connection_lost', handleConnectionLost);
     webSocketService.subscribe('connection_restored', handleConnectionRestored);
@@ -127,13 +132,13 @@ export const RealTimeSocialDashboard: React.FC = () => {
     try {
       // Join global activity feed
       await webSocketService.joinRoom('global_feed');
-      
+
       // Join friends room
       await webSocketService.joinRoom('friends_updates');
-      
+
       // Join challenges room
       await webSocketService.joinRoom('live_challenges');
-      
+
       // Join user's location-based room (if location permission granted)
       const userLocation = await getUserLocation();
       if (userLocation) {
@@ -146,18 +151,20 @@ export const RealTimeSocialDashboard: React.FC = () => {
 
   const handleFriendStatusUpdate = useCallback((message: any) => {
     const { friendId, status, carbonSaved, streak } = message.payload;
-    
-    setFriends(prev => prev.map(friend => 
-      friend.id === friendId 
-        ? { 
-            ...friend, 
-            isOnline: status === 'online',
-            lastActivity: new Date(),
-            carbonSaved: carbonSaved || friend.carbonSaved,
-            currentStreak: streak || friend.currentStreak
-          }
-        : friend
-    ));
+
+    setFriends(prev =>
+      prev.map(friend =>
+        friend.id === friendId
+          ? {
+              ...friend,
+              isOnline: status === 'online',
+              lastActivity: new Date(),
+              carbonSaved: carbonSaved || friend.carbonSaved,
+              currentStreak: streak || friend.currentStreak,
+            }
+          : friend,
+      ),
+    );
 
     // Animate friend status change
     animatePulse();
@@ -172,44 +179,54 @@ export const RealTimeSocialDashboard: React.FC = () => {
     };
 
     setActivityFeed(prev => [newActivity, ...prev.slice(0, 49)]); // Keep last 50 items
-    
+
     // Animate new activity appearance
     animateSlideIn();
   }, []);
 
   const handleAchievementUnlocked = useCallback((message: any) => {
     const { achievement, userId } = message.payload;
-    
+
     // Show celebration animation for achievements
     showAchievementCelebration(achievement);
-    
+
     // Update friend's achievements if it's a friend
-    setFriends(prev => prev.map(friend => 
-      friend.id === userId 
-        ? { 
-            ...friend, 
-            recentAchievements: [achievement, ...friend.recentAchievements.slice(0, 4)]
-          }
-        : friend
-    ));
+    setFriends(prev =>
+      prev.map(friend =>
+        friend.id === userId
+          ? {
+              ...friend,
+              recentAchievements: [
+                achievement,
+                ...friend.recentAchievements.slice(0, 4),
+              ],
+            }
+          : friend,
+      ),
+    );
   }, []);
 
   const handleChallengeUpdate = useCallback((message: any) => {
     const { challengeId, progress, participants } = message.payload;
-    
-    setLiveChallenges(prev => prev.map(challenge => 
-      challenge.id === challengeId 
-        ? { ...challenge, progress, participants }
-        : challenge
-    ));
+
+    setLiveChallenges(prev =>
+      prev.map(challenge =>
+        challenge.id === challengeId
+          ? { ...challenge, progress, participants }
+          : challenge,
+      ),
+    );
   }, []);
 
-  const handleLeaderboardUpdate = useCallback((message: any) => {
-    // Handle real-time leaderboard position updates
-    const { leaderboard } = message.payload;
-    // Update global leaderboard state
-    dispatch({ type: 'social/updateLeaderboard', payload: leaderboard });
-  }, [dispatch]);
+  const handleLeaderboardUpdate = useCallback(
+    (message: any) => {
+      // Handle real-time leaderboard position updates
+      const { leaderboard } = message.payload;
+      // Update global leaderboard state
+      dispatch({ type: 'social/updateLeaderboard', payload: leaderboard });
+    },
+    [dispatch],
+  );
 
   const handleConnectionLost = useCallback(() => {
     setIsConnected(false);
@@ -280,11 +297,17 @@ export const RealTimeSocialDashboard: React.FC = () => {
         priority: 'high',
       });
 
-      setLiveChallenges(prev => prev.map(challenge => 
-        challenge.id === challengeId 
-          ? { ...challenge, isParticipating: true, participants: challenge.participants + 1 }
-          : challenge
-      ));
+      setLiveChallenges(prev =>
+        prev.map(challenge =>
+          challenge.id === challengeId
+            ? {
+                ...challenge,
+                isParticipating: true,
+                participants: challenge.participants + 1,
+              }
+            : challenge,
+        ),
+      );
     } catch (error) {
       console.error('Failed to join challenge:', error);
     }
@@ -306,24 +329,37 @@ export const RealTimeSocialDashboard: React.FC = () => {
 
   const renderTabBar = () => (
     <View style={[styles.tabBar, { backgroundColor: theme.colors.surface }]}>
-      {(['feed', 'friends', 'challenges'] as const).map((tab) => (
+      {(['feed', 'friends', 'challenges'] as const).map(tab => (
         <TouchableOpacity
           key={tab}
           style={[
             styles.tabButton,
-            selectedTab === tab && { backgroundColor: theme.colors.primary }
+            selectedTab === tab && { backgroundColor: theme.colors.primary },
           ]}
           onPress={() => setSelectedTab(tab)}
         >
           <Ionicons
-            name={tab === 'feed' ? 'pulse' : tab === 'friends' ? 'people' : 'trophy'}
+            name={
+              tab === 'feed' ? 'pulse' : tab === 'friends' ? 'people' : 'trophy'
+            }
             size={20}
-            color={selectedTab === tab ? theme.colors.onPrimary : theme.colors.onSurface}
+            color={
+              selectedTab === tab
+                ? theme.colors.onPrimary
+                : theme.colors.onSurface
+            }
           />
-          <Text style={[
-            styles.tabText,
-            { color: selectedTab === tab ? theme.colors.onPrimary : theme.colors.onSurface }
-          ]}>
+          <Text
+            style={[
+              styles.tabText,
+              {
+                color:
+                  selectedTab === tab
+                    ? theme.colors.onPrimary
+                    : theme.colors.onSurface,
+              },
+            ]}
+          >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </Text>
         </TouchableOpacity>
@@ -332,11 +368,16 @@ export const RealTimeSocialDashboard: React.FC = () => {
   );
 
   const renderConnectionStatus = () => (
-    <View style={[styles.connectionStatus, { backgroundColor: isConnected ? '#4CAF50' : '#FF9800' }]}>
+    <View
+      style={[
+        styles.connectionStatus,
+        { backgroundColor: isConnected ? '#4CAF50' : '#FF9800' },
+      ]}
+    >
       <Ionicons
         name={isConnected ? 'wifi' : 'wifi-off'}
         size={12}
-        color="white"
+        color='white'
       />
       <Text style={styles.connectionText}>
         {isConnected ? 'Live' : 'Reconnecting...'}
@@ -347,7 +388,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
   const renderActivityFeed = () => (
     <FlatList
       data={activityFeed}
-      keyExtractor={(item) => item.id}
+      keyExtractor={item => item.id}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -357,21 +398,31 @@ export const RealTimeSocialDashboard: React.FC = () => {
           style={[
             styles.activityItem,
             { backgroundColor: theme.colors.surface },
-            item.isLive && index === 0 && {
-              transform: [{ translateX: slideAnim }]
-            }
+            item.isLive &&
+              index === 0 && {
+                transform: [{ translateX: slideAnim }],
+              },
           ]}
         >
           <View style={styles.activityHeader}>
             <View style={styles.userInfo}>
-              <View style={[styles.avatar, { backgroundColor: theme.colors.primary }]}>
+              <View
+                style={[
+                  styles.avatar,
+                  { backgroundColor: theme.colors.primary },
+                ]}
+              >
                 <Text style={styles.avatarText}>{item.userName.charAt(0)}</Text>
               </View>
               <View>
-                <Text style={[styles.userName, { color: theme.colors.onSurface }]}>
+                <Text
+                  style={[styles.userName, { color: theme.colors.onSurface }]}
+                >
                   {item.userName}
                 </Text>
-                <Text style={[styles.timestamp, { color: theme.colors.outline }]}>
+                <Text
+                  style={[styles.timestamp, { color: theme.colors.outline }]}
+                >
                   {formatTimestamp(item.timestamp)} {item.isLive && '• LIVE'}
                 </Text>
               </View>
@@ -381,28 +432,30 @@ export const RealTimeSocialDashboard: React.FC = () => {
                 <Animated.View
                   style={[
                     styles.liveDot,
-                    { transform: [{ scale: pulseAnim }] }
+                    { transform: [{ scale: pulseAnim }] },
                   ]}
                 />
               </View>
             )}
           </View>
-          
-          <Text style={[styles.activityMessage, { color: theme.colors.onSurface }]}>
+
+          <Text
+            style={[styles.activityMessage, { color: theme.colors.onSurface }]}
+          >
             {item.message}
           </Text>
-          
+
           {item.carbonImpact && (
             <View style={styles.carbonImpact}>
-              <Ionicons name="leaf" size={16} color="#4CAF50" />
+              <Ionicons name='leaf' size={16} color='#4CAF50' />
               <Text style={styles.carbonText}>
                 {item.carbonImpact.toFixed(1)} kg CO₂ saved
               </Text>
             </View>
           )}
-          
+
           <View style={styles.reactionBar}>
-            {['👍', '🎉', '💚', '🔥'].map((emoji) => (
+            {['👍', '🎉', '💚', '🔥'].map(emoji => (
               <TouchableOpacity
                 key={emoji}
                 style={styles.reactionButton}
@@ -423,31 +476,43 @@ export const RealTimeSocialDashboard: React.FC = () => {
   const renderFriendsList = () => (
     <FlatList
       data={friends}
-      keyExtractor={(item) => item.id}
+      keyExtractor={item => item.id}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       renderItem={({ item }) => (
-        <View style={[styles.friendItem, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[styles.friendItem, { backgroundColor: theme.colors.surface }]}
+        >
           <View style={styles.friendInfo}>
-            <View style={[styles.friendAvatar, { backgroundColor: theme.colors.primary }]}>
+            <View
+              style={[
+                styles.friendAvatar,
+                { backgroundColor: theme.colors.primary },
+              ]}
+            >
               <Text style={styles.avatarText}>{item.name.charAt(0)}</Text>
               {item.isOnline && <View style={styles.onlineIndicator} />}
             </View>
             <View style={styles.friendDetails}>
-              <Text style={[styles.friendName, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[styles.friendName, { color: theme.colors.onSurface }]}
+              >
                 {item.name}
               </Text>
-              <Text style={[styles.friendStats, { color: theme.colors.outline }]}>
-                {item.carbonSaved.toFixed(1)} kg saved • {item.currentStreak} day streak
+              <Text
+                style={[styles.friendStats, { color: theme.colors.outline }]}
+              >
+                {item.carbonSaved.toFixed(1)} kg saved • {item.currentStreak}{' '}
+                day streak
               </Text>
             </View>
           </View>
-          
+
           {item.recentAchievements.length > 0 && (
             <View style={styles.recentAchievements}>
-              {item.recentAchievements.slice(0, 3).map((achievement) => (
+              {item.recentAchievements.slice(0, 3).map(achievement => (
                 <View key={achievement.id} style={styles.achievementBadge}>
                   <Text style={styles.achievementIcon}>{achievement.icon}</Text>
                 </View>
@@ -462,60 +527,105 @@ export const RealTimeSocialDashboard: React.FC = () => {
   const renderLiveChallenges = () => (
     <FlatList
       data={liveChallenges}
-      keyExtractor={(item) => item.id}
+      keyExtractor={item => item.id}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       renderItem={({ item }) => (
-        <View style={[styles.challengeItem, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[
+            styles.challengeItem,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
           <View style={styles.challengeHeader}>
-            <Text style={[styles.challengeTitle, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.challengeTitle, { color: theme.colors.onSurface }]}
+            >
               {item.title}
             </Text>
-            <View style={[styles.challengeType, { backgroundColor: theme.colors.primary }]}>
-              <Text style={[styles.challengeTypeText, { color: theme.colors.onPrimary }]}>
+            <View
+              style={[
+                styles.challengeType,
+                { backgroundColor: theme.colors.primary },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.challengeTypeText,
+                  { color: theme.colors.onPrimary },
+                ]}
+              >
                 {item.type}
               </Text>
             </View>
           </View>
-          
-          <Text style={[styles.challengeDescription, { color: theme.colors.outline }]}>
+
+          <Text
+            style={[
+              styles.challengeDescription,
+              { color: theme.colors.outline },
+            ]}
+          >
             {item.description}
           </Text>
-          
+
           <View style={styles.challengeStats}>
-            <Text style={[styles.challengeStat, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.challengeStat, { color: theme.colors.onSurface }]}
+            >
               {item.participants} participants
             </Text>
-            <Text style={[styles.challengeStat, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.challengeStat, { color: theme.colors.onSurface }]}
+            >
               {formatTimeRemaining(item.timeRemaining)} left
             </Text>
           </View>
-          
+
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
+            <View
+              style={[
+                styles.progressBar,
+                { backgroundColor: theme.colors.outline },
+              ]}
+            >
               <View
                 style={[
                   styles.progressFill,
-                  { backgroundColor: theme.colors.primary, width: `${item.progress}%` }
+                  {
+                    backgroundColor: theme.colors.primary,
+                    width: `${item.progress}%`,
+                  },
                 ]}
               />
             </View>
-            <Text style={[styles.progressText, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.progressText, { color: theme.colors.onSurface }]}
+            >
               {item.progress.toFixed(0)}%
             </Text>
           </View>
-          
+
           <TouchableOpacity
             style={[
               styles.challengeButton,
-              { backgroundColor: item.isParticipating ? theme.colors.outline : theme.colors.primary }
+              {
+                backgroundColor: item.isParticipating
+                  ? theme.colors.outline
+                  : theme.colors.primary,
+              },
             ]}
             onPress={() => !item.isParticipating && joinChallenge(item.id)}
             disabled={item.isParticipating}
           >
-            <Text style={[styles.challengeButtonText, { color: theme.colors.onPrimary }]}>
+            <Text
+              style={[
+                styles.challengeButtonText,
+                { color: theme.colors.onPrimary },
+              ]}
+            >
               {item.isParticipating ? 'Participating' : 'Join Challenge'}
             </Text>
           </TouchableOpacity>
@@ -528,7 +638,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
     const now = new Date();
     const diff = now.getTime() - timestamp.getTime();
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 1) return 'Now';
     if (minutes < 60) return `${minutes}m`;
     if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
@@ -538,16 +648,18 @@ export const RealTimeSocialDashboard: React.FC = () => {
   const formatTimeRemaining = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       {renderConnectionStatus()}
       {renderTabBar()}
-      
+
       <View style={styles.content}>
         {selectedTab === 'feed' && renderActivityFeed()}
         {selectedTab === 'friends' && renderFriendsList()}

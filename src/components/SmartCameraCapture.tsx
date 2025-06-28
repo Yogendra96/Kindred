@@ -1,7 +1,11 @@
-import { aiVisionService, ImageClassificationResult } from '../services/AIVisionService';
+import type { ImageClassificationResult } from '../services/AIVisionService';
+import { aiVisionService } from '../services/AIVisionService';
 import { webSocketService } from '../services/WebSocketService';
 import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
+import { Camera, CameraType, FlashMode } from 'expo-camera';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
@@ -15,9 +19,6 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { Camera, CameraType, FlashMode } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 
 interface SmartCameraCaptureProps {
   mode: 'waste' | 'food' | 'transport' | 'energy';
@@ -46,7 +47,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 }) => {
   const theme = useTheme();
   const cameraRef = useRef<Camera>(null);
-  
+
   const [state, setState] = useState<CaptureState>({
     isProcessing: false,
     hasPermission: false,
@@ -76,15 +77,20 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     try {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setState(prev => ({ ...prev, hasPermission: status === 'granted' }));
-      
+
       if (status !== 'granted') {
         Alert.alert(
           'Camera Permission Required',
           'Please grant camera permission to use smart capture features.',
           [
             { text: 'Cancel', onPress: onClose },
-            { text: 'Settings', onPress: () => {/* Open settings */ } }
-          ]
+            {
+              text: 'Settings',
+              onPress: () => {
+                /* Open settings */
+              },
+            },
+          ],
         );
       }
     } catch (error) {
@@ -147,10 +153,10 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
       // Optimize image for AI processing
       const optimizedImage = await optimizeImageForAI(photo.uri);
-      
+
       // Classify the image based on mode
       const result = await classifyImage(optimizedImage.uri);
-      
+
       setState(prev => ({
         ...prev,
         isProcessing: false,
@@ -160,7 +166,6 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
       // Send result to WebSocket for real-time updates
       await notifyRealTimeClassification(result);
-
     } catch (error) {
       console.error('Photo capture error:', error);
       setState(prev => ({
@@ -173,10 +178,14 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
   const selectFromGallery = async () => {
     try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (permissionResult.granted === false) {
-        Alert.alert('Permission required', 'Please grant photo library access.');
+        Alert.alert(
+          'Permission required',
+          'Please grant photo library access.',
+        );
         return;
       }
 
@@ -189,10 +198,10 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
       if (!result.canceled && result.assets[0]) {
         setState(prev => ({ ...prev, isProcessing: true }));
-        
+
         const optimizedImage = await optimizeImageForAI(result.assets[0].uri);
         const classificationResult = await classifyImage(optimizedImage.uri);
-        
+
         setState(prev => ({
           ...prev,
           isProcessing: false,
@@ -216,13 +225,11 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     try {
       return await ImageManipulator.manipulateAsync(
         uri,
-        [
-          { resize: { width: 512, height: 512 } },
-        ],
+        [{ resize: { width: 512, height: 512 } }],
         {
           compress: 0.8,
           format: ImageManipulator.SaveFormat.JPEG,
-        }
+        },
       );
     } catch (error) {
       console.error('Image optimization error:', error);
@@ -230,7 +237,9 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     }
   };
 
-  const classifyImage = async (uri: string): Promise<ImageClassificationResult> => {
+  const classifyImage = async (
+    uri: string,
+  ): Promise<ImageClassificationResult> => {
     switch (mode) {
       case 'waste':
         return await aiVisionService.classifyWasteImage(uri);
@@ -261,7 +270,9 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     }
   };
 
-  const notifyRealTimeClassification = async (result: ImageClassificationResult) => {
+  const notifyRealTimeClassification = async (
+    result: ImageClassificationResult,
+  ) => {
     try {
       await webSocketService.sendMessage({
         id: `classification_${Date.now()}`,
@@ -282,14 +293,18 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   const toggleFlash = () => {
     setState(prev => ({
       ...prev,
-      flashMode: prev.flashMode === FlashMode.off ? FlashMode.on : FlashMode.off,
+      flashMode:
+        prev.flashMode === FlashMode.off ? FlashMode.on : FlashMode.off,
     }));
   };
 
   const toggleCamera = () => {
     setState(prev => ({
       ...prev,
-      cameraType: prev.cameraType === CameraType.back ? CameraType.front : CameraType.back,
+      cameraType:
+        prev.cameraType === CameraType.back
+          ? CameraType.front
+          : CameraType.back,
     }));
   };
 
@@ -313,7 +328,8 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     const modeInfoMap = {
       waste: {
         title: 'Smart Waste Detection',
-        description: 'Point camera at waste items to identify recycling category',
+        description:
+          'Point camera at waste items to identify recycling category',
         icon: 'trash-bin',
         tips: [
           'Ensure good lighting',
@@ -358,21 +374,30 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
   const renderHeader = () => {
     const modeInfo = getModeInfo();
-    
+
     return (
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
-        <TouchableOpacity style={styles.closeButton} onPress={() => animateOut(() => onClose())}>
-          <Ionicons name="close" size={24} color={theme.colors.onSurface} />
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => animateOut(() => onClose())}
+        >
+          <Ionicons name='close' size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
-        
+
         <View style={styles.headerContent}>
-          <Ionicons name={modeInfo.icon as any} size={24} color={theme.colors.primary} />
+          <Ionicons
+            name={modeInfo.icon as any}
+            size={24}
+            color={theme.colors.primary}
+          />
           <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>
             {modeInfo.title}
           </Text>
         </View>
-        
-        <Text style={[styles.headerDescription, { color: theme.colors.outline }]}>
+
+        <Text
+          style={[styles.headerDescription, { color: theme.colors.outline }]}
+        >
           {modeInfo.description}
         </Text>
       </View>
@@ -383,8 +408,10 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     if (!state.hasPermission) {
       return (
         <View style={styles.permissionContainer}>
-          <Ionicons name="camera-off" size={64} color={theme.colors.outline} />
-          <Text style={[styles.permissionText, { color: theme.colors.onSurface }]}>
+          <Ionicons name='camera-off' size={64} color={theme.colors.outline} />
+          <Text
+            style={[styles.permissionText, { color: theme.colors.onSurface }]}
+          >
             Camera permission required
           </Text>
         </View>
@@ -398,7 +425,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
           style={styles.camera}
           type={state.cameraType}
           flashMode={state.flashMode}
-          ratio="1:1"
+          ratio='1:1'
         >
           <View style={styles.cameraOverlay}>
             {/* Viewfinder */}
@@ -408,7 +435,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
               <View style={[styles.corner, styles.bottomLeft]} />
               <View style={[styles.corner, styles.bottomRight]} />
             </View>
-            
+
             {/* AI Processing Indicator */}
             {state.isProcessing && (
               <View style={styles.processingOverlay}>
@@ -434,22 +461,28 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
   const renderControls = () => (
     <View style={[styles.controls, { backgroundColor: theme.colors.surface }]}>
-      <TouchableOpacity style={styles.controlButton} onPress={selectFromGallery}>
-        <Ionicons name="images" size={24} color={theme.colors.onSurface} />
-      </TouchableOpacity>
-      
       <TouchableOpacity
-        style={[styles.captureButton, { backgroundColor: theme.colors.primary }]}
+        style={styles.controlButton}
+        onPress={selectFromGallery}
+      >
+        <Ionicons name='images' size={24} color={theme.colors.onSurface} />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.captureButton,
+          { backgroundColor: theme.colors.primary },
+        ]}
         onPress={capturePhoto}
         disabled={state.isProcessing}
       >
         {state.isProcessing ? (
           <ActivityIndicator color={theme.colors.onPrimary} />
         ) : (
-          <Ionicons name="camera" size={32} color={theme.colors.onPrimary} />
+          <Ionicons name='camera' size={32} color={theme.colors.onPrimary} />
         )}
       </TouchableOpacity>
-      
+
       <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
         <Ionicons
           name={state.flashMode === FlashMode.on ? 'flash' : 'flash-off'}
@@ -465,54 +498,86 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
     return (
       <ScrollView style={styles.resultContainer}>
-        <View style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}
+        >
           <View style={styles.resultHeader}>
             <Ionicons
-              name={state.result.confidence > 0.8 ? 'checkmark-circle' : 'warning'}
+              name={
+                state.result.confidence > 0.8 ? 'checkmark-circle' : 'warning'
+              }
               size={24}
               color={state.result.confidence > 0.8 ? '#4CAF50' : '#FF9800'}
             />
-            <Text style={[styles.resultTitle, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.resultTitle, { color: theme.colors.onSurface }]}
+            >
               {state.result.subcategory || state.result.category}
             </Text>
             <Text style={[styles.confidence, { color: theme.colors.outline }]}>
               {(state.result.confidence * 100).toFixed(0)}% confidence
             </Text>
           </View>
-          
+
           <View style={styles.carbonImpact}>
-            <Ionicons name="leaf" size={20} color="#4CAF50" />
-            <Text style={[styles.carbonText, { color: theme.colors.onSurface }]}>
+            <Ionicons name='leaf' size={20} color='#4CAF50' />
+            <Text
+              style={[styles.carbonText, { color: theme.colors.onSurface }]}
+            >
               {state.result.carbonImpact.toFixed(2)} kg CO₂
             </Text>
           </View>
-          
+
           <View style={styles.suggestions}>
-            <Text style={[styles.suggestionsTitle, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[
+                styles.suggestionsTitle,
+                { color: theme.colors.onSurface },
+              ]}
+            >
               Suggestions:
             </Text>
             {state.result.suggestions.map((suggestion, index) => (
-              <Text key={index} style={[styles.suggestionItem, { color: theme.colors.outline }]}>
+              <Text
+                key={index}
+                style={[styles.suggestionItem, { color: theme.colors.outline }]}
+              >
                 • {suggestion}
               </Text>
             ))}
           </View>
-          
+
           <View style={styles.resultActions}>
             <TouchableOpacity
-              style={[styles.resultButton, { backgroundColor: theme.colors.outline }]}
+              style={[
+                styles.resultButton,
+                { backgroundColor: theme.colors.outline },
+              ]}
               onPress={retryCapture}
             >
-              <Text style={[styles.resultButtonText, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[
+                  styles.resultButtonText,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 Retry
               </Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
-              style={[styles.resultButton, { backgroundColor: theme.colors.primary }]}
+              style={[
+                styles.resultButton,
+                { backgroundColor: theme.colors.primary },
+              ]}
               onPress={confirmResult}
             >
-              <Text style={[styles.resultButtonText, { color: theme.colors.onPrimary }]}>
+              <Text
+                style={[
+                  styles.resultButtonText,
+                  { color: theme.colors.onPrimary },
+                ]}
+              >
                 Confirm
               </Text>
             </TouchableOpacity>
@@ -524,12 +589,22 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
   const renderTips = () => {
     const modeInfo = getModeInfo();
-    
+
     return (
-      <View style={[styles.tipsContainer, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.tipsTitle, { color: theme.colors.onSurface }]}>Tips:</Text>
+      <View
+        style={[
+          styles.tipsContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
+        <Text style={[styles.tipsTitle, { color: theme.colors.onSurface }]}>
+          Tips:
+        </Text>
         {modeInfo.tips.map((tip, index) => (
-          <Text key={index} style={[styles.tipItem, { color: theme.colors.outline }]}>
+          <Text
+            key={index}
+            style={[styles.tipItem, { color: theme.colors.outline }]}
+          >
             • {tip}
           </Text>
         ))}
@@ -540,7 +615,11 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} animationType="none" presentationStyle="fullScreen">
+    <Modal
+      visible={visible}
+      animationType='none'
+      presentationStyle='fullScreen'
+    >
       <Animated.View
         style={[
           styles.container,
@@ -552,7 +631,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
         ]}
       >
         {renderHeader()}
-        
+
         {state.result ? (
           renderResult()
         ) : (
@@ -562,7 +641,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
             {renderTips()}
           </>
         )}
-        
+
         {state.error && (
           <View style={[styles.errorContainer, { backgroundColor: '#FF5252' }]}>
             <Text style={styles.errorText}>{state.error}</Text>

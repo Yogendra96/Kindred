@@ -1,3 +1,4 @@
+/* global jasmine */
 const { device, expect, element, by, waitFor } = require('detox');
 
 // Global test setup
@@ -288,6 +289,7 @@ global.customExpect = {
 
 // Error handling
 process.on('unhandledRejection', (reason, promise) => {
+  // eslint-disable-next-line no-console
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 

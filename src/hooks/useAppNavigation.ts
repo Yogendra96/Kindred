@@ -1,11 +1,11 @@
-import type { NavigationProp, RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import type {
   RootStackParamList,
   AuthStackParamList,
   MainStackParamList,
 } from '@navigation/types';
 import analytics from '@react-native-firebase/analytics';
+import type { NavigationProp, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { performanceService } from '@services/PerformanceService';
 
 type NavigationParams = RootStackParamList &

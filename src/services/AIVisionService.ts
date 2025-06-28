@@ -1,9 +1,9 @@
+import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { enhancedSecurityService } from './EnhancedSecurityService';
+import { loggingService } from './LoggingService';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { Platform } from 'react-native';
-import { loggingService } from './LoggingService';
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { enhancedSecurityService } from './EnhancedSecurityService';
 
 export interface VisionConfig {
   modelUrls: {
@@ -41,7 +41,13 @@ export interface WasteItem {
 
 export interface FoodItem {
   name: string;
-  category: 'fruits' | 'vegetables' | 'grains' | 'proteins' | 'dairy' | 'processed';
+  category:
+    | 'fruits'
+    | 'vegetables'
+    | 'grains'
+    | 'proteins'
+    | 'dairy'
+    | 'processed';
   carbonPerServing: number;
   nutritionalValue: number;
   sustainabilityScore: number;
@@ -71,15 +77,24 @@ class AIVisionService {
   private models: Map<string, tf.LayersModel> = new Map();
   private config: VisionConfig;
   private isInitialized = false;
-  private modelLoadingPromises: Map<string, Promise<tf.LayersModel>> = new Map();
+  private modelLoadingPromises: Map<string, Promise<tf.LayersModel>> =
+    new Map();
 
   constructor() {
     this.config = {
       modelUrls: {
-        wasteClassification: process.env.WASTE_MODEL_URL || 'https://models.kindred.app/waste-v2.json',
-        foodRecognition: process.env.FOOD_MODEL_URL || 'https://models.kindred.app/food-v2.json',
-        transportDetection: process.env.TRANSPORT_MODEL_URL || 'https://models.kindred.app/transport-v1.json',
-        energyMeterReading: process.env.ENERGY_MODEL_URL || 'https://models.kindred.app/energy-v1.json',
+        wasteClassification:
+          process.env.WASTE_MODEL_URL ||
+          'https://models.kindred.app/waste-v2.json',
+        foodRecognition:
+          process.env.FOOD_MODEL_URL ||
+          'https://models.kindred.app/food-v2.json',
+        transportDetection:
+          process.env.TRANSPORT_MODEL_URL ||
+          'https://models.kindred.app/transport-v1.json',
+        energyMeterReading:
+          process.env.ENERGY_MODEL_URL ||
+          'https://models.kindred.app/energy-v1.json',
       },
       confidenceThreshold: 0.7,
       maxImageSize: 512,
@@ -161,7 +176,9 @@ class AIVisionService {
     }
   }
 
-  private async loadModel(modelType: keyof VisionConfig['modelUrls']): Promise<tf.LayersModel> {
+  private async loadModel(
+    modelType: keyof VisionConfig['modelUrls'],
+  ): Promise<tf.LayersModel> {
     if (this.models.has(modelType)) {
       return this.models.get(modelType)!;
     }
@@ -184,7 +201,9 @@ class AIVisionService {
     }
   }
 
-  private async downloadAndCacheModel(modelType: keyof VisionConfig['modelUrls']): Promise<tf.LayersModel> {
+  private async downloadAndCacheModel(
+    modelType: keyof VisionConfig['modelUrls'],
+  ): Promise<tf.LayersModel> {
     const startTime = Date.now();
     const modelUrl = this.config.modelUrls[modelType];
 
@@ -228,9 +247,13 @@ class AIVisionService {
     }
   }
 
-  private async getCachedModel(modelType: string): Promise<tf.LayersModel | null> {
+  private async getCachedModel(
+    modelType: string,
+  ): Promise<tf.LayersModel | null> {
     try {
-      const cachedData = await enhancedSecurityService.secureRetrieve(`model_${modelType}`);
+      const cachedData = await enhancedSecurityService.secureRetrieve(
+        `model_${modelType}`,
+      );
       if (cachedData) {
         return tf.loadLayersModel(tf.io.fromMemory(cachedData));
       }
@@ -242,10 +265,18 @@ class AIVisionService {
     return null;
   }
 
-  private async cacheModel(modelType: string, model: tf.LayersModel): Promise<void> {
+  private async cacheModel(
+    modelType: string,
+    model: tf.LayersModel,
+  ): Promise<void> {
     try {
-      const modelArtifacts = await model.save(tf.io.withSaveHandler(async (artifacts) => artifacts));
-      await enhancedSecurityService.secureStore(`model_${modelType}`, modelArtifacts);
+      const modelArtifacts = await model.save(
+        tf.io.withSaveHandler(async artifacts => artifacts),
+      );
+      await enhancedSecurityService.secureStore(
+        `model_${modelType}`,
+        modelArtifacts,
+      );
       loggingService.debug(`Model ${modelType} cached successfully`);
     } catch (error) {
       loggingService.warn(`Failed to cache model ${modelType}`, {
@@ -254,7 +285,9 @@ class AIVisionService {
     }
   }
 
-  async classifyWasteImage(imageUri: string): Promise<ImageClassificationResult> {
+  async classifyWasteImage(
+    imageUri: string,
+  ): Promise<ImageClassificationResult> {
     const startTime = Date.now();
 
     try {
@@ -306,7 +339,9 @@ class AIVisionService {
     }
   }
 
-  async recognizeFoodImage(imageUri: string): Promise<ImageClassificationResult> {
+  async recognizeFoodImage(
+    imageUri: string,
+  ): Promise<ImageClassificationResult> {
     const startTime = Date.now();
 
     try {
@@ -346,7 +381,9 @@ class AIVisionService {
     }
   }
 
-  async detectTransportMode(imageUri: string): Promise<ImageClassificationResult> {
+  async detectTransportMode(
+    imageUri: string,
+  ): Promise<ImageClassificationResult> {
     const startTime = Date.now();
 
     try {
@@ -425,27 +462,27 @@ class AIVisionService {
       // Load image
       const response = await fetch(imageUri);
       const imageBuffer = await response.arrayBuffer();
-      
+
       // Decode image
       const imageTensor = tf.node.decodeImage(new Uint8Array(imageBuffer), 3);
-      
+
       // Resize to model input size
-      const resized = tf.image.resizeBilinear(
-        imageTensor, 
-        [this.config.maxImageSize, this.config.maxImageSize]
-      );
-      
+      const resized = tf.image.resizeBilinear(imageTensor, [
+        this.config.maxImageSize,
+        this.config.maxImageSize,
+      ]);
+
       // Normalize pixel values to [0, 1]
       const normalized = resized.div(255.0);
-      
+
       // Add batch dimension
       const batched = normalized.expandDims(0);
-      
+
       // Cleanup intermediate tensors
       imageTensor.dispose();
       resized.dispose();
       normalized.dispose();
-      
+
       return batched;
     } catch (error) {
       loggingService.error('Image preprocessing failed', {
@@ -457,12 +494,20 @@ class AIVisionService {
   }
 
   private async processWasteClassification(
-    scores: Float32Array, 
-    imageTensor: tf.Tensor
+    scores: Float32Array,
+    imageTensor: tf.Tensor,
   ): Promise<ImageClassificationResult> {
     const wasteCategories = [
-      'plastic-bottle', 'aluminum-can', 'paper', 'cardboard', 'glass-bottle',
-      'food-waste', 'electronics', 'battery', 'textile', 'mixed-waste'
+      'plastic-bottle',
+      'aluminum-can',
+      'paper',
+      'cardboard',
+      'glass-bottle',
+      'food-waste',
+      'electronics',
+      'battery',
+      'textile',
+      'mixed-waste',
     ];
 
     const maxIndex = scores.indexOf(Math.max(...scores));
@@ -474,7 +519,7 @@ class AIVisionService {
     }
 
     const wasteData = await this.getWasteItemData(category);
-    
+
     return {
       category: 'waste',
       subcategory: category,
@@ -493,12 +538,23 @@ class AIVisionService {
   }
 
   private async processFoodRecognition(
-    scores: Float32Array, 
-    imageTensor: tf.Tensor
+    scores: Float32Array,
+    imageTensor: tf.Tensor,
   ): Promise<ImageClassificationResult> {
     const foodCategories = [
-      'apple', 'banana', 'beef', 'chicken', 'rice', 'pasta', 'cheese',
-      'milk', 'bread', 'salmon', 'broccoli', 'carrots', 'tomatoes'
+      'apple',
+      'banana',
+      'beef',
+      'chicken',
+      'rice',
+      'pasta',
+      'cheese',
+      'milk',
+      'bread',
+      'salmon',
+      'broccoli',
+      'carrots',
+      'tomatoes',
     ];
 
     const maxIndex = scores.indexOf(Math.max(...scores));
@@ -510,7 +566,7 @@ class AIVisionService {
     }
 
     const foodData = await this.getFoodItemData(category);
-    
+
     return {
       category: 'food',
       subcategory: category,
@@ -530,11 +586,17 @@ class AIVisionService {
   }
 
   private async processTransportDetection(
-    scores: Float32Array, 
-    imageTensor: tf.Tensor
+    scores: Float32Array,
+    imageTensor: tf.Tensor,
   ): Promise<ImageClassificationResult> {
     const transportModes = [
-      'car', 'bus', 'train', 'bicycle', 'motorcycle', 'plane', 'walking'
+      'car',
+      'bus',
+      'train',
+      'bicycle',
+      'motorcycle',
+      'plane',
+      'walking',
     ];
 
     const maxIndex = scores.indexOf(Math.max(...scores));
@@ -546,7 +608,7 @@ class AIVisionService {
     }
 
     const transportData = await this.getTransportModeData(category);
-    
+
     return {
       category: 'transport',
       subcategory: category,
@@ -562,13 +624,13 @@ class AIVisionService {
   }
 
   private async processEnergyMeterReading(
-    scores: Float32Array, 
-    imageTensor: tf.Tensor
+    scores: Float32Array,
+    imageTensor: tf.Tensor,
   ): Promise<EnergyMeterReading> {
     // This would typically use OCR (Optical Character Recognition)
     // For now, we'll simulate meter reading
     const simulatedReading = Math.floor(Math.random() * 10000);
-    
+
     return {
       value: simulatedReading,
       unit: 'kWh',
@@ -576,11 +638,19 @@ class AIVisionService {
       confidence: scores[0] || 0.8,
       estimatedCost: simulatedReading * 0.12, // $0.12 per kWh
       carbonEquivalent: simulatedReading * 0.4, // 0.4 kg CO2 per kWh
-      efficiency: simulatedReading > 500 ? 'low' : simulatedReading > 200 ? 'medium' : 'high',
+      efficiency:
+        simulatedReading > 500
+          ? 'low'
+          : simulatedReading > 200
+          ? 'medium'
+          : 'high',
     };
   }
 
-  private createLowConfidenceResult(category: string, confidence: number): ImageClassificationResult {
+  private createLowConfidenceResult(
+    category: string,
+    confidence: number,
+  ): ImageClassificationResult {
     return {
       category,
       confidence,
@@ -603,7 +673,7 @@ class AIVisionService {
     const variance = tf.moments(imageTensor).variance;
     const varianceValue = await variance.data();
     variance.dispose();
-    
+
     // Normalize to 0-1 scale
     return Math.min(1, varianceValue[0] / 0.1);
   }
@@ -615,24 +685,32 @@ class AIVisionService {
         material: 'PET plastic',
         carbonFootprint: 0.5,
         recyclingInstructions: 'Remove cap and labels, rinse clean',
-        alternativeSuggestions: ['Use reusable water bottle', 'Install water filter'],
+        alternativeSuggestions: [
+          'Use reusable water bottle',
+          'Install water filter',
+        ],
       },
       'aluminum-can': {
         type: 'recyclable' as const,
         material: 'Aluminum',
         carbonFootprint: 0.3,
         recyclingInstructions: 'Rinse clean, no need to remove labels',
-        alternativeSuggestions: ['Buy drinks in glass bottles', 'Use tap water'],
+        alternativeSuggestions: [
+          'Buy drinks in glass bottles',
+          'Use tap water',
+        ],
       },
       // Add more waste items...
     };
 
-    return wasteDatabase[category] || {
-      type: 'landfill' as const,
-      material: 'Unknown',
-      carbonFootprint: 1.0,
-      alternativeSuggestions: ['Research proper disposal methods'],
-    };
+    return (
+      wasteDatabase[category] || {
+        type: 'landfill' as const,
+        material: 'Unknown',
+        carbonFootprint: 1.0,
+        alternativeSuggestions: ['Research proper disposal methods'],
+      }
+    );
   }
 
   private async getFoodItemData(category: string): Promise<FoodItem> {
@@ -658,15 +736,17 @@ class AIVisionService {
       // Add more food items...
     };
 
-    return foodDatabase[category] || {
-      name: 'Unknown Food',
-      category: 'processed' as const,
-      carbonPerServing: 2.0,
-      nutritionalValue: 5,
-      sustainabilityScore: 5,
-      localAlternatives: [],
-      seasonality: 'Unknown',
-    };
+    return (
+      foodDatabase[category] || {
+        name: 'Unknown Food',
+        category: 'processed' as const,
+        carbonPerServing: 2.0,
+        nutritionalValue: 5,
+        sustainabilityScore: 5,
+        localAlternatives: [],
+        seasonality: 'Unknown',
+      }
+    );
   }
 
   private async getTransportModeData(category: string): Promise<TransportMode> {
@@ -694,20 +774,24 @@ class AIVisionService {
       // Add more transport modes...
     };
 
-    return transportDatabase[category] || {
-      type: 'car' as const,
-      confidence: 0.5,
-      carbonPerKm: 0.2,
-      alternativeRecommendations: ['Consider more sustainable options'],
-    };
+    return (
+      transportDatabase[category] || {
+        type: 'car' as const,
+        confidence: 0.5,
+        carbonPerKm: 0.2,
+        alternativeRecommendations: ['Consider more sustainable options'],
+      }
+    );
   }
 
-  async batchClassifyImages(imageUris: string[]): Promise<ImageClassificationResult[]> {
+  async batchClassifyImages(
+    imageUris: string[],
+  ): Promise<ImageClassificationResult[]> {
     const startTime = Date.now();
 
     try {
       const results = await Promise.all(
-        imageUris.map(async (uri) => {
+        imageUris.map(async uri => {
           try {
             return await this.classifyWasteImage(uri);
           } catch (error) {
@@ -717,7 +801,7 @@ class AIVisionService {
             });
             return this.createLowConfidenceResult('unknown', 0);
           }
-        })
+        }),
       );
 
       enhancedPerformanceService.recordMetric(
@@ -747,7 +831,7 @@ class AIVisionService {
   async cleanup(): Promise<void> {
     try {
       // Dispose all models
-      this.models.forEach((model) => {
+      this.models.forEach(model => {
         model.dispose();
       });
       this.models.clear();

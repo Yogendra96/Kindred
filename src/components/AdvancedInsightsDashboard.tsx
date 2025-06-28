@@ -1,7 +1,7 @@
-import { useTheme } from '../theme/ThemeProvider';
+import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { iotIntegrationService } from '../services/IoTIntegrationService';
 import { mlCarbonPrediction } from '../services/MLCarbonPrediction';
-import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
+import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
@@ -14,7 +14,12 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import { LineChart, BarChart, PieChart, AreaChart } from 'react-native-chart-kit';
+import {
+  LineChart,
+  BarChart,
+  PieChart,
+  AreaChart,
+} from 'react-native-chart-kit';
 import { useSelector } from 'react-redux';
 
 interface InsightData {
@@ -61,11 +66,15 @@ const chartWidth = width - 32;
 export const AdvancedInsightsDashboard: React.FC = () => {
   const theme = useTheme();
   const carbonData = useSelector((state: any) => state.carbon);
-  
+
   const [insights, setInsights] = useState<InsightData | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'year'>('month');
-  const [selectedMetric, setSelectedMetric] = useState<'carbon' | 'energy' | 'transport' | 'waste'>('carbon');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<
+    'week' | 'month' | 'year'
+  >('month');
+  const [selectedMetric, setSelectedMetric] = useState<
+    'carbon' | 'energy' | 'transport' | 'waste'
+  >('carbon');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -76,22 +85,22 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   const loadInsightData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Generate predictions using ML service
       const predictions = await generatePredictions();
-      
+
       // Analyze trends
       const trends = await analyzeTrends();
-      
+
       // Get comparative data
       const comparative = await getComparativeData();
-      
+
       // Generate recommendations
       const recommendations = await generateRecommendations();
-      
+
       // Get achievement data
       const achievements = await getAchievementInsights();
-      
+
       // Generate heatmap data
       const heatmap = await generateHeatmapData();
 
@@ -102,7 +111,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         recommendations,
         achievements,
       });
-      
+
       setHeatmapData(heatmap);
     } catch (error) {
       console.error('Failed to load insight data:', error);
@@ -126,12 +135,16 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
       if (inputData.length === 0) {
         // Generate mock predictions if no historical data
-        return Array.from({ length: 30 }, (_, i) => 
-          Math.random() * 5 + 15 + Math.sin(i / 7) * 2
+        return Array.from(
+          { length: 30 },
+          (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2,
         );
       }
 
-      const predictions = await mlCarbonPrediction.predictFutureFootprint(inputData, 30);
+      const predictions = await mlCarbonPrediction.predictFutureFootprint(
+        inputData,
+        30,
+      );
       return predictions.map(p => p.totalCarbon);
     } catch (error) {
       console.error('Prediction generation failed:', error);
@@ -151,15 +164,26 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       };
     }
 
-    const recentAvg = recentData.reduce((sum: number, entry: any) => 
-      sum + (entry.total || 0), 0) / recentData.length;
-    const olderAvg = olderData.reduce((sum: number, entry: any) => 
-      sum + (entry.total || 0), 0) / olderData.length;
+    const recentAvg =
+      recentData.reduce(
+        (sum: number, entry: any) => sum + (entry.total || 0),
+        0,
+      ) / recentData.length;
+    const olderAvg =
+      olderData.reduce(
+        (sum: number, entry: any) => sum + (entry.total || 0),
+        0,
+      ) / olderData.length;
 
     const percentageChange = ((recentAvg - olderAvg) / olderAvg) * 100;
 
     return {
-      direction: percentageChange > 5 ? 'increasing' : percentageChange < -5 ? 'decreasing' : 'stable',
+      direction:
+        percentageChange > 5
+          ? 'increasing'
+          : percentageChange < -5
+          ? 'decreasing'
+          : 'stable',
       percentage: Math.abs(percentageChange),
       timeframe: '2 weeks',
     };
@@ -168,7 +192,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   const getComparativeData = async () => {
     // Mock comparative data - in real app, this would come from analytics service
     const userTotal = carbonData.currentFootprint?.total || 20;
-    
+
     return {
       userVsAverage: userTotal / 25, // 25 is average
       userVsFriends: userTotal / 22, // 22 is friends average
@@ -237,12 +261,16 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       { title: 'Planet Protector', target: 8, icon: '🌍' },
     ];
 
-    const nextMilestone = nextMilestones.find(m => currentTotal > m.target) || nextMilestones[0];
+    const nextMilestone =
+      nextMilestones.find(m => currentTotal > m.target) || nextMilestones[0];
 
     return {
       nextMilestone: {
         ...nextMilestone,
-        progress: Math.max(0, (nextMilestone.target - currentTotal) / nextMilestone.target),
+        progress: Math.max(
+          0,
+          (nextMilestone.target - currentTotal) / nextMilestone.target,
+        ),
       },
       recentUnlocks: [], // Would come from achievement system
     };
@@ -253,7 +281,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     return Array.from({ length: 365 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      
+
       return {
         date: date.toISOString().split('T')[0],
         value: Math.random() * 30 + 10,
@@ -270,20 +298,34 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   }, [selectedTimeframe, selectedMetric]);
 
   const renderTimeframeSelector = () => (
-    <View style={[styles.selectorContainer, { backgroundColor: theme.colors.surface }]}>
-      {(['week', 'month', 'year'] as const).map((timeframe) => (
+    <View
+      style={[
+        styles.selectorContainer,
+        { backgroundColor: theme.colors.surface },
+      ]}
+    >
+      {(['week', 'month', 'year'] as const).map(timeframe => (
         <TouchableOpacity
           key={timeframe}
           style={[
             styles.selectorButton,
-            selectedTimeframe === timeframe && { backgroundColor: theme.colors.primary }
+            selectedTimeframe === timeframe && {
+              backgroundColor: theme.colors.primary,
+            },
           ]}
           onPress={() => setSelectedTimeframe(timeframe)}
         >
-          <Text style={[
-            styles.selectorText,
-            { color: selectedTimeframe === timeframe ? theme.colors.onPrimary : theme.colors.onSurface }
-          ]}>
+          <Text
+            style={[
+              styles.selectorText,
+              {
+                color:
+                  selectedTimeframe === timeframe
+                    ? theme.colors.onPrimary
+                    : theme.colors.onSurface,
+              },
+            ]}
+          >
             {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
           </Text>
         </TouchableOpacity>
@@ -295,8 +337,8 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     const chartData = {
-      labels: insights.predictedCarbon.map((_, i) => 
-        i % 5 === 0 ? `Day ${i + 1}` : ''
+      labels: insights.predictedCarbon.map((_, i) =>
+        i % 5 === 0 ? `Day ${i + 1}` : '',
       ),
       datasets: [
         {
@@ -308,7 +350,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.chartContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           30-Day Carbon Prediction
         </Text>
@@ -337,13 +384,26 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     const { trendAnalysis } = insights;
-    const trendIcon = trendAnalysis.direction === 'increasing' ? 'trending-up' : 
-                     trendAnalysis.direction === 'decreasing' ? 'trending-down' : 'remove';
-    const trendColor = trendAnalysis.direction === 'increasing' ? '#FF5722' : 
-                      trendAnalysis.direction === 'decreasing' ? '#4CAF50' : '#FF9800';
+    const trendIcon =
+      trendAnalysis.direction === 'increasing'
+        ? 'trending-up'
+        : trendAnalysis.direction === 'decreasing'
+        ? 'trending-down'
+        : 'remove';
+    const trendColor =
+      trendAnalysis.direction === 'increasing'
+        ? '#FF5722'
+        : trendAnalysis.direction === 'decreasing'
+        ? '#4CAF50'
+        : '#FF9800';
 
     return (
-      <View style={[styles.trendContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.trendContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <View style={styles.trendHeader}>
           <Ionicons name={trendIcon} size={24} color={trendColor} />
           <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>
@@ -354,8 +414,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           Your carbon footprint is{' '}
           <Text style={{ color: trendColor, fontWeight: 'bold' }}>
             {trendAnalysis.direction}
-          </Text>
-          {' '}by {trendAnalysis.percentage.toFixed(1)}% over the last {trendAnalysis.timeframe}
+          </Text>{' '}
+          by {trendAnalysis.percentage.toFixed(1)}% over the last{' '}
+          {trendAnalysis.timeframe}
         </Text>
       </View>
     );
@@ -382,7 +443,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.chartContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           Comparative Analysis
         </Text>
@@ -390,8 +456,8 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           data={chartData}
           width={chartWidth}
           height={220}
-          yAxisLabel=""
-          yAxisSuffix=" kg"
+          yAxisLabel=''
+          yAxisSuffix=' kg'
           chartConfig={{
             backgroundColor: theme.colors.surface,
             backgroundGradientFrom: theme.colors.surface,
@@ -407,7 +473,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   };
 
   const renderCarbonHeatmap = () => (
-    <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+    <View
+      style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}
+    >
       <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
         Carbon Intensity Heatmap
       </Text>
@@ -416,9 +484,13 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           {Array.from({ length: 52 }, (_, week) => (
             <View key={week} style={styles.heatmapWeek}>
               {Array.from({ length: 7 }, (_, day) => {
-                const dataPoint = heatmapData.find(d => d.week === week && d.day === day);
-                const intensity = dataPoint ? Math.min(1, dataPoint.value / 30) : 0;
-                
+                const dataPoint = heatmapData.find(
+                  d => d.week === week && d.day === day,
+                );
+                const intensity = dataPoint
+                  ? Math.min(1, dataPoint.value / 30)
+                  : 0;
+
                 return (
                   <View
                     key={day}
@@ -461,36 +533,64 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     return (
-      <View style={[styles.recommendationsContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.recommendationsContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
           Smart Recommendations
         </Text>
-        {insights.recommendations.map((rec) => (
+        {insights.recommendations.map(rec => (
           <View key={rec.id} style={styles.recommendationCard}>
             <View style={styles.recommendationHeader}>
-              <Text style={[styles.recommendationTitle, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[
+                  styles.recommendationTitle,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 {rec.title}
               </Text>
-              <View style={[
-                styles.difficultyBadge,
-                { backgroundColor: rec.difficulty === 'easy' ? '#4CAF50' : rec.difficulty === 'medium' ? '#FF9800' : '#F44336' }
-              ]}>
+              <View
+                style={[
+                  styles.difficultyBadge,
+                  {
+                    backgroundColor:
+                      rec.difficulty === 'easy'
+                        ? '#4CAF50'
+                        : rec.difficulty === 'medium'
+                        ? '#FF9800'
+                        : '#F44336',
+                  },
+                ]}
+              >
                 <Text style={styles.difficultyText}>
                   {rec.difficulty.toUpperCase()}
                 </Text>
               </View>
             </View>
-            <Text style={[styles.recommendationDescription, { color: theme.colors.outline }]}>
+            <Text
+              style={[
+                styles.recommendationDescription,
+                { color: theme.colors.outline },
+              ]}
+            >
               {rec.description}
             </Text>
             <View style={styles.recommendationFooter}>
               <View style={styles.savingInfo}>
-                <Ionicons name="leaf" size={16} color="#4CAF50" />
-                <Text style={[styles.savingText, { color: theme.colors.onSurface }]}>
+                <Ionicons name='leaf' size={16} color='#4CAF50' />
+                <Text
+                  style={[styles.savingText, { color: theme.colors.onSurface }]}
+                >
                   Save {rec.potentialSaving} kg CO₂
                 </Text>
               </View>
-              <Text style={[styles.categoryText, { color: theme.colors.primary }]}>
+              <Text
+                style={[styles.categoryText, { color: theme.colors.primary }]}
+              >
                 {rec.category}
               </Text>
             </View>
@@ -506,7 +606,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     const { nextMilestone } = insights.achievements;
 
     return (
-      <View style={[styles.achievementContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.achievementContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
           Next Milestone
         </Text>
@@ -514,17 +619,32 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           <View style={styles.milestoneHeader}>
             <Text style={styles.milestoneIcon}>🏆</Text>
             <View style={styles.milestoneInfo}>
-              <Text style={[styles.milestoneTitle, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[
+                  styles.milestoneTitle,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 {nextMilestone.title}
               </Text>
-              <Text style={[styles.milestoneTarget, { color: theme.colors.outline }]}>
+              <Text
+                style={[
+                  styles.milestoneTarget,
+                  { color: theme.colors.outline },
+                ]}
+              >
                 Target: {nextMilestone.target} kg CO₂/month
               </Text>
             </View>
           </View>
-          
+
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
+            <View
+              style={[
+                styles.progressBar,
+                { backgroundColor: theme.colors.outline },
+              ]}
+            >
               <View
                 style={[
                   styles.progressFill,
@@ -535,7 +655,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
                 ]}
               />
             </View>
-            <Text style={[styles.progressText, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.progressText, { color: theme.colors.onSurface }]}
+            >
               {(nextMilestone.progress * 100).toFixed(0)}%
             </Text>
           </View>
@@ -546,7 +668,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
         <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
           Generating AI Insights...
         </Text>
