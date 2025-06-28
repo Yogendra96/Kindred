@@ -13,25 +13,18 @@ export const metrics = {
 };
 
 export const colors = {
-  // Brand Colors
   primary: '#007AFF',
   secondary: '#5856D6',
   accent: '#34C759',
-  
-  // Semantic Colors
   success: '#34C759',
   warning: '#FF9500',
   error: '#FF3B30',
   info: '#5856D6',
-
-  // Grayscale
   black: '#000000',
   darkGray: '#1C1C1E',
   gray: '#8E8E93',
   lightGray: '#D1D1D6',
   white: '#FFFFFF',
-
-  // Background Colors
   background: {
     light: '#FFFFFF',
     dark: '#000000',
@@ -40,8 +33,6 @@ export const colors = {
     light: '#F2F2F7',
     dark: '#1C1C1E',
   },
-
-  // Text Colors
   text: {
     primary: {
       light: '#000000',
@@ -56,17 +47,53 @@ export const colors = {
       dark: '#48484A',
     },
   },
-
-  // Border Colors
   border: {
     light: '#C6C6C8',
     dark: '#38383A',
   },
-
-  // Specific Feature Colors
   carbonNeutral: '#34C759',
   carbonPositive: '#FF3B30',
   carbonNegative: '#5856D6',
+};
+
+export const highContrastColors = {
+  ...colors,
+  mode: 'highContrast',
+  primary: '#000000',
+  secondary: '#FFFFFF',
+  accent: '#FFD700',
+  background: {
+    light: '#FFFFFF',
+    dark: '#000000',
+    highContrast: '#000000',
+  },
+  surface: {
+    light: '#FFFFFF',
+    dark: '#000000',
+    highContrast: '#000000',
+  },
+  text: {
+    primary: {
+      light: '#000000',
+      dark: '#FFFFFF',
+      highContrast: '#FFFF00',
+    },
+    secondary: {
+      light: '#000000',
+      dark: '#FFFFFF',
+      highContrast: '#FFD700',
+    },
+    disabled: {
+      light: '#666666',
+      dark: '#CCCCCC',
+      highContrast: '#FFD700',
+    },
+  },
+  border: {
+    light: '#000000',
+    dark: '#FFFFFF',
+    highContrast: '#FFD700',
+  },
 };
 
 export const typography = {
@@ -133,7 +160,7 @@ export const shadows = {
     large: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.30,
+      shadowOpacity: 0.3,
       shadowRadius: 4.65,
       elevation: 8,
     },
@@ -187,6 +214,37 @@ export const zIndex = {
   loader: 6,
 };
 
+export type ThemeMode = 'light' | 'dark' | 'system' | 'highContrast';
+
+export const getTheme = (
+  mode: ThemeMode,
+  systemScheme: 'light' | 'dark' = 'light',
+) => {
+  let selectedColors;
+  if (mode === 'highContrast') {
+    selectedColors = highContrastColors;
+  } else if (mode === 'system') {
+    selectedColors =
+      systemScheme === 'dark'
+        ? { ...colors, mode: 'dark' }
+        : { ...colors, mode: 'light' };
+  } else if (mode === 'dark') {
+    selectedColors = { ...colors, mode: 'dark' };
+  } else {
+    selectedColors = { ...colors, mode: 'light' };
+  }
+  return {
+    metrics,
+    colors: selectedColors,
+    typography,
+    spacing,
+    borderRadius,
+    shadows,
+    animation,
+    zIndex,
+  };
+};
+
 const theme = {
   metrics,
   colors,
@@ -196,7 +254,24 @@ const theme = {
   shadows,
   animation,
   zIndex,
+  highContrastColors,
+  getTheme,
 };
 
 export type Theme = typeof theme;
+
+export function useAppTheme(
+  mode: ThemeMode = 'system',
+  isHighContrast: boolean = false,
+) {
+  const colorScheme = useColorScheme();
+  const systemMode: 'light' | 'dark' =
+    colorScheme === 'dark' ? 'dark' : 'light';
+
+  if (isHighContrast) {
+    return getTheme('highContrast', systemMode);
+  }
+  return getTheme(mode, systemMode);
+}
+
 export default theme;

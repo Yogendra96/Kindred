@@ -4,7 +4,7 @@ import { RootState } from '../index';
 describe('Redux Store', () => {
   it('should have the correct initial state', () => {
     const state = store.getState();
-    
+
     // Check auth slice
     expect(state.auth).toEqual({
       isAuthenticated: false,
@@ -62,14 +62,14 @@ describe('Redux Store', () => {
     // Test user actions
     store.dispatch({
       type: 'user/updateProfile',
-      payload: { name: 'Test User' }
+      payload: { name: 'Test User' },
     });
     expect(store.getState().user.profile.name).toBe('Test User');
 
     // Test carbon actions
     store.dispatch({
       type: 'carbon/updateFootprint',
-      payload: { transportation: 5 }
+      payload: { transportation: 5 },
     });
     expect(store.getState().carbon.footprint.transportation).toBe(5);
   });

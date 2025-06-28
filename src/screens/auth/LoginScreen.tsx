@@ -1,4 +1,10 @@
- import React, { useState } from 'react';
+import type { AuthStackParamList } from '../../navigation/types';
+import auth from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import type { NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,15 +15,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -57,7 +60,7 @@ const LoginScreen = () => {
         <Image
           source={require('../../assets/logo.png')}
           style={styles.logo}
-          resizeMode="contain"
+          resizeMode='contain'
         />
         <Text style={styles.title}>Welcome to Kindred</Text>
       </View>
@@ -65,15 +68,15 @@ const LoginScreen = () => {
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder='Email'
           value={email}
           onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
+          autoCapitalize='none'
+          keyboardType='email-address'
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder='Password'
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -83,6 +86,10 @@ const LoginScreen = () => {
           style={styles.loginButton}
           onPress={handleLogin}
           disabled={loading}
+          accessible={true}
+          accessibilityLabel='Login'
+          accessibilityHint='Log in to your account'
+          accessibilityRole='button'
         >
           <Text style={styles.buttonText}>
             {loading ? 'Logging in...' : 'Login'}
@@ -99,7 +106,13 @@ const LoginScreen = () => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Register')}
+            accessible={true}
+            accessibilityLabel='Go to Register'
+            accessibilityHint='Navigate to registration screen'
+            accessibilityRole='button'
+          >
             <Text style={styles.footerLink}>Sign up</Text>
           </TouchableOpacity>
         </View>

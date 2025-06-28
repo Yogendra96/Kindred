@@ -1,0 +1,352 @@
+# Authentication Flow Tests
+appId: com.kindred.app
+---
+
+# Test: Login Flow
+- launchApp:
+    clearState: true
+
+# Navigate to login if not already there
+- runFlow:
+    when:
+      visible: "home-screen"
+    commands:
+      - tapOn: "profile-tab"
+      - tapOn: "logout-button"
+      - tapOn: "confirm-logout"
+
+# Assert login screen is visible
+- assertVisible: "login-screen"
+- assertVisible: "email-input"
+- assertVisible: "password-input"
+- assertVisible: "login-button"
+- assertVisible: "signup-link"
+- assertVisible: "forgot-password-link"
+
+# Test empty form validation
+- tapOn: "login-button"
+- assertVisible: "email-error"
+- assertText:
+    id: "email-error"
+    text: "Email is required"
+
+# Test invalid email format
+- tapOn: "email-input"
+- inputText: "invalid-email"
+- tapOn: "login-button"
+- assertVisible: "email-error"
+- assertText:
+    id: "email-error"
+    text: "Please enter a valid email"
+
+# Clear email field
+- tapOn: "email-input"
+- clearText
+
+# Test valid email but empty password
+- inputText: "${TEST_EMAIL}"
+- tapOn: "login-button"
+- assertVisible: "password-error"
+- assertText:
+    id: "password-error"
+    text: "Password is required"
+
+# Test invalid credentials
+- tapOn: "password-input"
+- inputText: "wrongpassword"
+- tapOn: "login-button"
+- assertVisible:
+    id: "error-message"
+    timeout: 5000
+- assertText:
+    id: "error-message"
+    text: "Invalid email or password"
+
+# Clear password field
+- tapOn: "password-input"
+- clearText
+
+# Test successful login
+- inputText: "${TEST_PASSWORD}"
+- startTimer: "login-time"
+- tapOn: "login-button"
+
+# Wait for loading
+- runFlow:
+    when:
+      visible: "loading-indicator"
+    commands:
+      - assertVisible: "loading-indicator"
+      - assertNotVisible:
+          id: "loading-indicator"
+          timeout: 10000
+
+# Assert successful login
+- assertVisible:
+    id: "home-screen"
+    timeout: 10000
+- stopTimer: "login-time"
+- assertTimer:
+    name: "login-time"
+    lessThan: 5000
+
+# Verify user is logged in
+- tapOn: "profile-tab"
+- assertVisible: "profile-screen"
+- assertVisible: "user-name"
+- assertVisible: "user-email"
+- assertVisible: "logout-button"
+
+---
+
+# Test: Logout Flow
+- tapOn: "logout-button"
+- assertVisible: "logout-confirmation"
+- assertText:
+    id: "logout-message"
+    text: "Are you sure you want to logout?"
+
+# Test cancel logout
+- tapOn: "cancel-logout"
+- assertVisible: "profile-screen"
+- assertVisible: "logout-button"
+
+# Test confirm logout
+- tapOn: "logout-button"
+- tapOn: "confirm-logout"
+- assertVisible:
+    id: "login-screen"
+    timeout: 5000
+
+# Verify logout was successful
+- assertNotVisible: "home-screen"
+- assertVisible: "email-input"
+- assertVisible: "password-input"
+
+---
+
+# Test: Sign Up Flow
+- tapOn: "signup-link"
+- assertVisible: "signup-screen"
+- assertVisible: "name-input"
+- assertVisible: "email-input"
+- assertVisible: "password-input"
+- assertVisible: "confirm-password-input"
+- assertVisible: "signup-button"
+- assertVisible: "login-link"
+
+# Test form validation
+- tapOn: "signup-button"
+- assertVisible: "name-error"
+- assertVisible: "email-error"
+- assertVisible: "password-error"
+
+# Fill valid data
+- tapOn: "name-input"
+- inputText: "Test User"
+- tapOn: "email-input"
+- inputText: "newuser@example.com"
+- tapOn: "password-input"
+- inputText: "password123"
+- tapOn: "confirm-password-input"
+- inputText: "password123"
+
+# Test password mismatch
+- clearText
+- inputText: "differentpassword"
+- tapOn: "signup-button"
+- assertVisible: "confirm-password-error"
+- assertText:
+    id: "confirm-password-error"
+    text: "Passwords do not match"
+
+# Fix password and submit
+- tapOn: "confirm-password-input"
+- clearText
+- inputText: "password123"
+- tapOn: "signup-button"
+
+# Handle existing user scenario
+- runFlow:
+    when:
+      visible: "error-message"
+    commands:
+      - assertText:
+          id: "error-message"
+          text: "User already exists"
+      - tapOn: "login-link"
+      - assertVisible: "login-screen"
+
+# Handle successful signup
+- runFlow:
+    when:
+      visible: "verification-screen"
+    commands:
+      - assertVisible: "verification-screen"
+      - assertText:
+          id: "verification-message"
+          text: "Please check your email for verification"
+
+---
+
+# Test: Forgot Password Flow
+- runFlow:
+    when:
+      visible: "login-screen"
+    commands:
+      - tapOn: "forgot-password-link"
+
+- assertVisible: "forgot-password-screen"
+- assertVisible: "email-input"
+- assertVisible: "reset-button"
+- assertVisible: "back-to-login"
+
+# Test empty email
+- tapOn: "reset-button"
+- assertVisible: "email-error"
+
+# Test invalid email
+- tapOn: "email-input"
+- inputText: "invalid-email"
+- tapOn: "reset-button"
+- assertVisible: "email-error"
+
+# Test valid email
+- clearText
+- inputText: "${TEST_EMAIL}"
+- tapOn: "reset-button"
+- assertVisible:
+    id: "success-message"
+    timeout: 5000
+- assertText:
+    id: "success-message"
+    text: "Password reset email sent"
+
+# Return to login
+- tapOn: "back-to-login"
+- assertVisible: "login-screen"
+
+---
+
+# Test: Biometric Authentication (if available)
+- runFlow:
+    when:
+      visible: "biometric-login-button"
+    commands:
+      - tapOn: "biometric-login-button"
+      - assertVisible: "biometric-prompt"
+      
+      # Simulate successful biometric auth
+      - simulateBiometric: "success"
+      - assertVisible:
+          id: "home-screen"
+          timeout: 10000
+      
+      # Test biometric failure
+      - tapOn: "profile-tab"
+      - tapOn: "logout-button"
+      - tapOn: "confirm-logout"
+      - tapOn: "biometric-login-button"
+      - simulateBiometric: "failure"
+      - assertVisible: "biometric-error"
+      - assertText:
+          id: "biometric-error"
+          text: "Biometric authentication failed"
+
+---
+
+# Test: Social Login (if available)
+- runFlow:
+    when:
+      visible: "google-login-button"
+    commands:
+      - tapOn: "google-login-button"
+      - assertVisible: "google-auth-webview"
+      # Note: Actual Google auth would require real credentials
+      # This is just testing the flow initiation
+
+- runFlow:
+    when:
+      visible: "apple-login-button"
+    commands:
+      - tapOn: "apple-login-button"
+      - assertVisible: "apple-auth-prompt"
+      # Note: Actual Apple auth would require real credentials
+
+---
+
+# Test: Session Management
+# Login and test session persistence
+- tapOn: "email-input"
+- inputText: "${TEST_EMAIL}"
+- tapOn: "password-input"
+- inputText: "${TEST_PASSWORD}"
+- tapOn: "login-button"
+- assertVisible:
+    id: "home-screen"
+    timeout: 10000
+
+# Test app backgrounding doesn't logout
+- sendToBackground
+- wait: 5000
+- bringToForeground
+- assertVisible: "home-screen"
+
+# Test app restart maintains session
+- terminateApp
+- wait: 2000
+- launchApp
+- assertVisible:
+    id: "home-screen"
+    timeout: 10000
+
+---
+
+# Test: Security Features
+# Test account lockout after multiple failed attempts
+- tapOn: "profile-tab"
+- tapOn: "logout-button"
+- tapOn: "confirm-logout"
+
+- repeat: 5
+  commands:
+    - tapOn: "email-input"
+    - clearText
+    - inputText: "${TEST_EMAIL}"
+    - tapOn: "password-input"
+    - clearText
+    - inputText: "wrongpassword"
+    - tapOn: "login-button"
+    - wait: 1000
+
+# Should show account locked message
+- runFlow:
+    when:
+      visible: "account-locked-message"
+    commands:
+      - assertText:
+          id: "account-locked-message"
+          text: "Account temporarily locked"
+
+# Test password strength indicator during signup
+- tapOn: "signup-link"
+- tapOn: "password-input"
+- inputText: "weak"
+- assertVisible: "password-strength-weak"
+
+- clearText
+- inputText: "StrongPassword123!"
+- assertVisible: "password-strength-strong"
+
+# Final cleanup
+- tapOn: "login-link"
+- tapOn: "email-input"
+- clearText
+- inputText: "${TEST_EMAIL}"
+- tapOn: "password-input"
+- clearText
+- inputText: "${TEST_PASSWORD}"
+- tapOn: "login-button"
+- assertVisible:
+    id: "home-screen"
+    timeout: 10000

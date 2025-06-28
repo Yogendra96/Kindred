@@ -1,19 +1,20 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import type { CarbonData } from '@components/CarbonFootprintCard';
+import { Ionicons } from '@expo/vector-icons';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { useTheme } from '@theme/ThemeProvider';
+import { useEffect, useState, useMemo } from 'react';
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Platform
+  Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
-import { useTheme } from '@theme/ThemeProvider';
-import { CarbonData } from '@components/CarbonFootprintCard';
 
 interface EcoTip {
   id: string;
@@ -51,22 +52,20 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
     const unsubscribe = firestore()
       .collection('eco_tips')
       .where('active', '==', true)
-      .onSnapshot(async (snapshot) => {
+      .onSnapshot(async snapshot => {
         // Get user's completed tips
         const userTipsDoc = await firestore()
           .collection('users')
           .doc(user.uid)
           .collection('completed_tips')
           .get();
-        
-        const completedTipIds = new Set(
-          userTipsDoc.docs.map(doc => doc.id)
-        );
+
+        const completedTipIds = new Set(userTipsDoc.docs.map(doc => doc.id));
 
         const fetchedTips = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
-          completed: completedTipIds.has(doc.id)
+          completed: completedTipIds.has(doc.id),
         })) as EcoTip[];
 
         setTips(fetchedTips);
@@ -90,7 +89,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       if (!tip.completed) {
         await tipRef.set({
           completedAt: firestore.FieldValue.serverTimestamp(),
-          impact: tip.impact
+          impact: tip.impact,
         });
       } else {
         await tipRef.delete();
@@ -98,8 +97,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
 
       setTips(currentTips =>
         currentTips.map(t =>
-          t.id === tip.id ? { ...t, completed: !t.completed } : t
-        )
+          t.id === tip.id ? { ...t, completed: !t.completed } : t,
+        ),
       );
     } catch (error) {
       console.error('Error updating tip completion:', error);
@@ -127,7 +126,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 't1',
         title: 'Switch to Public Transport',
-        description: 'Using public transportation can reduce your carbon emissions by up to 50% compared to driving alone.',
+        description:
+          'Using public transportation can reduce your carbon emissions by up to 50% compared to driving alone.',
         impact: 'high',
         category: 'transport',
         icon: require('@assets/icons/bus.png'),
@@ -136,7 +136,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 't2',
         title: 'Consider Electric Vehicles',
-        description: 'Electric vehicles produce zero direct emissions and can significantly reduce your carbon footprint.',
+        description:
+          'Electric vehicles produce zero direct emissions and can significantly reduce your carbon footprint.',
         impact: 'high',
         category: 'transport',
         icon: require('@assets/icons/electric-car.png'),
@@ -146,7 +147,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'e1',
         title: 'Switch to LED Bulbs',
-        description: 'LED bulbs use up to 90% less energy than traditional bulbs and last much longer.',
+        description:
+          'LED bulbs use up to 90% less energy than traditional bulbs and last much longer.',
         impact: 'medium',
         category: 'energy',
         icon: require('@assets/icons/lightbulb.png'),
@@ -155,7 +157,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'e2',
         title: 'Install Solar Panels',
-        description: 'Solar panels can significantly reduce your reliance on grid electricity and lower emissions.',
+        description:
+          'Solar panels can significantly reduce your reliance on grid electricity and lower emissions.',
         impact: 'high',
         category: 'energy',
         icon: require('@assets/icons/solar-panel.png'),
@@ -165,7 +168,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'f1',
         title: 'Reduce Meat Consumption',
-        description: 'Having one meat-free day per week can reduce your food carbon footprint significantly.',
+        description:
+          'Having one meat-free day per week can reduce your food carbon footprint significantly.',
         impact: 'high',
         category: 'food',
         icon: require('@assets/icons/vegetable.png'),
@@ -174,7 +178,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'f2',
         title: 'Buy Local Produce',
-        description: 'Local food requires less transportation and often uses fewer preservatives.',
+        description:
+          'Local food requires less transportation and often uses fewer preservatives.',
         impact: 'medium',
         category: 'food',
         icon: require('@assets/icons/local-market.png'),
@@ -184,7 +189,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w1',
         title: 'Start Composting',
-        description: 'Composting organic waste reduces methane emissions from landfills.',
+        description:
+          'Composting organic waste reduces methane emissions from landfills.',
         impact: 'medium',
         category: 'waste',
         icon: require('@assets/icons/compost.png'),
@@ -193,7 +199,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w2',
         title: 'Improve Recycling',
-        description: 'Proper recycling can reduce waste-related emissions by up to 30%.',
+        description:
+          'Proper recycling can reduce waste-related emissions by up to 30%.',
         impact: 'medium',
         category: 'waste',
         icon: require('@assets/icons/recycle.png'),
@@ -230,7 +237,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
   if (loading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#2ecc71" />
+        <ActivityIndicator size='large' color='#2ecc71' />
       </View>
     );
   }
@@ -240,37 +247,52 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       <Text style={[styles.title, { color: theme.colors.text.primary }]}>
         Personalized Eco Tips
       </Text>
-      
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {personalizedTips.map((tip) => (
+        {personalizedTips.map(tip => (
           <TouchableOpacity
             key={tip.id}
             style={[
               styles.tipCard,
-              { backgroundColor: theme.colors.background }
+              { backgroundColor: theme.colors.background },
             ]}
             onPress={() => onTipPress?.(tip)}
           >
             <Image source={tip.icon} style={styles.icon} />
             <View style={styles.tipContent}>
-              <Text style={[styles.tipTitle, { color: theme.colors.text.primary }]}>
+              <Text
+                style={[styles.tipTitle, { color: theme.colors.text.primary }]}
+              >
                 {tip.title}
               </Text>
-              <Text 
-                style={[styles.tipDescription, { color: theme.colors.text.secondary }]}
+              <Text
+                style={[
+                  styles.tipDescription,
+                  { color: theme.colors.text.secondary },
+                ]}
                 numberOfLines={2}
               >
                 {tip.description}
               </Text>
               <View style={styles.impactContainer}>
-                <Text style={[styles.impactLabel, { color: theme.colors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.impactLabel,
+                    { color: theme.colors.text.secondary },
+                  ]}
+                >
                   Impact:
                 </Text>
-                <Text style={[styles.impactValue, { color: getImpactColor(tip.impact) }]}>
+                <Text
+                  style={[
+                    styles.impactValue,
+                    { color: getImpactColor(tip.impact) },
+                  ]}
+                >
                   {tip.impact.toUpperCase()}
                 </Text>
               </View>

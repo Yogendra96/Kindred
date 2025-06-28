@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 interface CarbonFootprint {
   total: number;
@@ -62,12 +63,17 @@ const carbonSlice = createSlice({
     setGoalsLoading: (state, action: PayloadAction<boolean>) => {
       state.loading.goals = action.payload;
     },
-    updateFootprint: (state, action: PayloadAction<Partial<CarbonFootprint>>) => {
-      state.footprint = { 
+    updateFootprint: (
+      state,
+      action: PayloadAction<Partial<CarbonFootprint>>,
+    ) => {
+      state.footprint = {
         ...state.footprint,
         ...action.payload,
-        total: Object.values({ ...state.footprint, ...action.payload })
-          .reduce((sum, val) => typeof val === 'number' ? sum + val : sum, 0)
+        total: Object.values({ ...state.footprint, ...action.payload }).reduce(
+          (sum, val) => (typeof val === 'number' ? sum + val : sum),
+          0,
+        ),
       };
     },
     setHistory: (state, action: PayloadAction<HistoryEntry[]>) => {
@@ -76,13 +82,16 @@ const carbonSlice = createSlice({
     addHistoryEntry: (state, action: PayloadAction<HistoryEntry>) => {
       state.history = [action.payload, ...state.history].slice(0, 30); // Keep last 30 days
     },
-    setGoals: (state, action: PayloadAction<{ target: number; deadline: string }>) => {
+    setGoals: (
+      state,
+      action: PayloadAction<{ target: number; deadline: string }>,
+    ) => {
       state.goals = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-    resetState: (state) => {
+    resetState: state => {
       Object.assign(state, initialState);
     },
   },

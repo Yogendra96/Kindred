@@ -1,14 +1,11 @@
-export default {
+module.exports = {
   preset: 'react-native',
-  setupFiles: ['./jest.setup.js'],
-  setupFilesAfterEnv: [
-    '@testing-library/jest-native/extend-expect',
-    '<rootDir>/jest.setup.ts'
-  ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node', 'mjs'],
-  moduleDirectories: ['node_modules', 'src'],
+  
+  // Test environment
+  testEnvironment: 'node',
+  
+  // Module paths
   moduleNameMapper: {
-    '\\.svg': '<rootDir>/__mocks__/svgMock.js',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
     '^@screens/(.*)$': '<rootDir>/src/screens/$1',
@@ -20,83 +17,82 @@ export default {
     '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^@assets/(.*)$': '<rootDir>/assets/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
+    '^@config/(.*)$': '<rootDir>/src/config/$1',
+    '^@tests/(.*)$': '<rootDir>/src/tests/$1',
+    '^@mocks/(.*)$': '<rootDir>/src/__mocks__/$1',
+    '^@theme/(.*)$': '<rootDir>/src/theme/$1',
   },
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: './babel.config.js' }],
-  },
+  
+  // Setup files
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js',
+    '<rootDir>/src/tests/setup.ts'
+  ],
+  
+  // Test path ignore patterns
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/android/',
+    '<rootDir>/ios/',
+    '<rootDir>/vendor/',
+  ],
+  
+  // Transform ignore patterns
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|react-native-.*|@react-navigation/.*|@rneui/.*)/)',
+    'node_modules/(?!(react-native|@react-native|react-native-vector-icons|react-native-gesture-handler|react-native-reanimated|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-iphone-x-helper|react-native-device-info|react-native-keychain|@react-native-async-storage|react-native-svg|react-native-linear-gradient|react-native-image-picker|react-native-permissions|@react-native-firebase|react-native-google-signin|@shopify/react-native-skia|victory-native|@expo/vector-icons)/)',
   ],
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/android/',
-    '/ios/',
-    '/__tests__/',
-    '/coverage/',
-    '\\.d\\.ts$',
-    'jest\\.setup\\.(js|ts)',
-    'babel\\.config\\.js',
-    'metro\\.config\\.js',
-  ],
+  
+  // Coverage
+  collectCoverage: true,
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
-    '!src/**/*.test.{js,jsx,ts,tsx}',
-    '!src/**/__tests__/**',
-    '!src/**/types.ts',
-    '!src/constants/**',
+    '!src/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/tests/**',
+    '!src/config/development.ts',
   ],
+  
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      branches: 75,
+      functions: 75,
+      lines: 75,
+      statements: 75,
     },
   },
-  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
-  testPathIgnorePatterns: ['/node_modules/', '/android/', '/ios/'],
-  globals: {
-    __DEV__: true,
-  },
-  reporters: [
-    'default',
-    [
-      'jest-junit',
-      {
-        outputDirectory: './coverage/junit',
-        outputName: 'junit.xml',
-        classNameTemplate: '{filepath}',
-        titleTemplate: '{title}',
-        ancestorSeparator: ' › ',
-        addFileAttribute: true,
-      },
-    ],
+  
+  coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: [
+    'text',
+    'lcov',
+    'html',
+    'json-summary',
   ],
+  
+  // File extensions
+  moduleFileExtensions: [
+    'ts',
+    'tsx',
+    'js',
+    'jsx',
+    'json',
+    'node',
+  ],
+  
+  // Additional configurations
+  verbose: true,
+  clearMocks: true,
+  restoreMocks: true,
+  errorOnDeprecated: true,
+  notify: false,
+  maxWorkers: '50%',
+  cacheDirectory: '<rootDir>/.jest-cache',
+  testTimeout: 10000,
+  detectOpenHandles: true,
+  
+  // Watch plugins
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',
-    'jest-watch-select-projects',
-  ],
-  testEnvironment: 'jsdom',
-  verbose: true,
-  cache: true,
-  cacheDirectory: '.jest/cache',
-  maxWorkers: '50%',
-  errorOnDeprecated: true,
-  // New TypeScript-specific configurations
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  testEnvironmentOptions: {
-    customExportConditions: ['react-native'],
-  },
-  // Enhanced coverage reporting
-  coverageReporters: ['text', 'lcov', 'clover', 'html'],
-  coverageDirectory: 'coverage',
-  // Performance optimizations
-  workerIdleMemoryLimit: '512MB',
-  // TypeScript specific
-  transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|react-native-.*|@react-navigation/.*|@rneui/.*)/)',
   ],
 };

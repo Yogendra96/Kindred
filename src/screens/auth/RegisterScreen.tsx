@@ -1,3 +1,5 @@
+import auth from '@react-native-firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   View,
@@ -9,8 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
@@ -33,10 +33,18 @@ const RegisterScreen = () => {
 
     try {
       setLoading(true);
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
       await userCredential.user.updateProfile({ displayName: name });
     } catch (error) {
-      alert(error.message);
+      console.error('Error toggling theme:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An error occurred during registration');
+      }
     } finally {
       setLoading(false);
     }
@@ -51,7 +59,7 @@ const RegisterScreen = () => {
         <Image
           source={require('../../assets/logo.png')}
           style={styles.logo}
-          resizeMode="contain"
+          resizeMode='contain'
         />
         <Text style={styles.title}>Create Account</Text>
       </View>
@@ -59,28 +67,28 @@ const RegisterScreen = () => {
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Full Name"
+          placeholder='Full Name'
           value={name}
           onChangeText={setName}
         />
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder='Email'
           value={email}
           onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
+          autoCapitalize='none'
+          keyboardType='email-address'
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder='Password'
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
         <TextInput
           style={styles.input}
-          placeholder="Confirm Password"
+          placeholder='Confirm Password'
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
@@ -90,6 +98,10 @@ const RegisterScreen = () => {
           style={styles.registerButton}
           onPress={handleRegister}
           disabled={loading}
+          accessible={true}
+          accessibilityLabel='Register'
+          accessibilityHint='Creates a new account'
+          accessibilityRole='button'
         >
           <Text style={styles.buttonText}>
             {loading ? 'Creating Account...' : 'Register'}
@@ -98,7 +110,13 @@ const RegisterScreen = () => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login')}
+            accessible={true}
+            accessibilityLabel='Go to Login'
+            accessibilityHint='Navigate to login screen'
+            accessibilityRole='button'
+          >
             <Text style={styles.footerLink}>Sign in</Text>
           </TouchableOpacity>
         </View>

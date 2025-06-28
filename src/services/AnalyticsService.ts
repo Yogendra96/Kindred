@@ -1,6 +1,6 @@
+import { loggingService } from './LoggingService';
 import analytics from '@react-native-firebase/analytics';
 import { Platform } from 'react-native';
-import { loggingService } from './LoggingService';
 
 export type ScreenName =
   | 'Login'
@@ -50,8 +50,10 @@ class AnalyticsService {
       const userProperties: Record<string, string> = {
         platform: Platform.OS,
         appVersion: Platform.select({
-          ios: require('../../ios/Kindred/Info.plist').CFBundleShortVersionString,
-          android: require('../../android/app/build.gradle').android.defaultConfig.versionName,
+          ios: require('../../ios/Kindred/Info.plist')
+            .CFBundleShortVersionString,
+          android: require('../../android/app/build.gradle').android
+            .defaultConfig.versionName,
         }),
       };
 
@@ -64,11 +66,17 @@ class AnalyticsService {
 
       await analytics().setUserProperties(userProperties);
     } catch (error) {
-      loggingService.error('Failed to set analytics user', { error, userId: user.id });
+      loggingService.error('Failed to set analytics user', {
+        error,
+        userId: user.id,
+      });
     }
   }
 
-  async logScreen(screenName: ScreenName, params?: Record<string, any>): Promise<void> {
+  async logScreen(
+    screenName: ScreenName,
+    params?: Record<string, any>,
+  ): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -82,7 +90,10 @@ class AnalyticsService {
     }
   }
 
-  async logEvent(eventName: string, params?: Record<string, any>): Promise<void> {
+  async logEvent(
+    eventName: string,
+    params?: Record<string, any>,
+  ): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -97,7 +108,10 @@ class AnalyticsService {
   }
 
   // Carbon footprint tracking events
-  async logCarbonFootprintAdded(value: number, category: string): Promise<void> {
+  async logCarbonFootprintAdded(
+    value: number,
+    category: string,
+  ): Promise<void> {
     await this.logEvent('carbon_footprint_added', {
       value,
       category,
@@ -105,7 +119,11 @@ class AnalyticsService {
     });
   }
 
-  async logActivityCompleted(type: string, duration: number, carbonSaved: number): Promise<void> {
+  async logActivityCompleted(
+    type: string,
+    duration: number,
+    carbonSaved: number,
+  ): Promise<void> {
     await this.logEvent('activity_completed', {
       type,
       duration,
@@ -124,7 +142,7 @@ class AnalyticsService {
   async logUserEngagement(
     actionName: string,
     duration: number,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<void> {
     await this.logEvent('user_engagement', {
       action: actionName,
@@ -134,7 +152,11 @@ class AnalyticsService {
   }
 
   // Error tracking
-  async logError(errorCode: string, message: string, fatal: boolean = false): Promise<void> {
+  async logError(
+    errorCode: string,
+    message: string,
+    fatal: boolean = false,
+  ): Promise<void> {
     await this.logEvent('app_error', {
       error_code: errorCode,
       error_message: message,
@@ -146,7 +168,7 @@ class AnalyticsService {
   async logPerformanceMetric(
     metricName: string,
     value: number,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<void> {
     await this.logEvent('performance_metric', {
       metric_name: metricName,

@@ -1,7 +1,7 @@
+import { CrashReportingService } from './CrashReportingService';
 import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
-import { CrashReportingService } from './CrashReportingService';
 
 export interface NotificationPayload {
   title: string;
@@ -50,12 +50,14 @@ class NotificationService {
       this.isInitialized = true;
     } catch (error) {
       CrashReportingService.logError(
-        error instanceof Error ? error : new Error('Failed to initialize notifications')
+        error instanceof Error
+          ? error
+          : new Error('Failed to initialize notifications'),
       );
     }
   }
 
-  private async requestPermissions(): Promise<boolean> {
+  async requestPermissions(): Promise<boolean> {
     try {
       const authStatus = await messaging().requestPermission();
       const enabled =
@@ -87,7 +89,7 @@ class NotificationService {
     });
   }
 
-  private async getFCMToken(): Promise<string | null> {
+  async getFCMToken(): Promise<string | null> {
     try {
       return await messaging().getToken();
     } catch (error) {
@@ -96,7 +98,7 @@ class NotificationService {
     }
   }
 
-  private setupMessageHandlers(): void {
+  setupMessageHandlers(): void {
     // Handle background messages
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       await this.displayNotification({
@@ -124,10 +126,28 @@ class NotificationService {
     });
   }
 
+  async subscribe(topic: string): Promise<void> {
+    try {
+      await messaging().subscribeToTopic(topic);
+    } catch (error) {
+      console.error(`Failed to subscribe to topic ${topic}:`, error);
+    }
+  }
+
+  async unsubscribe(topic: string): Promise<void> {
+    try {
+      await messaging().unsubscribeFromTopic(topic);
+    } catch (error) {
+      console.error(`Failed to unsubscribe from topic ${topic}:`, error);
+    }
+  }
+
   async displayNotification(payload: NotificationPayload): Promise<void> {
     try {
       const channelId =
-        Platform.OS === 'android' ? payload.channelId || this.defaultChannelId : undefined;
+        Platform.OS === 'android'
+          ? payload.channelId || this.defaultChannelId
+          : undefined;
 
       await notifee.displayNotification({
         title: payload.title,
@@ -155,10 +175,15 @@ class NotificationService {
     }
   }
 
-  async scheduleNotification(payload: NotificationPayload, date: Date): Promise<string> {
+  async scheduleNotification(
+    payload: NotificationPayload,
+    date: Date,
+  ): Promise<string> {
     try {
       const channelId =
-        Platform.OS === 'android' ? payload.channelId || this.defaultChannelId : undefined;
+        Platform.OS === 'android'
+          ? payload.channelId || this.defaultChannelId
+          : undefined;
 
       const trigger = {
         type: Platform.select({
@@ -183,7 +208,7 @@ class NotificationService {
           },
           data: payload.data,
         },
-        trigger
+        trigger,
       );
     } catch (error) {
       console.error('Failed to schedule notification:', error);
@@ -227,6 +252,13 @@ class NotificationService {
 
   async clearBadgeCount(): Promise<void> {
     await this.setBadgeCount(0);
+  }
+
+  cleanup(): void {
+    // Clean up any event listeners or subscriptions
+    messaging().onMessage(() => {});
+    messaging().setBackgroundMessageHandler(() => {});
+    notifee.onForegroundEvent(() => {});
   }
 }
 

@@ -1,3 +1,7 @@
+import { useTheme } from '../../theme/ThemeProvider';
+import { useAppNavigation } from '@hooks/useAppNavigation';
+import { useNetworkStatus } from '@hooks/useNetworkStatus';
+import auth from '@react-native-firebase/auth';
 import React from 'react';
 import {
   View,
@@ -6,57 +10,184 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import auth from '@react-native-firebase/auth';
 
 const ProfileScreen = () => {
   const user = auth().currentUser;
+  const { navigate } = useAppNavigation();
+  const { theme, toggleTheme, isHighContrast, toggleHighContrast } = useTheme();
+  const { isConnected } = useNetworkStatus();
 
   const handleLogout = async () => {
     try {
       await auth().signOut();
     } catch (error) {
       console.error(error);
+      Alert.alert('Error', 'Failed to logout. Please try again.');
     }
   };
 
+  const handleEditProfile = () => {
+    if (!isConnected) {
+      Alert.alert('No Connection', 'Please check your internet connection.');
+      return;
+    }
+    navigate('Settings', undefined);
+  };
+
+  const handlePrivacySettings = () => {
+    if (!isConnected) {
+      Alert.alert('No Connection', 'Please check your internet connection.');
+      return;
+    }
+    navigate('Settings', undefined);
+  };
+
+  const handleNotifications = () => {
+    if (!isConnected) {
+      Alert.alert('No Connection', 'Please check your internet connection.');
+      return;
+    }
+    navigate('Notifications', undefined);
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView>
-        <View style={styles.header}>
+        <View
+          style={[styles.header, { borderBottomColor: theme.colors.border }]}
+        >
           <Image
-            source={{ uri: user?.photoURL || 'https://via.placeholder.com/150' }}
+            source={{
+              uri: user?.photoURL || 'https://via.placeholder.com/150',
+            }}
             style={styles.avatar}
           />
-          <Text style={styles.name}>{user?.displayName || 'User'}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
+          <Text style={[styles.name, { color: theme.colors.text.primary }]}>
+            {user?.displayName || 'User'}
+          </Text>
+          <Text style={[styles.email, { color: theme.colors.text.secondary }]}>
+            {user?.email}
+          </Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Settings</Text>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Edit Profile</Text>
+        <View
+          style={[styles.section, { borderBottomColor: theme.colors.border }]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
+          >
+            Account Settings
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
+            onPress={handleEditProfile}
+            accessible={true}
+            accessibilityLabel='Edit Profile'
+            accessibilityHint='Edit your profile information'
+            accessibilityRole='button'
+          >
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
+              Edit Profile
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Privacy Settings</Text>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
+            onPress={handlePrivacySettings}
+            accessible={true}
+            accessibilityLabel='Privacy Settings'
+            accessibilityHint='Adjust your privacy preferences'
+            accessibilityRole='button'
+          >
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
+              Privacy Settings
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Notifications</Text>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
+            onPress={handleNotifications}
+            accessible={true}
+            accessibilityLabel='Notifications'
+            accessibilityHint='Manage notification preferences'
+            accessibilityRole='button'
+          >
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
+              Notifications
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Help Center</Text>
+        <View
+          style={[styles.section, { borderBottomColor: theme.colors.border }]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
+          >
+            Display Settings
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
+            onPress={toggleTheme}
+            accessible={true}
+            accessibilityLabel='Toggle Theme'
+            accessibilityHint='Switch between light and dark theme'
+            accessibilityRole='button'
+          >
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
+              Toggle Theme
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Contact Us</Text>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
+            onPress={toggleHighContrast}
+            accessible={true}
+            accessibilityLabel='High Contrast Mode'
+            accessibilityHint='Toggle high contrast mode for better visibility'
+            accessibilityRole='button'
+          >
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
+              {isHighContrast ? 'Disable' : 'Enable'} High Contrast
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          accessible={true}
+          accessibilityLabel='Logout'
+          accessibilityHint='Sign out of your account'
+          accessibilityRole='button'
+        >
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -67,7 +198,6 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     alignItems: 'center',

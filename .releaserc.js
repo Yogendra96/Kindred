@@ -9,7 +9,8 @@ module.exports = {
       '@semantic-release/git',
       {
         assets: ['CHANGELOG.md', 'package.json', 'app.json'],
-        message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
+        message:
+          'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
       },
     ],
     [
@@ -35,6 +36,8 @@ module.exports = {
   ],
   // Add new options
   tagFormat: 'v${version}',
-  successComment: '🎉 This ${issue.pull_request ? "PR is included" : "issue has been resolved"} in version ${nextRelease.version} :tada:',
-  failComment: '🚨 The ${issue.pull_request ? "PR" : "issue"} could not be released :rotating_light:',
+  successComment:
+    '🎉 This ${issue.pull_request ? "PR is included" : "issue has been resolved"} in version ${nextRelease.version} :tada:',
+  failComment:
+    '🚨 The ${issue.pull_request ? "PR" : "issue"} could not be released :rotating_light:',
 };

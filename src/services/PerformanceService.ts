@@ -1,5 +1,62 @@
-import perf, { FirebasePerformanceTypes } from '@react-native-firebase/perf';
-import { InteractionManager, Platform } from 'react-native';
+import React from 'react';
+
+// Global type declarations
+declare global {
+  var __DEV__: boolean;
+}
+
+// React Native module declaration
+declare module 'react-native' {
+  export interface InteractionManager {
+    runAfterInteractions(task: () => void): { cancel: () => void };
+  }
+  export const InteractionManager: InteractionManager;
+  export const Platform: {
+    OS: 'ios' | 'android' | 'web';
+    select: <T>(specifics: { ios?: T; android?: T; default?: T }) => T;
+  };
+}
+
+// Mock Firebase Performance for development
+interface MockTrace {
+  start(): void;
+  stop(): void;
+  putAttribute(name: string, value: string): void;
+  incrementMetric(name: string, value?: number): void;
+}
+
+interface MockHttpMetric {
+  start(): void;
+  stop(): void;
+  setHttpResponseCode(code: number): void;
+  setRequestPayloadSize(bytes: number): void;
+  setResponseContentType(contentType: string): void;
+  setResponsePayloadSize(bytes: number): void;
+  putAttribute(name: string, value: string): void;
+}
+
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+const mockPerf = {
+  setPerformanceCollectionEnabled: async (enabled: boolean) => {},
+  trace: (name: string): MockTrace => ({
+    start: () => {},
+    stop: () => {},
+    putAttribute: () => {},
+    incrementMetric: () => {},
+  }),
+  httpMetric: (url: string, method: HttpMethod): MockHttpMetric => ({
+    start: () => {},
+    stop: () => {},
+    setHttpResponseCode: () => {},
+    setRequestPayloadSize: () => {},
+    setResponseContentType: () => {},
+    setResponsePayloadSize: () => {},
+    putAttribute: () => {},
+  }),
+};
+
+const { InteractionManager, Platform } = require('react-native');
 
 interface TracingOptions {
   attributes?: Record<string, string>;
@@ -8,9 +65,11 @@ interface TracingOptions {
 
 class PerformanceService {
   private static instance: PerformanceService;
-  private static traces: Map<string, FirebasePerformanceTypes.Trace> = new Map();
-  private static httpMetrics: Map<string, FirebasePerformanceTypes.HttpMetric> = new Map();
+  private static traces: Map<string, MockTrace> = new Map();
+  private static httpMetrics: Map<string, MockHttpMetric> = new Map();
   private static isEnabled = true;
+  private traces: Map<string, MockTrace>;
+  private isEnabled: boolean;
 
   private constructor() {
     this.traces = new Map();
@@ -26,13 +85,16 @@ class PerformanceService {
 
   static async initialize(): Promise<void> {
     try {
-      await perf().setPerformanceCollectionEnabled(true);
+      await mockPerf.setPerformanceCollectionEnabled(true);
     } catch (error) {
       console.error('Failed to initialize performance monitoring:', error);
     }
   }
 
-  static async startTrace(traceName: string, options: TracingOptions = {}): Promise<void> {
+  static async startTrace(
+    traceName: string,
+    options: TracingOptions = {},
+  ): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -67,7 +129,7 @@ class PerformanceService {
   static async incrementMetric(
     traceName: string,
     metricName: string,
-    incrementBy: number = 1
+    incrementBy: number = 1,
   ): Promise<void> {
     if (!this.isEnabled) return;
 
@@ -81,7 +143,11 @@ class PerformanceService {
     }
   }
 
-  static async putMetric(traceName: string, metricName: string, value: number): Promise<void> {
+  static async putMetric(
+    traceName: string,
+    metricName: string,
+    value: number,
+  ): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -96,7 +162,7 @@ class PerformanceService {
 
   static async startNetworkMonitoring(
     url: string,
-    httpMethod: FirebasePerformanceTypes.HttpMethod
+    httpMethod: HttpMethod,
   ): Promise<string> {
     if (!this.isEnabled) return '';
 
@@ -118,7 +184,7 @@ class PerformanceService {
       responseCode?: number;
       responseSize?: number;
       contentType?: string;
-    }
+    },
   ): Promise<void> {
     if (!this.isEnabled) return;
 
@@ -129,7 +195,9 @@ class PerformanceService {
           metric.setHttpResponseCode(responseInfo.responseCode);
         }
         if (responseInfo?.responseSize) {
-          metric.setResponseContentType(responseInfo.contentType || 'application/json');
+          metric.setResponseContentType(
+            responseInfo.contentType || 'application/json',
+          );
           metric.setResponsePayloadSize(responseInfo.responseSize);
         }
         await metric.stop();
@@ -157,7 +225,7 @@ class PerformanceService {
 
   static async measureComponentRenderTime(
     componentName: string,
-    renderTime: number
+    renderTime: number,
   ): Promise<void> {
     const traceName = `component_render_${componentName}`;
     await this.startTrace(traceName, {
@@ -189,7 +257,10 @@ class PerformanceService {
     });
   }
 
-  async measureOperation(operationName: string, operation: () => Promise<any>): Promise<any> {
+  async measureOperation(
+    operationName: string,
+    operation: () => Promise<any>,
+  ): Promise<any> {
     const traceName = `operation_${operationName}`;
     await PerformanceService.startTrace(traceName);
 
@@ -212,7 +283,10 @@ class PerformanceService {
     }
   }
 
-  async measureNetworkRequest(requestName: string, request: () => Promise<any>): Promise<any> {
+  async measureNetworkRequest(
+    requestName: string,
+    request: () => Promise<any>,
+  ): Promise<any> {
     if (!this.isEnabled) return request();
 
     const trace = await perf().startTrace(`network_${requestName}`);

@@ -30,7 +30,7 @@ class CacheManager {
       if (!cached) return null;
 
       const entry: CacheEntry<T> = JSON.parse(cached);
-      
+
       // Check if cache has expired
       if (config.ttl && Date.now() - entry.timestamp > config.ttl) {
         await AsyncStorage.removeItem(config.key);
@@ -63,12 +63,12 @@ class CacheManager {
 
   static async getWithNetwork<T>(
     config: CacheConfig,
-    fetchData: () => Promise<T>
+    fetchData: () => Promise<T>,
   ): Promise<T | null> {
     try {
       // Check network status
       const networkState = await NetInfo.fetch();
-      
+
       if (networkState.isConnected) {
         // If online, fetch fresh data
         const data = await fetchData();

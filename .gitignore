@@ -184,7 +184,169 @@ src/**/*.d.ts.map
 .env.test.local
 .env.production.local
 
+# Cache directories
+.jest-cache/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# Temporary files
+temp.json
+*.tmp
+*.temp
+*.backup
+*.bak
+*.swp
+*.swo
+*~
+.#*
+#*#
+*.pid
+*.seed
+*.pid.lock
+package.json.backup
+*.orig
+
+# Package manager files
+.yarnrc.yml
+.pnp.*
+.yarn/install-state.gz
+bun.lockb
+yarn.lock
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+nyc_output/
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
 # Assets
 **/fastlane/screenshots/
 **/fastlane/builds/
 android/app/src/main/res/drawable-*/
+
+# AI/ML Models and Data
+models/
+*.model
+*.h5
+*.pb
+*.tflite
+*.onnx
+*.bin
+ai-cache/
+model-cache/
+tensorflow-cache/
+ml-data/
+training-data/
+*.weights
+
+# Security & Secrets
+*.key
+*.pem
+*.crt
+*.csr
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.asc
+secrets/
+credentials/
+auth/
+certificates/
+private-keys/
+api-keys/
+service-account-keys/
+*.service-account.json
+firebase-adminsdk-*.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.dump
+*.backup
+database/
+db-backup/
+migrations-backup/
+
+# Performance monitoring data
+performance-logs/
+analytics-data/
+crash-reports/
+*.crash
+*.dmp
+*.trace
+profiling-data/
+
+# IoT & Device Data
+device-data/
+iot-cache/
+sensor-data/
+automation-logs/
+device-logs/
+*.device-config
+
+# User Generated Content
+uploads/
+user-images/
+profile-pictures/
+temp-images/
+generated-images/
+cached-images/
+image-cache/
+
+# WebSocket & Real-time Data
+ws-logs/
+realtime-cache/
+socket-data/
+live-data/
+session-data/
+
+# Carbon tracking data
+carbon-data/
+footprint-history/
+calculation-cache/
+emission-data/
+
+# Financial & Marketplace Data
+payment-data/
+transaction-logs/
+marketplace-cache/
+billing-data/
+subscription-data/
+
+# Development & Debug
+debug-logs/
+dev-cache/
+test-cache/
+benchmark-results/
+*.benchmark
+performance-tests/
+
+# Storybook
+storybook-static/
+.storybook/dist/
+
+# Detox E2E
+e2e/artifacts/
+e2e/screenshots/
+e2e/videos/
+detox-*.log

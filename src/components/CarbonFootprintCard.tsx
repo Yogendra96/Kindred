@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { View, StyleSheet, Text, Dimensions } from 'react-native';
-import { PieChart } from 'react-native-chart-kit';
-import { useTheme } from '@theme/ThemeProvider';
 import { performanceService } from '@services/PerformanceService';
+import { useTheme } from '@theme/ThemeProvider';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, Text, Dimensions, Platform } from 'react-native';
+import { PieChart } from 'react-native-chart-kit';
 
 interface CarbonData {
   transport: number;
@@ -17,14 +17,18 @@ interface Props {
   onCategoryPress?: (category: keyof CarbonData) => void;
 }
 
-const CarbonFootprintCard: React.FC<Props> = ({ data, totalEmissions, onCategoryPress }) => {
+const CarbonFootprintCard: React.FC<Props> = ({
+  data,
+  totalEmissions,
+  onCategoryPress,
+}) => {
   const { theme, isDark } = useTheme();
   const screenWidth = Dimensions.get('window').width;
 
   // Memoize chart data to prevent unnecessary recalculations
   const chartData = useMemo(() => {
     performanceService.startTrace('prepare_chart_data');
-    
+
     const result = [
       {
         name: 'Transport',
@@ -73,9 +77,11 @@ const CarbonFootprintCard: React.FC<Props> = ({ data, totalEmissions, onCategory
       <Text style={[styles.title, { color: theme.colors.text.primary }]}>
         Carbon Footprint Overview
       </Text>
-      
+
       <View style={styles.summaryContainer}>
-        <Text style={[styles.totalEmissions, { color: theme.colors.text.primary }]}>
+        <Text
+          style={[styles.totalEmissions, { color: theme.colors.text.primary }]}
+        >
           {totalEmissions.toFixed(1)}
         </Text>
         <Text style={[styles.unit, { color: theme.colors.text.secondary }]}>
@@ -100,42 +106,57 @@ const CarbonFootprintCard: React.FC<Props> = ({ data, totalEmissions, onCategory
               borderRadius: 16,
             },
           }}
-          accessor="population"
-          backgroundColor="transparent"
-          paddingLeft="15"
+          accessor='population'
+          backgroundColor='transparent'
+          paddingLeft='15'
           absolute
         />
       </View>
 
       <View style={styles.breakdownContainer}>
         {Object.entries(data).map(([category, value]) => (
-          <View 
+          <View
             key={category}
             style={[
               styles.categoryItem,
-              { borderBottomColor: theme.colors.border }
+              { borderBottomColor: theme.colors.border },
             ]}
           >
             <View style={styles.categoryHeader}>
-              <View 
+              <View
                 style={[
                   styles.dot,
-                  { 
+                  {
                     backgroundColor: chartData.find(
-                      item => item.name.toLowerCase() === category
-                    )?.color 
-                  }
-                ]} 
+                      item => item.name.toLowerCase() === category,
+                    )?.color,
+                  },
+                ]}
               />
-              <Text style={[styles.categoryName, { color: theme.colors.text.primary }]}>
+              <Text
+                style={[
+                  styles.categoryName,
+                  { color: theme.colors.text.primary },
+                ]}
+              >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </Text>
             </View>
             <View style={styles.categoryValues}>
-              <Text style={[styles.categoryValue, { color: theme.colors.text.primary }]}>
+              <Text
+                style={[
+                  styles.categoryValue,
+                  { color: theme.colors.text.primary },
+                ]}
+              >
                 {value.toFixed(1)}t
               </Text>
-              <Text style={[styles.categoryPercentage, { color: theme.colors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.categoryPercentage,
+                  { color: theme.colors.text.secondary },
+                ]}
+              >
                 {((value / totalEmissions) * 100).toFixed(1)}%
               </Text>
             </View>

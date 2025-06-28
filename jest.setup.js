@@ -6,18 +6,24 @@ jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
 // Mock React Native
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');
-  RN.NativeModules.StatusBarManager = { getHeight: jest.fn(() => Promise.resolve(44)) };
-  RN.Platform.select = jest.fn(obj => obj.ios);
-  RN.Dimensions = {
-    ...RN.Dimensions,
-    get: jest.fn(() => ({ width: 375, height: 812 })),
+  RN.NativeModules.StatusBarManager = {
+    getHeight: jest.fn(() => Promise.resolve(44)),
   };
+  RN.Platform.select = jest.fn(obj => obj.ios);
+  Object.defineProperty(RN, 'Dimensions', {
+    value: {
+      ...RN.Dimensions,
+      get: jest.fn(() => ({ width: 375, height: 812 })),
+    },
+    writable: true,
+    configurable: true,
+  });
   return RN;
 });
 
@@ -86,7 +92,7 @@ jest.mock('@react-native-community/geolocation', () => ({
         speed: 0,
       },
       timestamp: 1234567890,
-    })
+    }),
   ),
   watchPosition: jest.fn(),
   clearWatch: jest.fn(),
@@ -101,7 +107,7 @@ jest.mock('@react-native-community/netinfo', () => ({
       isConnected: true,
       isInternetReachable: true,
       type: 'wifi',
-    })
+    }),
   ),
 }));
 

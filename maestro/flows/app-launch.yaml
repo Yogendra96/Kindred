@@ -1,0 +1,142 @@
+# App Launch Flow
+appId: com.kindred.app
+---
+
+# Test: App Launch and Initial Load
+- launchApp:
+    clearState: true
+    permissions:
+      camera: allow
+      location: allow
+      notifications: allow
+      photos: allow
+
+# Wait for app to load
+- assertVisible:
+    id: "app-container"
+    timeout: 10000
+
+# Check if splash screen appears and disappears
+- runFlow:
+    when:
+      visible: "splash-screen"
+    commands:
+      - assertVisible: "splash-screen"
+      - assertNotVisible:
+          id: "splash-screen"
+          timeout: 5000
+
+# Check initial screen (login or home)
+- runFlow:
+    when:
+      visible: "login-screen"
+    commands:
+      - assertVisible: "login-screen"
+      - assertVisible: "email-input"
+      - assertVisible: "password-input"
+      - assertVisible: "login-button"
+      - assertVisible: "signup-link"
+
+- runFlow:
+    when:
+      visible: "home-screen"
+    commands:
+      - assertVisible: "home-screen"
+      - assertVisible: "bottom-navigation"
+      - assertVisible: "home-tab"
+      - assertVisible: "carbon-tab"
+      - assertVisible: "social-tab"
+      - assertVisible: "achievements-tab"
+      - assertVisible: "profile-tab"
+
+# Test app performance
+- startTimer: "app-launch-time"
+- launchApp:
+    clearState: false
+- assertVisible:
+    id: "app-container"
+    timeout: 5000
+- stopTimer: "app-launch-time"
+- assertTimer:
+    name: "app-launch-time"
+    lessThan: 3000
+
+# Test memory usage
+- assertMemoryUsage:
+    lessThan: "200MB"
+
+# Test CPU usage
+- assertCPUUsage:
+    lessThan: "50%"
+
+# Test network connectivity
+- setNetworkCondition: "wifi"
+- assertVisible: "app-container"
+
+# Test offline mode
+- setNetworkCondition: "none"
+- wait: 2000
+- runFlow:
+    when:
+      visible: "offline-indicator"
+    commands:
+      - assertVisible: "offline-indicator"
+      - assertText:
+          id: "offline-message"
+          text: "You're offline"
+
+# Restore network
+- setNetworkCondition: "wifi"
+- wait: 2000
+- assertNotVisible:
+    id: "offline-indicator"
+    timeout: 5000
+
+# Test app backgrounding and foregrounding
+- sendToBackground
+- wait: 3000
+- bringToForeground
+- assertVisible:
+    id: "app-container"
+    timeout: 5000
+
+# Test device orientation
+- setOrientation: "landscape"
+- assertVisible: "app-container"
+- setOrientation: "portrait"
+- assertVisible: "app-container"
+
+# Test accessibility
+- assertAccessible:
+    id: "app-container"
+- assertAccessibilityLabel:
+    id: "home-tab"
+    text: "Home"
+
+# Test deep link handling
+- openURL: "kindred://home"
+- assertVisible:
+    id: "home-screen"
+    timeout: 5000
+
+# Test push notification handling
+- sendPushNotification:
+    title: "Test Notification"
+    body: "This is a test notification"
+    payload:
+      screen: "home"
+- wait: 2000
+- assertVisible: "home-screen"
+
+# Test app termination
+- terminateApp
+- wait: 1000
+- launchApp
+- assertVisible:
+    id: "app-container"
+    timeout: 10000
+
+# Final assertions
+- assertNoErrors
+- assertNoMemoryLeaks
+- assertNoPerformanceIssues

@@ -1,13 +1,21 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Alert, ActivityIndicator } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Geolocation from '@react-native-community/geolocation';
-import firestore from '@react-native-firebase/firestore';
-import { useDispatch } from 'react-redux';
 import { updateFootprint } from '../../store/slices/carbonSlice';
 import { saveActivityData } from '../../utils/carbonCalculator';
+import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
+import firestore from '@react-native-firebase/firestore';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Text,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 
 interface EcoLocation {
   id: string;
@@ -44,7 +52,7 @@ const MapScreen = () => {
   }>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const watchIdRef = useRef<number | null>(null);
   const mapRef = useRef<MapView | null>(null);
   const dispatch = useDispatch();
@@ -91,7 +99,7 @@ const MapScreen = () => {
   };
 
   const fetchEcoLocations = async () => {
-    if (!await checkConnectivity()) return;
+    if (!(await checkConnectivity())) return;
 
     try {
       const snapshot = await firestore()
@@ -104,7 +112,7 @@ const MapScreen = () => {
         id: doc.id,
         ...doc.data(),
       })) as EcoLocation[];
-      
+
       setEcoLocations(locations);
     } catch (error) {
       console.error('Error fetching eco locations:', error);
@@ -124,7 +132,7 @@ const MapScreen = () => {
           latitude,
           longitude,
         }));
-        
+
         // Animate map to user location
         mapRef.current?.animateToRegion({
           latitude,
@@ -139,11 +147,11 @@ const MapScreen = () => {
         console.error(error);
         setError('Unable to get current location');
       },
-      { 
-        enableHighAccuracy: true, 
-        timeout: LOCATION_TIMEOUT, 
-        maximumAge: LOCATION_MAX_AGE 
-      }
+      {
+        enableHighAccuracy: true,
+        timeout: LOCATION_TIMEOUT,
+        maximumAge: LOCATION_MAX_AGE,
+      },
     );
   }, [region.latitudeDelta, region.longitudeDelta]);
 
@@ -170,7 +178,7 @@ const MapScreen = () => {
         enableHighAccuracy: true,
         distanceFilter: 10, // Update every 10 meters
         interval: LOCATION_UPDATE_INTERVAL,
-      }
+      },
     );
   }, [userLocation]);
 
@@ -187,7 +195,7 @@ const MapScreen = () => {
       startLocation.latitude,
       startLocation.longitude,
       userLocation.latitude,
-      userLocation.longitude
+      userLocation.longitude,
     );
 
     try {
@@ -203,7 +211,9 @@ const MapScreen = () => {
 
       Alert.alert(
         'Journey Complete',
-        `Distance: ${distance.toFixed(2)} miles\nCarbon Impact: ${transportImpact.toFixed(2)} kg CO2`
+        `Distance: ${distance.toFixed(
+          2,
+        )} miles\nCarbon Impact: ${transportImpact.toFixed(2)} kg CO2`,
       );
     } catch (err) {
       console.error('Error saving journey:', err);
@@ -214,14 +224,21 @@ const MapScreen = () => {
     }
   }, [startLocation, userLocation, dispatch]);
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ) => {
     const R = 6371; // Earth's radius in km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c; // Distance in km
     return d * 0.621371; // Convert to miles
@@ -234,7 +251,7 @@ const MapScreen = () => {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size='large' color='#007AFF' />
       </View>
     );
   }
@@ -252,15 +269,18 @@ const MapScreen = () => {
         showsCompass
         showsScale
       >
-        {ecoLocations.map((location) => (
+        {ecoLocations.map(location => (
           <Marker
             key={location.id}
             coordinate={location.coordinate}
             title={location.name}
             description={location.description}
             pinColor={
-              location.type === 'recycling' ? 'green' :
-              location.type === 'charging' ? 'blue' : 'red'
+              location.type === 'recycling'
+                ? 'green'
+                : location.type === 'charging'
+                ? 'blue'
+                : 'red'
             }
           />
         ))}

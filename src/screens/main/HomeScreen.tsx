@@ -1,22 +1,30 @@
-import React, { useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { 
-  updateFootprint, 
-  setFootprintLoading, 
+import ActivityTracker from '../../components/ActivityTracker';
+import CarbonFootprintCard from '../../components/CarbonFootprintCard';
+import EcoTips from '../../components/EcoTips';
+import type { RootState } from '../../store';
+import {
+  updateFootprint,
+  setFootprintLoading,
   setHistoryLoading,
   setHistory,
-  setError 
+  setError,
 } from '../../store/slices/carbonSlice';
-import CarbonFootprintCard from '../../components/CarbonFootprintCard';
-import ActivityTracker from '../../components/ActivityTracker';
-import EcoTips from '../../components/EcoTips';
-import { calculateCarbonFootprint } from '../../utils/carbonCalculator';
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
 import CacheManager from '../../utils/cacheManager';
+import { calculateCarbonFootprint } from '../../utils/carbonCalculator';
 import NetInfo from '@react-native-community/netinfo';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import React, { useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
+  Alert,
+} from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 const FOOTPRINT_CACHE_KEY = 'carbon_footprint';
 const HISTORY_CACHE_KEY = 'footprint_history';
@@ -24,7 +32,9 @@ const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  const { footprint, goals, history, loading, error } = useSelector((state: RootState) => state.carbon);
+  const { footprint, goals, history, loading, error } = useSelector(
+    (state: RootState) => state.carbon,
+  );
   const [refreshing, setRefreshing] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(true);
 
@@ -34,63 +44,76 @@ const HomeScreen = () => {
     return networkState.isConnected;
   }, []);
 
-  const fetchData = useCallback(async (forceFetch = false) => {
-    const user = auth().currentUser;
-    if (!user) return;
+  const fetchData = useCallback(
+    async (forceFetch = false) => {
+      const user = auth().currentUser;
+      if (!user) return;
 
-    try {
-      // Fetch current footprint
-      dispatch(setFootprintLoading(true));
-      
-      const footprintData = await CacheManager.getWithNetwork({
-        key: FOOTPRINT_CACHE_KEY,
-        ttl: forceFetch ? 0 : CACHE_TTL
-      }, calculateCarbonFootprint);
+      try {
+        // Fetch current footprint
+        dispatch(setFootprintLoading(true));
 
-      if (footprintData) {
-        dispatch(updateFootprint(footprintData));
+        const footprintData = await CacheManager.getWithNetwork(
+          {
+            key: FOOTPRINT_CACHE_KEY,
+            ttl: forceFetch ? 0 : CACHE_TTL,
+          },
+          calculateCarbonFootprint,
+        );
+
+        if (footprintData) {
+          dispatch(updateFootprint(footprintData));
+        }
+
+        // Fetch historical data
+        dispatch(setHistoryLoading(true));
+
+        const fetchHistory = async () => {
+          const historySnapshot = await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .collection('footprint_history')
+            .orderBy('date', 'desc')
+            .limit(7)
+            .get();
+
+          return historySnapshot.docs.map(doc => ({
+            date: doc.id,
+            ...doc.data(),
+          }));
+        };
+
+        const historyData = await CacheManager.getWithNetwork(
+          {
+            key: HISTORY_CACHE_KEY,
+            ttl: forceFetch ? 0 : CACHE_TTL,
+          },
+          fetchHistory,
+        );
+
+        if (historyData) {
+          dispatch(setHistory(historyData));
+        }
+
+        dispatch(setError(null));
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error occurred';
+        dispatch(setError(errorMessage));
+
+        if (await checkConnectivity()) {
+          Alert.alert(
+            'Error',
+            'Failed to update data. Please try again later.',
+          );
+        }
+      } finally {
+        dispatch(setFootprintLoading(false));
+        dispatch(setHistoryLoading(false));
       }
-
-      // Fetch historical data
-      dispatch(setHistoryLoading(true));
-      
-      const fetchHistory = async () => {
-        const historySnapshot = await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('footprint_history')
-          .orderBy('date', 'desc')
-          .limit(7)
-          .get();
-
-        return historySnapshot.docs.map(doc => ({
-          date: doc.id,
-          ...doc.data()
-        }));
-      };
-
-      const historyData = await CacheManager.getWithNetwork({
-        key: HISTORY_CACHE_KEY,
-        ttl: forceFetch ? 0 : CACHE_TTL
-      }, fetchHistory);
-
-      if (historyData) {
-        dispatch(setHistory(historyData));
-      }
-
-      dispatch(setError(null));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      dispatch(setError(errorMessage));
-      
-      if (await checkConnectivity()) {
-        Alert.alert('Error', 'Failed to update data. Please try again later.');
-      }
-    } finally {
-      dispatch(setFootprintLoading(false));
-      dispatch(setHistoryLoading(false));
-    }
-  }, [dispatch, checkConnectivity]);
+    },
+    [dispatch, checkConnectivity],
+  );
 
   useEffect(() => {
     fetchData();
@@ -104,12 +127,12 @@ const HomeScreen = () => {
 
     const user = auth().currentUser;
     if (!user) return;
-    
+
     // Set up real-time listener for footprint updates
     const unsubscribeFirestore = firestore()
       .collection('user_activities')
       .doc(user.uid)
-      .onSnapshot(async (doc) => {
+      .onSnapshot(async doc => {
         if (isOnline) {
           try {
             const newFootprint = await calculateCarbonFootprint();
@@ -136,13 +159,13 @@ const HomeScreen = () => {
   if (loading.footprint && loading.history) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2ecc71" />
+        <ActivityIndicator size='large' color='#2ecc71' />
       </View>
     );
   }
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -150,12 +173,16 @@ const HomeScreen = () => {
     >
       <View style={styles.header}>
         <Text style={styles.title}>Your Carbon Impact</Text>
-        <Text style={styles.subtitle}>Track and reduce your environmental footprint</Text>
+        <Text style={styles.subtitle}>
+          Track and reduce your environmental footprint
+        </Text>
       </View>
 
       {!isOnline && (
         <View style={styles.offlineContainer}>
-          <Text style={styles.offlineText}>You're offline - viewing cached data</Text>
+          <Text style={styles.offlineText}>
+            You're offline - viewing cached data
+          </Text>
         </View>
       )}
 

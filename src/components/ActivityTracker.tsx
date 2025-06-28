@@ -1,26 +1,26 @@
+import { updateFootprint } from '../store/slices/carbonSlice';
+import { useTheme } from '../theme/ThemeProvider';
+import { saveActivityData } from '../utils/carbonCalculator';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+// import DateTimePicker from '@react-native-community/datetimepicker';
+import NetInfo from '@react-native-community/netinfo';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { format, subDays, eachDayOfInterval, isWithinInterval } from 'date-fns';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   Dimensions,
-  Platform
+  Platform,
 } from 'react-native';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { Ionicons } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateFootprint } from '../store/slices/carbonSlice';
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { saveActivityData } from '../utils/carbonCalculator';
-import NetInfo from '@react-native-community/netinfo';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { format, subDays, eachDayOfInterval, isWithinInterval } from 'date-fns';
-import { useTheme } from '../theme/ThemeProvider';
+import { useDispatch } from 'react-redux';
 
 interface Activity {
   id: string;
@@ -55,32 +55,39 @@ const ActivityTracker: React.FC = () => {
   const [isOnline, setIsOnline] = useState(true);
   const [dateRange, setDateRange] = useState({
     start: subDays(new Date(), 30),
-    end: new Date()
+    end: new Date(),
   });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
+
   const dispatch = useDispatch();
 
   // Calculate activity summary metrics
   const summary = useMemo((): ActivitySummary => {
-    const filteredActivities = activities.filter(activity => 
-      isWithinInterval(new Date(activity.timestamp), dateRange) &&
-      (!selectedCategory || activity.type === selectedCategory)
+    const filteredActivities = activities.filter(
+      activity =>
+        isWithinInterval(new Date(activity.timestamp), dateRange) &&
+        (!selectedCategory || activity.type === selectedCategory),
     );
 
     return {
-      totalPoints: filteredActivities.reduce((sum, activity) => 
-        sum + (activity.completed ? activity.points : 0), 0
+      totalPoints: filteredActivities.reduce(
+        (sum, activity) => sum + (activity.completed ? activity.points : 0),
+        0,
       ),
       completedActivities: filteredActivities.filter(a => a.completed).length,
-      carbonSaved: filteredActivities.reduce((sum, activity) => 
-        sum + (activity.completed ? activity.impact : 0), 0
+      carbonSaved: filteredActivities.reduce(
+        (sum, activity) => sum + (activity.completed ? activity.impact : 0),
+        0,
       ),
       streakDays: calculateStreak(filteredActivities),
-      categoryBreakdown: filteredActivities.reduce((acc, activity) => ({
-        ...acc,
-        [activity.type]: (acc[activity.type] || 0) + (activity.completed ? 1 : 0)
-      }), {})
+      categoryBreakdown: filteredActivities.reduce(
+        (acc, activity) => ({
+          ...acc,
+          [activity.type]:
+            (acc[activity.type] || 0) + (activity.completed ? 1 : 0),
+        }),
+        {},
+      ),
     };
   }, [activities, dateRange, selectedCategory]);
 
@@ -88,25 +95,32 @@ const ActivityTracker: React.FC = () => {
   const chartData = useMemo(() => {
     const dates = eachDayOfInterval(dateRange);
     const data = dates.map(date => {
-      const dayActivities = activities.filter(activity => 
-        format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') &&
-        activity.completed &&
-        (!selectedCategory || activity.type === selectedCategory)
+      const dayActivities = activities.filter(
+        activity =>
+          format(new Date(activity.timestamp), 'yyyy-MM-dd') ===
+            format(date, 'yyyy-MM-dd') &&
+          activity.completed &&
+          (!selectedCategory || activity.type === selectedCategory),
       );
 
       return {
         date: format(date, 'MMM dd'),
-        impact: dayActivities.reduce((sum, activity) => sum + activity.impact, 0)
+        impact: dayActivities.reduce(
+          (sum, activity) => sum + activity.impact,
+          0,
+        ),
       };
     });
 
     return {
       labels: data.map(d => d.date),
-      datasets: [{
-        data: data.map(d => d.impact),
-        color: (opacity = 1) => theme.colors.primary,
-        strokeWidth: 2
-      }]
+      datasets: [
+        {
+          data: data.map(d => d.impact),
+          color: (opacity = 1) => theme.colors.primary,
+          strokeWidth: 2,
+        },
+      ],
     };
   }, [activities, dateRange, selectedCategory, theme]);
 
@@ -178,24 +192,35 @@ const ActivityTracker: React.FC = () => {
     }
   };
 
-  const handleActivityCompletion = async (activity: Activity, isSync = false) => {
+  const handleActivityCompletion = async (
+    activity: Activity,
+    isSync = false,
+  ) => {
     const user = auth().currentUser;
     if (!user) return;
 
     try {
-      const updatedActivities = activities.map((a) =>
-        a.id === activity.id ? { ...a, completed: !a.completed } : a
+      const updatedActivities = activities.map(a =>
+        a.id === activity.id ? { ...a, completed: !a.completed } : a,
       );
 
       if (!isOnline && !isSync) {
         // Store action for later sync
-        const offlineActions = JSON.parse(await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY) || '[]');
+        const offlineActions = JSON.parse(
+          (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) || '[]',
+        );
         offlineActions.push({ activity, timestamp: Date.now() });
-        await AsyncStorage.setItem(OFFLINE_ACTIONS_KEY, JSON.stringify(offlineActions));
-        
+        await AsyncStorage.setItem(
+          OFFLINE_ACTIONS_KEY,
+          JSON.stringify(offlineActions),
+        );
+
         // Update local state
         setActivities(updatedActivities);
-        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
+        await AsyncStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(updatedActivities),
+        );
         return;
       }
 
@@ -208,7 +233,7 @@ const ActivityTracker: React.FC = () => {
       // Update carbon footprint if completing activity
       if (!activity.completed) {
         const impactData = {
-          [activity.type]: activity.impact
+          [activity.type]: activity.impact,
         };
         await saveActivityData(impactData);
         dispatch(updateFootprint({ [activity.type]: activity.impact }));
@@ -226,15 +251,16 @@ const ActivityTracker: React.FC = () => {
   const calculateStreak = (filteredActivities: Activity[]): number => {
     let streak = 0;
     let currentDate = new Date();
-    
+
     while (true) {
-      const hasActivities = filteredActivities.some(activity => 
-        format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd') &&
-        activity.completed
+      const hasActivities = filteredActivities.some(
+        activity =>
+          format(new Date(activity.timestamp), 'yyyy-MM-dd') ===
+            format(currentDate, 'yyyy-MM-dd') && activity.completed,
       );
 
       if (!hasActivities) break;
-      
+
       streak++;
       currentDate = subDays(currentDate, 1);
     }
@@ -242,35 +268,42 @@ const ActivityTracker: React.FC = () => {
     return streak;
   };
 
-  const renderActivity = useCallback(({ item: activity }: { item: Activity }) => (
-    <TouchableOpacity
-      style={[
-        styles.activityCard,
-        activity.completed && styles.completedCard,
-      ]}
-      onPress={() => handleActivityCompletion(activity)}
-      disabled={loading}
-    >
-      <View style={styles.activityHeader}>
-        <Text style={styles.activityTitle}>{activity.title}</Text>
-        <Text style={styles.points}>+{activity.points} pts</Text>
-      </View>
-      <Text style={styles.activityDescription}>{activity.description}</Text>
-      <View style={styles.activityFooter}>
-        <TouchableOpacity 
-          style={styles.checkButton}
-          onPress={() => handleActivityCompletion(activity)}
-          disabled={loading}
-        >
-          <Ionicons
-            name={activity.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
-            size={24}
-            color={activity.completed ? '#2ecc71' : '#666'}
-          />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  ), [loading]);
+  const renderActivity = useCallback(
+    ({ item: activity }: { item: Activity }) => (
+      <TouchableOpacity
+        style={[
+          styles.activityCard,
+          activity.completed && styles.completedCard,
+        ]}
+        onPress={() => handleActivityCompletion(activity)}
+        disabled={loading}
+      >
+        <View style={styles.activityHeader}>
+          <Text style={styles.activityTitle}>{activity.title}</Text>
+          <Text style={styles.points}>+{activity.points} pts</Text>
+        </View>
+        <Text style={styles.activityDescription}>{activity.description}</Text>
+        <View style={styles.activityFooter}>
+          <TouchableOpacity
+            style={styles.checkButton}
+            onPress={() => handleActivityCompletion(activity)}
+            disabled={loading}
+          >
+            <Ionicons
+              name={
+                activity.completed
+                  ? 'checkmark-circle'
+                  : 'checkmark-circle-outline'
+              }
+              size={24}
+              color={activity.completed ? '#2ecc71' : '#666'}
+            />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    ),
+    [loading],
+  );
 
   const renderSummaryCard = () => (
     <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
@@ -282,7 +315,12 @@ const ActivityTracker: React.FC = () => {
           <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>
             {summary.totalPoints}
           </Text>
-          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: theme.colors.text.secondary },
+            ]}
+          >
             Total Points
           </Text>
         </View>
@@ -290,7 +328,12 @@ const ActivityTracker: React.FC = () => {
           <Text style={[styles.summaryValue, { color: theme.colors.success }]}>
             {summary.carbonSaved.toFixed(1)}t
           </Text>
-          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: theme.colors.text.secondary },
+            ]}
+          >
             CO₂ Saved
           </Text>
         </View>
@@ -298,7 +341,12 @@ const ActivityTracker: React.FC = () => {
           <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>
             {summary.streakDays}
           </Text>
-          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: theme.colors.text.secondary },
+            ]}
+          >
             Day Streak
           </Text>
         </View>
@@ -323,13 +371,13 @@ const ActivityTracker: React.FC = () => {
             color: (opacity = 1) => theme.colors.primary,
             labelColor: (opacity = 1) => theme.colors.text.primary,
             style: {
-              borderRadius: 16
+              borderRadius: 16,
             },
             propsForDots: {
-              r: "6",
-              strokeWidth: "2",
-              stroke: theme.colors.primary
-            }
+              r: '6',
+              strokeWidth: '2',
+              stroke: theme.colors.primary,
+            },
           }}
           bezier
           style={styles.chart}
@@ -346,9 +394,11 @@ const ActivityTracker: React.FC = () => {
       <BarChart
         data={{
           labels: Object.keys(summary.categoryBreakdown),
-          datasets: [{
-            data: Object.values(summary.categoryBreakdown)
-          }]
+          datasets: [
+            {
+              data: Object.values(summary.categoryBreakdown),
+            },
+          ],
         }}
         width={screenWidth - 40}
         height={220}
@@ -367,8 +417,13 @@ const ActivityTracker: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.surface }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
+        <ActivityIndicator size='large' color={theme.colors.primary} />
       </View>
     );
   }
@@ -387,11 +442,11 @@ const ActivityTracker: React.FC = () => {
           </Text>
         </View>
       )}
-      
+
       {renderSummaryCard()}
       {renderCharts()}
       {renderCategoryBreakdown()}
-      
+
       <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
           Recent Activities
@@ -399,7 +454,7 @@ const ActivityTracker: React.FC = () => {
         <FlatList
           data={activities}
           renderItem={renderActivity}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.activitiesContainer}
         />

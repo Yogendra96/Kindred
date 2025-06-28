@@ -1,9 +1,16 @@
-import { useNavigation, useRoute, NavigationProp, RouteProp } from '@react-navigation/native';
-import { RootStackParamList, AuthStackParamList, MainStackParamList } from '@navigation/types';
+import type { NavigationProp, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type {
+  RootStackParamList,
+  AuthStackParamList,
+  MainStackParamList,
+} from '@navigation/types';
 import analytics from '@react-native-firebase/analytics';
 import { performanceService } from '@services/PerformanceService';
 
-type NavigationParams = RootStackParamList & AuthStackParamList & MainStackParamList;
+type NavigationParams = RootStackParamList &
+  AuthStackParamList &
+  MainStackParamList;
 
 export function useAppNavigation() {
   const navigation = useNavigation<NavigationProp<NavigationParams>>();
@@ -11,7 +18,7 @@ export function useAppNavigation() {
 
   const navigate = async <T extends keyof NavigationParams>(
     screen: T,
-    params?: NavigationParams[T]
+    params?: NavigationParams[T],
   ) => {
     try {
       // Start performance tracking
@@ -36,7 +43,7 @@ export function useAppNavigation() {
   const goBack = async () => {
     try {
       const currentRoute = route.name;
-      
+
       // Track back navigation
       await analytics().logEvent('screen_exit', {
         screen_name: currentRoute,
@@ -51,7 +58,7 @@ export function useAppNavigation() {
 
   const reset = async <T extends keyof NavigationParams>(
     screen: T,
-    params?: NavigationParams[T]
+    params?: NavigationParams[T],
   ) => {
     try {
       // Track navigation reset
@@ -70,7 +77,7 @@ export function useAppNavigation() {
 
   const replace = async <T extends keyof NavigationParams>(
     screen: T,
-    params?: NavigationParams[T]
+    params?: NavigationParams[T],
   ) => {
     try {
       const currentRoute = route.name;

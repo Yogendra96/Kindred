@@ -1,12 +1,11 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Icon from 'react-native-vector-icons/Ionicons';
-
 // Import screens (we'll create these next)
 import HomeScreen from '../screens/main/HomeScreen';
-import ProfileScreen from '../screens/main/ProfileScreen';
 import MapScreen from '../screens/main/MapScreen';
+import ProfileScreen from '../screens/main/ProfileScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -32,9 +31,9 @@ const MainTabs = () => {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name='Home' component={HomeScreen} />
+      <Tab.Screen name='Map' component={MapScreen} />
+      <Tab.Screen name='Profile' component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
@@ -46,7 +45,7 @@ const AppNavigator = () => {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name='MainTabs' component={MainTabs} />
     </Stack.Navigator>
   );
 };

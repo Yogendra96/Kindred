@@ -1,0 +1,205 @@
+# Maestro Configuration
+appId: com.kindred.app
+platform: both # ios, android, or both
+
+# Test execution settings
+execution:
+  timeout: 120000 # 2 minutes
+  retries: 2
+  parallel: false
+  continueOnFailure: false
+
+# Device settings
+device:
+  ios:
+    simulator: "iPhone 14 Pro"
+    version: "16.0"
+  android:
+    emulator: "Pixel_4_API_30"
+    version: "11"
+
+# Environment variables
+env:
+  TEST_EMAIL: "test@example.com"
+  TEST_PASSWORD: "password123"
+  API_BASE_URL: "https://api.kindred.app"
+  TEST_TIMEOUT: "30000"
+
+# Global settings
+global:
+  screenshotOnFailure: true
+  videoRecording: true
+  logLevel: "info"
+  waitTimeout: 10000
+
+# Test data
+testData:
+  users:
+    testUser:
+      email: "test@example.com"
+      password: "password123"
+      name: "Test User"
+    adminUser:
+      email: "admin@example.com"
+      password: "admin123"
+      name: "Admin User"
+  
+  activities:
+    walking:
+      type: "walking"
+      distance: "5"
+      duration: "30"
+    cycling:
+      type: "cycling"
+      distance: "10"
+      duration: "25"
+    driving:
+      type: "driving"
+      distance: "20"
+      duration: "15"
+
+# Custom commands
+commands:
+  login:
+    - tapOn: "email-input"
+    - inputText: "${TEST_EMAIL}"
+    - tapOn: "password-input"
+    - inputText: "${TEST_PASSWORD}"
+    - tapOn: "login-button"
+    - assertVisible: "home-screen"
+  
+  logout:
+    - tapOn: "profile-tab"
+    - assertVisible: "profile-screen"
+    - tapOn: "logout-button"
+    - tapOn: "confirm-logout"
+    - assertVisible: "login-screen"
+  
+  addActivity:
+    - tapOn: "carbon-tab"
+    - assertVisible: "carbon-screen"
+    - tapOn: "add-activity-button"
+    - assertVisible: "add-activity-screen"
+    - tapOn: "activity-type-picker"
+    - tapOn: "${activityType}"
+    - tapOn: "distance-input"
+    - inputText: "${distance}"
+    - tapOn: "save-activity-button"
+    - assertVisible: "carbon-screen"
+
+# Reporting
+reporting:
+  format: ["html", "json", "junit"]
+  outputDir: "maestro/reports"
+  includeScreenshots: true
+  includeVideos: true
+  includeDeviceLogs: true
+
+# Performance monitoring
+performance:
+  enabled: true
+  metrics:
+    - "appLaunchTime"
+    - "screenTransitionTime"
+    - "apiResponseTime"
+    - "memoryUsage"
+    - "cpuUsage"
+  thresholds:
+    appLaunchTime: 5000
+    screenTransitionTime: 1000
+    apiResponseTime: 3000
+
+# Accessibility testing
+accessibility:
+  enabled: true
+  checks:
+    - "hasAccessibilityLabel"
+    - "hasAccessibilityHint"
+    - "minimumTouchTargetSize"
+    - "colorContrast"
+
+# Network simulation
+network:
+  conditions:
+    slow3G:
+      downloadSpeed: "400kb/s"
+      uploadSpeed: "400kb/s"
+      latency: "400ms"
+    fast3G:
+      downloadSpeed: "1.6mb/s"
+      uploadSpeed: "768kb/s"
+      latency: "150ms"
+    wifi:
+      downloadSpeed: "30mb/s"
+      uploadSpeed: "15mb/s"
+      latency: "40ms"
+
+# Test hooks
+hooks:
+  beforeAll:
+    - clearAppData: true
+    - grantPermissions:
+        - "camera"
+        - "location"
+        - "notifications"
+        - "photos"
+  
+  beforeEach:
+    - launchApp:
+        clearState: false
+        permissions:
+          camera: "allow"
+          location: "allow"
+          notifications: "allow"
+  
+  afterEach:
+    - takeScreenshot: "test-end"
+  
+  afterAll:
+    - terminateApp: true
+
+# Custom assertions
+assertions:
+  carbonFootprintReduced:
+    description: "Assert that carbon footprint has been reduced"
+    condition: "element('carbon-footprint').text < previousValue"
+  
+  achievementUnlocked:
+    description: "Assert that an achievement has been unlocked"
+    condition: "element('achievement-notification').isVisible"
+  
+  dataSync:
+    description: "Assert that data has been synced"
+    condition: "element('sync-indicator').text == 'Synced'"
+
+# Test suites
+suites:
+  smoke:
+    description: "Basic smoke tests"
+    flows:
+      - "app-launch"
+      - "login"
+      - "navigation"
+  
+  regression:
+    description: "Full regression test suite"
+    flows:
+      - "authentication"
+      - "carbon-tracking"
+      - "social-features"
+      - "achievements"
+      - "barcode-scanner"
+  
+  performance:
+    description: "Performance test suite"
+    flows:
+      - "app-launch-performance"
+      - "navigation-performance"
+      - "data-loading-performance"
+  
+  accessibility:
+    description: "Accessibility test suite"
+    flows:
+      - "navigation-accessibility"
+      - "form-accessibility"
+      - "content-accessibility"

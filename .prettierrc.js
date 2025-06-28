@@ -1,35 +1,103 @@
-export default {
-  arrowParens: 'always',
-  bracketSameLine: false,
-  bracketSpacing: true,
-  singleQuote: true,
-  trailingComma: 'all',
+module.exports = {
+  // Basic formatting
   semi: true,
-  printWidth: 100,
+  singleQuote: true,
+  quoteProps: 'as-needed',
+  trailingComma: 'all',
   tabWidth: 2,
   useTabs: false,
+  printWidth: 80,
+
+  // JSX formatting
+  jsxSingleQuote: true,
+  jsxBracketSameLine: false,
+
+  // Object and array formatting
+  bracketSpacing: true,
+  bracketSameLine: false,
+
+  // Arrow function formatting
+  arrowParens: 'avoid',
+
+  // Line endings
   endOfLine: 'lf',
-  quoteProps: 'consistent',
+
+  // Embedded language formatting
   embeddedLanguageFormatting: 'auto',
-  singleAttributePerLine: true,
-  importOrder: [
-    '^react$',
-    '^react-native$',
-    '<THIRD_PARTY_MODULES>',
-    '^@/(.*)$',
-    '^@components/(.*)$',
-    '^@screens/(.*)$',
-    '^@navigation/(.*)$',
-    '^@store/(.*)$',
-    '^@services/(.*)$',
-    '^@utils/(.*)$',
-    '^@constants/(.*)$',
-    '^@hooks/(.*)$',
-    '^@assets/(.*)$',
-    '^@types/(.*)$',
-    '^[./]',
+
+  // HTML formatting
+  htmlWhitespaceSensitivity: 'css',
+
+  // Prose formatting
+  proseWrap: 'preserve',
+
+  // Range formatting
+  rangeStart: 0,
+  rangeEnd: Infinity,
+
+  // Parser options
+  requirePragma: false,
+  insertPragma: false,
+
+  // Vue formatting
+  vueIndentScriptAndStyle: false,
+
+  // Plugin overrides
+  overrides: [
+    {
+      files: '*.json',
+      options: {
+        printWidth: 120,
+        tabWidth: 2,
+      },
+    },
+    {
+      files: '*.md',
+      options: {
+        printWidth: 100,
+        proseWrap: 'always',
+        tabWidth: 2,
+      },
+    },
+    {
+      files: '*.yml',
+      options: {
+        tabWidth: 2,
+        singleQuote: false,
+      },
+    },
+    {
+      files: '*.yaml',
+      options: {
+        tabWidth: 2,
+        singleQuote: false,
+      },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      options: {
+        parser: 'typescript',
+        printWidth: 80,
+        tabWidth: 2,
+        semi: true,
+        singleQuote: true,
+        trailingComma: 'all',
+        bracketSpacing: true,
+        arrowParens: 'avoid',
+      },
+    },
+    {
+      files: ['*.js', '*.jsx'],
+      options: {
+        parser: 'babel',
+        printWidth: 80,
+        tabWidth: 2,
+        semi: true,
+        singleQuote: true,
+        trailingComma: 'all',
+        bracketSpacing: true,
+        arrowParens: 'avoid',
+      },
+    },
   ],
-  importOrderSeparation: true,
-  importOrderSortSpecifiers: true,
-  plugins: ['@trivago/prettier-plugin-sort-imports'],
 };

@@ -1,12 +1,14 @@
+import type {
+  EnergyInput,
+  FoodInput,
+  TransportationInput,
+  WasteInput,
+} from '../carbonCalculator';
 import {
   calculateCarbonFootprint,
   CarbonCalculator,
-  EnergyInput,
-  FoodInput,
   getCarbonFootprintTips,
   InputValidationError,
-  TransportationInput,
-  WasteInput,
 } from '../carbonCalculator';
 
 describe('Carbon Calculator', () => {
@@ -89,7 +91,9 @@ describe('CarbonCalculator', () => {
         distance: -10,
         fuelType: 'petrol',
       };
-      expect(() => calculator.calculateTransportEmissions(input)).toThrow(InputValidationError);
+      expect(() => calculator.calculateTransportEmissions(input)).toThrow(
+        InputValidationError,
+      );
     });
 
     it('should throw error for invalid passengers', () => {
@@ -99,7 +103,9 @@ describe('CarbonCalculator', () => {
         fuelType: 'petrol',
         passengers: 51,
       };
-      expect(() => calculator.calculateTransportEmissions(input)).toThrow(InputValidationError);
+      expect(() => calculator.calculateTransportEmissions(input)).toThrow(
+        InputValidationError,
+      );
     });
   });
 
@@ -128,7 +134,9 @@ describe('CarbonCalculator', () => {
         source: 'coal',
         consumption: -100,
       };
-      expect(() => calculator.calculateEnergyEmissions(input)).toThrow(InputValidationError);
+      expect(() => calculator.calculateEnergyEmissions(input)).toThrow(
+        InputValidationError,
+      );
     });
   });
 
@@ -194,7 +202,12 @@ describe('CarbonCalculator', () => {
         },
       ];
 
-      const result = calculator.calculateTotalEmissions(transport, energy, food, waste);
+      const result = calculator.calculateTotalEmissions(
+        transport,
+        energy,
+        food,
+        waste,
+      );
 
       expect(result.total).toBeGreaterThan(0);
       expect(result.breakdown.transport.total).toBe(19.2);
@@ -205,7 +218,7 @@ describe('CarbonCalculator', () => {
       // Check that percentages add up to 100%
       const totalPercentage = Object.values(result.breakdown).reduce(
         (sum, category) => sum + category.percentage,
-        0
+        0,
       );
       expect(Math.round(totalPercentage)).toBe(100);
     });
