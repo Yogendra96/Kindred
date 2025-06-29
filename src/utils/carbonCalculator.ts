@@ -2,7 +2,10 @@ import { analyticsService } from '../services/AnalyticsService';
 
 // Custom error types for better error handling
 export class CarbonCalculationError extends Error {
-  constructor(message: string, public readonly details?: Record<string, any>) {
+  constructor(
+    message: string,
+    public readonly details?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = 'CarbonCalculationError';
   }
@@ -175,7 +178,7 @@ export class CarbonCalculator {
 
   private logCalculation(
     type: string,
-    details: Record<string, any>,
+    details: Record<string, unknown>,
     emissions: number,
   ): void {
     analyticsService.logEvent('carbon_calculation', {

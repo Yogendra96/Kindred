@@ -4,29 +4,20 @@ import React, {
   type ComponentType,
   type ReactNode,
 } from 'react';
-
-// React Native module declaration
-declare module 'react-native' {
-  export const View: any;
-  export const ActivityIndicator: any;
-  export const Text: any;
-  export const StyleSheet: any;
-}
-
-const { View, ActivityIndicator, Text, StyleSheet } = require('react-native');
+import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 
 // Mock ErrorBoundary for development
 interface ErrorBoundaryProps {
-  FallbackComponent?: ComponentType<any>;
-  onError?: (error: Error, errorInfo: any) => void;
+  FallbackComponent?: ComponentType<unknown>;
+  onError?: (error: Error, errorInfo: unknown) => void;
   onReset?: () => void;
   children: ReactNode;
 }
 
 const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({
   children,
-  FallbackComponent,
-  onError,
+  _FallbackComponent,
+  _onError,
 }) => {
   return <>{children}</>;
 };
@@ -71,7 +62,7 @@ interface LazyWrapperProps {
   children: ReactNode;
   fallback?: ReactNode;
   errorFallback?: ComponentType<ErrorFallbackProps>;
-  onError?: (error: Error, errorInfo: any) => void;
+  onError?: (error: Error, errorInfo: unknown) => void;
 }
 
 const LazyWrapper: React.FC<LazyWrapperProps> = ({
@@ -92,12 +83,12 @@ const LazyWrapper: React.FC<LazyWrapperProps> = ({
 );
 
 // Utility function to create lazy-loaded components with enhanced error handling
-export const createLazyComponent = <T extends ComponentType<any>>(
+export const createLazyComponent = <T extends ComponentType<unknown>>(
   importFn: () => Promise<{ default: T }>,
   options: {
     fallback?: ReactNode;
     errorFallback?: ComponentType<ErrorFallbackProps>;
-    onError?: (error: Error, errorInfo: any) => void;
+    onError?: (error: Error, errorInfo: unknown) => void;
     preload?: boolean;
   } = {},
 ) => {
@@ -105,21 +96,22 @@ export const createLazyComponent = <T extends ComponentType<any>>(
 
   // Preload the component if requested
   if (options.preload) {
-    importFn().catch(console.error);
+    importFn().catch(error => {
+      console.error('Failed to preload component:', error);
+    });
   }
 
-  const WrappedComponent: React.FC<any> & {
+  const WrappedComponent: React.FC<Record<string, unknown>> & {
     preload: () => Promise<{ default: T }>;
-  } = props =>
-    (
-      <LazyWrapper
-        fallback={options.fallback}
-        errorFallback={options.errorFallback}
-        onError={options.onError}
-      >
-        <LazyComponent {...props} />
-      </LazyWrapper>
-    ) as any;
+  } = props => (
+    <LazyWrapper
+      fallback={options.fallback}
+      errorFallback={options.errorFallback}
+      onError={options.onError}
+    >
+      <LazyComponent {...props} />
+    </LazyWrapper>
+  );
 
   // Add preload method to the component
   WrappedComponent.preload = () => importFn();
@@ -131,7 +123,10 @@ export const createLazyComponent = <T extends ComponentType<any>>(
 export class ComponentPreloader {
   private static preloadedComponents = new Set<string>();
 
-  static preload(componentName: string, importFn: () => Promise<any>): void {
+  static preload(
+    componentName: string,
+    importFn: () => Promise<unknown>,
+  ): void {
     if (!this.preloadedComponents.has(componentName)) {
       this.preloadedComponents.add(componentName);
       importFn().catch(error => {
@@ -142,7 +137,7 @@ export class ComponentPreloader {
   }
 
   static preloadMultiple(
-    components: Array<{ name: string; importFn: () => Promise<any> }>,
+    components: Array<{ name: string; importFn: () => Promise<unknown> }>,
   ): void {
     components.forEach(({ name, importFn }) => {
       this.preload(name, importFn);
@@ -160,7 +155,7 @@ export class ComponentPreloader {
 
 // Route-based code splitting utility
 export const createLazyRoute = (
-  importFn: () => Promise<{ default: ComponentType<any> }>,
+  importFn: () => Promise<{ default: ComponentType<unknown> }>,
   routeName: string,
 ) => {
   return createLazyComponent(importFn, {
@@ -173,10 +168,12 @@ export const createLazyRoute = (
 };
 
 // Conditional loading based on feature flags
-export const createConditionalLazyComponent = <T extends ComponentType<any>>(
+export const createConditionalLazyComponent = <
+  T extends ComponentType<unknown>,
+>(
   importFn: () => Promise<{ default: T }>,
   condition: () => boolean | Promise<boolean>,
-  fallbackComponent?: ComponentType<any>,
+  fallbackComponent?: ComponentType<unknown>,
 ) => {
   const LazyComponent = lazy(async () => {
     const shouldLoad = await condition();
@@ -191,7 +188,7 @@ export const createConditionalLazyComponent = <T extends ComponentType<any>>(
     }
   });
 
-  return (props: any) => (
+  return (props: Record<string, unknown>) => (
     <LazyWrapper errorFallback={ErrorFallback}>
       <LazyComponent {...props} />
     </LazyWrapper>
@@ -238,26 +235,26 @@ export const BundleSplitter = {
 };
 
 // Performance monitoring for lazy loading
-export const withLazyLoadingMetrics = <T extends ComponentType<any>>(
+export const withLazyLoadingMetrics = <T extends ComponentType<unknown>>(
   LazyComponent: T,
   componentName: string,
 ) => {
-  return (props: any) => {
+  return (props: Record<string, unknown>) => {
     const startTime = performance.now();
 
     React.useEffect(() => {
       const endTime = performance.now();
       const loadTime = endTime - startTime;
 
-      // Log loading performance
-      console.log(`Lazy component ${componentName} loaded in ${loadTime}ms`);
+      // Log loading performance - commented out in production
+      // console.log(`Lazy component ${componentName} loaded in ${loadTime}ms`);
 
       // You can integrate with your analytics service here
       // AnalyticsService.track('lazy_component_loaded', {
       //   component: componentName,
       //   loadTime,
       // });
-    }, []);
+    }, [startTime]);
 
     return <LazyComponent {...props} />;
   };

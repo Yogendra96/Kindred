@@ -1,10 +1,10 @@
-import React from 'react';
-import { render, RenderOptions } from '@testing-library/react-native';
-import { Provider } from 'react-redux';
-import { NavigationContainer } from '@react-navigation/native';
-import { ThemeProvider } from '../theme/ThemeProvider';
 import { store } from '../store';
+import { ThemeProvider } from '../theme/ThemeProvider';
+import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, RenderOptions } from '@testing-library/react-native';
+import React from 'react';
+import { Provider } from 'react-redux';
 
 // Global type declarations
 declare global {
@@ -52,24 +52,20 @@ export function renderWithProviders(
       },
     }),
     ...renderOptions
-  }: CustomRenderOptions = {}
+  }: CustomRenderOptions = {},
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     let wrappedChildren = (
       <Provider store={testStore}>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider initialTheme={theme}>
-            {children}
-          </ThemeProvider>
+          <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
         </QueryClientProvider>
       </Provider>
     );
 
     if (navigation) {
       wrappedChildren = (
-        <NavigationContainer>
-          {wrappedChildren}
-        </NavigationContainer>
+        <NavigationContainer>{wrappedChildren}</NavigationContainer>
       );
     }
 
@@ -138,7 +134,7 @@ export class PerformanceTestUtils {
 
   static async measureAsync<T>(
     name: string,
-    fn: () => Promise<T>
+    fn: () => Promise<T>,
   ): Promise<{ result: T; duration: number }> {
     this.startMeasurement(name);
     const result = await fn();
@@ -146,7 +142,10 @@ export class PerformanceTestUtils {
     return { result, duration };
   }
 
-  static measure<T>(name: string, fn: () => T): { result: T; duration: number } {
+  static measure<T>(
+    name: string,
+    fn: () => T,
+  ): { result: T; duration: number } {
     this.startMeasurement(name);
     const result = fn();
     const duration = this.endMeasurement(name);
@@ -160,7 +159,7 @@ export class PerformanceTestUtils {
 export class AccessibilityTestUtils {
   static checkAccessibilityLabels(component: any): string[] {
     const issues: string[] = [];
-    
+
     // Check for missing accessibility labels
     const interactiveElements = component.findAll((node: any) => {
       return (
@@ -173,8 +172,13 @@ export class AccessibilityTestUtils {
     });
 
     interactiveElements.forEach((element: any, index: number) => {
-      if (!element.props.accessibilityLabel && !element.props.accessibilityHint) {
-        issues.push(`Interactive element at index ${index} missing accessibility label`);
+      if (
+        !element.props.accessibilityLabel &&
+        !element.props.accessibilityHint
+      ) {
+        issues.push(
+          `Interactive element at index ${index} missing accessibility label`,
+        );
       }
     });
 
@@ -233,9 +237,9 @@ export class NetworkTestUtils {
     const originalResponse = this.mockResponses.get(url) || {};
     this.mockResponses.set(
       url,
-      new Promise((resolve) => {
+      new Promise(resolve => {
         setTimeout(() => resolve(originalResponse), delay);
-      })
+      }),
     );
   }
 }
@@ -256,7 +260,7 @@ export class StateTestUtils {
   static waitForStateChange(
     store: any,
     predicate: (state: any) => boolean,
-    timeout: number = 5000
+    timeout: number = 5000,
   ): Promise<any> {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
@@ -300,7 +304,7 @@ export class AnimationTestUtils {
 
   static mockTiming() {
     return {
-      start: jest.fn((callback) => callback && callback({ finished: true })),
+      start: jest.fn(callback => callback && callback({ finished: true })),
       stop: jest.fn(),
       reset: jest.fn(),
     };
@@ -340,11 +344,7 @@ export class ComponentTestUtils {
 }
 
 // Export all utilities
-export {
-  renderWithProviders as render,
-  mockNavigation,
-  mockRoute,
-};
+export { renderWithProviders as render, mockNavigation, mockRoute };
 
 // Re-export testing library utilities
 export * from '@testing-library/react-native';

@@ -11,6 +11,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import {
   LineChart,
@@ -74,15 +75,15 @@ export interface AnalyticsDashboardProps {
   refreshInterval?: number;
   onRefresh?: () => void;
   onMetricPress?: (metric: MetricCard) => void;
-  onChartPress?: (chartType: string, data: any) => void;
+  onChartPress?: (chartType: string, data: unknown) => void;
   showComparison?: boolean;
   comparisonPeriod?: 'day' | 'week' | 'month' | 'year';
   customFilters?: Array<{
     id: string;
     label: string;
-    value: any;
+    value: unknown;
   }>;
-  style?: any;
+  style?: Record<string, unknown>;
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
@@ -156,8 +157,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     backgroundGradientFrom: theme.colors.surface,
     backgroundGradientTo: theme.colors.surface,
     decimalPlaces: 1,
-    color: (opacity = 1) => `rgba(${theme.colors.primary}, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(${theme.colors.text}, ${opacity})`,
+    color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
     style: {
       borderRadius: 16,
     },
@@ -331,7 +332,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 borderColor: theme.colors.border,
               },
             ]}
-            onPress={() => setSelectedPeriod(period.key as any)}
+            onPress={() =>
+              setSelectedPeriod(period.key as typeof comparisonPeriod)
+            }
           >
             <Text
               style={[
@@ -352,7 +355,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     );
   };
 
-  const renderChart = (chartType: string, data: any, title: string) => {
+  const renderChart = (chartType: string, data: unknown, title: string) => {
     if (isLoading) {
       return (
         <View style={styles.chartContainer}>

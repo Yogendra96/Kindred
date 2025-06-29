@@ -11,7 +11,6 @@ import notificationService from './src/services/NotificationService';
 import type { RootState } from './src/store';
 import { store } from './src/store';
 import firebase from '@react-native-firebase/app';
-import type { FirebaseAppOptions } from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { NavigationContainer } from '@react-navigation/native';
@@ -24,7 +23,7 @@ import { useSelector } from 'react-redux';
 // Configure Firebase if not already initialized
 if (!firebase.apps.length) {
   try {
-    const firebaseConfig: FirebaseAppOptions = {
+    const firebaseConfig = {
       apiKey: 'development_api_key',
       authDomain: 'kindred-dev.firebaseapp.com',
       projectId: 'kindred-dev',

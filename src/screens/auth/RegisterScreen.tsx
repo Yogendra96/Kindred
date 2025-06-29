@@ -1,6 +1,6 @@
 import auth from '@react-native-firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  AccessibilityInfo,
 } from 'react-native';
 
 const RegisterScreen = () => {
@@ -18,18 +19,29 @@ const RegisterScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const navigation = useNavigation();
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword || !name) {
-      alert('Please fill in all fields');
+    const errors: string[] = [];
+
+    if (!name) errors.push('Full name is required');
+    if (!email) errors.push('Email is required');
+    if (!password) errors.push('Password is required');
+    if (!confirmPassword) errors.push('Password confirmation is required');
+    if (password !== confirmPassword) errors.push('Passwords do not match');
+
+    if (errors.length > 0) {
+      setFormErrors(errors);
+      AccessibilityInfo.announceForAccessibility(
+        `Form has ${errors.length} error${
+          errors.length > 1 ? 's' : ''
+        }: ${errors.join(', ')}`,
+      );
       return;
     }
 
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
+    setFormErrors([]);
 
     try {
       setLoading(true);
@@ -39,12 +51,15 @@ const RegisterScreen = () => {
       );
       await userCredential.user.updateProfile({ displayName: name });
     } catch (error) {
-      console.error('Error toggling theme:', error);
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert('An error occurred during registration');
-      }
+      console.error('Error during registration:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'An error occurred during registration';
+      setFormErrors([errorMessage]);
+      AccessibilityInfo.announceForAccessibility(
+        `Registration failed: ${errorMessage}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -60,38 +75,91 @@ const RegisterScreen = () => {
           source={require('../../assets/logo.png')}
           style={styles.logo}
           resizeMode='contain'
+          accessibilityLabel='Kindred app logo'
+          accessibilityRole='image'
         />
-        <Text style={styles.title}>Create Account</Text>
+        <Text
+          style={styles.title}
+          accessibilityRole='header'
+          accessibilityLevel={1}
+        >
+          Create Account
+        </Text>
       </View>
 
       <View style={styles.formContainer}>
+        {formErrors.length > 0 && (
+          <View style={styles.errorContainer} accessibilityLiveRegion='polite'>
+            {formErrors.map((error, index) => (
+              <Text
+                key={index}
+                style={styles.errorText}
+                accessibilityRole='text'
+              >
+                ⚠ {error}
+              </Text>
+            ))}
+          </View>
+        )}
+
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            formErrors.some(e => e.includes('name')) && styles.inputError,
+          ]}
           placeholder='Full Name'
           value={name}
           onChangeText={setName}
+          accessibilityLabel='Full name'
+          accessibilityHint='Enter your full name for account registration'
+          accessibilityRequired={true}
+          accessibilityInvalid={formErrors.some(e => e.includes('name'))}
         />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            formErrors.some(e => e.includes('Email')) && styles.inputError,
+          ]}
           placeholder='Email'
           value={email}
           onChangeText={setEmail}
           autoCapitalize='none'
           keyboardType='email-address'
+          accessibilityLabel='Email address'
+          accessibilityHint='Enter your email address for account registration'
+          accessibilityRequired={true}
+          accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            formErrors.some(e => e.includes('Password')) && styles.inputError,
+          ]}
           placeholder='Password'
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          accessibilityLabel='Password'
+          accessibilityHint='Enter a secure password for your account'
+          accessibilityRequired={true}
+          accessibilityInvalid={formErrors.some(e => e.includes('Password'))}
         />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            formErrors.some(e => e.includes('confirmation')) &&
+              styles.inputError,
+          ]}
           placeholder='Confirm Password'
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
+          accessibilityLabel='Confirm password'
+          accessibilityHint='Re-enter your password to confirm'
+          accessibilityRequired={true}
+          accessibilityInvalid={formErrors.some(e =>
+            e.includes('confirmation'),
+          )}
         />
 
         <TouchableOpacity
@@ -155,6 +223,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     fontSize: 16,
+  },
+  inputError: {
+    borderColor: '#ff4444',
+    borderWidth: 2,
+  },
+  errorContainer: {
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ff4444',
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
+    marginBottom: 5,
   },
   registerButton: {
     backgroundColor: '#007AFF',

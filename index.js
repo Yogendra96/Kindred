@@ -3,7 +3,7 @@
  */
 import App from './App';
 import { name as appName } from './app.json';
-import { StrictMode } from 'react';
+import React, { StrictMode } from 'react';
 import { AppRegistry } from 'react-native';
 import { enableScreens } from 'react-native-screens';
 

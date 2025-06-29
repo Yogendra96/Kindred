@@ -18,6 +18,7 @@ import {
   ScrollView,
   Dimensions,
   Platform,
+  FlatList,
 } from 'react-native';
 import { LineChart, BarChart } from 'react-native-chart-kit';
 import { useDispatch } from 'react-redux';
@@ -53,11 +54,13 @@ const ActivityTracker: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(true);
-  const [dateRange, setDateRange] = useState({
+  const [dateRange, _setDateRange] = useState({
     start: subDays(new Date(), 30),
     end: new Date(),
   });
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, _setSelectedCategory] = useState<string | null>(
+    null,
+  );
 
   const dispatch = useDispatch();
 
@@ -117,7 +120,7 @@ const ActivityTracker: React.FC = () => {
       datasets: [
         {
           data: data.map(d => d.impact),
-          color: (opacity = 1) => theme.colors.primary,
+          color: (_opacity = 1) => theme.colors.primary,
           strokeWidth: 2,
         },
       ],
@@ -153,7 +156,7 @@ const ActivityTracker: React.FC = () => {
     };
   }, []);
 
-  const syncOfflineActions = async () => {
+  const syncOfflineActions = useCallback(async () => {
     try {
       const offlineActions = await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY);
       if (offlineActions) {
@@ -166,7 +169,7 @@ const ActivityTracker: React.FC = () => {
     } catch (err) {
       console.error('Error syncing offline actions:', err);
     }
-  };
+  }, [handleActivityCompletion]);
 
   const fetchActivities = async () => {
     const user = auth().currentUser;
@@ -192,67 +195,71 @@ const ActivityTracker: React.FC = () => {
     }
   };
 
-  const handleActivityCompletion = async (
-    activity: Activity,
-    isSync = false,
-  ) => {
-    const user = auth().currentUser;
-    if (!user) return;
+  const handleActivityCompletion = useCallback(
+    async (activity: Activity, isSync = false) => {
+      const user = auth().currentUser;
+      if (!user) return;
 
-    try {
-      const updatedActivities = activities.map(a =>
-        a.id === activity.id ? { ...a, completed: !a.completed } : a,
-      );
-
-      if (!isOnline && !isSync) {
-        // Store action for later sync
-        const offlineActions = JSON.parse(
-          (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) || '[]',
-        );
-        offlineActions.push({ activity, timestamp: Date.now() });
-        await AsyncStorage.setItem(
-          OFFLINE_ACTIONS_KEY,
-          JSON.stringify(offlineActions),
+      try {
+        const updatedActivities = activities.map(a =>
+          a.id === activity.id ? { ...a, completed: !a.completed } : a,
         );
 
-        // Update local state
+        if (!isOnline && !isSync) {
+          // Store action for later sync
+          const offlineActions = JSON.parse(
+            (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) || '[]',
+          );
+          offlineActions.push({ activity, timestamp: Date.now() });
+          await AsyncStorage.setItem(
+            OFFLINE_ACTIONS_KEY,
+            JSON.stringify(offlineActions),
+          );
+
+          // Update local state
+          setActivities(updatedActivities);
+          await AsyncStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify(updatedActivities),
+          );
+          return;
+        }
+
+        // Update Firestore
+        await firestore()
+          .collection('daily_activities')
+          .doc(user.uid)
+          .set({ activities: updatedActivities });
+
+        // Update carbon footprint if completing activity
+        if (!activity.completed) {
+          const impactData = {
+            [activity.type]: activity.impact,
+          };
+          await saveActivityData(impactData);
+          dispatch(updateFootprint({ [activity.type]: activity.impact }));
+        }
+
         setActivities(updatedActivities);
         await AsyncStorage.setItem(
           CACHE_KEY,
           JSON.stringify(updatedActivities),
         );
-        return;
+        setError(null);
+      } catch (err) {
+        console.error('Error updating activity:', err);
+        setError('Failed to update activity');
       }
-
-      // Update Firestore
-      await firestore()
-        .collection('daily_activities')
-        .doc(user.uid)
-        .set({ activities: updatedActivities });
-
-      // Update carbon footprint if completing activity
-      if (!activity.completed) {
-        const impactData = {
-          [activity.type]: activity.impact,
-        };
-        await saveActivityData(impactData);
-        dispatch(updateFootprint({ [activity.type]: activity.impact }));
-      }
-
-      setActivities(updatedActivities);
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
-      setError(null);
-    } catch (err) {
-      console.error('Error updating activity:', err);
-      setError('Failed to update activity');
-    }
-  };
+    },
+    [activities, isOnline, dispatch],
+  );
 
   const calculateStreak = (filteredActivities: Activity[]): number => {
     let streak = 0;
     let currentDate = new Date();
+    const maxDaysToCheck = 365; // Prevent infinite loops
 
-    while (true) {
+    while (streak < maxDaysToCheck) {
       const hasActivities = filteredActivities.some(
         activity =>
           format(new Date(activity.timestamp), 'yyyy-MM-dd') ===
@@ -277,17 +284,46 @@ const ActivityTracker: React.FC = () => {
         ]}
         onPress={() => handleActivityCompletion(activity)}
         disabled={loading}
+        accessible={true}
+        accessibilityRole='button'
+        accessibilityLabel={`${activity.title} activity`}
+        accessibilityHint={`${
+          activity.completed ? 'Mark as incomplete' : 'Mark as complete'
+        }. Earns ${activity.points} points and saves ${activity.impact}kg CO2`}
+        accessibilityState={{ selected: activity.completed, disabled: loading }}
       >
         <View style={styles.activityHeader}>
-          <Text style={styles.activityTitle}>{activity.title}</Text>
-          <Text style={styles.points}>+{activity.points} pts</Text>
+          <Text style={styles.activityTitle} accessibilityRole='text'>
+            {activity.title}
+          </Text>
+          <Text
+            style={styles.points}
+            accessibilityLabel={`${activity.points} points`}
+          >
+            +{activity.points} pts
+          </Text>
         </View>
-        <Text style={styles.activityDescription}>{activity.description}</Text>
+        <Text style={styles.activityDescription} accessibilityRole='text'>
+          {activity.description}
+        </Text>
         <View style={styles.activityFooter}>
           <TouchableOpacity
             style={styles.checkButton}
             onPress={() => handleActivityCompletion(activity)}
             disabled={loading}
+            accessible={true}
+            accessibilityRole='button'
+            accessibilityLabel={`${activity.completed ? 'Uncheck' : 'Check'} ${
+              activity.title
+            }`}
+            accessibilityHint={`Mark this activity as ${
+              activity.completed ? 'incomplete' : 'complete'
+            }`}
+            accessibilityState={{
+              selected: activity.completed,
+              disabled: loading,
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
               name={
@@ -297,17 +333,27 @@ const ActivityTracker: React.FC = () => {
               }
               size={24}
               color={activity.completed ? '#2ecc71' : '#666'}
+              accessibilityElementsHidden={true}
+              importantForAccessibility='no-hide-descendants'
             />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
     ),
-    [loading],
+    [loading, handleActivityCompletion, theme.colors],
   );
 
   const renderSummaryCard = () => (
-    <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
+    <View
+      style={[styles.card, { backgroundColor: theme.colors.surface }]}
+      accessible={true}
+      accessibilityRole='summary'
+    >
+      <Text
+        style={[styles.cardTitle, { color: theme.colors.text.primary }]}
+        accessibilityRole='header'
+        accessibilityLevel={2}
+      >
         Activity Summary
       </Text>
       <View style={styles.summaryGrid}>
@@ -368,8 +414,8 @@ const ActivityTracker: React.FC = () => {
             backgroundColor: theme.colors.surface,
             backgroundGradient: theme.colors.surface,
             decimalPlaces: 1,
-            color: (opacity = 1) => theme.colors.primary,
-            labelColor: (opacity = 1) => theme.colors.text.primary,
+            color: (_opacity = 1) => theme.colors.primary,
+            labelColor: (_opacity = 1) => theme.colors.text.primary,
             style: {
               borderRadius: 16,
             },
@@ -391,27 +437,44 @@ const ActivityTracker: React.FC = () => {
       <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
         Category Breakdown
       </Text>
-      <BarChart
-        data={{
-          labels: Object.keys(summary.categoryBreakdown),
-          datasets: [
-            {
-              data: Object.values(summary.categoryBreakdown),
-            },
-          ],
-        }}
-        width={screenWidth - 40}
-        height={220}
-        chartConfig={{
-          backgroundColor: theme.colors.surface,
-          backgroundGradient: theme.colors.surface,
-          decimalPlaces: 0,
-          color: (opacity = 1) => theme.colors.secondary,
-          labelColor: (opacity = 1) => theme.colors.text.primary,
-        }}
-        style={styles.chart}
-        showValuesOnTopOfBars
-      />
+      <View accessible={true} accessibilityRole='image'>
+        <Text
+          accessibilityLiveRegion='polite'
+          accessibilityLabel={`Activity breakdown chart: ${Object.entries(
+            summary.categoryBreakdown,
+          )
+            .map(([category, count]) => `${category}: ${count} activities`)
+            .join(', ')}`}
+          style={{ position: 'absolute', left: -10000 }}
+        >
+          Activity categories:{' '}
+          {Object.entries(summary.categoryBreakdown)
+            .map(([category, count]) => `${category}: ${count}`)
+            .join(', ')}
+        </Text>
+        <BarChart
+          data={{
+            labels: Object.keys(summary.categoryBreakdown),
+            datasets: [
+              {
+                data: Object.values(summary.categoryBreakdown),
+              },
+            ],
+          }}
+          width={screenWidth - 40}
+          height={220}
+          chartConfig={{
+            backgroundColor: theme.colors.surface,
+            backgroundGradient: theme.colors.surface,
+            decimalPlaces: 0,
+            color: (_opacity = 1) => theme.colors.secondary,
+            labelColor: (_opacity = 1) => theme.colors.text.primary,
+          }}
+          style={styles.chart}
+          showValuesOnTopOfBars
+          accessibilityLabel='Activity breakdown by category bar chart'
+        />
+      </View>
     </View>
   );
 
@@ -422,8 +485,18 @@ const ActivityTracker: React.FC = () => {
           styles.loadingContainer,
           { backgroundColor: theme.colors.surface },
         ]}
+        accessible={true}
+        accessibilityRole='progressbar'
+        accessibilityLabel='Loading activities'
+        accessibilityLiveRegion='polite'
       >
         <ActivityIndicator size='large' color={theme.colors.primary} />
+        <Text
+          style={[styles.loadingText, { color: theme.colors.text.primary }]}
+          accessibilityLiveRegion='polite'
+        >
+          Loading your activity data...
+        </Text>
       </View>
     );
   }
@@ -431,14 +504,24 @@ const ActivityTracker: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View
+          style={styles.errorContainer}
+          accessibilityLiveRegion='polite'
+          accessibilityRole='alert'
+        >
+          <Text style={styles.errorText} accessibilityRole='text'>
+            ⚠ {error}
+          </Text>
         </View>
       )}
       {!isOnline && (
-        <View style={styles.offlineContainer}>
-          <Text style={styles.offlineText}>
-            You're offline - changes will sync when back online
+        <View
+          style={styles.offlineContainer}
+          accessibilityLiveRegion='polite'
+          accessibilityRole='status'
+        >
+          <Text style={styles.offlineText} accessibilityRole='text'>
+            📱 You're offline - changes will sync when back online
           </Text>
         </View>
       )}
@@ -558,6 +641,10 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 20,
     margin: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
   },
   errorContainer: {
     backgroundColor: '#ffebee',

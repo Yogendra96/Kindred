@@ -1,5 +1,28 @@
 import { loggingService } from './LoggingService';
-import { Platform } from 'react-native';
+import { Platform, Dimensions } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import {
+  EnhancedPerformanceMetric,
+  NativeMemoryMetrics,
+  EnhancedNetworkMetrics,
+  CoreVitalMetric,
+  CoreVitalType,
+  PerformanceAlertRule,
+  PerformanceAlert,
+  UserJourneyEvent,
+  JourneyPerformanceInsight,
+  MemoryLeak,
+  ComponentLifecycleEvent,
+  DeviceContext,
+  SessionPerformanceData,
+  PerformanceConfig,
+  DEFAULT_PERFORMANCE_CONFIG,
+  DEFAULT_CORE_VITAL_THRESHOLDS,
+  CircularBuffer as ICircularBuffer,
+} from '../types/performance';
+import { CircularBuffer } from '../utils/CircularBuffer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Global type declarations
 declare global {
@@ -50,22 +73,78 @@ interface BundleMetrics {
 }
 
 /**
- * Enhanced Performance Service with comprehensive monitoring
+ * Enhanced Performance Service with Modern APM Capabilities
+ * Implements Core Web Vitals, Real-time Alerting, Memory Leak Detection
+ * User Journey Correlation, and Predictive Analytics
  */
 export class EnhancedPerformanceService {
   private static instance: EnhancedPerformanceService;
-  // Basic performance monitoring without external dependencies
+  
+  // Core dependencies
   private logger: typeof loggingService;
-  private metrics: Map<string, PerformanceMetric[]> = new Map();
-  private memoryMetrics: MemoryMetrics[] = [];
+  private config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG;
+  
+  // Enhanced data storage with circular buffers for high-frequency data
+  private metrics: Map<string, EnhancedPerformanceMetric[]> = new Map();
+  private metricsBuffer: CircularBuffer<EnhancedPerformanceMetric>;
+  private memoryMetrics: CircularBuffer<NativeMemoryMetrics>;
+  private networkMetrics: CircularBuffer<EnhancedNetworkMetrics>;
+  private coreVitals: Map<string, CoreVitalMetric[]> = new Map();
+  
+  // Legacy compatibility
   private renderMetrics: RenderMetrics[] = [];
-  private networkMetrics: NetworkMetrics[] = [];
   private bundleMetrics: BundleMetrics | null = null;
+  
+  // Real-time monitoring state
   private isMonitoring: boolean = false;
   private memoryInterval: ReturnType<typeof setTimeout> | null = null;
+  private performanceObserver: PerformanceObserver | null = null;
+  
+  // Session and user tracking
+  private currentSessionId: string = '';
+  private currentUserId?: string;
+  private deviceContext: DeviceContext | null = null;
+  
+  // Alert system
+  private alertRules: Map<string, PerformanceAlertRule> = new Map();
+  private activeAlerts: Map<string, PerformanceAlert> = new Map();
+  
+  // Memory leak detection
+  private componentLifecycles: Map<string, ComponentLifecycleEvent[]> = new Map();
+  private memoryLeaks: MemoryLeak[] = [];
+  
+  // User journey correlation
+  private journeyEvents: UserJourneyEvent[] = [];
+  private screenStartTimes: Map<string, number> = new Map();
+  
+  // Network interception
+  private originalFetch: typeof fetch;
+  private originalXMLHttpRequest: typeof XMLHttpRequest;
+  
+  // Performance tracking
+  private screenRenderStartTime: number = 0;
+  private interactionStartTime: number = 0;
+  
+  // Connection state
+  private connectionType: string = 'unknown';
 
   private constructor() {
     this.logger = loggingService;
+    
+    // Initialize circular buffers with optimal capacity
+    this.metricsBuffer = new CircularBuffer<EnhancedPerformanceMetric>(1000);
+    this.memoryMetrics = new CircularBuffer<NativeMemoryMetrics>(500);
+    this.networkMetrics = new CircularBuffer<EnhancedNetworkMetrics>(500);
+    
+    // Generate unique session ID
+    this.currentSessionId = this.generateSessionId();
+    
+    // Store original network functions for interception
+    this.originalFetch = global.fetch;
+    this.originalXMLHttpRequest = global.XMLHttpRequest;
+    
+    // Set up default alert rules
+    this.setupDefaultAlertRules();
   }
 
   static getInstance(): EnhancedPerformanceService {
@@ -76,27 +155,105 @@ export class EnhancedPerformanceService {
   }
 
   /**
-   * Initialize performance monitoring
+   * Initialize enhanced performance monitoring with modern APM capabilities
    */
-  async initialize(): Promise<void> {
+  async initialize(config?: Partial<PerformanceConfig>): Promise<void> {
     try {
+      // Merge custom config with defaults
+      if (config) {
+        this.config = { ...this.config, ...config };
+      }
+      
+      // Initialize device context
+      await this.initializeDeviceContext();
+      
+      // Set up monitoring systems
       this.setupPerformanceObservers();
       this.startMemoryMonitoring();
       this.setupNetworkMonitoring();
+      
+      // Initialize features based on config
+      if (this.config.features.networkInterception) {
+        this.setupNetworkInterception();
+      }
+      
+      if (this.config.features.memoryLeakDetection) {
+        this.startMemoryLeakDetection();
+      }
+      
+      // Start session tracking
+      this.startSession();
+      
       this.isMonitoring = true;
-      this.logger.info('Enhanced performance monitoring initialized');
-    } catch (error) {
-      this.logger.error('Failed to initialize performance monitoring', {
-        error: error.message,
+      
+      this.logger.info('Enhanced performance monitoring initialized', {
+        sessionId: this.currentSessionId,
+        features: this.config.features,
+        deviceContext: this.deviceContext,
       });
+      
+      // Record initialization metric
+      this.recordEnhancedMetric({
+        name: 'apm_initialization',
+        value: performance.now(),
+        unit: 'ms',
+        severity: 'low',
+        context: {
+          version: '2.0.0',
+          features: this.config.features,
+        },
+      });
+      
+    } catch (error) {
+      this.logger.error('Failed to initialize enhanced performance monitoring', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        sessionId: this.currentSessionId,
+      });
+      throw error;
     }
   }
 
   /**
-   * Stop performance monitoring
+   * Stop enhanced performance monitoring and clean up resources
    */
-  stop(): void {
-    this.isMonitoring = false;
+  async stop(): Promise<void> {
+    try {
+      this.isMonitoring = false;
+      
+      // End current session
+      await this.endSession();
+      
+      // Clean up intervals and observers
+      if (this.memoryInterval) {
+        clearInterval(this.memoryInterval);
+        this.memoryInterval = null;
+      }
+      
+      if (this.performanceObserver) {
+        this.performanceObserver.disconnect();
+        this.performanceObserver = null;
+      }
+      
+      // Restore original network functions
+      if (this.config.features.networkInterception) {
+        this.restoreNetworkFunctions();
+      }
+      
+      // Save final session data
+      await this.saveSessionData();
+      
+      this.logger.info('Enhanced performance monitoring stopped', {
+        sessionId: this.currentSessionId,
+        metricsCollected: this.metricsBuffer.size,
+        alertsTriggered: this.activeAlerts.size,
+      });
+      
+    } catch (error) {
+      this.logger.error('Error stopping performance monitoring', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
     if (this.memoryInterval) {
       clearInterval(this.memoryInterval);
       this.memoryInterval = null;

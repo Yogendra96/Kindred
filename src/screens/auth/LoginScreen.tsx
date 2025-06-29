@@ -14,25 +14,44 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  AccessibilityInfo,
 } from 'react-native';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      alert('Please fill in all fields');
+    const errors: string[] = [];
+
+    if (!email) errors.push('Email is required');
+    if (!password) errors.push('Password is required');
+
+    if (errors.length > 0) {
+      setFormErrors(errors);
+      AccessibilityInfo.announceForAccessibility(
+        `Form has ${errors.length} error${
+          errors.length > 1 ? 's' : ''
+        }: ${errors.join(', ')}`,
+      );
       return;
     }
+
+    setFormErrors([]);
 
     try {
       setLoading(true);
       await auth().signInWithEmailAndPassword(email, password);
     } catch (error) {
-      alert(error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Login failed';
+      setFormErrors([errorMessage]);
+      AccessibilityInfo.announceForAccessibility(
+        `Login failed: ${errorMessage}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -45,7 +64,12 @@ const LoginScreen = () => {
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(googleCredential);
     } catch (error) {
-      alert(error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Google sign in failed';
+      setFormErrors([errorMessage]);
+      AccessibilityInfo.announceForAccessibility(
+        `Google sign in failed: ${errorMessage}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -61,25 +85,61 @@ const LoginScreen = () => {
           source={require('../../assets/logo.png')}
           style={styles.logo}
           resizeMode='contain'
+          accessibilityLabel='Kindred app logo'
+          accessibilityRole='image'
         />
-        <Text style={styles.title}>Welcome to Kindred</Text>
+        <Text
+          style={styles.title}
+          accessibilityRole='header'
+          accessibilityLevel={1}
+        >
+          Welcome to Kindred
+        </Text>
       </View>
 
       <View style={styles.formContainer}>
+        {formErrors.length > 0 && (
+          <View style={styles.errorContainer} accessibilityLiveRegion='polite'>
+            {formErrors.map((error, index) => (
+              <Text
+                key={index}
+                style={styles.errorText}
+                accessibilityRole='text'
+              >
+                ⚠ {error}
+              </Text>
+            ))}
+          </View>
+        )}
+
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            formErrors.some(e => e.includes('Email')) && styles.inputError,
+          ]}
           placeholder='Email'
           value={email}
           onChangeText={setEmail}
           autoCapitalize='none'
           keyboardType='email-address'
+          accessibilityLabel='Email address'
+          accessibilityHint='Enter your email address to log in'
+          accessibilityRequired={true}
+          accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            formErrors.some(e => e.includes('Password')) && styles.inputError,
+          ]}
           placeholder='Password'
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          accessibilityLabel='Password'
+          accessibilityHint='Enter your password to log in'
+          accessibilityRequired={true}
+          accessibilityInvalid={formErrors.some(e => e.includes('Password'))}
         />
 
         <TouchableOpacity
@@ -100,6 +160,10 @@ const LoginScreen = () => {
           style={styles.googleButton}
           onPress={handleGoogleSignIn}
           disabled={loading}
+          accessible={true}
+          accessibilityLabel='Sign in with Google'
+          accessibilityHint='Sign in using your Google account'
+          accessibilityRole='button'
         >
           <Text style={styles.buttonText}>Sign in with Google</Text>
         </TouchableOpacity>
@@ -151,6 +215,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     fontSize: 16,
+  },
+  inputError: {
+    borderColor: '#ff4444',
+    borderWidth: 2,
+  },
+  errorContainer: {
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ff4444',
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
+    marginBottom: 5,
   },
   loginButton: {
     backgroundColor: '#007AFF',
