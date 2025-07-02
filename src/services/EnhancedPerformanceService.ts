@@ -242,6 +242,11 @@ export class EnhancedPerformanceService {
       // Save final session data
       await this.saveSessionData();
       
+      if (this.memoryInterval) {
+        clearInterval(this.memoryInterval);
+        this.memoryInterval = null;
+      }
+      
       this.logger.info('Enhanced performance monitoring stopped', {
         sessionId: this.currentSessionId,
         metricsCollected: this.metricsBuffer.size,
@@ -253,12 +258,6 @@ export class EnhancedPerformanceService {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-  }
-    if (this.memoryInterval) {
-      clearInterval(this.memoryInterval);
-      this.memoryInterval = null;
-    }
-    this.logger.info('Performance monitoring stopped');
   }
 
   /**

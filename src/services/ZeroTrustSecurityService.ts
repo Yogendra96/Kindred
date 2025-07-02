@@ -246,6 +246,26 @@ class QuantumResistantCrypto {
   }
 }
 
+// Interfaces for Behavioral Analysis
+interface UserBehaviorPattern {
+  readonly userId: string;
+  readonly locations: GeolocationData[];
+  readonly sessionTimes: number[];
+  readonly actionSequences: string[][];
+  readonly deviceUsage: Record<string, number>;
+  readonly networkPatterns: string[];
+  readonly baseline: BehaviorBaseline;
+  readonly lastUpdated: number;
+}
+
+interface BehaviorBaseline {
+  readonly avgSessionDuration: number;
+  readonly commonLocations: GeolocationData[];
+  readonly typicalHours: number[];
+  readonly frequentActions: string[];
+  readonly normalFrequency: Record<string, number>;
+}
+
 // Behavioral Analysis Engine
 class BehavioralAnalysisEngine {
   private readonly userBehaviorPatterns = new Map<string, UserBehaviorPattern>();
@@ -255,25 +275,6 @@ class BehavioralAnalysisEngine {
     frequency: 5.0, // 5x normal
     sequence: 0.8, // 80% similarity
   };
-
-  interface UserBehaviorPattern {
-    readonly userId: string;
-    readonly locations: GeolocationData[];
-    readonly sessionTimes: number[];
-    readonly actionSequences: string[][];
-    readonly deviceUsage: Record<string, number>;
-    readonly networkPatterns: string[];
-    readonly baseline: BehaviorBaseline;
-    readonly lastUpdated: number;
-  }
-
-  interface BehaviorBaseline {
-    readonly avgSessionDuration: number;
-    readonly commonLocations: GeolocationData[];
-    readonly typicalHours: number[];
-    readonly frequentActions: string[];
-    readonly normalFrequency: Record<string, number>;
-  }
 
   async analyzeBehavior(
     userId: string,

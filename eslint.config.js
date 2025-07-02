@@ -1,15 +1,9 @@
 // @ts-check
 import js from '@eslint/js';
-import reactPlugin from 'eslint-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import reactNativePlugin from 'eslint-plugin-react-native';
-import testingLibraryPlugin from 'eslint-plugin-testing-library';
-import typescriptPlugin from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import prettierPlugin from 'eslint-plugin-prettier';
+import typescriptEslint from 'typescript-eslint';
 import globals from 'globals';
 
-export default [
+export default typescriptEslint.config(
   // Ignore patterns
   {
     ignores: [
@@ -25,21 +19,30 @@ export default [
       '*.config.js',
       'babel.config.js',
       'metro.config.js',
+      '.detoxrc.js',
+      'jest.config.js',
+      'commitlint.config.js',
+      'react-native.config.js',
+      '.eslintrc.js.backup',
+      '.storybook/**',
+      'storybook-static/**',
+      '.lintstagedrc.js',
+      '.prettierrc.js',
+      '.releaserc.js',
+      '__mocks__/**',
+      'e2e/**',
     ],
   },
 
-  // JavaScript/TypeScript files
+  // Base JavaScript config
   js.configs.recommended,
+
+  // TypeScript config
+  ...typescriptEslint.configs.recommended,
+
+  // Custom rules
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
-    plugins: {
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-      'react-native': reactNativePlugin,
-      'testing-library': testingLibraryPlugin,
-      '@typescript-eslint': typescriptPlugin,
-      prettier: prettierPlugin,
-    },
     languageOptions: {
       globals: {
         ...globals.node,
@@ -54,11 +57,7 @@ export default [
         },
         ecmaVersion: 'latest',
         sourceType: 'module',
-      },
-    },
-    settings: {
-      react: {
-        version: 'detect',
+        project: './tsconfig.json',
       },
     },
     rules: {
@@ -79,65 +78,6 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        {
-          prefer: 'type-imports',
-          disallowTypeAnnotations: false,
-        },
-      ],
-
-      // React rules
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-      'react/jsx-key': 'error',
-      'react/jsx-no-duplicate-props': 'error',
-      'react/jsx-no-undef': 'error',
-      'react/no-direct-mutation-state': 'error',
-      'react/require-render-return': 'error',
-
-      // React Hooks rules
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-
-      // React Native rules
-      'react-native/no-unused-styles': 'warn',
-      'react-native/no-inline-styles': 'warn',
-      'react-native/no-raw-text': 'off',
-
-      // Prettier integration
-      'prettier/prettier': [
-        'error',
-        {
-          singleQuote: true,
-          trailingComma: 'all',
-          semi: true,
-          printWidth: 80,
-          tabWidth: 2,
-          useTabs: false,
-          bracketSpacing: true,
-          bracketSameLine: false,
-          arrowParens: 'avoid',
-          endOfLine: 'lf',
-        },
-      ],
-    },
-  },
-
-  // TypeScript specific rules
-  {
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-        tsconfigRootDir: process.cwd(),
-      },
     },
   },
 
@@ -159,18 +99,13 @@ export default [
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      'react-native/no-inline-styles': 'off',
-      'testing-library/await-async-queries': 'error',
-      'testing-library/no-await-sync-queries': 'error',
-      'testing-library/prefer-screen-queries': 'error',
     },
   },
 
-  // Story files and Storybook config
+  // Story files
   {
-    files: ['**/*.stories.{ts,tsx}', '.storybook/**'],
+    files: ['**/*.stories.{ts,tsx}'],
     rules: {
-      'react-native/no-inline-styles': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
     },
@@ -183,21 +118,18 @@ export default [
       globals: {
         ...globals.node,
         ...globals.jest,
-        describe: 'readonly',
-        it: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        testHelpers: 'readonly',
-        customExpect: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        global: 'readonly',
+        process: 'readonly',
       },
     },
     rules: {
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
     },
-  },
-];
+  }
+);

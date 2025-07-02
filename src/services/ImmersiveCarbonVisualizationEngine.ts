@@ -995,13 +995,13 @@ export interface RealTime3DEngine {
   readonly rendering: RealTime3DRendering;
   readonly physics: PhysicsEngine;
   readonly optimization: RenderingOptimization;
-  readonly interaction: 3DInteraction;
+  readonly interaction: ThreeDInteraction;
   readonly immersion: ImmersionTechniques;
 }
 
 interface RealTime3DRendering {
   readonly renderer: RendererConfiguration;
-  readonly lighting: 3DLightingSystem;
+  readonly lighting: ThreeDLightingSystem;
   readonly materials: MaterialSystem;
   readonly effects: VisualEffects;
   readonly performance: RenderingPerformance;
@@ -1026,7 +1026,14 @@ interface FallbackRenderer {
   readonly quality_loss: number;
 }
 
-interface 3DLightingSystem {
+interface ThreeDInteraction {
+  readonly gestures: GestureRecognition;
+  readonly touch: TouchInteraction;
+  readonly spatial: SpatialNavigation;
+  readonly haptic: HapticFeedback;
+}
+
+interface ThreeDLightingSystem {
   readonly global_illumination: GlobalIllumination;
   readonly dynamic_lighting: DynamicLighting;
   readonly shadows: ShadowSystem;
