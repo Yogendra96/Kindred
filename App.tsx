@@ -8,8 +8,10 @@ import ErrorBoundary from './src/components/common/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import notificationService from './src/services/NotificationService';
+import { loggingService } from './src/services/LoggingService';
 import type { RootState } from './src/store';
 import { store } from './src/store';
+import Config from 'react-native-config';
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -24,13 +26,13 @@ import { useSelector } from 'react-redux';
 if (!firebase.apps.length) {
   try {
     const firebaseConfig = {
-      apiKey: 'development_api_key',
-      authDomain: 'kindred-dev.firebaseapp.com',
-      projectId: 'kindred-dev',
-      storageBucket: 'kindred-dev.appspot.com',
-      messagingSenderId: '000000000000',
-      appId: '1:000000000000:ios:development',
-      measurementId: 'G-DEVELOPMENT',
+      apiKey: Config.FIREBASE_API_KEY || '',
+      authDomain: Config.FIREBASE_AUTH_DOMAIN || '',
+      projectId: Config.FIREBASE_PROJECT_ID || '',
+      storageBucket: Config.FIREBASE_STORAGE_BUCKET || '',
+      messagingSenderId: Config.FIREBASE_MESSAGING_SENDER_ID || '',
+      appId: Config.FIREBASE_APP_ID || '',
+      measurementId: Config.FIREBASE_MEASUREMENT_ID || '',
     };
 
     // Validate Firebase configuration
@@ -42,7 +44,9 @@ if (!firebase.apps.length) {
 
     firebase.initializeApp(firebaseConfig);
   } catch (error) {
-    console.error('Firebase initialization error:', error);
+    loggingService.error('Firebase initialization failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     Alert.alert(
       'Configuration Error',
       'Failed to initialize Firebase. Please check your configuration.',
@@ -60,8 +64,8 @@ LogBox.ignoreLogs([
 // Initialize Google Sign In
 try {
   const googleSignInConfig = {
-    webClientId: '000000000000-development.apps.googleusercontent.com',
-    iosClientId: '000000000000-development.apps.googleusercontent.com',
+    webClientId: Config.GOOGLE_WEB_CLIENT_ID || '',
+    iosClientId: Config.GOOGLE_IOS_CLIENT_ID || '',
   };
 
   if (!googleSignInConfig.webClientId) {
@@ -72,7 +76,9 @@ try {
 
   GoogleSignin.configure(googleSignInConfig);
 } catch (error) {
-  console.error('Google Sign-In configuration error:', error);
+  loggingService.error('Google Sign-In configuration failed', {
+    error: error instanceof Error ? error.message : String(error),
+  });
   Alert.alert(
     'Configuration Error',
     'Failed to configure Google Sign-In. Please check your configuration.',
@@ -102,7 +108,9 @@ const NavigationRoot: React.FC = () => {
         // Set up notification handlers
         await notificationService.setupMessageHandlers();
       } catch (error) {
-        console.error('Failed to initialize app:', error);
+        loggingService.error('App initialization failed', {
+          error: error instanceof Error ? error.message : String(error),
+        });
         Alert.alert(
           'Initialization Error',
           'Failed to initialize app features. Some functionality may be limited.',

@@ -81,7 +81,7 @@ class ObservabilityService {
 
   private sessionId: string;
   private userId?: string;
-  private flushTimer?: NodeJS.Timeout;
+  private flushTimer?: ReturnType<typeof setTimeout>;
   private appStateSubscription?: any;
   private networkSubscription?: any;
 
@@ -120,7 +120,7 @@ class ObservabilityService {
     this.sessionId = this.generateSessionId();
   }
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -159,7 +159,7 @@ class ObservabilityService {
   /**
    * Track custom metrics
    */
-  trackMetric(data: Omit<MetricData, 'timestamp'>): void {
+  public trackMetric(data: Omit<MetricData, 'timestamp'>): void {
     if (!this.shouldSample()) return;
 
     const metric: MetricData = {
@@ -184,7 +184,7 @@ class ObservabilityService {
   /**
    * Track business events
    */
-  trackBusinessEvent(
+  public trackBusinessEvent(
     data: Omit<BusinessMetric, 'sessionId' | 'timestamp'>,
   ): void {
     if (!this.config.enableBusinessMetrics || !this.shouldSample()) return;
@@ -206,7 +206,7 @@ class ObservabilityService {
   /**
    * Track user journey events
    */
-  trackUserJourney(data: Omit<UserJourneyEvent, 'timestamp'>): void {
+  public trackUserJourney(data: Omit<UserJourneyEvent, 'timestamp'>): void {
     if (!this.config.enableRUM || !this.shouldSample()) return;
 
     const journeyEvent: UserJourneyEvent = {
@@ -226,7 +226,7 @@ class ObservabilityService {
   /**
    * Track performance metrics
    */
-  trackPerformance(data: Omit<PerformanceMetric, 'timestamp'>): void {
+  public trackPerformance(data: Omit<PerformanceMetric, 'timestamp'>): void {
     if (!this.config.enableAPM || !this.shouldSample()) return;
 
     const perfMetric: PerformanceMetric = {
@@ -254,7 +254,7 @@ class ObservabilityService {
   /**
    * Track Core Web Vitals
    */
-  trackCoreVitals(vital: keyof typeof this.coreVitals, value: number): void {
+  public trackCoreVitals(vital: keyof typeof this.coreVitals, value: number): void {
     this.coreVitals[vital] = value;
 
     this.trackPerformance({
@@ -270,7 +270,7 @@ class ObservabilityService {
   /**
    * Track screen transitions
    */
-  trackScreenTransition(
+  public trackScreenTransition(
     fromScreen: string,
     toScreen: string,
     duration: number,
@@ -295,7 +295,7 @@ class ObservabilityService {
   /**
    * Track API calls
    */
-  trackAPICall(
+  public trackAPICall(
     endpoint: string,
     method: string,
     duration: number,
@@ -330,7 +330,7 @@ class ObservabilityService {
   /**
    * Track user actions
    */
-  trackUserAction(
+  public trackUserAction(
     action: string,
     screen: string,
     properties: Record<string, unknown> = {},
@@ -349,7 +349,7 @@ class ObservabilityService {
   /**
    * Track errors with context
    */
-  trackError(
+  public trackError(
     error: Error,
     context: Record<string, unknown> = {},
     severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
@@ -383,7 +383,7 @@ class ObservabilityService {
   /**
    * Generate observability dashboard data
    */
-  getDashboardMetrics(): {
+  public getDashboardMetrics(): {
     coreVitals: typeof this.coreVitals;
     sessionMetrics: {
       sessionId: string;
@@ -463,7 +463,7 @@ class ObservabilityService {
   /**
    * Flush all buffered data
    */
-  async flush(): Promise<void> {
+  public async flush(): Promise<void> {
     try {
       if (
         this.metricsBuffer.length === 0 &&
@@ -509,7 +509,7 @@ class ObservabilityService {
   /**
    * Set user context
    */
-  setUserContext(
+  public setUserContext(
     userId: string,
     properties: Record<string, unknown> = {},
   ): void {
@@ -527,7 +527,7 @@ class ObservabilityService {
   /**
    * Create custom alert rule
    */
-  createAlertRule(rule: AlertRule): void {
+  public createAlertRule(rule: AlertRule): void {
     // In production, store in persistent storage or send to alerting system
     loggingService.info('Alert rule created', { rule: rule.name });
   }
@@ -782,7 +782,7 @@ class ObservabilityService {
   /**
    * Cleanup observability service
    */
-  cleanup(): void {
+  public cleanup(): void {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
       this.flushTimer = undefined;

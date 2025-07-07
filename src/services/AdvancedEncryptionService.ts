@@ -27,7 +27,7 @@ export interface EncryptionConfig {
 class AdvancedEncryptionService {
   private readonly config: EncryptionConfig;
   private readonly keyCache = new Map<string, CryptoKey>();
-  private keyRotationTimer?: NodeJS.Timeout;
+  private keyRotationTimer?: ReturnType<typeof setInterval>;
 
   constructor() {
     this.config = {
@@ -394,7 +394,11 @@ class AdvancedEncryptionService {
 
   private async getOrCreateKey(keyId = 'default'): Promise<CryptoKey> {
     if (this.keyCache.has(keyId)) {
-      return this.keyCache.get(keyId)!;
+      const cachedKey = this.keyCache.get(keyId);
+      if (!cachedKey) {
+        throw new Error(`Key not found: ${keyId}`);
+      }
+      return cachedKey;
     }
 
     const key = await this.generateKey();
@@ -497,7 +501,7 @@ class AdvancedEncryptionService {
   private startKeyRotation(): void {
     const intervalMs = this.config.keyRotationInterval * 60 * 60 * 1000; // Convert hours to ms
 
-    this.keyRotationTimer = setInterval(async () => {
+    this.keyRotationTimer = setInterval(async (): Promise<void> => {
       try {
         await this.rotateKeys();
       } catch (error) {
@@ -505,7 +509,7 @@ class AdvancedEncryptionService {
           error: error instanceof Error ? error.message : String(error),
         });
       }
-    }, intervalMs);
+    }, intervalMs) as ReturnType<typeof setInterval>;
   }
 
   private async validateEncryptionCapabilities(): Promise<void> {

@@ -43,7 +43,10 @@ class LoggingService {
         this.logs = JSON.parse(storedLogs);
       }
     } catch (error) {
-      console.warn('Failed to load stored logs:', error);
+      // Note: Cannot use loggingService here due to circular dependency
+      if (__DEV__) {
+        console.warn('Failed to load stored logs:', error);
+      }
     }
   }
 
@@ -54,7 +57,10 @@ class LoggingService {
         JSON.stringify(this.logs.slice(-this.maxLogs)),
       );
     } catch (error) {
-      console.warn('Failed to persist logs:', error);
+      // Note: Cannot use loggingService here due to circular dependency
+      if (__DEV__) {
+        console.warn('Failed to persist logs:', error);
+      }
     }
   }
 

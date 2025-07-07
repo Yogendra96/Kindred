@@ -1,6 +1,7 @@
 import { updateFootprint } from '../store/slices/carbonSlice';
 import { useTheme } from '../theme/ThemeProvider';
 import { saveActivityData } from '../utils/carbonCalculator';
+import { loggingService } from '../services/LoggingService';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import DateTimePicker from '@react-native-community/datetimepicker';
@@ -48,17 +49,17 @@ const CACHE_KEY = 'activities_cache';
 const OFFLINE_ACTIONS_KEY = 'offline_actions';
 const screenWidth = Dimensions.get('window').width;
 
-const ActivityTracker: React.FC = () => {
+const ActivityTracker: React.FC = React.memo(() => {
   const { theme } = useTheme();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(true);
-  const [dateRange, _setDateRange] = useState({
+  const [dateRange] = useState({
     start: subDays(new Date(), 30),
     end: new Date(),
   });
-  const [selectedCategory, _setSelectedCategory] = useState<string | null>(
+  const [selectedCategory] = useState<string | null>(
     null,
   );
 
@@ -154,7 +155,7 @@ const ActivityTracker: React.FC = () => {
     return () => {
       unsubscribeNetInfo();
     };
-  }, []);
+  }, [syncOfflineActions]);
 
   const syncOfflineActions = useCallback(async () => {
     try {
@@ -167,7 +168,9 @@ const ActivityTracker: React.FC = () => {
         await AsyncStorage.removeItem(OFFLINE_ACTIONS_KEY);
       }
     } catch (err) {
-      console.error('Error syncing offline actions:', err);
+      loggingService.error('Error syncing offline actions', {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }, [handleActivityCompletion]);
 
@@ -189,7 +192,9 @@ const ActivityTracker: React.FC = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load activities');
-      console.error('Error fetching activities:', err);
+      loggingService.error('Error fetching activities', {
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setLoading(false);
     }
@@ -247,7 +252,9 @@ const ActivityTracker: React.FC = () => {
         );
         setError(null);
       } catch (err) {
-        console.error('Error updating activity:', err);
+        loggingService.error('Error updating activity', {
+          error: err instanceof Error ? err.message : String(err),
+        });
         setError('Failed to update activity');
       }
     },
@@ -544,7 +551,9 @@ const ActivityTracker: React.FC = () => {
       </View>
     </ScrollView>
   );
-};
+});
+
+ActivityTracker.displayName = 'ActivityTracker';
 
 const styles = StyleSheet.create({
   container: {
@@ -670,4 +679,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(ActivityTracker);
+export default ActivityTracker;

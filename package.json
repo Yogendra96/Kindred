@@ -43,6 +43,7 @@
     "commitlint": "commitlint --edit",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
+    "sort-package-json": "sort-package-json",
     "validate": "bun run lint && bun run typecheck && bun run test:ci",
     "validate:quick": "bun run lint && bun run typecheck",
     "_postinstall": "bun run pod:install && patch-package",

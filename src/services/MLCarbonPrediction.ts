@@ -128,7 +128,7 @@ class MLCarbonPredictionService {
       this.logger.info('TensorFlow.js initialized successfully');
       await this.loadOrCreateModel();
     } catch (error) {
-      console.error('Error initializing TensorFlow.js:', error);
+      this.logger.error('Error initializing TensorFlow.js', { error: error.message });
     }
   }
 

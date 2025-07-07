@@ -49,7 +49,7 @@ class NetworkSecurityService {
   private readonly certificatePins: Map<string, CertificatePin> = new Map();
   private readonly rateLimiters: Map<string, RateLimiter> = new Map();
   private readonly requestNonces: Set<string> = new Set();
-  private apiKeyRotationTimer?: NodeJS.Timeout;
+  private apiKeyRotationTimer?: ReturnType<typeof setTimeout>;
   private currentApiKey?: string;
 
   // Default certificate pins for production
@@ -87,7 +87,7 @@ class NetworkSecurityService {
     this.initializeCertificatePins();
   }
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -125,7 +125,7 @@ class NetworkSecurityService {
   /**
    * Make a secure HTTP request with all security features enabled
    */
-  async makeSecureRequest(
+  public async makeSecureRequest(
     url: string,
     options: RequestInit & RequestSecurityOptions = {},
   ): Promise<Response> {
@@ -174,7 +174,7 @@ class NetworkSecurityService {
   /**
    * Sign a request with HMAC for integrity verification
    */
-  async signRequest(
+  public async signRequest(
     method: string,
     url: string,
     body?: string,
@@ -230,7 +230,7 @@ class NetworkSecurityService {
   /**
    * Verify request signature (for incoming requests if needed)
    */
-  async verifyRequestSignature(signedRequest: SignedRequest): Promise<boolean> {
+  public async verifyRequestSignature(signedRequest: SignedRequest): Promise<boolean> {
     try {
       const { method, url, body, timestamp, nonce, signature } = signedRequest;
 
@@ -292,7 +292,7 @@ class NetworkSecurityService {
   /**
    * Add or update certificate pin for a hostname
    */
-  addCertificatePin(pin: CertificatePin): void {
+  public addCertificatePin(pin: CertificatePin): void {
     this.certificatePins.set(pin.hostname, pin);
     loggingService.info('Certificate pin added', {
       hostname: pin.hostname,
@@ -304,7 +304,7 @@ class NetworkSecurityService {
   /**
    * Remove certificate pin for a hostname
    */
-  removeCertificatePin(hostname: string): void {
+  public removeCertificatePin(hostname: string): void {
     this.certificatePins.delete(hostname);
     loggingService.info('Certificate pin removed', { hostname });
   }
@@ -312,17 +312,17 @@ class NetworkSecurityService {
   /**
    * Get current API key with automatic rotation
    */
-  async getCurrentApiKey(): Promise<string> {
+  public async getCurrentApiKey(): Promise<string> {
     if (!this.currentApiKey) {
       await this.initializeApiKey();
     }
-    return this.currentApiKey!;
+    return this.currentApiKey as string;
   }
 
   /**
    * Manually rotate API key
    */
-  async rotateApiKey(): Promise<void> {
+  public async rotateApiKey(): Promise<void> {
     try {
       const newApiKey = await this.generateApiKey();
       const oldApiKey = this.currentApiKey;
@@ -622,7 +622,7 @@ class NetworkSecurityService {
   /**
    * Cleanup network security service
    */
-  cleanup(): void {
+  public cleanup(): void {
     if (this.apiKeyRotationTimer) {
       clearInterval(this.apiKeyRotationTimer);
       this.apiKeyRotationTimer = undefined;

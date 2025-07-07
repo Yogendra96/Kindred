@@ -521,6 +521,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   );
 };
 
+// Add displayName for better debugging
+AnalyticsDashboard.displayName = 'AnalyticsDashboard';
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

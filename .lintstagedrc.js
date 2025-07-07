@@ -1,26 +1,28 @@
-module.exports = {
+const config = {
   // TypeScript and JavaScript files
   '*.{ts,tsx,js,jsx}': [
-    'eslint --fix',
-    'prettier --write',
-    'jest --bail --findRelatedTests --passWithNoTests',
+    'bun run lint:fix',
+    'bun run format',
+    'bun run test --bail --findRelatedTests --passWithNoTests',
   ],
 
   // JSON files
-  '*.json': ['prettier --write'],
+  '*.json': ['bun run format'],
 
   // Markdown files
-  '*.md': ['prettier --write'],
+  '*.md': ['bun run format'],
 
   // YAML files
-  '*.{yml,yaml}': ['prettier --write'],
+  '*.{yml,yaml}': ['bun run format'],
 
   // Package.json
   'package.json': ['sort-package-json', 'prettier --write'],
 
   // Style files
-  '*.{css,scss,less}': ['prettier --write'],
+  '*.{css,scss,less}': ['bun run format'],
 
   // Config files
-  '*.config.{js,ts}': ['eslint --fix', 'prettier --write'],
+  '*.config.{js,ts}': ['bun run lint:fix', 'bun run format'],
 };
+
+module.exports = config;

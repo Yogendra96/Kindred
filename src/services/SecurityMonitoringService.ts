@@ -103,7 +103,7 @@ class SecurityMonitoringService {
     new Map();
   private readonly behaviorBaseline: Map<string, number> = new Map();
 
-  private monitoringInterval?: NodeJS.Timeout;
+  private monitoringInterval?: ReturnType<typeof setTimeout>;
   private appStateSubscription?: any;
   private isMonitoring = false;
   private eventCounter = 0;
@@ -139,7 +139,7 @@ class SecurityMonitoringService {
     this.initializeThreatIntelligence();
   }
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -201,7 +201,7 @@ class SecurityMonitoringService {
   /**
    * Log a security event
    */
-  async logSecurityEvent(
+  public async logSecurityEvent(
     eventData: Omit<SecurityEvent, 'id' | 'timestamp'>,
   ): Promise<string> {
     const event: SecurityEvent = {
@@ -245,7 +245,7 @@ class SecurityMonitoringService {
   /**
    * Get security events with filtering
    */
-  getSecurityEvents(filter?: {
+  public getSecurityEvents(filter?: {
     type?: SecurityEventType;
     severity?: SecuritySeverity;
     source?: string;
@@ -266,10 +266,10 @@ class SecurityMonitoringService {
         events = events.filter(e => e.source === filter.source);
       }
       if (filter.startTime) {
-        events = events.filter(e => e.timestamp >= filter.startTime!);
+        events = events.filter(e => e.timestamp >= (filter.startTime as number));
       }
       if (filter.endTime) {
-        events = events.filter(e => e.timestamp <= filter.endTime!);
+        events = events.filter(e => e.timestamp <= (filter.endTime as number));
       }
     }
 
@@ -286,7 +286,7 @@ class SecurityMonitoringService {
   /**
    * Get active security alerts
    */
-  getActiveAlerts(): SecurityAlert[] {
+  public getActiveAlerts(): SecurityAlert[] {
     return Array.from(this.alerts.values())
       .filter(alert => !alert.acknowledged)
       .sort((a, b) => b.timestamp - a.timestamp);
@@ -295,7 +295,7 @@ class SecurityMonitoringService {
   /**
    * Acknowledge a security alert
    */
-  async acknowledgeAlert(
+  public async acknowledgeAlert(
     alertId: string,
     response?: Omit<SecurityResponse, 'timestamp' | 'automated'>,
   ): Promise<void> {
@@ -341,7 +341,7 @@ class SecurityMonitoringService {
   /**
    * Get security metrics for a time period
    */
-  getSecurityMetrics(startTime?: number, endTime?: number): SecurityMetrics {
+  public getSecurityMetrics(startTime?: number, endTime?: number): SecurityMetrics {
     const start = startTime || Date.now() - 24 * 60 * 60 * 1000; // Last 24 hours
     const end = endTime || Date.now();
 
@@ -384,7 +384,7 @@ class SecurityMonitoringService {
   /**
    * Perform comprehensive security assessment
    */
-  async performSecurityAssessment(): Promise<{
+  public async performSecurityAssessment(): Promise<{
     overallRisk: SecuritySeverity;
     recommendations: readonly string[];
     findings: readonly SecurityEvent[];
@@ -501,7 +501,7 @@ class SecurityMonitoringService {
   /**
    * Export security data for compliance
    */
-  async exportSecurityData(format: 'json' | 'csv' = 'json'): Promise<string> {
+  public async exportSecurityData(format: 'json' | 'csv' = 'json'): Promise<string> {
     const events = this.getSecurityEvents();
     const alerts = Array.from(this.alerts.values());
     const metrics = this.getSecurityMetrics();
@@ -936,7 +936,7 @@ class SecurityMonitoringService {
   /**
    * Cleanup security monitoring service
    */
-  cleanup(): void {
+  public cleanup(): void {
     this.isMonitoring = false;
 
     if (this.monitoringInterval) {

@@ -68,7 +68,7 @@ class MFAService {
   private totpSecrets: Map<string, string> = new Map();
   private backupCodes: Map<string, Set<string>> = new Map();
   private failedAttempts: Map<string, number> = new Map();
-  private lockoutTimers: Map<string, NodeJS.Timeout> = new Map();
+  private lockoutTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   constructor() {
     this.config = {
@@ -546,7 +546,11 @@ class MFAService {
     try {
       // Check cache first
       if (this.totpSecrets.has(userId)) {
-        return this.totpSecrets.get(userId)!;
+        const secret = this.totpSecrets.get(userId);
+        if (!secret) {
+          throw new Error(`TOTP secret not found for user: ${userId}`);
+        }
+        return secret;
       }
 
       // Load from secure storage

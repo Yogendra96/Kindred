@@ -86,7 +86,7 @@ class DeviceAttestationService {
     };
   }
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -127,7 +127,7 @@ class DeviceAttestationService {
   /**
    * Perform comprehensive device attestation
    */
-  async performDeviceAttestation(
+  public async performDeviceAttestation(
     forceRefresh = false,
   ): Promise<AttestationResult> {
     const startTime = Date.now();
@@ -135,7 +135,7 @@ class DeviceAttestationService {
     try {
       // Check cache if not forcing refresh
       if (!forceRefresh && this.isCacheValid()) {
-        return this.cachedAttestation!;
+        return this.cachedAttestation as AttestationResult;
       }
 
       // Generate device identity
@@ -211,7 +211,7 @@ class DeviceAttestationService {
   /**
    * Verify device identity against stored baseline
    */
-  async verifyDeviceIdentity(
+  public async verifyDeviceIdentity(
     expectedIdentity: DeviceIdentity,
   ): Promise<boolean> {
     try {
@@ -249,7 +249,7 @@ class DeviceAttestationService {
   /**
    * Record suspicious behavior for analysis
    */
-  recordSuspiciousActivity(
+  public recordSuspiciousActivity(
     activity: string,
     severity: 'low' | 'medium' | 'high',
   ): void {
@@ -274,7 +274,7 @@ class DeviceAttestationService {
   /**
    * Get current device trust score
    */
-  async getDeviceTrustScore(): Promise<number> {
+  public async getDeviceTrustScore(): Promise<number> {
     const attestation = await this.performDeviceAttestation();
 
     let score = 100;
@@ -315,14 +315,14 @@ class DeviceAttestationService {
   /**
    * Get cached attestation if valid
    */
-  getCachedAttestation(): AttestationResult | null {
-    return this.isCacheValid() ? this.cachedAttestation! : null;
+  public getCachedAttestation(): AttestationResult | null {
+    return this.isCacheValid() ? (this.cachedAttestation as AttestationResult) : null;
   }
 
   /**
    * Invalidate cached attestation
    */
-  invalidateCache(): void {
+  public invalidateCache(): void {
     this.cachedAttestation = undefined;
     this.lastAttestationTime = 0;
   }
@@ -947,7 +947,7 @@ class DeviceAttestationService {
   /**
    * Cleanup device attestation service
    */
-  cleanup(): void {
+  public cleanup(): void {
     this.invalidateCache();
     this.behaviorMetrics.clear();
     this.suspiciousActivityCount = 0;

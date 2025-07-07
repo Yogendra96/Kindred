@@ -1,7 +1,6 @@
-import type { AxiosInstance, AxiosResponse , AxiosInstance, AxiosResponse } from 'axios';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import { CARBON_API_KEY, CARBON_API_BASE_URL } from '@env';
-import axios, { AxiosRequestConfig } from 'axios';
+import { loggingService } from './LoggingService';
 
 // Types for Carbon API
 export interface CarbonEmissionFactor {

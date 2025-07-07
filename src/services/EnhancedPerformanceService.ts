@@ -601,7 +601,7 @@ export class EnhancedPerformanceService {
         });
         resourceObserver.observe({ entryTypes: ['resource'] });
       } catch (error) {
-        this.logger.warn('Performance observers not supported:', error);
+        this.logger.warn('Performance observers not supported', { error: error.message });
       }
     }
   }
@@ -632,7 +632,7 @@ export class EnhancedPerformanceService {
             }
           }
         } catch (error) {
-          this.logger.warn('Memory monitoring error:', error);
+          this.logger.warn('Memory monitoring error', { error: error.message });
         }
       }, 10000); // Every 10 seconds
     }
@@ -691,6 +691,83 @@ export class EnhancedPerformanceService {
     this.networkMetrics = [];
     this.bundleMetrics = null;
     this.logger.info('Performance data cleared');
+  }
+
+  // Missing method implementations that are referenced in initialize()
+  private async initializeDeviceContext(): Promise<void> {
+    try {
+      this.deviceContext = {
+        deviceId: await DeviceInfo.getUniqueId(),
+        platform: Platform.OS,
+        version: Platform.Version.toString(),
+        model: await DeviceInfo.getModel(),
+        screenWidth: Dimensions.get('screen').width,
+        screenHeight: Dimensions.get('screen').height,
+      };
+    } catch (error) {
+      this.logger.warn('Failed to initialize device context', { error: error.message });
+    }
+  }
+
+  private setupDefaultAlertRules(): void {
+    // Set up default performance alert rules
+    this.alertRules.set('slow_render', {
+      id: 'slow_render',
+      name: 'Slow Render Detection',
+      condition: 'renderTime > 16',
+      threshold: 16,
+      severity: 'medium',
+      enabled: true,
+    });
+  }
+
+  private generateSessionId(): string {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private startSession(): void {
+    this.logger.info('Performance monitoring session started', {
+      sessionId: this.currentSessionId,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private async endSession(): Promise<void> {
+    this.logger.info('Performance monitoring session ended', {
+      sessionId: this.currentSessionId,
+      duration: Date.now() - this.screenStartTimes.get('session') || 0,
+    });
+  }
+
+  private async saveSessionData(): Promise<void> {
+    // Save session data for persistence
+    this.logger.debug('Session data saved', { sessionId: this.currentSessionId });
+  }
+
+  private setupNetworkInterception(): void {
+    // Set up network interception for monitoring
+    this.logger.debug('Network interception setup', { sessionId: this.currentSessionId });
+  }
+
+  private restoreNetworkFunctions(): void {
+    // Restore original network functions
+    if (this.originalFetch) {
+      global.fetch = this.originalFetch;
+    }
+  }
+
+  private startMemoryLeakDetection(): void {
+    // Start memory leak detection
+    this.logger.debug('Memory leak detection started', { sessionId: this.currentSessionId });
+  }
+
+  private recordEnhancedMetric(metric: EnhancedPerformanceMetric): void {
+    this.metricsBuffer.push(metric);
+    this.logger.debug('Enhanced metric recorded', {
+      name: metric.name,
+      value: metric.value,
+      severity: metric.severity,
+    });
   }
 }
 

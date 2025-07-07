@@ -1,8 +1,8 @@
-import type { AppStateStatus , AppStateStatus } from 'react-native';
+import type { AppStateStatus } from 'react-native';
 import { Platform, Alert, AppState } from 'react-native';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
-import { Platform, Alert, AppState } from 'react-native';
+import { advancedEncryptionService } from './AdvancedEncryptionService';
 import DeviceInfo from 'react-native-device-info';
 
 export interface SecurityThreat {
@@ -38,7 +38,7 @@ export interface SecurityAssessment {
 
 class RuntimeSecurityService {
   private readonly config: RuntimeSecurityConfig;
-  private monitoringInterval?: NodeJS.Timeout;
+  private monitoringInterval?: ReturnType<typeof setTimeout>;
   private isMonitoring = false;
   private appStateSubscription?: any;
   private lastSecurityCheck = 0;
@@ -75,7 +75,7 @@ class RuntimeSecurityService {
     };
   }
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -120,7 +120,7 @@ class RuntimeSecurityService {
   /**
    * Perform comprehensive security assessment
    */
-  async performSecurityAssessment(): Promise<SecurityAssessment> {
+  public async performSecurityAssessment(): Promise<SecurityAssessment> {
     const startTime = Date.now();
     const threats: SecurityThreat[] = [];
 
@@ -775,7 +775,7 @@ class RuntimeSecurityService {
   /**
    * Cleanup security monitoring
    */
-  cleanup(): void {
+  public cleanup(): void {
     this.isMonitoring = false;
 
     if (this.monitoringInterval) {
