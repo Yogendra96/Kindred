@@ -82,7 +82,7 @@ export class CircularBuffer<T> {
    * Get items within a time range (assuming T has timestamp property)
    */
   getInTimeRange(startTime: number, endTime: number): T[] {
-    return this.getAll().filter((item: any) => {
+    return this.getAll().filter((item: T & { timestamp?: number }) => {
       const timestamp = item.timestamp || 0;
       return timestamp >= startTime && timestamp <= endTime;
     });

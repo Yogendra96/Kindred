@@ -237,21 +237,21 @@ export const BundleSplitter = {
 // Performance monitoring for lazy loading
 export const withLazyLoadingMetrics = <T extends ComponentType<unknown>>(
   LazyComponent: T,
-  componentName: string,
+  _componentName: string,
 ) => {
   return (props: Record<string, unknown>) => {
     const startTime = performance.now();
 
     React.useEffect(() => {
       const endTime = performance.now();
-      const loadTime = endTime - startTime;
+      const _loadTime = endTime - startTime;
 
       // Log loading performance - commented out in production
-      // console.log(`Lazy component ${componentName} loaded in ${loadTime}ms`);
+      // console.log(`Lazy component ${_componentName} loaded in ${_loadTime}ms`);
 
       // You can integrate with your analytics service here
       // AnalyticsService.track('lazy_component_loaded', {
-      //   component: componentName,
+      //   component: _componentName,
       //   loadTime,
       // });
     }, [startTime]);

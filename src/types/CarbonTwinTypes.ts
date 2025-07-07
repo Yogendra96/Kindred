@@ -788,7 +788,7 @@ export interface DataQualityMetric {
   readonly overall: number;
 }
 
-type PrivacyLevel = 'public' | 'community' | 'family' | 'personal' | 'encrypted';
+export type PrivacyLevel = 'public' | 'community' | 'family' | 'personal' | 'encrypted';
 
 // AI and Prediction Types
 export interface TrainingDataSummary {

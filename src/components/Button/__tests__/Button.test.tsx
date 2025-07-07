@@ -155,7 +155,7 @@ describe('Button Component', () => {
     });
 
     it('renders loading state correctly', () => {
-      const { getByText, getByTestId } = render(
+      const { getByText } = render(
         <Button title='Loading' onPress={mockOnPress} loading />,
       );
 

@@ -16,11 +16,11 @@ const createMockStore = (initialState = {}) => {
   return configureStore({
     reducer: {
       // Add your reducers here
-      auth: (state = { user: null, isAuthenticated: false }, action) => state,
-      carbon: (state = { activities: [], totalSaved: 0 }, action) => state,
-      social: (state = { friends: [], activities: [] }, action) => state,
-      achievements: (state = { badges: [], userStats: null }, action) => state,
-      ui: (state = { theme: 'light', notifications: [] }, action) => state,
+      auth: (state = { user: null, isAuthenticated: false }, _action) => state,
+      carbon: (state = { activities: [], totalSaved: 0 }, _action) => state,
+      social: (state = { friends: [], activities: [] }, _action) => state,
+      achievements: (state = { badges: [], userStats: null }, _action) => state,
+      ui: (state = { theme: 'light', notifications: [] }, _action) => state,
     },
     preloadedState: initialState,
     middleware: getDefaultMiddleware =>

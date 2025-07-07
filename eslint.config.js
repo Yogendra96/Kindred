@@ -19,6 +19,8 @@ export default typescriptEslint.config(
       '*.config.js',
       'babel.config.js',
       'metro.config.js',
+      'metro.config.enhanced.js',
+      'jest.setup.js',
       '.detoxrc.js',
       'jest.config.js',
       'commitlint.config.js',
@@ -31,6 +33,7 @@ export default typescriptEslint.config(
       '.releaserc.js',
       '__mocks__/**',
       'e2e/**',
+      'src/tests/testUtils.tsx',
     ],
   },
 

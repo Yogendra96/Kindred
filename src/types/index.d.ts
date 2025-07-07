@@ -6,12 +6,12 @@ declare module '*.svg' {
 }
 
 declare module '*.png' {
-  const content: any;
+  const content: number;
   export default content;
 }
 
 declare module '*.jpg' {
-  const content: any;
+  const content: number;
   export default content;
 }
 
@@ -185,6 +185,9 @@ interface EcoTip {
 // Make these types available globally
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootStackParamList {
+      // This interface extends RootStackParamList for type safety
+      // Additional navigation params can be added here if needed
+    }
   }
 }

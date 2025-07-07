@@ -1,4 +1,4 @@
-import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
+// import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
 import { useTheme } from '../theme/ThemeProvider';
 import SkeletonLoader from './SkeletonLoader';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,12 +17,12 @@ import {
   LineChart,
   BarChart,
   PieChart,
-  ProgressChart,
+  // ProgressChart,
 } from 'react-native-chart-kit';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
+  // withTiming,
   withSpring,
   interpolate,
 } from 'react-native-reanimated';

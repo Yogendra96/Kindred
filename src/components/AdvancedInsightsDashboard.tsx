@@ -1,9 +1,9 @@
-import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
+// import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { iotIntegrationService } from '../services/IoTIntegrationService';
 import { mlCarbonPrediction } from '../services/MLCarbonPrediction';
 import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,8 +17,8 @@ import {
 import {
   LineChart,
   BarChart,
-  PieChart,
-  AreaChart,
+  // PieChart,
+  // AreaChart,
 } from 'react-native-chart-kit';
 import { useSelector } from 'react-redux';
 
@@ -49,7 +49,7 @@ interface InsightData {
       progress: number;
       target: number;
     };
-    recentUnlocks: any[];
+    recentUnlocks: unknown[];
   };
 }
 
@@ -65,14 +65,14 @@ const chartWidth = width - 32;
 
 export const AdvancedInsightsDashboard: React.FC = () => {
   const theme = useTheme();
-  const carbonData = useSelector((state: any) => state.carbon);
+  const carbonData = useSelector((state: { carbon: unknown }) => state.carbon);
 
   const [insights, setInsights] = useState<InsightData | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
   const [selectedTimeframe, setSelectedTimeframe] = useState<
     'week' | 'month' | 'year'
   >('month');
-  const [selectedMetric, setSelectedMetric] = useState<
+  const [selectedMetric] = useState<
     'carbon' | 'energy' | 'transport' | 'waste'
   >('carbon');
   const [isLoading, setIsLoading] = useState(true);
@@ -125,7 +125,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     try {
       // Use ML service to predict future carbon footprint
       const historicalData = carbonData.history || [];
-      const inputData = historicalData.slice(-30).map((entry: any) => ({
+      const inputData = historicalData.slice(-30).map((entry: { total?: number; timestamp: number }) => ({
         transport: entry.transport || 0,
         energy: entry.energy || 0,
         food: entry.food || 0,
@@ -166,12 +166,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
     const recentAvg =
       recentData.reduce(
-        (sum: number, entry: any) => sum + (entry.total || 0),
+        (sum: number, entry: { total?: number }) => sum + (entry.total || 0),
         0,
       ) / recentData.length;
     const olderAvg =
       olderData.reduce(
-        (sum: number, entry: any) => sum + (entry.total || 0),
+        (sum: number, entry: { total?: number }) => sum + (entry.total || 0),
         0,
       ) / olderData.length;
 
@@ -369,7 +369,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             backgroundGradientTo: theme.colors.surface,
             decimalPlaces: 1,
             color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
-            labelColor: (opacity = 1) => theme.colors.onSurface,
+            labelColor: (_opacity = 1) => theme.colors.onSurface,
             style: {
               borderRadius: 16,
             },
@@ -464,7 +464,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             backgroundGradientTo: theme.colors.surface,
             decimalPlaces: 1,
             color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-            labelColor: (opacity = 1) => theme.colors.onSurface,
+            labelColor: (_opacity = 1) => theme.colors.onSurface,
             barPercentage: 0.6,
           }}
         />

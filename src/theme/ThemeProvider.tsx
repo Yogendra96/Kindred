@@ -1,7 +1,7 @@
-import { getTheme, type ThemeMode, type Theme } from './theme';
+import { getTheme, type ThemeMode } from './theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RootState } from '@store/index';
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
 import { Appearance } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 

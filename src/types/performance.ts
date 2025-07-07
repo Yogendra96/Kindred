@@ -40,7 +40,7 @@ export interface EnhancedPerformanceMetric {
   sessionId: string;
   userId?: string;
   screenName: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   tags?: string[];
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
@@ -93,7 +93,7 @@ export interface ComponentLifecycleEvent {
   componentName: string;
   event: 'mount' | 'unmount' | 'update';
   timestamp: number;
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
   memoryUsage: number;
 }
 
@@ -113,7 +113,7 @@ export interface PerformanceAlertRule {
 export interface AlertCondition {
   field: string;
   operator: 'equals' | 'contains' | 'greater_than' | 'less_than';
-  value: any;
+  value: unknown;
 }
 
 export interface PerformanceAlert {
@@ -127,7 +127,7 @@ export interface PerformanceAlert {
   sessionId: string;
   acknowledged: boolean;
   resolvedAt?: number;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
 }
 
 // User Journey Correlation
@@ -140,7 +140,7 @@ export interface UserJourneyEvent {
   action?: string;
   timestamp: number;
   performanceMetrics?: EnhancedPerformanceMetric[];
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface JourneyPerformanceInsight {
@@ -294,7 +294,7 @@ export interface CircularBuffer<T> {
 export interface APMProvider {
   name: string;
   enabled: boolean;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   sendMetric(metric: EnhancedPerformanceMetric): Promise<void>;
   sendAlert(alert: PerformanceAlert): Promise<void>;
   sendSessionData(session: SessionPerformanceData): Promise<void>;

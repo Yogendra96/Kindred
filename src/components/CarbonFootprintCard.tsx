@@ -20,7 +20,7 @@ interface Props {
 const CarbonFootprintCard: React.FC<Props> = ({
   data,
   totalEmissions,
-  onCategoryPress,
+  onCategoryPress: _onCategoryPress,
 }) => {
   const { theme, isDark } = useTheme();
   const screenWidth = Dimensions.get('window').width;

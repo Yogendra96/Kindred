@@ -506,13 +506,13 @@ export const InteractiveDemo: Story = {
     customFilters,
     showComparison: true,
     onMetricPress: metric => {
-      console.log('Metric pressed:', metric);
+      // console.log('Metric pressed:', metric);
     },
     onChartPress: (chartType, data) => {
-      console.log('Chart pressed:', chartType, data);
+      // console.log('Chart pressed:', chartType, data);
     },
     onRefresh: () => {
-      console.log('Dashboard refreshed');
+      // console.log('Dashboard refreshed');
     },
   },
 };
