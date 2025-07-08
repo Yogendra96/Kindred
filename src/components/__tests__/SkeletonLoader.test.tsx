@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 // Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
+  const Reanimated = jest.requireActual('react-native-reanimated/mock');
 
   // The mock for `call` immediately calls the callback which is incorrect
   // So we override it with a no-op
@@ -26,7 +26,7 @@ jest.mock('react-native-reanimated', () => {
 
 // Mock expo-linear-gradient
 jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
+  const { View } = jest.requireActual('react-native');
   return {
     LinearGradient: ({ children, ...props }: any) => (
       <View {...props} testID='linear-gradient'>

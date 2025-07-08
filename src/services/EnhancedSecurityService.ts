@@ -2,15 +2,15 @@ import { loggingService } from './LoggingService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
 import { Platform } from 'react-native';
-import Keychain from 'react-native-keychain';
+import Keychain as _Keychain from 'react-native-keychain';
 
 // Global type declarations
 declare global {
   var __DEV__: boolean;
-  namespace NodeJS {
-    interface Timeout {}
-  }
 }
+
+// Use Timer type instead of NodeJS.Timeout namespace
+// type Timer = ReturnType<typeof setInterval>; // TODO: Add when needed
 
 interface SecurityConfig {
   encryptionKey?: string;

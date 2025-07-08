@@ -5,7 +5,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform as _Platform } from 'react-native';
 import { observabilityService } from './ObservabilityService';
 import { MLCarbonPrediction } from './MLCarbonPrediction';
 
@@ -373,13 +373,13 @@ export class CarbonTwinEngine {
     }
   }
 
-  async createCarbonTwin(userId: string, initialData: Partial<DigitalLifestyleModel>): Promise<PersonalCarbonTwin> {
+  async createCarbonTwin(userId: string, _initialData: Partial<DigitalLifestyleModel>): Promise<PersonalCarbonTwin> {
     console.log(`🌟 Creating Carbon Twin for user: ${userId}`);
     
     const twinId = `twin_${userId}_${Date.now()}`;
     
     // Build comprehensive digital lifestyle model
-    const digitalLifestyle = await this.buildDigitalLifestyleModel(userId, initialData);
+    const digitalLifestyle = await this.buildDigitalLifestyleModel(userId, _initialData);
     
     // Initialize prediction engine
     const behaviorPrediction = await this.initializeBehaviorPrediction(userId, digitalLifestyle);
@@ -668,10 +668,10 @@ export class CarbonTwinEngine {
 
   private async buildDigitalLifestyleModel(
     userId: string,
-    initialData: Partial<DigitalLifestyleModel>
+    _initialData: Partial<DigitalLifestyleModel>
   ): Promise<DigitalLifestyleModel> {
     // Build comprehensive lifestyle model
-    const categories = await this.analyzeLifestyleCategories(userId, initialData);
+    const categories = await this.analyzeLifestyleCategories(userId, _initialData);
     const patterns = await this.identifyBehaviorPatterns(userId, categories);
     const triggers = await this.identifyDecisionTriggers(patterns);
     
@@ -690,7 +690,7 @@ export class CarbonTwinEngine {
 
   private async analyzeLifestyleCategories(
     userId: string,
-    initialData: Partial<DigitalLifestyleModel>
+    _initialData: Partial<DigitalLifestyleModel>
   ): Promise<LifestyleCategory[]> {
     // Analyze user's lifestyle across key carbon categories
     const categories: LifestyleCategory[] = [];
@@ -828,45 +828,45 @@ export class CarbonTwinEngine {
   }
 
   // Placeholder implementations for complex analysis methods
-  private async identifyBehaviorPatterns(userId: string, categories: LifestyleCategory[]): Promise<BehaviorPattern[]> {
+  private async identifyBehaviorPatterns(_userId: string, _categories: LifestyleCategory[]): Promise<BehaviorPattern[]> {
     // Complex AI analysis would go here
     return [];
   }
 
-  private async identifyDecisionTriggers(patterns: BehaviorPattern[]): Promise<DecisionTrigger[]> {
+  private async identifyDecisionTriggers(_patterns: BehaviorPattern[]): Promise<DecisionTrigger[]> {
     // Decision trigger analysis
     return [];
   }
 
-  private async analyzeEnvironmentalFactors(userId: string): Promise<EnvironmentalFactor[]> {
+  private async analyzeEnvironmentalFactors(_userId: string): Promise<EnvironmentalFactor[]> {
     return [];
   }
 
-  private async analyzeSocialInfluences(userId: string): Promise<SocialInfluenceFactor[]> {
+  private async analyzeSocialInfluences(_userId: string): Promise<SocialInfluenceFactor[]> {
     return [];
   }
 
-  private async analyzeEconomicConstraints(userId: string): Promise<EconomicConstraint[]> {
+  private async analyzeEconomicConstraints(_userId: string): Promise<EconomicConstraint[]> {
     return [];
   }
 
-  private async analyzePersonalValues(userId: string): Promise<PersonalValue[]> {
+  private async analyzePersonalValues(_userId: string): Promise<PersonalValue[]> {
     return [];
   }
 
-  private async analyzeHabitFormation(patterns: BehaviorPattern[]): Promise<HabitFormationModel> {
+  private async analyzeHabitFormation(_patterns: BehaviorPattern[]): Promise<HabitFormationModel> {
     return {} as HabitFormationModel;
   }
 
-  private async getHistoricalTrends(userId: string, category: string): Promise<HistoricalTrend[]> {
+  private async getHistoricalTrends(_userId: string, _category: string): Promise<HistoricalTrend[]> {
     return [];
   }
 
-  private async analyzeSeasonalPatterns(userId: string, category: string): Promise<SeasonalPattern[]> {
+  private async analyzeSeasonalPatterns(_userId: string, _category: string): Promise<SeasonalPattern[]> {
     return [];
   }
 
-  private async assessImprovementPotential(userId: string, category: string): Promise<ImprovementPotential> {
+  private async assessImprovementPotential(_userId: string, _category: string): Promise<ImprovementPotential> {
     return {
       maxReduction: 0.4,
       feasibility: 0.7,
@@ -875,11 +875,11 @@ export class CarbonTwinEngine {
     };
   }
 
-  private async identifyBarriers(userId: string, category: string): Promise<LifestyleBarrier[]> {
+  private async identifyBarriers(_userId: string, _category: string): Promise<LifestyleBarrier[]> {
     return [];
   }
 
-  private async identifyEnablers(userId: string, category: string): Promise<LifestyleEnabler[]> {
+  private async identifyEnablers(_userId: string, _category: string): Promise<LifestyleEnabler[]> {
     return [];
   }
 

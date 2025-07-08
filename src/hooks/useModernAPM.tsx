@@ -27,10 +27,10 @@ export interface UseModernAPMOptions {
 export interface ModernAPMHookReturn {
   // Core Web Vitals tracking
   startScreenRender: (screenName?: string) => void;
-  endScreenRender: (screenName?: string, context?: Record<string, any>) => void;
-  recordCoreVital: (type: CoreVitalType, value: number, context?: Record<string, any>) => void;
+  endScreenRender: (screenName?: string, context?: Record<string, unknown>) => void;
+  recordCoreVital: (type: CoreVitalType, value: number, context?: Record<string, unknown>) => void;
   recordTouchInteraction: (actionName: string, delay: number) => void;
-  recordLayoutShift: (shiftScore: number, context?: Record<string, any>) => void;
+  recordLayoutShift: (shiftScore: number, context?: Record<string, unknown>) => void;
   
   // Performance metrics
   recordMetric: (metric: Omit<EnhancedPerformanceMetric, 'id' | 'timestamp' | 'sessionId' | 'screenName'>) => void;
@@ -58,7 +58,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
     screenName = 'unknown',
     autoTrackRender = true,
     trackInteractions = true,
-    trackMemory = true,
+    trackMemory: _enableMemoryTracking = true,
     userId,
     config,
   } = options;
@@ -73,7 +73,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
   // Refs
   const initializationAttempted = useRef(false);
   const renderStartTime = useRef<number>(0);
-  const interactionStartTime = useRef<number>(0);
+  const _interactionStartTime = useRef<number>(0);
   const metricsRefreshInterval = useRef<NodeJS.Timeout | null>(null);
   
   // Initialize APM service
@@ -169,7 +169,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
     modernAPMService.startScreenRender(screen);
   }, [isInitialized, screenName]);
   
-  const endScreenRender = useCallback((customScreenName?: string, context?: Record<string, any>) => {
+  const endScreenRender = useCallback((customScreenName?: string, context?: Record<string, unknown>) => {
     if (!isInitialized || renderStartTime.current === 0) return;
     
     const screen = customScreenName || screenName;
@@ -180,7 +180,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
   const recordCoreVital = useCallback((
     type: CoreVitalType,
     value: number,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) => {
     if (!isInitialized) return;
     
@@ -193,7 +193,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
     modernAPMService.recordTouchInteraction(screenName, actionName, delay);
   }, [isInitialized, screenName, trackInteractions]);
   
-  const recordLayoutShift = useCallback((shiftScore: number, context?: Record<string, any>) => {
+  const recordLayoutShift = useCallback((shiftScore: number, context?: Record<string, unknown>) => {
     if (!isInitialized) return;
     
     modernAPMService.recordLayoutShift(screenName, shiftScore, context);
@@ -292,7 +292,7 @@ export const useComponentPerformance = (
   componentName: string,
   options: { trackMemory?: boolean; trackRender?: boolean } = {}
 ) => {
-  const { trackMemory = true, trackRender = true } = options;
+  const { trackMemory: _trackMemory = true, trackRender = true } = options;
   const { trackComponentLifecycle, recordMetric, isInitialized } = useModernAPM();
   
   const renderStartTime = useRef<number>(0);
@@ -352,7 +352,7 @@ export const useComponentPerformance = (
   });
   
   // Track component updates
-  const trackUpdate = useCallback((updateContext?: Record<string, any>) => {
+  const trackUpdate = useCallback((updateContext?: Record<string, unknown>) => {
     if (!isInitialized) return;
     
     trackComponentLifecycle(componentName, 'update');
@@ -389,7 +389,7 @@ export const useInteractionTracking = (screenName: string) => {
   const trackInteraction = useCallback((
     actionName: string,
     interactionType: 'touch' | 'swipe' | 'long_press' | 'scroll' = 'touch',
-    additionalContext?: Record<string, any>
+    additionalContext?: Record<string, unknown>
   ) => {
     if (!isInitialized) return;
     
@@ -468,7 +468,7 @@ export const useNavigationPerformance = () => {
     });
     
     return {
-      complete: (additionalContext?: Record<string, any>) => {
+      complete: (additionalContext?: Record<string, unknown>) => {
         const navigationDuration = performance.now() - navigationStartTime;
         
         recordMetric({

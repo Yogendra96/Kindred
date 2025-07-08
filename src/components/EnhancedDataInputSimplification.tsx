@@ -3,13 +3,13 @@ import { useTheme } from '../theme/ThemeProvider';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
+// import { LinearGradient } from 'expo-linear-gradient';
 import React, {
   useState,
   useEffect,
-  useCallback,
+  // useCallback,
   useRef,
-  useMemo,
+  // useMemo,
 } from 'react';
 import {
   View,
@@ -22,7 +22,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Keyboard,
+  // Keyboard,
 } from 'react-native';
 
 // Note: These expo modules would need to be installed separately
@@ -31,19 +31,19 @@ import {
 // import { BarCodeScanner } from 'expo-barcode-scanner';
 
 // Placeholder objects for expo modules
-const BarCodeScanner = {
+const _BarCodeScanner = {
   requestPermissionsAsync: () => Promise.resolve({ status: 'granted' }),
 };
-const Camera = {
+const _Camera = {
   requestCameraPermissionsAsync: () => Promise.resolve({ status: 'granted' }),
 };
-const Speech = {
+const _Speech = {
   speak: () => {},
   isSpeakingAsync: () => Promise.resolve(false),
   stop: () => {},
 };
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 interface InputField {
   id: string;
@@ -62,7 +62,7 @@ interface InputField {
     | 'voice';
   label: string;
   placeholder?: string;
-  value: any;
+  value: unknown;
   required?: boolean;
   validation?: {
     pattern?: RegExp;
@@ -70,9 +70,9 @@ interface InputField {
     max?: number;
     minLength?: number;
     maxLength?: number;
-    custom?: (value: any) => string | null;
+    custom?: (value: unknown) => string | null;
   };
-  options?: Array<{ label: string; value: any; icon?: string }>;
+  options?: Array<{ label: string; value: unknown; icon?: string }>;
   suggestions?: string[];
   autoComplete?: boolean;
   smartSuggestions?: boolean;
@@ -83,7 +83,7 @@ interface InputField {
   dependencies?: string[];
   conditional?: {
     field: string;
-    value: any;
+    value: unknown;
     operator: 'equals' | 'not_equals' | 'greater' | 'less' | 'contains';
   };
 }
@@ -101,7 +101,7 @@ interface FormTemplate {
 }
 
 interface DataInputState {
-  formData: Record<string, any>;
+  formData: Record<string, unknown>;
   errors: Record<string, string>;
   touched: Record<string, boolean>;
   isValid: boolean;
@@ -109,7 +109,7 @@ interface DataInputState {
   totalSteps: number;
   progress: number;
   suggestions: Record<string, string[]>;
-  recentInputs: Record<string, any[]>;
+  recentInputs: Record<string, unknown[]>;
   voiceRecording: boolean;
   scanningBarcode: boolean;
   autoSaveEnabled: boolean;
@@ -210,9 +210,9 @@ const COMMON_TEMPLATES: FormTemplate[] = [
 
 interface DataInputSimplificationProps {
   template?: FormTemplate;
-  initialData?: Record<string, any>;
-  onSubmit?: (data: Record<string, any>) => void;
-  onSave?: (data: Record<string, any>) => void;
+  initialData?: Record<string, unknown>;
+  onSubmit?: (data: Record<string, unknown>) => void;
+  onSave?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
   enableTemplates?: boolean;
   enableSmartFeatures?: boolean;
@@ -299,7 +299,7 @@ export const DataInputSimplification: React.FC<
     }));
   };
 
-  const getSmartDefault = (field: InputField): any => {
+  const getSmartDefault = (field: InputField): unknown => {
     // Smart defaults based on field type and context
     switch (field.type) {
       case 'date':
@@ -327,7 +327,7 @@ export const DataInputSimplification: React.FC<
     }
   };
 
-  const saveRecentInput = async (fieldId: string, value: any) => {
+  const saveRecentInput = async (fieldId: string, value: unknown) => {
     try {
       const current = state.recentInputs[fieldId] || [];
       const updated = [value, ...current.filter(v => v !== value)].slice(0, 5);
@@ -401,7 +401,7 @@ export const DataInputSimplification: React.FC<
     return [...new Set(suggestions)].slice(0, 5);
   };
 
-  const validateField = (field: InputField, value: any): string | null => {
+  const validateField = (field: InputField, value: unknown): string | null => {
     if (field.required && (!value || value === '')) {
       return `${field.label} is required`;
     }
@@ -512,7 +512,7 @@ export const DataInputSimplification: React.FC<
     }, 2000); // Auto-save after 2 seconds of inactivity
   };
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: unknown) => {
     const newFormData = { ...state.formData, [fieldId]: value };
     setState(prev => ({
       ...prev,
@@ -633,7 +633,7 @@ export const DataInputSimplification: React.FC<
                 ]}
               >
                 <Ionicons
-                  name={template.icon as any}
+                  name={template.icon as string}
                   size={24}
                   color={theme.colors.onPrimary}
                 />
@@ -736,7 +736,7 @@ export const DataInputSimplification: React.FC<
           <View style={styles.fieldLabelContainer}>
             {field.icon && (
               <Ionicons
-                name={field.icon as any}
+                name={field.icon as string}
                 size={20}
                 color={theme.colors.primary}
               />
@@ -859,7 +859,7 @@ export const DataInputSimplification: React.FC<
 
   const renderFieldInput = (
     field: InputField,
-    value: any,
+    value: unknown,
     error: string | undefined,
     touched: boolean,
   ) => {
@@ -885,7 +885,7 @@ export const DataInputSimplification: React.FC<
               >
                 {option.icon && (
                   <Ionicons
-                    name={option.icon as any}
+                    name={option.icon as string}
                     size={20}
                     color={
                       value === option.value

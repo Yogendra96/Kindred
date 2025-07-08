@@ -1,5 +1,5 @@
 import type { AppStateStatus } from 'react-native';
-import { Platform, Alert, AppState } from 'react-native';
+import { Platform, Alert, AppState, Dimensions } from 'react-native';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
 import { advancedEncryptionService } from './AdvancedEncryptionService';
@@ -723,8 +723,7 @@ class RuntimeSecurityService {
 
   private getScreenFingerprint(): string {
     try {
-      const { width, height } =
-        require('react-native').Dimensions.get('window');
+      const { width, height } = Dimensions.get('window');
       return `${width}x${height}`;
     } catch {
       return 'unknown';

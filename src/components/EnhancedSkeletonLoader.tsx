@@ -18,7 +18,7 @@ interface EnhancedSkeletonLoaderProps {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   testID?: string;
-  customStyle?: any;
+  customStyle?: Record<string, unknown>;
   children?: React.ReactNode;
 }
 
@@ -114,7 +114,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
     };
 
     if (animation === 'shimmer' || animation === 'wave') {
-      const translateX = animatedValue.interpolate({
+      const _translateX = animatedValue.interpolate({
         inputRange: [0, 1],
         outputRange: [-screenWidth, screenWidth],
       });

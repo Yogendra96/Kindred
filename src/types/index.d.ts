@@ -188,6 +188,7 @@ declare global {
     interface RootParamList extends RootStackParamList {
       // This interface extends RootStackParamList for type safety
       // Additional navigation params can be added here if needed
+      [key: string]: undefined;
     }
   }
 }

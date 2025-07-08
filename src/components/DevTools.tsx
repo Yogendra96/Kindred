@@ -1,7 +1,7 @@
 import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
 import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
-import { loggingService } from '../services/LoggingService';
+// import { loggingService } from '../services/LoggingService';
 import React, { useState, useEffect } from 'react';
 import { useCallback } from 'react';
 import {
@@ -15,7 +15,7 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import { Dimensions } from 'react-native';
+// import { Dimensions } from 'react-native';
 
 // Global type declarations
 declare global {
@@ -33,10 +33,10 @@ interface LogEntry {
   level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
   timestamp: number;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
-const { width, height } = Dimensions.get('window');
+// const { width, height } = Dimensions.get('window');
 
 /**
  * Enhanced Development Tools Component
@@ -44,9 +44,9 @@ const { width, height } = Dimensions.get('window');
  */
 export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   const [activeTab, setActiveTab] = useState<TabType>('performance');
-  const [performanceData, setPerformanceData] = useState<any>(null);
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
-  const [securityData, setSecurityData] = useState<any>(null);
+  const [performanceData, setPerformanceData] = useState<Record<string, unknown> | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<Record<string, unknown> | null>(null);
+  const [securityData, setSecurityData] = useState<Record<string, unknown> | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [refreshInterval, setRefreshInterval] = useState<number>(5000);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
@@ -125,7 +125,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   /**
    * Format bytes to human readable
    */
-  const formatBytes = (bytes: number): string => {
+  const _formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -195,7 +195,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
       timestamp: new Date().toISOString(),
     };
 
-    console.log('Exported Dev Tools Data:', JSON.stringify(data, null, 2));
+    console.warn('Exported Dev Tools Data:', JSON.stringify(data, null, 2));
     Alert.alert('Data Exported', 'Check console for exported data');
   };
 

@@ -571,7 +571,7 @@ export const ResponsiveUtils = {
 
 // Accessibility Utilities
 export const AccessibilityUtils = {
-  getContrastRatio: (color1: string, color2: string): number => {
+  getContrastRatio: (_color1: string, _color2: string): number => {
     // Implementation would calculate actual contrast ratio
     return 4.5; // Placeholder
   },
@@ -580,7 +580,7 @@ export const AccessibilityUtils = {
     return AccessibilityUtils.getContrastRatio(foreground, background) >= 4.5;
   },
   
-  getAccessibleTextColor: (theme: Theme, backgroundColor: string): string => {
+  getAccessibleTextColor: (theme: Theme, _backgroundColor: string): string => {
     // Return text color that meets accessibility standards
     return theme.isDark ? theme.colors.text : theme.colors.text;
   },

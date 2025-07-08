@@ -2,6 +2,9 @@ import { PerformanceMonitoringService } from './PerformanceMonitoringService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
+// Use Timer type instead of NodeJS.Timeout namespace
+type Timer = ReturnType<typeof setInterval>;
+
 // Types for Feature Flags
 export interface FeatureFlag {
   key: string;
@@ -89,7 +92,7 @@ class FeatureFlagsService {
   private analytics: Map<string, FeatureFlagAnalytics> = new Map();
   private eventListeners: Map<string, ((event: FeatureFlagEvent) => void)[]> =
     new Map();
-  private refreshTimer: NodeJS.Timeout | null = null;
+  private refreshTimer: Timer | null = null;
   private isInitialized: boolean = false;
   private localOverrides: Map<string, any> = new Map();
 

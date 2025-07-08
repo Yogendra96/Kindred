@@ -1,12 +1,10 @@
-import type { ReactElement , ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import React from 'react';
-import type { RenderOptions , RenderOptions } from '@testing-library/react-native';
+import type { RenderOptions } from '@testing-library/react-native';
 import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { configureStore } from '@reduxjs/toolkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react-native';
-import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
@@ -48,7 +46,7 @@ const createMockQueryClient = () => {
 // All providers wrapper
 interface AllProvidersProps {
   children: React.ReactNode;
-  initialState?: any;
+  initialState?: Record<string, unknown>;
   queryClient?: QueryClient;
 }
 
@@ -74,7 +72,7 @@ const AllProviders: React.FC<AllProvidersProps> = ({
 
 // Custom render function
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  initialState?: any;
+  initialState?: Record<string, unknown>;
   queryClient?: QueryClient;
 }
 
@@ -470,7 +468,7 @@ export const TestHelpers = {
   },
 
   // Network mocking
-  mockNetworkResponse: (url: string, response: any, delay = 0) => {
+  mockNetworkResponse: (url: string, response: Record<string, unknown>, delay = 0) => {
     const originalFetch = global.fetch;
     global.fetch = jest.fn(requestUrl => {
       if (requestUrl === url) {
@@ -504,7 +502,7 @@ export const TestHelpers = {
   },
 
   // Accessibility testing helpers
-  checkAccessibility: (element: any) => {
+  checkAccessibility: (element: unknown) => {
     const accessibilityChecks = {
       hasAccessibilityLabel: !!element.props.accessibilityLabel,
       hasAccessibilityHint: !!element.props.accessibilityHint,

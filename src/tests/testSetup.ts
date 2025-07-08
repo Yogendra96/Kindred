@@ -4,6 +4,7 @@ import 'react-native-gesture-handler/jestSetup';
 
 // Mock React Native modules
 jest.mock('react-native-reanimated', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Reanimated = require('react-native-reanimated/mock');
   Reanimated.default.call = () => {};
   return Reanimated;
@@ -17,9 +18,10 @@ jest.mock('react-native-vector-icons/FontAwesome', () => 'Icon');
 
 // Mock React Native Maps
 jest.mock('react-native-maps', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
-  const MockMapView = (props: any) => View(props);
-  const MockMarker = (props: any) => View(props);
+  const MockMapView = (props: Record<string, unknown>) => View(props);
+  const MockMarker = (props: Record<string, unknown>) => View(props);
   return {
     __esModule: true,
     default: MockMapView,
@@ -297,6 +299,7 @@ jest.mock('victory-native', () => ({
 
 // Mock React Native SVG
 jest.mock('react-native-svg', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
   return {
     Svg: View,

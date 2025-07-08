@@ -71,8 +71,8 @@ export interface ModernCardProps {
   
   // Theme & Styling
   theme?: Theme;
-  style?: any;
-  contentStyle?: any;
+  style?: Record<string, unknown>;
+  contentStyle?: Record<string, unknown>;
   
   // Performance
   lazyLoad?: boolean;
@@ -97,9 +97,9 @@ class CardGestureManager {
   private rotation = new Animated.Value(0);
   private opacity = new Animated.Value(1);
   
-  constructor(private onGesture?: (gesture: string, data: any) => void) {}
+  constructor(private onGesture?: (gesture: string, data: Record<string, unknown>) => void) {}
   
-  handlePanGesture = (event: any) => {
+  handlePanGesture = (event: Record<string, unknown>) => {
     const { translationX, translationY, velocityX, velocityY } = event.nativeEvent;
     
     // Update pan values
@@ -139,7 +139,7 @@ class CardGestureManager {
     ]).start();
   };
   
-  handlePinchGesture = (event: any) => {
+  handlePinchGesture = (event: Record<string, unknown>) => {
     const { scale } = event.nativeEvent;
     this.scale.setValue(scale);
     
@@ -150,7 +150,7 @@ class CardGestureManager {
     }
   };
   
-  handleRotationGesture = (event: any) => {
+  handleRotationGesture = (event: Record<string, unknown>) => {
     const { rotation } = event.nativeEvent;
     this.rotation.setValue(rotation);
     this.onGesture?.('rotate', { rotation });
@@ -244,7 +244,7 @@ class CardGestureManager {
 }
 
 // Smart Layout Calculator
-class SmartLayoutCalculator {
+class _SmartLayoutCalculator {
   static calculateOptimalLayout(
     cardCount: number,
     containerWidth: number,
@@ -320,12 +320,12 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   onSwipeUp,
   onSwipeDown,
   expandable = false,
-  dismissible = false,
-  pinchToZoom = false,
+  dismissible: _dismissible = false,
+  pinchToZoom: _pinchToZoom = false,
   morphOnPress = false,
   contextualActions = false,
   entranceAnimation = 'fadeIn',
-  exitAnimation = 'fadeOut',
+  exitAnimation: _exitAnimation = 'fadeOut',
   hoverEffect = true,
   pressEffect = 'scale',
   accessibilityLabel,
@@ -335,15 +335,15 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   style,
   contentStyle,
   lazyLoad = false,
-  virtualized = false,
-  memoized = true,
+  virtualized: _virtualized = false,
+  memoized: _memoized = true,
 }) => {
   // State management
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, _setIsHovered] = useState(false);
   const [cardDimensions, setCardDimensions] = useState({ width: 0, height: 0 });
-  const [isVisible, setIsVisible] = useState(!lazyLoad);
+  const [isVisible, _setIsVisible] = useState(!lazyLoad);
   
   // Gesture management
   const gestureManager = useRef(
@@ -354,7 +354,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   
   // Animation refs
   const glowAnim = useRef(new Animated.Value(0)).current;
-  const elevationAnim = useRef(new Animated.Value(0)).current;
+  const _elevationAnim = useRef(new Animated.Value(0)).current;
   const rippleAnim = useRef(new Animated.Value(0)).current;
   
   // Initialize entrance animation
@@ -387,7 +387,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   }, [isHovered, hoverEffect, glowAnim]);
   
   // Handle gesture actions
-  const handleGestureAction = useCallback((gesture: string, data: any) => {
+  const handleGestureAction = useCallback((gesture: string, data: Record<string, unknown>) => {
     hapticFeedbackService.impact('light');
     
     if (gesture === 'swipe') {

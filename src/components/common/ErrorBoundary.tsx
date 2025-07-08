@@ -1,8 +1,10 @@
-import analytics from '@react-native-firebase/analytics';
-import { performanceService } from '@services/PerformanceService';
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+
+// TODO: Add analytics and performance monitoring when needed
+// import analytics from '@react-native-firebase/analytics';
+// import { performanceService } from '@services/PerformanceService';
 
 interface Props {
   children: ReactNode;

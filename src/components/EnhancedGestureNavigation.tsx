@@ -108,12 +108,12 @@ export const EnhancedGestureNavigation: React.FC<
   testID,
 }) => {
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const _navigation = useNavigation();
   const [config, setConfig] = useState<GestureConfig>({
     ...defaultConfig,
     ...userConfig,
   });
-  const [isGestureActive, setIsGestureActive] = useState(false);
+  const [_isGestureActive, _setIsGestureActive] = useState(false);
   const [activeDirection, setActiveDirection] = useState<string | null>(null);
 
   // Animation values
@@ -149,7 +149,7 @@ export const EnhancedGestureNavigation: React.FC<
     }
   };
 
-  const saveGestureSettings = async (newConfig: Partial<GestureConfig>) => {
+  const _saveGestureSettings = async (newConfig: Partial<GestureConfig>) => {
     try {
       const updatedConfig = { ...config, ...newConfig };
       await AsyncStorage.setItem(
@@ -322,7 +322,7 @@ export const EnhancedGestureNavigation: React.FC<
         break;
 
       case State.END:
-      case State.CANCELLED:
+      case State.CANCELLED: {
         const direction = getSwipeDirection(translationX, translationY);
         const action = getActionForDirection(direction || '');
         const distance = Math.sqrt(
@@ -370,13 +370,14 @@ export const EnhancedGestureNavigation: React.FC<
         ]).start();
 
         hideVisualFeedback();
-        setIsGestureActive(false);
+        _setIsGestureActive(false);
         onGestureEnd?.();
 
         // Reset gesture state
         gestureState.direction = null;
         gestureState.hasTriggeredHaptic = false;
         break;
+      }
     }
   };
 
@@ -444,7 +445,7 @@ export const EnhancedGestureNavigation: React.FC<
               accessibilityLabel={`Gesture indicator: ${activeDirection}`}
             >
               <Ionicons
-                name={getIndicatorIcon() as any}
+                name={getIndicatorIcon() as string}
                 size={24}
                 color={theme.colors.surface}
               />
@@ -468,7 +469,7 @@ export const EnhancedGestureNavigation: React.FC<
 
 // Hook for using gesture navigation
 export const useGestureNavigation = () => {
-  const navigation = useNavigation<NavigationProp<any>>();
+  const navigation = useNavigation<NavigationProp<Record<string, unknown>>>();
 
   const createNavigationActions = useCallback((): SwipeAction[] => {
     return [
@@ -488,7 +489,7 @@ export const useGestureNavigation = () => {
         direction: 'left',
         action: () => {
           // Custom forward navigation logic
-          console.log('Forward navigation');
+          console.warn('Forward navigation');
         },
         icon: 'arrow-forward',
         label: 'Go Forward',
@@ -498,13 +499,13 @@ export const useGestureNavigation = () => {
     ];
   }, [navigation]);
 
-  const createTabActions = useCallback((tabNames: string[]): SwipeAction[] => {
+  const createTabActions = useCallback((_tabNames: string[]): SwipeAction[] => {
     return [
       {
         direction: 'left',
         action: () => {
           // Navigate to next tab
-          console.log('Next tab');
+          console.warn('Next tab');
         },
         icon: 'chevron-forward',
         label: 'Next Tab',
@@ -514,7 +515,7 @@ export const useGestureNavigation = () => {
         direction: 'right',
         action: () => {
           // Navigate to previous tab
-          console.log('Previous tab');
+          console.warn('Previous tab');
         },
         icon: 'chevron-back',
         label: 'Previous Tab',
@@ -549,8 +550,8 @@ export const useGestureNavigation = () => {
 export const GestureNavigationSettings: React.FC<{
   config: GestureConfig;
   onConfigChange: (config: Partial<GestureConfig>) => void;
-}> = ({ config, onConfigChange }) => {
-  const { theme } = useTheme();
+}> = ({ config: _config, onConfigChange: _onConfigChange }) => {
+  const { theme: _theme } = useTheme();
 
   return (
     <View style={styles.settingsContainer}>

@@ -2,13 +2,13 @@ import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@theme/ThemeProvider';
-import { BlurView } from 'expo-blur';
+// import { BlurView } from 'expo-blur';
 import React, {
   useState,
   useEffect,
   useCallback,
   useRef,
-  useMemo,
+  // useMemo,
 } from 'react';
 import {
   View,
@@ -18,13 +18,13 @@ import {
   Animated,
   Dimensions,
   ScrollView,
-  TouchableOpacity,
-  Platform,
-  Keyboard,
-  Alert,
+  // TouchableOpacity,
+  // Platform,
+  // Keyboard,
+  // Alert,
 } from 'react-native';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: _screenWidth } = Dimensions.get('window');
 
 interface ValidationRule {
   type:
@@ -37,7 +37,7 @@ interface ValidationRule {
     | 'max'
     | 'pattern'
     | 'custom';
-  value?: any;
+  value?: unknown;
   message: string;
   validator?: (value: string) => boolean;
 }
@@ -106,7 +106,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
   validationRules = [],
   suggestions = [],
   enableSmartSuggestions = true,
-  enableAutoFill = true,
+  _enableAutoFill = true,
   enableVoiceInput = false,
   enableBarcodeScan = false,
   multiline = false,
@@ -216,18 +216,20 @@ export const SmartInput: React.FC<SmartInputProps> = ({
                 errors.push(rule.message);
               }
               break;
-            case 'email':
+            case 'email': {
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (text && !emailRegex.test(text)) {
                 errors.push(rule.message);
               }
               break;
-            case 'phone':
-              const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            }
+            case 'phone': {
+              const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
               if (text && !phoneRegex.test(text.replace(/\s/g, ''))) {
                 errors.push(rule.message);
               }
               break;
+            }
             case 'url':
               try {
                 if (text && !new URL(text)) {
@@ -514,7 +516,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
         {leftIcon && (
           <View style={styles.leftIconContainer}>
             <Ionicons
-              name={leftIcon as any}
+              name={leftIcon as string}
               size={20}
               color={theme.colors.onSurfaceVariant}
             />
@@ -640,7 +642,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               accessibilityRole='button'
             >
               <Ionicons
-                name={rightIcon as any}
+                name={rightIcon as string}
                 size={20}
                 color={theme.colors.onSurfaceVariant}
               />
@@ -649,7 +651,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
 
           {statusIcon && (
             <Ionicons
-              name={statusIcon as any}
+              name={statusIcon as string}
               size={20}
               color={getStatusColor()}
             />
@@ -698,7 +700,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               >
                 {suggestion.icon && (
                   <Ionicons
-                    name={suggestion.icon as any}
+                    name={suggestion.icon as string}
                     size={14}
                     color={theme.colors.onSurfaceVariant}
                   />
@@ -774,7 +776,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
 // Smart Form Component
 interface SmartFormProps {
   children: React.ReactNode;
-  onSubmit?: (data: Record<string, any>) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   validationMode?: 'onChange' | 'onBlur' | 'onSubmit';
   enableAutoSave?: boolean;
   autoSaveInterval?: number;
@@ -784,13 +786,13 @@ interface SmartFormProps {
 export const SmartForm: React.FC<SmartFormProps> = ({
   children,
   onSubmit,
-  validationMode = 'onBlur',
+  _validationMode = 'onBlur',
   enableAutoSave = false,
   autoSaveInterval = 5000,
   testID,
 }) => {
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
+  const [formData, _setFormData] = useState<Record<string, unknown>>({});
+  const [formErrors, _setFormErrors] = useState<Record<string, string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -820,13 +822,13 @@ export const SmartForm: React.FC<SmartFormProps> = ({
   const saveFormData = async () => {
     try {
       // Implement auto-save logic
-      console.log('Auto-saving form data:', formData);
+      console.warn('Auto-saving form data:', formData);
     } catch (error) {
       console.error('Error auto-saving form:', error);
     }
   };
 
-  const handleSubmit = async () => {
+  const _handleSubmit = async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);

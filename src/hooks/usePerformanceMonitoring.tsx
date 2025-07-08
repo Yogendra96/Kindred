@@ -8,10 +8,10 @@ import { AppState } from 'react-native';
 // Global type declarations
 declare global {
   var __DEV__: boolean;
-  namespace NodeJS {
-    interface Timeout {}
-  }
 }
+
+// Use Timer type instead of NodeJS.Timeout namespace
+type Timer = ReturnType<typeof setInterval>;
 
 // React Native module declaration
 declare module 'react-native' {
@@ -229,9 +229,9 @@ export const usePerformanceMonitoring = (
     if (!enableMemoryTracking || !shouldSample()) return;
 
     try {
-      // @ts-ignore - performance.memory is available in some environments
+      // @ts-expect-error - performance.memory is available in some environments
       if (typeof performance !== 'undefined' && performance.memory) {
-        // @ts-ignore
+        // @ts-expect-error - performance.memory is not in standard API
         const memoryInfo = performance.memory;
         const memoryUsage = memoryInfo.usedJSHeapSize;
 
@@ -242,7 +242,7 @@ export const usePerformanceMonitoring = (
 
         recordMetric('memory_usage', memoryUsage, 'bytes');
       }
-    } catch (error) {
+    } catch (_error) {
       // Memory API not available
     }
   }, [enableMemoryTracking, recordMetric, shouldSample]);
@@ -291,7 +291,7 @@ export const usePerformanceMonitoring = (
     );
 
     // Setup memory tracking interval
-    let memoryInterval: NodeJS.Timeout | null = null;
+    let memoryInterval: Timer | null = null;
     if (enableMemoryTracking) {
       memoryInterval = setInterval(trackMemoryUsage, 5000); // Every 5 seconds
     }
@@ -418,10 +418,10 @@ export const useAsyncPerformance = () => {
   const analyticsService = useRef(EnhancedAnalyticsService.getInstance());
 
   const measureAsync = useCallback(
-    async <T extends any>(
+    async <T = unknown>(
       name: string,
       asyncFn: () => Promise<T>,
-      context?: Record<string, any>,
+      context?: Record<string, unknown>,
     ): Promise<{ result: T; duration: number }> => {
       const { result, duration } =
         await performanceService.current.measureAsync(name, asyncFn, context);
@@ -435,10 +435,10 @@ export const useAsyncPerformance = () => {
   );
 
   const measureSync = useCallback(
-    <T extends any>(
+    <T = unknown>(
       name: string,
       syncFn: () => T,
-      context?: Record<string, any>,
+      context?: Record<string, unknown>,
     ): { result: T; duration: number } => {
       const { result, duration } = performanceService.current.measure(
         name,

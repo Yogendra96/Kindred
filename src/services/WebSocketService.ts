@@ -17,7 +17,7 @@ export interface WebSocketConfig {
 export interface WebSocketMessage {
   id: string;
   type: string;
-  payload: any;
+  payload: Record<string, unknown>;
   timestamp: number;
   priority: 'low' | 'normal' | 'high' | 'critical';
   retryCount?: number;
@@ -158,7 +158,7 @@ class WebSocketService {
         // Configure WebSocket options
         if (Platform.OS !== 'web') {
           // React Native specific configurations
-          (this.ws as any).binaryType = 'arraybuffer';
+          (this.ws as WebSocket & { binaryType: string }).binaryType = 'arraybuffer';
         }
 
         this.ws.onopen = event => {
@@ -476,7 +476,7 @@ class WebSocketService {
     };
   }
 
-  private emitEvent(eventType: string, payload: any): void {
+  private emitEvent(eventType: string, payload: Record<string, unknown>): void {
     const message: WebSocketMessage = {
       id: this.generateMessageId(),
       type: eventType,
@@ -534,7 +534,7 @@ class WebSocketService {
   }
 
   // Convenience methods for common message types
-  async sendCarbonUpdate(carbonData: any): Promise<void> {
+  async sendCarbonUpdate(carbonData: Record<string, unknown>): Promise<void> {
     await this.sendMessage({
       id: this.generateMessageId(),
       type: 'carbon_update',
@@ -544,7 +544,7 @@ class WebSocketService {
     });
   }
 
-  async sendAchievementUnlock(achievement: any): Promise<void> {
+  async sendAchievementUnlock(achievement: Record<string, unknown>): Promise<void> {
     await this.sendMessage({
       id: this.generateMessageId(),
       type: 'achievement_unlocked',
@@ -554,7 +554,7 @@ class WebSocketService {
     });
   }
 
-  async sendChallengeProgress(progress: any): Promise<void> {
+  async sendChallengeProgress(progress: Record<string, unknown>): Promise<void> {
     await this.sendMessage({
       id: this.generateMessageId(),
       type: 'challenge_progress',
@@ -564,7 +564,7 @@ class WebSocketService {
     });
   }
 
-  async sendFriendActivity(activity: any): Promise<void> {
+  async sendFriendActivity(activity: Record<string, unknown>): Promise<void> {
     await this.sendMessage({
       id: this.generateMessageId(),
       type: 'friend_activity',

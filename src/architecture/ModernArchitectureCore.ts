@@ -48,8 +48,8 @@ export interface DomainEntity {
 export class AdvancedServiceContainer implements ServiceContainer {
   private readonly services = new Map<string, unknown>();
   private readonly singletons = new Map<string, unknown>();
-  private readonly factories = new Map<string, () => any>();
-  private readonly scopedFactories = new Map<string, () => any>();
+  private readonly factories = new Map<string, () => unknown>();
+  private readonly scopedFactories = new Map<string, () => unknown>();
   private readonly dependencies = new Map<string, string[]>();
 
   register<T>(token: string, implementation: T): void {
@@ -189,7 +189,7 @@ export class EventStore {
     await AsyncStorage.setItem(`snapshot_${aggregateId}`, JSON.stringify(snapshot));
   }
 
-  async getSnapshot(aggregateId: string): Promise<any> {
+  async getSnapshot(aggregateId: string): Promise<unknown> {
     let snapshot = this.snapshots.get(aggregateId);
     
     if (!snapshot) {
@@ -270,7 +270,7 @@ export abstract class QueryHandler<T extends Query, R> {
 }
 
 export class CommandBus {
-  private readonly handlers = new Map<string, CommandHandler<any>>();
+  private readonly handlers = new Map<string, CommandHandler<unknown>>();
   private readonly middleware: Array<(command: Command, next: () => Promise<void>) => Promise<void>> = [];
 
   register<T extends Command>(commandType: string, handler: CommandHandler<T>): void {
@@ -303,7 +303,7 @@ export class CommandBus {
 }
 
 export class QueryBus {
-  private readonly handlers = new Map<string, QueryHandler<any, any>>();
+  private readonly handlers = new Map<string, QueryHandler<unknown, unknown>>();
   private readonly cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
 
   register<T extends Query, R>(queryType: string, handler: QueryHandler<T, R>): void {
@@ -656,9 +656,9 @@ export class ModernArchitectureCore {
 
   async getHealthStatus(): Promise<{
     status: 'healthy' | 'degraded' | 'unhealthy';
-    details: Record<string, any>;
+    details: Record<string, unknown>;
   }> {
-    const details: Record<string, any> = {};
+    const details: Record<string, unknown> = {};
 
     try {
       // Check container health

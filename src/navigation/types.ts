@@ -43,8 +43,9 @@ export type MainTabParamList = {
   ProfileTab: { userId?: string };
 };
 
-declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
-  }
+// Type augmentation for React Navigation
+// This extends the global RootParamList to provide type safety for navigation
+declare module '@react-navigation/native' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface RootParamList extends RootStackParamList {}
 }

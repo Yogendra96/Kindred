@@ -1,9 +1,8 @@
-import type { ErrorInfo, ReactNode , ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';
 import * as Haptics from 'expo-haptics';
-import React, { Component } from 'react';
 import {
   View,
   Text,
@@ -32,10 +31,10 @@ interface State {
   isRetrying: boolean;
 }
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 class ErrorBoundary extends Component<Props, State> {
-  private resetTimeoutId: number | null = null;
+  private resetTimeoutId: NodeJS.Timeout | null = null;
   private previousResetKeys: Array<string | number> = [];
 
   constructor(props: Props) {
@@ -148,11 +147,11 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     // Console log for development
-    console.group(`🚨 Error Boundary Caught Error [${errorId}]`);
+    console.warn(`🚨 Error Boundary Caught Error [${errorId}]`);
     console.error('Error:', error);
     console.error('Error Info:', errorInfo);
     console.error('Component Stack:', errorInfo.componentStack);
-    console.groupEnd();
+    // console.groupEnd();
   };
 
   private reportError = async (
@@ -198,7 +197,7 @@ class ErrorBoundary extends Component<Props, State> {
     // Add a small delay to show loading state
     this.resetTimeoutId = setTimeout(() => {
       this.resetErrorBoundary();
-    }, 500) as any;
+    }, 500);
   };
 
   private handleReportIssue = () => {
@@ -224,7 +223,7 @@ class ErrorBoundary extends Component<Props, State> {
           text: 'Report',
           onPress: () => {
             // Here you could integrate with your issue reporting system
-            console.log('Reporting issue:', errorDetails);
+            console.warn('Reporting issue:', errorDetails);
             Alert.alert('Thank you', 'Your report has been submitted.');
           },
         },
@@ -246,9 +245,9 @@ class ErrorBoundary extends Component<Props, State> {
             // Toggle details visibility could be implemented here
           }}
         >
-          <Ionicons name='information-circle' size={20} color='#666' />
+          <Text style={{color: '#666', fontSize: 16}}>ℹ️</Text>
           <Text style={styles.detailsHeaderText}>Error Details</Text>
-          <Ionicons name='chevron-down' size={20} color='#666' />
+          <Text style={{color: '#666', fontSize: 16}}>▼</Text>
         </TouchableOpacity>
 
         <ScrollView
@@ -302,7 +301,7 @@ class ErrorBoundary extends Component<Props, State> {
           >
             <View style={styles.errorContainer}>
               <View style={styles.iconContainer}>
-                <Ionicons name='warning' size={64} color='#FF6B6B' />
+                <Text style={{fontSize: 64, textAlign: 'center'}}>⚠️</Text>
               </View>
 
               <Text style={styles.title}>Oops! Something went wrong</Text>
@@ -324,7 +323,7 @@ class ErrorBoundary extends Component<Props, State> {
                     </View>
                   ) : (
                     <View style={styles.buttonContent}>
-                      <Ionicons name='refresh' size={20} color='white' />
+                      <Text style={{color: 'white', fontSize: 16}}>🔄</Text>
                       <Text style={styles.buttonText}>Try Again</Text>
                     </View>
                   )}
@@ -335,7 +334,7 @@ class ErrorBoundary extends Component<Props, State> {
                   onPress={this.handleReportIssue}
                 >
                   <View style={styles.buttonContent}>
-                    <Ionicons name='bug' size={20} color='#007AFF' />
+                    <Text style={{color: '#007AFF', fontSize: 16}}>🐛</Text>
                     <Text style={styles.secondaryButtonText}>Report Issue</Text>
                   </View>
                 </TouchableOpacity>
@@ -482,7 +481,7 @@ export const withErrorBoundary = <P extends object>(
 
 // Hook for manual error reporting
 export const useErrorHandler = () => {
-  const reportError = React.useCallback((error: Error, errorInfo?: any) => {
+  const reportError = React.useCallback((error: Error, errorInfo?: Record<string, unknown>) => {
     const errorId = `manual_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;

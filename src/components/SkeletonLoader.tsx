@@ -330,7 +330,7 @@ export interface SkeletonListProps {
 
 export const SkeletonList: React.FC<SkeletonListProps> = ({
   itemCount = 5,
-  itemHeight = 60,
+  itemHeight: _itemHeight = 60,
   itemSpacing = 12,
   showSeparator = false,
   style,

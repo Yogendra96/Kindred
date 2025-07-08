@@ -1,6 +1,5 @@
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import type {
-  PanGestureHandlerGestureEvent,
   PanGestureHandlerGestureEvent} from 'react-native';
 import {
   View,
@@ -10,7 +9,7 @@ import {
   Dimensions,
   PanGestureHandler,
   State,
-  TouchableOpacity,
+  // TouchableOpacity,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,19 +17,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@theme/ThemeProvider';
 import { BlurView } from 'expo-blur';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  PanGestureHandler,
-  State,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 export interface NotificationData {
   id: string;
@@ -48,7 +36,7 @@ export interface NotificationData {
   sound?: boolean;
   vibration?: boolean;
   timestamp?: Date;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export interface NotificationAction {
@@ -285,7 +273,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
           {/* Icon */}
           <View style={styles.iconContainer}>
             <Ionicons
-              name={getIcon() as any}
+              name={getIcon() as string}
               size={24}
               color={getIconColor()}
               accessible={true}
@@ -445,7 +433,7 @@ export const EnhancedNotificationSystem: React.FC<
     }
   };
 
-  const saveSettings = async (newSettings: typeof settings) => {
+  const _saveSettings = async (newSettings: typeof settings) => {
     try {
       await AsyncStorage.setItem(
         'notification_settings',
@@ -457,7 +445,7 @@ export const EnhancedNotificationSystem: React.FC<
     }
   };
 
-  const addNotification = useCallback(
+  const _addNotification = useCallback(
     (notification: Omit<NotificationData, 'id' | 'timestamp'>) => {
       const newNotification: NotificationData = {
         ...notification,
@@ -507,7 +495,7 @@ export const EnhancedNotificationSystem: React.FC<
   const handleAction = useCallback(
     (notificationId: string, actionId: string) => {
       // Log action for analytics
-      console.log('Notification action:', { notificationId, actionId });
+      console.warn('Notification action:', { notificationId, actionId });
     },
     [],
   );

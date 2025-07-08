@@ -13,6 +13,9 @@ import {
   AccessibilityInfo,
 } from 'react-native';
 
+// Import logo asset
+import logoImage from '../../assets/logo.png';
+
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,7 +75,7 @@ const RegisterScreen = () => {
     >
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/logo.png')}
+          source={logoImage}
           style={styles.logo}
           resizeMode='contain'
           accessibilityLabel='Kindred app logo'

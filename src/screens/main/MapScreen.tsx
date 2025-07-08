@@ -73,7 +73,7 @@ const MapScreen = () => {
         if (hasPermission) {
           getCurrentLocation();
         }
-      } catch (err) {
+      } catch (_err) {
         setError('Location permission denied');
       }
     };

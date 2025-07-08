@@ -1,36 +1,36 @@
 import { loggingService } from './LoggingService';
 import { Platform, Dimensions } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import NetInfo as _NetInfo, { NetInfoState as _NetInfoState } from '@react-native-community/netinfo';
 import {
   EnhancedPerformanceMetric,
   NativeMemoryMetrics,
   EnhancedNetworkMetrics,
   CoreVitalMetric,
-  CoreVitalType,
+  CoreVitalType as _CoreVitalType,
   PerformanceAlertRule,
   PerformanceAlert,
   UserJourneyEvent,
-  JourneyPerformanceInsight,
+  JourneyPerformanceInsight as _JourneyPerformanceInsight,
   MemoryLeak,
   ComponentLifecycleEvent,
   DeviceContext,
-  SessionPerformanceData,
+  SessionPerformanceData as _SessionPerformanceData,
   PerformanceConfig,
   DEFAULT_PERFORMANCE_CONFIG,
-  DEFAULT_CORE_VITAL_THRESHOLDS,
+  DEFAULT_CORE_VITAL_THRESHOLDS as _DEFAULT_CORE_VITAL_THRESHOLDS,
   CircularBuffer as ICircularBuffer,
 } from '../types/performance';
 import { CircularBuffer } from '../utils/CircularBuffer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Global type declarations
 declare global {
   var __DEV__: boolean;
-  namespace NodeJS {
-    interface Timeout {}
-  }
 }
+
+// Use Timer type instead of NodeJS.Timeout namespace
+// type Timer = ReturnType<typeof setInterval>; // TODO: Add when needed
 
 interface PerformanceMetric {
   name: string;

@@ -5,9 +5,9 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, Dimensions, PixelRatio } from 'react-native';
+import { Platform as _Platform, Dimensions as _Dimensions, PixelRatio as _PixelRatio } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { carbonTwinEngine } from './CarbonTwinEngine';
+import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
 
 // Core Adaptive UI Types
 export interface AdaptiveUIEngine {

@@ -1,4 +1,4 @@
-import CarbonTracker from '../../components/CarbonTracker';
+import CarbonTracker as _CarbonTracker from '../../components/CarbonTracker';
 import { render, TestDataFactory, TestHelpers } from '../utils/testUtils';
 import { fireEvent, waitFor, screen } from '@testing-library/react-native';
 import React from 'react';
@@ -138,7 +138,7 @@ describe('CarbonTracker Component', () => {
 
       const activityTypeInput = screen.getByTestId('activity-type-input');
       const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const _addButton = screen.getByTestId('add-activity-button');
 
       // Check if elements have accessibility properties
       expect(activityTypeInput.props.placeholder).toBe('Select activity type');

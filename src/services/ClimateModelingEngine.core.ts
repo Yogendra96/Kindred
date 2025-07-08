@@ -4,7 +4,7 @@
  * File size target: 200-300 lines max
  */
 
-import { Platform } from 'react-native';
+import { Platform as _Platform } from 'react-native';
 import type {
   ClimateModelingResult,
   GlobalClimateData,
@@ -434,51 +434,51 @@ export class ClimateModelingCore {
   }
 
   // Simplified placeholder methods for mobile optimization
-  private generateEmissionPathway(scenario: string, startYear: number, endYear: number): any {
+  private generateEmissionPathway(_scenario: string, _startYear: number, _endYear: number): any {
     return { co2: [], methane: [], nitrousOxide: [], totalGHG: [] };
   }
 
-  private generateSeaLevelProjections(startYear: number, timeHorizon: number): TimeSeriesProjection[] {
+  private generateSeaLevelProjections(_startYear: number, _timeHorizon: number): TimeSeriesProjection[] {
     return [];
   }
 
-  private adjustSeasonality(coordinates: GeographicCoordinate): any[] {
+  private adjustSeasonality(_coordinates: GeographicCoordinate): any[] {
     return [];
   }
 
-  private calculateDroughtRisk(coordinates: GeographicCoordinate): any {
+  private calculateDroughtRisk(_coordinates: GeographicCoordinate): any {
     return { level: 'moderate', probability: 0.3, timeframe: 10, impact: 'moderate' };
   }
 
-  private calculateFloodRisk(coordinates: GeographicCoordinate): any {
+  private calculateFloodRisk(_coordinates: GeographicCoordinate): any {
     return { level: 'moderate', probability: 0.25, timeframe: 10, impact: 'moderate' };
   }
 
-  private estimateLocalAQI(coordinates: GeographicCoordinate): number {
+  private estimateLocalAQI(_coordinates: GeographicCoordinate): number {
     return 85; // Simplified
   }
 
-  private generateAQIProjections(coordinates: GeographicCoordinate, timeHorizon: number): TimeSeriesProjection[] {
+  private generateAQIProjections(_coordinates: GeographicCoordinate, _timeHorizon: number): TimeSeriesProjection[] {
     return [];
   }
 
-  private calculateBiodiversityIndex(coordinates: GeographicCoordinate): number {
+  private calculateBiodiversityIndex(_coordinates: GeographicCoordinate): number {
     return 0.75;
   }
 
-  private projectHabitatLoss(coordinates: GeographicCoordinate, timeHorizon: number): number {
+  private projectHabitatLoss(_coordinates: GeographicCoordinate, _timeHorizon: number): number {
     return 15;
   }
 
-  private estimateSpeciesAtRisk(coordinates: GeographicCoordinate): number {
+  private estimateSpeciesAtRisk(_coordinates: GeographicCoordinate): number {
     return 1250;
   }
 
-  private calculateCarbonSequestration(coordinates: GeographicCoordinate): number {
+  private calculateCarbonSequestration(_coordinates: GeographicCoordinate): number {
     return 2.3;
   }
 
-  private generateCarbonEmissionProjections(current: number, timeHorizon: number): any[] {
+  private generateCarbonEmissionProjections(_current: number, _timeHorizon: number): any[] {
     return [];
   }
 }

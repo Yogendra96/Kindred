@@ -4,22 +4,18 @@ import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
 // Services
 import { loggingService } from '../services/LoggingService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform as _Platform } from 'react-native';
 
-// Global type declarations
-declare global {
-  var __DEV__: boolean;
-  var global: any;
-  var process: {
-    env: {
-      NODE_ENV?: string;
-    };
-  };
-  var require: (id: string) => any;
-}
+// Global type declarations for development utilities
+type GlobalWithDevUtils = typeof globalThis & {
+  devUtils?: Record<string, unknown>;
+  featureFlags?: Record<string, unknown>;
+};
+
+declare const global: GlobalWithDevUtils;
 
 // Environment variables
-const isDevelopment =
+const _isDevelopment =
   (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
   (typeof __DEV__ !== 'undefined' && __DEV__);
 
@@ -190,7 +186,7 @@ export class DevelopmentUtils {
     const flags = developmentConfig.featureFlags;
 
     // Make feature flags globally accessible
-    (global as any).featureFlags = flags;
+    (global as GlobalWithDevUtils).featureFlags = flags;
 
     this.logger.info('🚩 Feature flags initialized:', flags);
   }
@@ -239,7 +235,7 @@ export class DevelopmentUtils {
    * Setup enhanced logging
    */
   private async setupLogging(): Promise<void> {
-    const logLevel = developmentConfig.debugging.logLevel;
+    const _logLevel = developmentConfig.debugging.logLevel;
 
     // Enhanced console logging with timestamps and context
     const originalLog = console.log;
@@ -295,7 +291,7 @@ export class DevelopmentUtils {
   private setupGlobalDevUtils(): void {
     // Make development utilities globally accessible
     if (typeof global !== 'undefined') {
-      (global as any).devUtils = {
+      (global as GlobalWithDevUtils).devUtils = {
         config: developmentConfig,
         services: {
           performance: this.performanceService,
@@ -304,7 +300,7 @@ export class DevelopmentUtils {
           logger: this.logger,
         },
         toggleFeature: (feature: string) => {
-          const flags = (global as any).featureFlags;
+          const flags = (global as GlobalWithDevUtils).featureFlags as Record<string, boolean>;
           if (flags && feature in flags) {
             flags[feature] = !flags[feature];
             this.logger.info(

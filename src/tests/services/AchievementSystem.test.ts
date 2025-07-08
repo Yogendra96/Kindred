@@ -108,7 +108,7 @@ describe('AchievementSystemService', () => {
         return Promise.resolve(null);
       });
 
-      const badges = achievementService.getAvailableBadges();
+      const _badges = achievementService.getAvailableBadges();
 
       await TestHelpers.waitFor(100); // Wait for async initialization
 

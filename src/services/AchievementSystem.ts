@@ -5,6 +5,17 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
 // Types for Achievement System
+export interface UserStats {
+  totalCarbonSaved?: number;
+  streakDays?: number;
+  activitiesLogged?: number;
+  friendsCount?: number;
+  challengesCompleted?: number;
+  level?: number;
+  carbonSaved?: number;
+  [key: string]: unknown;
+}
+
 export interface Badge {
   id: string;
   name: string;
@@ -29,7 +40,7 @@ export interface Badge {
       | 'custom';
     value: number;
     timeframe?: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'all-time';
-    additionalCriteria?: Record<string, any>;
+    additionalCriteria?: Record<string, unknown>;
   };
   rewards: {
     points: number;
@@ -67,7 +78,7 @@ export interface Achievement {
       longitude: number;
       city?: string;
     };
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
   };
 }
 
@@ -128,7 +139,7 @@ export interface AchievementNotification {
   actions?: {
     label: string;
     action: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
   }[];
 }
 
@@ -489,7 +500,7 @@ class AchievementSystemService {
   private async trackUserProgress(userId: string): Promise<void> {
     try {
       // Listen to user stats changes
-      const unsubscribe = firestore()
+      const _unsubscribe = firestore()
         .collection('users')
         .doc(userId)
         .onSnapshot(async doc => {
@@ -548,7 +559,7 @@ class AchievementSystemService {
     }
   }
 
-  private calculateBadgeProgress(badge: Badge, userStats: any): number {
+  private calculateBadgeProgress(badge: Badge, userStats: UserStats): number {
     switch (badge.requirements.type) {
       case 'carbon_saved':
         return userStats.totalCarbonSaved || 0;
@@ -569,14 +580,14 @@ class AchievementSystemService {
     }
   }
 
-  private calculateCustomProgress(badge: Badge, userStats: any): number {
+  private calculateCustomProgress(badge: Badge, userStats: UserStats): number {
     // Handle custom badge requirements
     const criteria = badge.requirements.additionalCriteria || {};
 
     if (badge.id === 'planet_guardian') {
-      const levelMet = (userStats.level || 0) >= criteria.level;
+      const levelMet = (userStats.level || 0) >= (criteria.level as number || 0);
       const carbonMet =
-        (userStats.totalCarbonSaved || 0) >= criteria.carbonSaved;
+        (userStats.totalCarbonSaved || 0) >= (criteria.carbonSaved as number || 0);
       return levelMet && carbonMet ? 1 : 0;
     }
 
@@ -651,7 +662,7 @@ class AchievementSystemService {
   // Achievement Unlocking
   private async checkForNewAchievements(
     userId: string,
-    userStats: any,
+    userStats: UserStats,
   ): Promise<void> {
     try {
       const newAchievements: Achievement[] = [];
@@ -696,7 +707,7 @@ class AchievementSystemService {
   private checkRequirements(
     badge: Badge,
     currentProgress: number,
-    userStats: any,
+    userStats: UserStats,
   ): boolean {
     if (badge.requirements.type === 'custom') {
       return this.checkCustomRequirements(badge, userStats);
@@ -705,13 +716,13 @@ class AchievementSystemService {
     return currentProgress >= badge.requirements.value;
   }
 
-  private checkCustomRequirements(badge: Badge, userStats: any): boolean {
+  private checkCustomRequirements(badge: Badge, userStats: UserStats): boolean {
     const criteria = badge.requirements.additionalCriteria || {};
 
     if (badge.id === 'planet_guardian') {
-      const levelMet = (userStats.level || 0) >= criteria.level;
+      const levelMet = (userStats.level || 0) >= (criteria.level as number || 0);
       const carbonMet =
-        (userStats.totalCarbonSaved || 0) >= criteria.carbonSaved;
+        (userStats.totalCarbonSaved || 0) >= (criteria.carbonSaved as number || 0);
       return levelMet && carbonMet;
     }
 
@@ -1075,6 +1086,11 @@ class AchievementSystemService {
         isPublic: true,
         likes: { count: 0, users: [] },
         comments: [],
+        data: {
+          badgeId: achievement.badgeId,
+          category: achievement.badge.category,
+        },
+        shares: { count: 0, users: [] },
       });
 
       // Update share count

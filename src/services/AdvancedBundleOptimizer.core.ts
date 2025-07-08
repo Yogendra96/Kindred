@@ -65,7 +65,7 @@ export class BundleOptimizerCore {
   /**
    * Analyze individual modules in bundle
    */
-  private async analyzeModules(bundlePath: string): Promise<ModuleAnalysis[]> {
+  private async analyzeModules(_bundlePath: string): Promise<ModuleAnalysis[]> {
     // Simulated module analysis - in real implementation would parse bundle
     const mockModules: ModuleAnalysis[] = [
       {

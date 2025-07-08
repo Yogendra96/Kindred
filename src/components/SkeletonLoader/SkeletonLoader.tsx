@@ -597,7 +597,7 @@ export const SkeletonProvider: React.FC<{
     shimmerSpeed?: number;
     shimmerDirection?: 'horizontal' | 'vertical' | 'diagonal';
   };
-}> = ({ children, theme }) => {
+}> = ({ children, theme: _theme }) => {
   // This could be implemented with React Context for global theming
   // For now, just render children
   return <>{children}</>;

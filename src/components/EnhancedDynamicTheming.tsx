@@ -3,11 +3,11 @@ import { useTheme } from '../theme/ThemeProvider';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
+// import { LinearGradient } from 'expo-linear-gradient';
 import React, {
   useState,
   useEffect,
-  useCallback,
+  // useCallback,
   useRef,
   useMemo,
 } from 'react';
@@ -30,7 +30,7 @@ import {
 // import { BlurView } from 'expo-blur';
 const BlurView = View; // Fallback to regular View
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 interface ColorPalette {
   primary: string;
@@ -315,7 +315,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
   onClose,
   testID,
 }) => {
-  const { theme, isDarkMode, toggleTheme } = useTheme();
+  const { theme, isDarkMode, toggleTheme: _toggleTheme } = useTheme();
   const [state, setState] = useState<DynamicThemingState>({
     currentPreset: 'default',
     customization: DEFAULT_CUSTOMIZATION,
@@ -333,8 +333,8 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
   });
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [customColors, setCustomColors] = useState<Partial<ColorPalette>>({});
-  const animationValue = useRef(new Animated.Value(0)).current;
+  const [_customColors, _setCustomColors] = useState<Partial<ColorPalette>>({});
+  const _animationValue = useRef(new Animated.Value(0)).current;
   const previewAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -384,14 +384,14 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
   const setupAutoTheme = () => {
     if (state.autoTheme) {
-      const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      const subscription = Appearance.addChangeListener(({ colorScheme: _colorScheme }) => {
         // Auto theme logic would go here
       });
       return () => subscription?.remove();
     }
   };
 
-  const applyColorBlindnessFilter = (color: string): string => {
+  const _applyColorBlindnessFilter = (color: string): string => {
     // Simplified color blindness simulation
     // In a real implementation, you'd use proper color transformation algorithms
     switch (state.colorBlindnessType) {
@@ -418,7 +418,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
     }
   };
 
-  const getAdaptiveColors = () => {
+  const _getAdaptiveColors = () => {
     if (!state.adaptiveColors) return {};
 
     // Simplified adaptive color logic
@@ -581,7 +581,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
             style={[styles.presetIcon, { backgroundColor: colors.primary }]}
           >
             <Ionicons
-              name={preset.icon as any}
+              name={preset.icon as string}
               size={24}
               color={colors.onPrimary}
             />

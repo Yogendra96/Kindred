@@ -625,7 +625,7 @@ class AIVisionService {
 
   private async processEnergyMeterReading(
     scores: Float32Array,
-    imageTensor: tf.Tensor,
+    _imageTensor: tf.Tensor,
   ): Promise<EnergyMeterReading> {
     // This would typically use OCR (Optical Character Recognition)
     // For now, we'll simulate meter reading

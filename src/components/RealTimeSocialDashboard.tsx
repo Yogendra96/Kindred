@@ -6,14 +6,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  // ScrollView,
   TouchableOpacity,
   FlatList,
   Animated,
   Dimensions,
   RefreshControl,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, /* useSelector */ } from 'react-redux';
 
 interface Friend {
   id: string;
@@ -149,7 +149,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
     }
   };
 
-  const handleFriendStatusUpdate = useCallback((message: any) => {
+  const handleFriendStatusUpdate = useCallback((message: Record<string, unknown>) => {
     const { friendId, status, carbonSaved, streak } = message.payload;
 
     setFriends(prev =>
@@ -170,7 +170,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
     animatePulse();
   }, []);
 
-  const handleFriendActivity = useCallback((message: any) => {
+  const handleFriendActivity = useCallback((message: Record<string, unknown>) => {
     const newActivity: ActivityFeedItem = {
       ...message.payload,
       timestamp: new Date(message.timestamp),
@@ -184,7 +184,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
     animateSlideIn();
   }, []);
 
-  const handleAchievementUnlocked = useCallback((message: any) => {
+  const handleAchievementUnlocked = useCallback((message: Record<string, unknown>) => {
     const { achievement, userId } = message.payload;
 
     // Show celebration animation for achievements
@@ -206,7 +206,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
     );
   }, []);
 
-  const handleChallengeUpdate = useCallback((message: any) => {
+  const handleChallengeUpdate = useCallback((message: Record<string, unknown>) => {
     const { challengeId, progress, participants } = message.payload;
 
     setLiveChallenges(prev =>
@@ -219,7 +219,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
   }, []);
 
   const handleLeaderboardUpdate = useCallback(
-    (message: any) => {
+    (message: Record<string, unknown>) => {
       // Handle real-time leaderboard position updates
       const { leaderboard } = message.payload;
       // Update global leaderboard state
@@ -262,7 +262,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
 
   const showAchievementCelebration = (achievement: Achievement) => {
     // Trigger celebration animation/modal
-    console.log('🎉 Achievement unlocked:', achievement.title);
+    console.warn('🎉 Achievement unlocked:', achievement.title);
   };
 
   const getUserLocation = async (): Promise<{ city: string } | null> => {

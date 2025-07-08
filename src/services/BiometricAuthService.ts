@@ -7,10 +7,10 @@ import Keychain from 'react-native-keychain';
 // Global type declarations
 declare global {
   var __DEV__: boolean;
-  namespace NodeJS {
-    interface Timeout {}
-  }
 }
+
+// Use Timer type instead of NodeJS.Timeout namespace
+// type Timer = ReturnType<typeof setInterval>; // TODO: Add when needed
 
 export interface BiometricType {
   FaceID: 'FaceID';
@@ -149,7 +149,7 @@ class BiometricAuthService {
       }
 
       // Check if biometrics are enrolled
-      const hasCredentials = await Keychain.hasInternetCredentials(
+      const _hasCredentials = await Keychain.hasInternetCredentials(
         'biometric_test',
       );
 
@@ -555,7 +555,7 @@ class BiometricAuthService {
   /**
    * Handle authentication failure
    */
-  private async handleAuthenticationFailure(error: any): Promise<void> {
+  private async handleAuthenticationFailure(_error: any): Promise<void> {
     this.settings.failedAttempts++;
 
     // Lock out user if max attempts reached

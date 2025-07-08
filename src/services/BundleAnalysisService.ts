@@ -354,8 +354,8 @@ class BundleAnalysisService {
 
   private async performBundleAnalysis(
     analysisId: string,
-    buildPath?: string,
-    options?: any,
+    _buildPath?: string,
+    _options?: any,
   ): Promise<BundleAnalysis> {
     // Mock analysis data (in real implementation, this would parse actual bundle)
     const modules = this.generateMockModules();
@@ -619,7 +619,7 @@ class BundleAnalysisService {
   private calculateBundleMetrics(
     modules: ModuleAnalysis[],
     assets: AssetAnalysis[],
-    dependencies: DependencyAnalysis[],
+    _dependencies: DependencyAnalysis[],
   ): BundleMetrics {
     const totalSize =
       modules.reduce((sum, m) => sum + m.size, 0) +
@@ -664,7 +664,7 @@ class BundleAnalysisService {
     };
   }
 
-  private findDuplicateCode(modules: ModuleAnalysis[]): DuplicateInstance[] {
+  private findDuplicateCode(_modules: ModuleAnalysis[]): DuplicateInstance[] {
     // Mock duplicate detection
     return [
       {
@@ -679,7 +679,7 @@ class BundleAnalysisService {
   // Treemap generation
   private generateTreemapData(
     modules: ModuleAnalysis[],
-    dependencies: DependencyAnalysis[],
+    _dependencies: DependencyAnalysis[],
   ): TreemapData {
     const categories = new Map<string, ModuleAnalysis[]>();
 

@@ -7,8 +7,8 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useCallback,
-  useMemo,
+  // useCallback,
+  // useMemo,
 } from 'react';
 import {
   View,
@@ -16,10 +16,10 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  Alert,
-  Platform,
+  // Alert,
+  // Platform,
 } from 'react-native';
-import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
+import { LineChart, /* BarChart, PieChart */ } from 'react-native-chart-kit';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -157,7 +157,7 @@ export const EnhancedPerformanceMonitor: React.FC<
     useState<keyof PerformanceMetrics>('fps');
   const [thresholds, setThresholds] =
     useState<PerformanceThresholds>(defaultThresholds);
-  const [showDetails, setShowDetails] = useState(false);
+  const [_showDetails, _setShowDetails] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const frameRef = useRef<number>(0);

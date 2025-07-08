@@ -13,8 +13,7 @@ import type {
   MemoryOptimization,
   MemoryTrend,
   MemorySample,
-  ReactNativeMemoryMetrics,
-  ComponentMemoryUsage
+  ReactNativeMemoryMetrics
 } from './EnhancedMemoryManager.types';
 
 export class MemoryManagerCore {

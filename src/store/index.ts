@@ -3,7 +3,7 @@ import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { loggingService } from '../services/LoggingService';
 import analyticsReducer, {
   addEvent,
-  startSession,
+  startSession as _startSession,
 } from './slices/analyticsSlice';
 // Import all reducers
 import authReducer, { loginSuccess, logout } from './slices/authSlice';
@@ -35,8 +35,8 @@ const listenerMiddleware = createListenerMiddleware();
 // Listen for auth state changes to sync with analytics
 listenerMiddleware.startListening({
   matcher: isAnyOf(loginSuccess, logout),
-  effect: async (action, listenerApi) => {
-    const state = listenerApi.getState() as RootState;
+  effect: async (action, _listenerApi) => {
+    const _state = _listenerApi.getState() as RootState;
 
     if (loginSuccess.match(action)) {
       // Start analytics session on login
@@ -77,7 +77,7 @@ listenerMiddleware.startListening({
 // Listen for analytics events to sync with service
 listenerMiddleware.startListening({
   actionCreator: addEvent,
-  effect: async (action, listenerApi) => {
+  effect: async (action, _listenerApi) => {
     const event = action.payload;
     enhancedAnalyticsService.trackEvent(
       event.name,

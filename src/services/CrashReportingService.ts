@@ -84,7 +84,7 @@ export class CrashReportingService {
   static async logBreadcrumb(
     message: string,
     category: string = 'app',
-    level: 'error' | 'warning' | 'info' = 'info',
+    _level: 'error' | 'warning' | 'info' = 'info',
   ): Promise<void> {
     try {
       await crashlytics().log(`[${category}] ${message}`);

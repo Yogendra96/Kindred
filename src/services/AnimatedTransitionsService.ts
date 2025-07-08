@@ -1,6 +1,6 @@
 import HapticFeedbackService from './HapticFeedbackService';
 import { PerformanceMonitoringService } from './PerformanceMonitoringService';
-import { Animated, Easing, Dimensions, Platform } from 'react-native';
+import { Animated, Easing, Dimensions, Platform as _Platform } from 'react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -752,19 +752,19 @@ class AnimatedTransitionsService {
   }
 
   stopAllAnimations(): void {
-    this.activeAnimations.forEach((animation, id) => {
+    this.activeAnimations.forEach((animation, _id) => {
       animation.stop();
     });
     this.activeAnimations.clear();
   }
 
-  pauseAnimation(animationId: string): void {
+  pauseAnimation(_animationId: string): void {
     // React Native doesn't have built-in pause/resume
     // This would need to be implemented with custom logic
     console.warn('Animation pause not implemented');
   }
 
-  resumeAnimation(animationId: string): void {
+  resumeAnimation(_animationId: string): void {
     // React Native doesn't have built-in pause/resume
     // This would need to be implemented with custom logic
     console.warn('Animation resume not implemented');

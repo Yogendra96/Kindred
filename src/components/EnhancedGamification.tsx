@@ -18,12 +18,12 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
-  ScrollView,
+  // ScrollView,
   Modal,
-  Alert,
+  // Alert,
 } from 'react-native';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 interface Achievement {
   id: string;
@@ -435,7 +435,7 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
   };
 
   const addXP = useCallback(
-    (amount: number, source: string) => {
+    (amount: number, _source: string) => {
       setUserLevel(prev => {
         let newXP = prev.currentXP + amount;
         let newLevel = prev.level;
@@ -829,7 +829,7 @@ const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
               },
             ]}
           >
-            <Ionicons name={achievement.icon as any} size={60} color='white' />
+            <Ionicons name={achievement.icon as string} size={60} color='white' />
           </Animated.View>
         </LinearGradient>
 
@@ -1091,7 +1091,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
           ]}
         >
           <Ionicons
-            name={achievement.icon as any}
+            name={achievement.icon as string}
             size={24}
             color={
               achievement.unlocked ? 'white' : theme.colors.onSurfaceVariant

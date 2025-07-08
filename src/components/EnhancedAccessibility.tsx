@@ -1,6 +1,6 @@
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@theme/ThemeProvider';
 import React, {
@@ -16,8 +16,8 @@ import {
   StyleSheet,
   AccessibilityInfo,
   Platform,
-  Dimensions,
-  Alert,
+  // Dimensions,
+  // Alert,
 } from 'react-native';
 
 interface AccessibilitySettings {
@@ -51,7 +51,7 @@ interface AccessibilityContextType {
     priority?: 'low' | 'medium' | 'high',
   ) => void;
   focusElement: (elementId: string) => void;
-  getAccessibleProps: (props: AccessibleElementProps) => any;
+  getAccessibleProps: (props: AccessibleElementProps) => Record<string, unknown>;
   isScreenReaderActive: boolean;
   isHighContrastActive: boolean;
   getScaledSize: (size: number) => number;
@@ -181,7 +181,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
     try {
       const screenReaderEnabled =
         await AccessibilityInfo.isScreenReaderEnabled();
-      const reduceMotionEnabled =
+      const _reduceMotionEnabled =
         await AccessibilityInfo.isReduceMotionEnabled();
 
       setIsScreenReaderActive(screenReaderEnabled);
@@ -220,7 +220,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
       if (Platform.OS === 'ios') {
         AccessibilityInfo.announceForAccessibility(message);
       } else if (Platform.OS === 'android') {
-        AccessibilityInfo.setAccessibilityFocus(message as any);
+        AccessibilityInfo.setAccessibilityFocus(message as string);
       }
 
       // Provide haptic feedback based on priority
@@ -247,12 +247,12 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
 
   const focusElement = useCallback((elementId: string) => {
     // This would be implemented with a ref management system
-    console.log('Focusing element:', elementId);
+    console.warn('Focusing element:', elementId);
   }, []);
 
   const getAccessibleProps = useCallback(
     (props: AccessibleElementProps) => {
-      const accessibleProps: any = {
+      const accessibleProps: Record<string, unknown> = {
         accessible: true,
       };
 
@@ -423,7 +423,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
 // Accessible Text Component
 interface AccessibleTextProps {
   children: React.ReactNode;
-  style?: any;
+  style?: Record<string, unknown>;
   variant?: 'heading' | 'body' | 'caption' | 'label';
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   accessible?: boolean;
@@ -481,7 +481,7 @@ export const AccessibleText: React.FC<AccessibleTextProps> = ({
 interface AccessibleButtonProps {
   onPress: () => void;
   children: React.ReactNode;
-  style?: any;
+  style?: Record<string, unknown>;
   disabled?: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
   size?: 'small' | 'medium' | 'large';
@@ -541,7 +541,7 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
       },
     };
 
-    const { padding, fontSize } = sizeMap[size];
+    const { padding, fontSize: _fontSize } = sizeMap[size];
     const variantStyle = variantMap[variant];
 
     return {
@@ -627,7 +627,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
     updateSettings({ [key]: !settings[key] });
   };
 
-  const updateNumericSetting = (
+  const _updateNumericSetting = (
     key: keyof AccessibilitySettings,
     value: number,
   ) => {

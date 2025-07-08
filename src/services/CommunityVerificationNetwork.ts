@@ -5,9 +5,9 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform as _Platform } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { securityMonitoringService } from './SecurityMonitoringService';
+import { securityMonitoringService as _securityMonitoringService } from './SecurityMonitoringService';
 
 // Core Community Verification Types
 export interface CommunityVerificationNetwork {

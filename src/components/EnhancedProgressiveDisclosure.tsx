@@ -2,7 +2,7 @@ import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@theme/ThemeProvider';
-import { LinearGradient } from 'expo-linear-gradient';
+// import { LinearGradient } from 'expo-linear-gradient';
 import React, {
   useState,
   useEffect,
@@ -29,7 +29,7 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: _screenWidth, height: screenHeight } = Dimensions.get('window');
 
 interface DisclosureSection {
   id: string;
@@ -496,14 +496,14 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
     );
   };
 
-  const renderSection = (section: DisclosureSection, index: number) => {
+  const renderSection = (section: DisclosureSection, _index: number) => {
     const isExpanded = state.expandedSections.has(section.id);
     const isCompleted = state.completedSections.has(section.id);
     const isBookmarked = state.bookmarkedSections.has(section.id);
     const animValue =
       animationValues.current.get(section.id) || new Animated.Value(0);
 
-    const contentHeight = animValue.interpolate({
+    const _contentHeight = animValue.interpolate({
       inputRange: [0, 1],
       outputRange: [0, 200], // Adjust based on content
       extrapolate: 'clamp',
@@ -552,7 +552,7 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                   { backgroundColor: getPriorityColor(section.priority) },
                 ]}
               >
-                <Ionicons name={section.icon as any} size={20} color='white' />
+                <Ionicons name={section.icon as string} size={20} color='white' />
               </View>
             )}
 
@@ -614,7 +614,7 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                 {section.complexity && (
                   <View style={styles.metaItem}>
                     <Ionicons
-                      name={getComplexityIcon(section.complexity) as any}
+                      name={getComplexityIcon(section.complexity) as string}
                       size={12}
                       color={theme.colors.onSurfaceVariant}
                     />
@@ -816,7 +816,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
         <View style={styles.expandableHeaderLeft}>
           {icon && (
             <Ionicons
-              name={icon as any}
+              name={icon as string}
               size={24}
               color={theme.colors.primary}
             />

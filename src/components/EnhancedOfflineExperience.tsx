@@ -20,15 +20,15 @@ import {
   Animated,
   Dimensions,
   Alert,
-  Platform,
+  // Platform,
 } from 'react-native';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: _screenWidth } = Dimensions.get('window');
 
 interface OfflineData {
   id: string;
   type: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
   action: 'create' | 'update' | 'delete';
   endpoint?: string;
@@ -67,13 +67,13 @@ interface OfflineContextType {
   clearOfflineData: () => void;
   getOfflineData: (type: string) => OfflineData[];
   isDataAvailableOffline: (type: string, id?: string) => boolean;
-  getCachedData: (key: string) => Promise<any>;
-  setCachedData: (key: string, data: any, ttl?: number) => Promise<void>;
+  getCachedData: (key: string) => Promise<unknown>;
+  setCachedData: (key: string, data: unknown, ttl?: number) => Promise<void>;
   clearExpiredCache: () => Promise<void>;
 }
 
 interface CacheItem {
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
   ttl: number;
 }
@@ -194,7 +194,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     if (!state.isConnected) return null;
 
     if (state.type === 'wifi') {
-      const details = state.details as any;
+      const details = state.details as Record<string, unknown>;
       if (details?.strength !== undefined) {
         if (details.strength > 75) return 'excellent';
         if (details.strength > 50) return 'good';
@@ -202,7 +202,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
         return 'poor';
       }
     } else if (state.type === 'cellular') {
-      const details = state.details as any;
+      const details = state.details as Record<string, unknown>;
       if (details?.cellularGeneration) {
         if (details.cellularGeneration === '5g') return 'excellent';
         if (details.cellularGeneration === '4g') return 'good';
@@ -222,12 +222,13 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     switch (state.type) {
       case 'wifi':
         return 50; // Mbps estimate
-      case 'cellular':
-        const details = state.details as any;
+      case 'cellular': {
+        const details = state.details as Record<string, unknown>;
         if (details?.cellularGeneration === '5g') return 100;
         if (details?.cellularGeneration === '4g') return 25;
         if (details?.cellularGeneration === '3g') return 5;
         return 1;
+      }
       default:
         return 10;
     }
@@ -414,7 +415,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     }
   }, [networkStatus.isConnected, offlineQueue, syncProgress.inProgress]);
 
-  const simulateSync = async (item: OfflineData): Promise<void> => {
+  const simulateSync = async (_item: OfflineData): Promise<void> => {
     // Simulate network delay
     await new Promise(resolve =>
       setTimeout(resolve, 500 + Math.random() * 1000),
@@ -452,7 +453,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   );
 
   const getCachedData = useCallback(
-    async (key: string): Promise<any> => {
+    async (key: string): Promise<unknown> => {
       const item = cache.get(key);
       if (!item) return null;
 
@@ -471,7 +472,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   const setCachedData = useCallback(
     async (
       key: string,
-      data: any,
+      data: unknown,
       ttl: number = defaultCacheTTL,
     ): Promise<void> => {
       const item: CacheItem = {
@@ -539,7 +540,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
   autoHide = true,
   testID,
 }) => {
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
   const { networkStatus, isOnline } = useOffline();
   const [visible, setVisible] = useState(!isOnline);
   const slideAnim = useRef(
@@ -641,7 +642,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
       ]}
       testID={testID}
     >
-      <Ionicons name={getStatusIcon() as any} size={16} color='white' />
+      <Ionicons name={getStatusIcon() as string} size={16} color='white' />
       <Text style={styles.statusText}>{getStatusText()}</Text>
       {showDetails && networkStatus.speed && (
         <Text style={styles.speedText}>
@@ -851,7 +852,7 @@ export const useOfflineData = () => {
     useOffline();
 
   const createOffline = useCallback(
-    async (type: string, data: any, endpoint?: string) => {
+    async (type: string, data: unknown, endpoint?: string) => {
       // Add to offline queue
       addToOfflineQueue({
         type,
@@ -871,7 +872,7 @@ export const useOfflineData = () => {
   );
 
   const updateOffline = useCallback(
-    async (type: string, data: any, endpoint?: string) => {
+    async (type: string, data: unknown, endpoint?: string) => {
       addToOfflineQueue({
         type,
         data,

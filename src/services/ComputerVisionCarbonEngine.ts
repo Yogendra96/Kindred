@@ -4,10 +4,7 @@
  * Features: Product recognition, transport detection, behavior analysis, food optimization
  */
 
-import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { observabilityService } from './ObservabilityService';
-import { carbonTwinEngine } from './CarbonTwinEngine';
 
 // Core Computer Vision Types
 export interface ComputerVisionCarbonEngine {
@@ -761,7 +758,7 @@ export class ComputerVisionCarbonEngine {
     }
   }
 
-  async scanProductForCarbon(imageData: string): Promise<InstantCarbonFootprintScan> {
+  async scanProductForCarbon(_imageData: string): Promise<InstantCarbonFootprintScan> {
     console.log('🔍 Scanning product for carbon footprint...');
     
     const scanId = `scan_${Date.now()}_${Math.random().toString(36).substring(2)}`;
@@ -769,7 +766,7 @@ export class ComputerVisionCarbonEngine {
     
     try {
       // Analyze image using computer vision
-      const productAnalysis = await this.analyzeProductImage(imageData);
+      const productAnalysis = await this.analyzeProductImage(_imageData);
       
       // Get carbon data
       const carbonData = await this.getCarbonData(productAnalysis);
@@ -1065,7 +1062,7 @@ export class ComputerVisionCarbonEngine {
   }
 
   // Placeholder implementations for complex analysis methods
-  private async analyzeProductImage(imageData: string): Promise<ProductAnalysisResult> {
+  private async analyzeProductImage(_imageData: string): Promise<ProductAnalysisResult> {
     // Mock product analysis
     return {
       productId: 'sample_product',

@@ -3,11 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { runOnJS } from 'react-native-reanimated';
+import { runOnJS as _runOnJS } from 'react-native-reanimated';
 import {
-  Camera,
-  useCameraDevices,
-  useFrameProcessor,
+  Camera as _Camera,
+  useCameraDevices as _useCameraDevices,
+  useFrameProcessor as _useFrameProcessor,
 } from 'react-native-vision-camera';
 
 // Types for Product Carbon Footprint
@@ -344,7 +344,7 @@ class BarcodeScannerService {
   }
 
   private async getProductFromUPCDatabase(
-    barcode: string,
+    _barcode: string,
   ): Promise<ProductInfo | null> {
     try {
       // This would use a UPC database API
@@ -357,7 +357,7 @@ class BarcodeScannerService {
   }
 
   private async getProductFromBarcodeLookup(
-    barcode: string,
+    _barcode: string,
   ): Promise<ProductInfo | null> {
     try {
       // This would use a barcode lookup API
@@ -409,8 +409,8 @@ class BarcodeScannerService {
   }
 
   private async getCarbonFromHowGoodAPI(
-    barcode: string,
-    productInfo: ProductInfo,
+    _barcode: string,
+    _productInfo: ProductInfo,
   ): Promise<CarbonFootprintData | null> {
     try {
       // This would integrate with HowGood API
@@ -423,8 +423,8 @@ class BarcodeScannerService {
   }
 
   private async getCarbonFromCarbonTrustAPI(
-    barcode: string,
-    productInfo: ProductInfo,
+    _barcode: string,
+    _productInfo: ProductInfo,
   ): Promise<CarbonFootprintData | null> {
     try {
       // This would integrate with Carbon Trust API
@@ -605,7 +605,7 @@ class BarcodeScannerService {
     return Math.min(score, 100);
   }
 
-  private calculateEconomicScore(productInfo: ProductInfo): number {
+  private calculateEconomicScore(_productInfo: ProductInfo): number {
     // This would consider factors like local economy support, fair pricing, etc.
     return 70; // Placeholder
   }

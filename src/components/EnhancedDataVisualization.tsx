@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
-  TouchableOpacity,
+  // TouchableOpacity,
   ScrollView,
   AccessibilityInfo,
 } from 'react-native';
@@ -40,7 +40,7 @@ interface EnhancedChartProps {
   type: 'pie' | 'line' | 'bar';
   loading?: boolean;
   error?: string;
-  onDataPointPress?: (dataPoint: any, index: number) => void;
+  onDataPointPress?: (dataPoint: unknown, index: number) => void;
   showLegend?: boolean;
   showValues?: boolean;
   animated?: boolean;
@@ -65,7 +65,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
   onDataPointPress,
   showLegend = true,
   showValues = true,
-  animated = true,
+  _animated = true,
   accessibilityLabel,
   accessibilityHint,
   testID,
@@ -136,7 +136,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
     return `${value.toLocaleString()}${unit}`;
   };
 
-  const handleDataPointPress = (dataPoint: any, index: number) => {
+  const handleDataPointPress = (dataPoint: unknown, index: number) => {
     HapticFeedbackService.triggerSelection();
     setSelectedIndex(index);
     onDataPointPress?.(dataPoint, index);
@@ -161,7 +161,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
       backgroundColor: 'transparent',
       backgroundGradientFrom: theme.colors.surface,
       backgroundGradientTo: theme.colors.surface,
-      color: (opacity = 1) =>
+      color: (_opacity = 1) =>
         `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
       strokeWidth: 2,
       barPercentage: 0.7,
@@ -243,7 +243,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
       datasets: [
         {
           data: (data as LineDataPoint[]).map(point => point.y),
-          color: (opacity = 1) => colors[0],
+          color: (_opacity = 1) => colors[0],
           strokeWidth: 3,
         },
       ],

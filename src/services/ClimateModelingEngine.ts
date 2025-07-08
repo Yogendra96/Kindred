@@ -129,7 +129,7 @@ class ClimateModelingEngineService {
    */
   calculateClimateImpactScore(
     carbonFootprint: number,
-    location: GeographicCoordinate
+    _location: GeographicCoordinate
   ): {
     score: number; // 0-100
     category: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
@@ -187,7 +187,7 @@ class ClimateModelingEngineService {
       });
 
       console.log('🌍 Climate Modeling Engine initialized');
-    } catch (error) {
+    } catch (_error) {
       console.warn('Climate API connections limited, using fallback mode');
       this.isInitialized = true; // Continue with limited functionality
     }
@@ -210,8 +210,8 @@ class ClimateModelingEngineService {
     try {
       const testCoords: GeographicCoordinate = { latitude: 40.7128, longitude: -74.0060, region: 'Test', country: 'Test' };
       await this.fetchFromNASA(testCoords);
-    } catch (error) {
-      console.warn('NASA API connection failed:', error.message);
+    } catch (_error) {
+      console.warn('NASA API connection failed:', _error.message);
     }
   }
 
@@ -233,12 +233,12 @@ class ClimateModelingEngineService {
     }
   }
 
-  private async fetchFromNOAA(coordinates: GeographicCoordinate): Promise<any> {
+  private async fetchFromNOAA(_coordinates: GeographicCoordinate): Promise<any> {
     // NOAA API integration would go here
     throw new Error('NOAA API not implemented in demo');
   }
 
-  private async fetchFromOpenWeather(coordinates: GeographicCoordinate): Promise<any> {
+  private async fetchFromOpenWeather(_coordinates: GeographicCoordinate): Promise<any> {
     // OpenWeather API integration - fallback option
     return {
       temperature: 15 + (Math.random() - 0.5) * 10,
@@ -260,7 +260,7 @@ class ClimateModelingEngineService {
     };
   }
 
-  private getFallbackScenarios(timeHorizon: number): ClimateScenario[] {
+  private getFallbackScenarios(_timeHorizon: number): ClimateScenario[] {
     return [
       {
         id: 'current_trend',

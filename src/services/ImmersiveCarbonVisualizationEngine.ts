@@ -4,11 +4,11 @@
  * Features: Real-time 3D environments, emotional engagement, interactive ecosystems
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, Dimensions } from 'react-native';
+import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform as _Platform, Dimensions as _Dimensions } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { adaptiveUIEngine } from './AdaptiveUIEngine';
-import { carbonTwinEngine } from './CarbonTwinEngine';
+import { adaptiveUIEngine as _adaptiveUIEngine } from './AdaptiveUIEngine';
+import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
 
 // Core Immersive Visualization Types
 export interface ImmersiveCarbonVisualizationEngine {

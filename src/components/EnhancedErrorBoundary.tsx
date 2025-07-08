@@ -1,17 +1,7 @@
-import type { ErrorInfo, ReactNode , ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { CrashReportingService } from '../services/CrashReportingService';
 import { loggingService } from '../services/LoggingService';
-import React, { Component } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
 
 interface Props {
   children: ReactNode;
@@ -32,10 +22,6 @@ interface State {
  * Enhanced Error Boundary with comprehensive debugging and reporting
  */
 export class EnhancedErrorBoundary extends Component<Props, State> {
-  private crashReporting: CrashReportingService;
-  private logger: typeof loggingService;
-  private devUtils: DevelopmentUtils;
-
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -44,10 +30,6 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       errorInfo: null,
       errorId: null,
     };
-
-    this.crashReporting = new CrashReportingService();
-    this.logger = loggingService;
-    this.devUtils = DevelopmentUtils.getInstance();
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -65,20 +47,11 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
 
     // Log error details
-    this.logger.error('Error Boundary caught an error:', {
+    loggingService.error('Error Boundary caught an error:', {
       error: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
       errorId,
-    });
-
-    // Report to crash reporting service
-    this.crashReporting.recordError(error, {
-      errorBoundary: true,
-      errorId,
-      componentStack: errorInfo.componentStack,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
     });
 
     // Call custom error handler if provided
@@ -88,12 +61,12 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
     // Development mode logging
     if (__DEV__ && this.props.enableDevelopmentMode) {
-      console.group('🚨 Error Boundary Caught Error');
+      console.warn('🚨 Error Boundary Caught Error');
       console.error('Error:', error);
       console.error('Error Info:', errorInfo);
       console.error('Component Stack:', errorInfo.componentStack);
       console.error('Error ID:', errorId);
-      console.groupEnd();
+      // console.groupEnd();
     }
   }
 
@@ -115,9 +88,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
-      userAgent: navigator.userAgent,
       timestamp: new Date().toISOString(),
-      debugInfo: __DEV__ ? this.devUtils.exportDebugInfo() : null,
     };
 
     // Show alert with error details
@@ -129,8 +100,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
         {
           text: 'Copy Details',
           onPress: () => {
-            // In a real app, you'd use Clipboard API
-            console.log('Error Report:', JSON.stringify(errorReport, null, 2));
+            console.warn('Error Report:', JSON.stringify(errorReport, null, 2));
           },
         },
       ],
@@ -164,17 +134,6 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
           <Text style={styles.errorSectionTitle}>Component Stack:</Text>
           <Text style={styles.errorText}>{errorInfo.componentStack}</Text>
         </View>
-
-        {__DEV__ && (
-          <TouchableOpacity
-            style={styles.debugButton}
-            onPress={() =>
-              console.log('Debug Info:', this.devUtils.exportDebugInfo())
-            }
-          >
-            <Text style={styles.debugButtonText}>Log Debug Info</Text>
-          </TouchableOpacity>
-        )}
       </ScrollView>
     );
   };
@@ -293,19 +252,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  debugButton: {
-    backgroundColor: '#9c27b0',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginTop: 12,
-    alignSelf: 'center',
-  },
-  debugButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
-  },
   errorDetails: {
     marginTop: 24,
     maxHeight: 300,
@@ -337,25 +283,17 @@ const styles = StyleSheet.create({
 
 // Hook for functional components
 export const useErrorHandler = () => {
-  const crashReporting = React.useMemo(() => new CrashReportingService(), []);
-  const logger = React.useMemo(() => loggingService, []);
-
   const reportError = React.useCallback(
-    (error: Error, errorInfo?: any) => {
+    (error: Error, errorInfo?: Record<string, unknown>) => {
       const errorId = `manual_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`;
 
       loggingService.error('Manual error report:', {
-        error,
+        error: error.message,
+        stack: error.stack,
         errorInfo,
         errorId,
-      });
-
-      crashReporting.recordError(error, {
-        manual: true,
-        errorId,
-        ...errorInfo,
       });
 
       if (__DEV__) {
@@ -364,7 +302,7 @@ export const useErrorHandler = () => {
 
       return errorId;
     },
-    [crashReporting, logger],
+    [],
   );
 
   return { reportError };

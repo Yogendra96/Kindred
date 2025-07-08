@@ -132,7 +132,7 @@ const HomeScreen = () => {
     const unsubscribeFirestore = firestore()
       .collection('user_activities')
       .doc(user.uid)
-      .onSnapshot(async doc => {
+      .onSnapshot(async _doc => {
         if (isOnline) {
           try {
             const newFootprint = await calculateCarbonFootprint();

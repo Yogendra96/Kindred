@@ -1,6 +1,6 @@
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import { useTheme } from '../theme/ThemeProvider';
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, /* useCallback, */ useEffect } from 'react';
 import { Animated, TouchableOpacity, View, Text } from 'react-native';
 import type { TouchableOpacityProps, ViewStyle } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
@@ -34,7 +34,7 @@ export const AnimatedTouchable: React.FC<AnimatedTouchableProps> = ({
   const elevationAnim = useRef(new Animated.Value(0)).current;
   const rippleAnim = useRef(new Animated.Value(0)).current;
 
-  const handlePressIn = (event: any) => {
+  const handlePressIn = (event: Record<string, unknown>) => {
     if (disabled) return;
 
     // Trigger haptic feedback
@@ -112,7 +112,7 @@ export const AnimatedTouchable: React.FC<AnimatedTouchableProps> = ({
     onPressIn?.(event);
   };
 
-  const handlePressOut = (event: any) => {
+  const handlePressOut = (event: Record<string, unknown>) => {
     if (disabled) return;
 
     // Reset animations

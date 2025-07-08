@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Camera, CameraType, FlashMode } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback as _useCallback } from 'react';
 import {
   View,
   Text,
@@ -37,7 +37,7 @@ interface CaptureState {
   error?: string;
 }
 
-const { width, height } = Dimensions.get('window');
+const { width: _width, height: _height } = Dimensions.get('window');
 
 export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   mode,
@@ -247,7 +247,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
         return await aiVisionService.recognizeFoodImage(uri);
       case 'transport':
         return await aiVisionService.detectTransportMode(uri);
-      case 'energy':
+      case 'energy': {
         const meterReading = await aiVisionService.readEnergyMeter(uri);
         return {
           category: 'energy',
@@ -265,6 +265,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
             imageQuality: 0.8,
           },
         };
+      }
       default:
         throw new Error(`Unsupported classification mode: ${mode}`);
     }
@@ -298,7 +299,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     }));
   };
 
-  const toggleCamera = () => {
+  const _toggleCamera = () => {
     setState(prev => ({
       ...prev,
       cameraType:

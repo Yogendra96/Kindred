@@ -10,7 +10,7 @@ import type {
   BundleAnalysisResult,
   BundleOptimizerConfig,
   OptimizationSuggestion,
-  PerformanceTargets
+  PerformanceTargets as _PerformanceTargets
 } from './AdvancedBundleOptimizer.types';
 
 /**

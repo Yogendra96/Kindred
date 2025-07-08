@@ -1,6 +1,7 @@
 import { loggingService } from './LoggingService';
 import analytics from '@react-native-firebase/analytics';
 import { Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 export type ScreenName =
   | 'Login'
@@ -49,12 +50,7 @@ class AnalyticsService {
       await analytics().setUserId(user.id);
       const userProperties: Record<string, string> = {
         platform: Platform.OS,
-        appVersion: Platform.select({
-          ios: require('../../ios/Kindred/Info.plist')
-            .CFBundleShortVersionString,
-          android: require('../../android/app/build.gradle').android
-            .defaultConfig.versionName,
-        }),
+        appVersion: DeviceInfo.getVersion(),
       };
 
       if (user.email) {

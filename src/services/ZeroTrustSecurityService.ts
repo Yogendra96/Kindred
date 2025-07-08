@@ -92,7 +92,7 @@ interface SecurityPermission {
 interface SecurityCondition {
   readonly type: 'location' | 'time' | 'device' | 'network' | 'biometric';
   readonly operator: 'equals' | 'contains' | 'within' | 'after' | 'before';
-  readonly value: any;
+  readonly value: unknown;
 }
 
 // Threat Detection Types
@@ -127,7 +127,7 @@ interface SecurityIncident {
   readonly description: string;
   readonly source: string;
   readonly context: SecurityContext;
-  readonly evidence: Record<string, any>;
+  readonly evidence: Record<string, unknown>;
   readonly status: 'open' | 'investigating' | 'resolved' | 'false-positive';
   readonly mitigations: SecurityMitigation[];
 }
@@ -590,7 +590,7 @@ interface BehaviorAnomaly {
   readonly severity: 'low' | 'medium' | 'high' | 'critical';
   readonly description: string;
   readonly confidence: number;
-  readonly evidence: Record<string, any>;
+  readonly evidence: Record<string, unknown>;
 }
 
 // Main Zero-Trust Security Service
@@ -835,7 +835,7 @@ export class ZeroTrustSecurityService {
     }
   }
 
-  private handleNetworkChange(networkInfo: any): void {
+  private handleNetworkChange(networkInfo: Record<string, unknown>): void {
     if (!this.currentContext) return;
 
     // Analyze network security

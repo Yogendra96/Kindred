@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   preset: 'react-native',
   
   // Test environment
@@ -26,7 +26,7 @@ module.exports = {
   // Setup files
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.js',
-    '<rootDir>/src/tests/setup.ts'
+    '<rootDir>/src/tests/testSetup.ts'
   ],
   
   // Test path ignore patterns
@@ -90,9 +90,9 @@ module.exports = {
   testTimeout: 10000,
   detectOpenHandles: true,
   
-  // Watch plugins
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname',
-  ],
+  // Watch plugins (disabled - packages not installed)
+  // watchPlugins: [
+  //   'jest-watch-typeahead/filename',
+  //   'jest-watch-typeahead/testname',
+  // ],
 };

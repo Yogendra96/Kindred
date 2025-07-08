@@ -1,8 +1,8 @@
 // Enhanced test setup for React Native with comprehensive mocking
-import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
-import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
-import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
-import { loggingService } from '../services/LoggingService';
+import { EnhancedAnalyticsService as _EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
+import { EnhancedPerformanceService as _EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
+import { EnhancedSecurityService as _EnhancedSecurityService } from '../services/EnhancedSecurityService';
+import { loggingService as _loggingService } from '../services/LoggingService';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';
@@ -510,7 +510,7 @@ if (
   typeof global.PerformanceObserver === 'undefined'
 ) {
   (global as any).PerformanceObserver = class PerformanceObserver {
-    constructor(callback: any) {}
+    constructor(_callback: any) {}
     observe() {}
     disconnect() {}
   } as any;

@@ -5,14 +5,14 @@
  */
 
 import { observabilityService } from './ObservabilityService';
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { enhancedPerformanceService as _enhancedPerformanceService } from './EnhancedPerformanceService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, DeviceEventEmitter, NativeModules } from 'react-native';
+import { Platform, DeviceEventEmitter, NativeModules as _NativeModules } from 'react-native';
 import type {
   PerformanceMetric,
-  CoreVitalMetric,
-  MemoryMetrics,
-  NetworkMetrics,
+  CoreVitalMetric as _CoreVitalMetric,
+  MemoryMetrics as _MemoryMetrics,
+  NetworkMetrics as _NetworkMetrics,
   OptimizationRecommendation,
 } from '../types/performance';
 
@@ -352,7 +352,7 @@ class AIPerformanceOptimizer {
   private async generateOptimizationActions(
     metric: PerformanceMetric,
     predictedValue: number,
-    context: Record<string, any>
+    _context: Record<string, any>
   ): Promise<OptimizationAction[]> {
     const actions: OptimizationAction[] = [];
     const baseline = this.performanceBaseline.get(metric.name) || metric.value;
@@ -439,15 +439,15 @@ class AIPerformanceOptimizer {
     }
   }
 
-  private async applyNetworkOptimization(action: OptimizationAction): Promise<void> {
+  private async applyNetworkOptimization(_action: OptimizationAction): Promise<void> {
     // Network optimization implementations would go here
   }
 
-  private async applyRenderOptimization(action: OptimizationAction): Promise<void> {
+  private async applyRenderOptimization(_action: OptimizationAction): Promise<void> {
     // Render optimization implementations would go here
   }
 
-  private async applyBatteryOptimization(action: OptimizationAction): Promise<void> {
+  private async applyBatteryOptimization(_action: OptimizationAction): Promise<void> {
     // Battery optimization implementations would go here
   }
 }
@@ -605,11 +605,11 @@ export class AdvancedPerformanceEngine {
     console.log('🧠 Setting up memory leak prevention...');
     
     // Monitor component lifecycle
-    DeviceEventEmitter.addListener('componentMount', (data) => {
+    DeviceEventEmitter.addListener('componentMount', (_data) => {
       // Track component mounts for leak detection
     });
 
-    DeviceEventEmitter.addListener('componentUnmount', (data) => {
+    DeviceEventEmitter.addListener('componentUnmount', (_data) => {
       // Track component unmounts for leak detection
     });
   }

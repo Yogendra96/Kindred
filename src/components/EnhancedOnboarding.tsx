@@ -3,7 +3,7 @@ import { AnimatedTouchable, AnimatedProgress } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@theme/ThemeProvider';
-import { LinearGradient } from 'expo-linear-gradient';
+// import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useRef, useEffect } from 'react';
 import type { PanGestureHandlerGestureEvent } from 'react-native';
 import {
@@ -18,14 +18,14 @@ import {
   Image,
 } from 'react-native';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 interface OnboardingStep {
   id: string;
   title: string;
   description: string;
   icon?: string;
-  image?: any; // For local images
+  image?: unknown; // For local images
   imageUrl?: string; // For remote images
   backgroundColor?: string;
   textColor?: string;
@@ -66,7 +66,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
   customFooter,
   testID,
 }) => {
-  const { theme, isDark } = useTheme();
+  const { theme, isDark: _isDark } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -211,7 +211,11 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
   const handleSkip = async () => {
     HapticFeedbackService.triggerImpact('light');
     await markOnboardingComplete();
-    onSkip?.() || onComplete();
+    if (onSkip) {
+      onSkip();
+    } else {
+      onComplete();
+    }
   };
 
   const onGestureEvent = Animated.event(
@@ -288,7 +292,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             {step.icon && (
               <View style={styles.iconContainer}>
                 <Ionicons
-                  name={step.icon as any}
+                  name={step.icon as string}
                   size={80}
                   color={theme.colors.primary}
                   accessible={true}

@@ -1,5 +1,5 @@
 import type { CarbonData } from '@components/CarbonFootprintCard';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useTheme } from '@theme/ThemeProvider';
@@ -31,7 +31,7 @@ interface Tip {
   description: string;
   impact: 'high' | 'medium' | 'low';
   category: keyof CarbonData;
-  icon: any; // Replace with proper icon type from your assets
+  icon: unknown; // Replace with proper icon type from your assets
   potentialSavings: number;
 }
 
@@ -42,7 +42,7 @@ interface Props {
 
 const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
   const { theme } = useTheme();
-  const [tips, setTips] = useState<EcoTip[]>([]);
+  const [_tips, _setTips] = useState<EcoTip[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,14 +68,14 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           completed: completedTipIds.has(doc.id),
         })) as EcoTip[];
 
-        setTips(fetchedTips);
+        _setTips(fetchedTips);
         setLoading(false);
       });
 
     return () => unsubscribe();
   }, []);
 
-  const handleTipCompletion = async (tip: EcoTip) => {
+  const _handleTipCompletion = async (tip: EcoTip) => {
     const user = auth().currentUser;
     if (!user) return;
 
@@ -95,7 +95,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
         await tipRef.delete();
       }
 
-      setTips(currentTips =>
+      _setTips(currentTips =>
         currentTips.map(t =>
           t.id === tip.id ? { ...t, completed: !t.completed } : t,
         ),
@@ -105,7 +105,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
     }
   };
 
-  const getCategoryIcon = (category: string) => {
+  const _getCategoryIcon = (category: string) => {
     switch (category) {
       case 'transportation':
         return 'car';
@@ -130,7 +130,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Using public transportation can reduce your carbon emissions by up to 50% compared to driving alone.',
         impact: 'high',
         category: 'transport',
-        icon: require('@assets/icons/bus.png'),
+        icon: '@assets/icons/bus.png',
         potentialSavings: 2.5,
       },
       {
@@ -140,7 +140,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Electric vehicles produce zero direct emissions and can significantly reduce your carbon footprint.',
         impact: 'high',
         category: 'transport',
-        icon: require('@assets/icons/electric-car.png'),
+        icon: '@assets/icons/electric-car.png',
         potentialSavings: 3.0,
       },
       // Energy tips
@@ -151,7 +151,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'LED bulbs use up to 90% less energy than traditional bulbs and last much longer.',
         impact: 'medium',
         category: 'energy',
-        icon: require('@assets/icons/lightbulb.png'),
+        icon: '@assets/icons/lightbulb.png',
         potentialSavings: 0.3,
       },
       {
@@ -161,7 +161,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Solar panels can significantly reduce your reliance on grid electricity and lower emissions.',
         impact: 'high',
         category: 'energy',
-        icon: require('@assets/icons/solar-panel.png'),
+        icon: '@assets/icons/solar-panel.png',
         potentialSavings: 4.0,
       },
       // Food tips
@@ -172,7 +172,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Having one meat-free day per week can reduce your food carbon footprint significantly.',
         impact: 'high',
         category: 'food',
-        icon: require('@assets/icons/vegetable.png'),
+        icon: '@assets/icons/vegetable.png',
         potentialSavings: 0.8,
       },
       {
@@ -182,7 +182,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Local food requires less transportation and often uses fewer preservatives.',
         impact: 'medium',
         category: 'food',
-        icon: require('@assets/icons/local-market.png'),
+        icon: '@assets/icons/local-market.png',
         potentialSavings: 0.4,
       },
       // Waste tips
@@ -193,7 +193,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Composting organic waste reduces methane emissions from landfills.',
         impact: 'medium',
         category: 'waste',
-        icon: require('@assets/icons/compost.png'),
+        icon: '@assets/icons/compost.png',
         potentialSavings: 0.5,
       },
       {
@@ -203,7 +203,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
           'Proper recycling can reduce waste-related emissions by up to 30%.',
         impact: 'medium',
         category: 'waste',
-        icon: require('@assets/icons/recycle.png'),
+        icon: '@assets/icons/recycle.png',
         potentialSavings: 0.6,
       },
     ];

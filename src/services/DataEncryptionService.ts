@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
-import { Platform } from 'react-native';
+import { Platform as _Platform } from 'react-native';
 
 // Types for Data Encryption
 export interface EncryptionConfig {

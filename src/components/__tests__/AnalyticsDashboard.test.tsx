@@ -7,9 +7,9 @@ import type {
   TimeSeriesData,
 } from '../AnalyticsDashboard';
 import AnalyticsDashboard from '../AnalyticsDashboard';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor as _waitFor } from '@testing-library/react-native';
 import React from 'react';
-import { Dimensions } from 'react-native';
+import { Dimensions as _Dimensions } from 'react-native';
 
 // Mock dependencies
 jest.mock('react-native-chart-kit', () => ({
@@ -21,18 +21,18 @@ jest.mock('react-native-chart-kit', () => ({
 
 jest.mock('expo-linear-gradient', () => ({
   LinearGradient: ({ children, ...props }: any) => {
-    const MockedLinearGradient = require('react-native').View;
+    const { View: MockedLinearGradient } = jest.requireActual('react-native');
     return <MockedLinearGradient {...props}>{children}</MockedLinearGradient>;
   },
 }));
 
 jest.mock('react-native-reanimated', () => {
-  const View = require('react-native').View;
+  const { View, Text, ScrollView } = jest.requireActual('react-native');
   return {
     default: {
       View,
-      Text: require('react-native').Text,
-      ScrollView: require('react-native').ScrollView,
+      Text,
+      ScrollView,
     },
     useSharedValue: () => ({ value: 0 }),
     useAnimatedStyle: () => ({}),
@@ -44,7 +44,7 @@ jest.mock('react-native-reanimated', () => {
 
 jest.mock('../SkeletonLoader', () => {
   return function MockSkeletonLoader(props: any) {
-    const { View } = require('react-native');
+    const { View } = jest.requireActual('react-native');
     return <View testID='skeleton-loader' {...props} />;
   };
 });

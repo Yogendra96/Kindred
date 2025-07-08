@@ -5,10 +5,10 @@ import { Platform } from 'react-native';
 // Global type declarations
 declare global {
   var __DEV__: boolean;
-  namespace NodeJS {
-    interface Timeout {}
-  }
 }
+
+// Use Timer type instead of NodeJS.Timeout namespace
+// type Timer = ReturnType<typeof setInterval>; // TODO: Add when needed
 
 interface AnalyticsEvent {
   name: string;

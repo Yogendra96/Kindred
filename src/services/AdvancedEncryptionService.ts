@@ -1,7 +1,7 @@
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { enhancedPerformanceService as _enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
 import CryptoJS from 'crypto-js';
-import { Platform } from 'react-native';
+import { Platform as _Platform } from 'react-native';
 
 export interface EncryptedData {
   readonly data: readonly number[];
@@ -465,8 +465,8 @@ class AdvancedEncryptionService {
   }
 
   private async decryptWithCryptoJS(
-    encryptedData: EncryptedData,
-    keyId?: string,
+    _encryptedData: EncryptedData,
+    _keyId?: string,
   ): Promise<string> {
     // Implementation for CryptoJS decryption
     // This is a simplified version - real implementation would store and retrieve keys securely

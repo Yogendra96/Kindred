@@ -4,11 +4,11 @@
  * Features: Emotional AI, behavioral psychology, flow state optimization, social dynamics
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform as _Platform } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { carbonTwinEngine } from './CarbonTwinEngine';
-import { adaptiveUIEngine } from './AdaptiveUIEngine';
+import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
+import { adaptiveUIEngine as _adaptiveUIEngine } from './AdaptiveUIEngine';
 
 // Core Emotional Engagement Types
 export interface EmotionalEngagementEngine {

@@ -58,11 +58,11 @@ export interface PrecipitationProjection {
 export interface TimeSeriesProjection {
   readonly year: number;
   readonly value: number;
-  readonly uncertainty: UncertaintyRange;
+  readonly uncertainty: _UncertaintyRange;
   readonly scenario: string; // RCP2.6, RCP4.5, RCP8.5
 }
 
-export interface UncertaintyRange {
+export interface _UncertaintyRange {
   readonly lower: number; // 5th percentile
   readonly upper: number; // 95th percentile
   readonly median: number; // 50th percentile
@@ -222,5 +222,5 @@ export interface EmissionProjection {
   readonly year: number;
   readonly total: number; // tons CO2e
   readonly bySource: Record<string, number>; // transport, energy, etc.
-  readonly uncertainty: UncertaintyRange;
+  readonly uncertainty: _UncertaintyRange;
 }

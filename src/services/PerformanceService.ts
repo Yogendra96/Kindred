@@ -1,21 +1,12 @@
 import React from 'react';
+import { InteractionManager, Platform } from 'react-native';
 
 // Global type declarations
 declare global {
   var __DEV__: boolean;
 }
 
-// React Native module declaration
-declare module 'react-native' {
-  export interface InteractionManager {
-    runAfterInteractions(task: () => void): { cancel: () => void };
-  }
-  export const InteractionManager: InteractionManager;
-  export const Platform: {
-    OS: 'ios' | 'android' | 'web';
-    select: <T>(specifics: { ios?: T; android?: T; default?: T }) => T;
-  };
-}
+// React Native imports are now at the top
 
 // Mock Firebase Performance for development
 interface MockTrace {
@@ -56,7 +47,7 @@ const mockPerf = {
   }),
 };
 
-const { InteractionManager, Platform } = require('react-native');
+// InteractionManager and Platform are now imported at the top
 
 interface TracingOptions {
   attributes?: Record<string, string>;
