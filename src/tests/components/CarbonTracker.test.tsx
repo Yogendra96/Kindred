@@ -1,4 +1,4 @@
-import CarbonTracker as _CarbonTracker from '../../components/CarbonTracker';
+import CarbonTracker from '../../components/CarbonTracker';
 import { render, TestDataFactory, TestHelpers } from '../utils/testUtils';
 import { fireEvent, waitFor, screen } from '@testing-library/react-native';
 import React from 'react';

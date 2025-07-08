@@ -1,7 +1,5 @@
-import { enhancedPerformanceService as _enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
 import CryptoJS from 'crypto-js';
-import { Platform as _Platform } from 'react-native';
 
 export interface EncryptedData {
   readonly data: readonly number[];

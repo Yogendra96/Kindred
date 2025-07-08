@@ -4,7 +4,6 @@ import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
 // Services
 import { loggingService } from '../services/LoggingService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform as _Platform } from 'react-native';
 
 // Global type declarations for development utilities
 type GlobalWithDevUtils = typeof globalThis & {

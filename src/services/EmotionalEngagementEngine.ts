@@ -5,10 +5,7 @@
  */
 
 import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform as _Platform } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
-import { adaptiveUIEngine as _adaptiveUIEngine } from './AdaptiveUIEngine';
 
 // Core Emotional Engagement Types
 export interface EmotionalEngagementEngine {

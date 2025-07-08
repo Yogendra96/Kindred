@@ -200,7 +200,7 @@ class NetworkPerformanceOptimizerService {
     return mapping[type] || 'unknown';
   }
 
-  private estimateBandwidth(type: string, details: any): number {
+  private estimateBandwidth(type: string, _details: any): number {
     // Rough bandwidth estimates in bytes per second
     const bandwidthMap: Record<string, number> = {
       'wifi': 50 * 1024 * 1024, // 50 Mbps

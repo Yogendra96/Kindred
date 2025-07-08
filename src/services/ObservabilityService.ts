@@ -2,7 +2,7 @@
  * Comprehensive Observability Service for production monitoring
  * Includes APM, Real User Monitoring, Business Metrics, and Alerting
  */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { enhancedPerformanceService as _enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';

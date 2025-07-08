@@ -1,7 +1,7 @@
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { enhancedSecurityService } from './EnhancedSecurityService';
 import { loggingService } from './LoggingService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import _AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 // Note: Actual location implementation would use react-native-geolocation-service

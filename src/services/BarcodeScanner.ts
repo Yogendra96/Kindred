@@ -3,12 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { runOnJS as _runOnJS } from 'react-native-reanimated';
-import {
-  Camera as _Camera,
-  useCameraDevices as _useCameraDevices,
-  useFrameProcessor as _useFrameProcessor,
-} from 'react-native-vision-camera';
 
 // Types for Product Carbon Footprint
 export interface ProductInfo {

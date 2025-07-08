@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Camera, CameraType, FlashMode } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect, useState, useRef, useCallback as _useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,

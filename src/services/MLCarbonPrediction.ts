@@ -545,7 +545,7 @@ class MLCarbonPredictionService {
 
   public async addTrainingData(
     userData: UserBehaviorData,
-    actualFootprint: number[],
+    _actualFootprint: number[],
   ): Promise<void> {
     try {
       // Add new training data
@@ -670,7 +670,7 @@ class MLCarbonPredictionService {
     if (!this.model) return;
 
     try {
-      const modelData = await this.model.save(
+      const _modelData = await this.model.save(
         tf.io.withSaveHandler(async artifacts => {
           await AsyncStorage.setItem(
             'carbon_prediction_model',
@@ -708,8 +708,8 @@ class MLCarbonPredictionService {
       throw new Error('No model to export');
     }
 
-    const modelData = await this.model.save(
-      tf.io.withSaveHandler(async artifacts => {
+    const _modelData = await this.model.save(
+      tf.io.withSaveHandler(async _artifacts => {
         return { modelArtifactsInfo: { dateSaved: new Date() } };
       }),
     );

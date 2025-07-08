@@ -2,7 +2,7 @@ import { loggingService } from './LoggingService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
 import { Platform } from 'react-native';
-import Keychain as _Keychain from 'react-native-keychain';
+import _Keychain from 'react-native-keychain';
 
 // Global type declarations
 declare global {

@@ -783,7 +783,7 @@ class MFAService {
     return new Uint8Array(bytes);
   }
 
-  private hmacSha1(key: Uint8Array, data: Uint8Array): Uint8Array {
+  private hmacSha1(_key: Uint8Array, _data: Uint8Array): Uint8Array {
     // Simplified HMAC-SHA1 - use proper crypto library in production
     // This is just for demonstration
     return new Uint8Array(20); // Placeholder

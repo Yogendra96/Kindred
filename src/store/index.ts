@@ -3,7 +3,6 @@ import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { loggingService } from '../services/LoggingService';
 import analyticsReducer, {
   addEvent,
-  startSession as _startSession,
 } from './slices/analyticsSlice';
 // Import all reducers
 import authReducer, { loginSuccess, logout } from './slices/authSlice';

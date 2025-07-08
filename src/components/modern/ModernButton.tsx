@@ -11,7 +11,6 @@ import {
   View,
   Animated,
   StyleSheet,
-  Platform as _Platform,
   AccessibilityRole,
   AccessibilityState,
   ViewStyle,

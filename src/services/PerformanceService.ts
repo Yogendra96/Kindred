@@ -1,4 +1,3 @@
-import React from 'react';
 import { InteractionManager, Platform } from 'react-native';
 
 // Global type declarations
@@ -29,14 +28,14 @@ interface MockHttpMetric {
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 const mockPerf = {
-  setPerformanceCollectionEnabled: async (enabled: boolean) => {},
-  trace: (name: string): MockTrace => ({
+  setPerformanceCollectionEnabled: async (_enabled: boolean) => {},
+  trace: (_name: string): MockTrace => ({
     start: () => {},
     stop: () => {},
     putAttribute: () => {},
     incrementMetric: () => {},
   }),
-  httpMetric: (url: string, method: HttpMethod): MockHttpMetric => ({
+  httpMetric: (_url: string, _method: HttpMethod): MockHttpMetric => ({
     start: () => {},
     stop: () => {},
     setHttpResponseCode: () => {},

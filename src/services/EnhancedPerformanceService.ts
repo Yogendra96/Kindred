@@ -7,7 +7,6 @@ import {
   NativeMemoryMetrics,
   EnhancedNetworkMetrics,
   CoreVitalMetric,
-  CoreVitalType as _CoreVitalType,
   PerformanceAlertRule,
   PerformanceAlert,
   UserJourneyEvent,
@@ -18,8 +17,7 @@ import {
   SessionPerformanceData as _SessionPerformanceData,
   PerformanceConfig,
   DEFAULT_PERFORMANCE_CONFIG,
-  DEFAULT_CORE_VITAL_THRESHOLDS as _DEFAULT_CORE_VITAL_THRESHOLDS,
-  CircularBuffer as ICircularBuffer,
+  CircularBuffer as _ICircularBuffer,
 } from '../types/performance';
 import { CircularBuffer } from '../utils/CircularBuffer';
 import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';

@@ -4,10 +4,10 @@
  * Features: Gesture recognition, voice commands, adaptive interfaces, neural interfaces
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, PanResponder, Dimensions } from 'react-native';
+import _AsyncStorage from '@react-native-async-storage/async-storage';
+import { _Platform, _PanResponder, _Dimensions } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { adaptiveUIEngine } from './AdaptiveUIEngine';
+import { adaptiveUIEngine as _adaptiveUIEngine } from './AdaptiveUIEngine';
 
 // Core Interaction Engine Types
 export interface NextGenInteractionEngine {

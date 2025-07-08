@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig as _AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { CARBON_API_KEY, CARBON_API_BASE_URL } from '@env';
 import { loggingService } from './LoggingService';
 

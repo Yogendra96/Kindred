@@ -2,8 +2,8 @@ import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { enhancedSecurityService } from './EnhancedSecurityService';
 import { loggingService } from './LoggingService';
 import { webSocketService } from './WebSocketService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform as _Platform } from 'react-native';
 
 export interface IoTDevice {
   id: string;
@@ -276,7 +276,7 @@ class IoTIntegrationService {
     }
   }
 
-  private async fetchNestData(apiKey: string, deviceId: string): Promise<any> {
+  private async fetchNestData(_apiKey: string, _deviceId: string): Promise<Record<string, unknown>> {
     // Mock Nest API implementation
     return {
       current_temperature: 22.5,

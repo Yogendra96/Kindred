@@ -4,7 +4,7 @@
  * Features: Predictive GC, Smart pooling, Memory pattern learning, Leak prediction
  */
 
-import { Platform, NativeModules, DeviceEventEmitter } from 'react-native';
+import { Platform, DeviceEventEmitter } from 'react-native';
 import { observabilityService } from './ObservabilityService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
