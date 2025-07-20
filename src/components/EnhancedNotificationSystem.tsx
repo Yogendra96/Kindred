@@ -1,22 +1,24 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import type {
-  PanGestureHandlerGestureEvent} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import type { PanGestureHandlerGestureEvent } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
   Animated,
   Dimensions,
   PanGestureHandler,
-  State,
   // TouchableOpacity,
   Platform,
+  State,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@theme/ThemeProvider';
 import { BlurView } from 'expo-blur';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
 
 const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
@@ -125,17 +127,15 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     });
   };
 
-  const onGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: translateX } }],
-    { useNativeDriver: true },
-  );
+  const onGestureEvent = Animated.event([{ nativeEvent: { translationX: translateX } }], {
+    useNativeDriver: true,
+  });
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
       const threshold = screenWidth * 0.3;
-      const shouldDismiss =
-        Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
+      const shouldDismiss = Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
 
       if (shouldDismiss) {
         handleDismiss();
@@ -241,16 +241,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   });
 
   return (
-    <PanGestureHandler
-      onGestureEvent={onGestureEvent}
-      onHandlerStateChange={onHandlerStateChange}
-    >
+    <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
       <Animated.View
-        style={[
-          styles.notificationContainer,
-          getNotificationStyle(),
-          animatedStyle,
-        ]}
+        style={[styles.notificationContainer, getNotificationStyle(), animatedStyle]}
         accessible={true}
         accessibilityRole='alert'
         accessibilityLabel={`${notification.type} notification: ${notification.title}`}
@@ -301,10 +294,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
             {notification.timestamp && (
               <Text
-                style={[
-                  styles.timestamp,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
+                style={[styles.timestamp, { color: theme.colors.onSurfaceVariant }]}
                 accessible={true}
               >
                 {notification.timestamp.toLocaleTimeString([], {
@@ -325,11 +315,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             accessibilityRole='button'
             accessibilityLabel='Dismiss notification'
           >
-            <Ionicons
-              name='close'
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <Ionicons name='close' size={20} color={theme.colors.onSurfaceVariant} />
           </AnimatedTouchable>
         </View>
 
@@ -351,14 +337,14 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                       action.style === 'primary'
                         ? theme.colors.primary
                         : action.style === 'destructive'
-                        ? theme.colors.error
-                        : 'transparent',
+                          ? theme.colors.error
+                          : 'transparent',
                     borderColor:
                       action.style === 'primary'
                         ? theme.colors.primary
                         : action.style === 'destructive'
-                        ? theme.colors.error
-                        : theme.colors.outline,
+                          ? theme.colors.error
+                          : theme.colors.outline,
                   },
                 ]}
                 hapticType='medium'
@@ -375,8 +361,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                         action.style === 'primary'
                           ? theme.colors.onPrimary
                           : action.style === 'destructive'
-                          ? theme.colors.onError
-                          : theme.colors.onSurface,
+                            ? theme.colors.onError
+                            : theme.colors.onSurface,
                     },
                   ]}
                 >
@@ -400,9 +386,7 @@ interface EnhancedNotificationSystemProps {
   testID?: string;
 }
 
-export const EnhancedNotificationSystem: React.FC<
-  EnhancedNotificationSystemProps
-> = ({
+export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProps> = ({
   maxNotifications = 5,
   position = 'top',
   enableBlur = true,
@@ -435,10 +419,7 @@ export const EnhancedNotificationSystem: React.FC<
 
   const _saveSettings = async (newSettings: typeof settings) => {
     try {
-      await AsyncStorage.setItem(
-        'notification_settings',
-        JSON.stringify(newSettings),
-      );
+      await AsyncStorage.setItem('notification_settings', JSON.stringify(newSettings));
       setSettings(newSettings);
     } catch (error) {
       console.error('Error saving notification settings:', error);
@@ -449,9 +430,7 @@ export const EnhancedNotificationSystem: React.FC<
     (notification: Omit<NotificationData, 'id' | 'timestamp'>) => {
       const newNotification: NotificationData = {
         ...notification,
-        id: `notification_${Date.now()}_${Math.random()
-          .toString(36)
-          .substr(2, 9)}`,
+        id: `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date(),
       };
 
@@ -492,13 +471,10 @@ export const EnhancedNotificationSystem: React.FC<
     setNotifications([]);
   }, []);
 
-  const handleAction = useCallback(
-    (notificationId: string, actionId: string) => {
-      // Log action for analytics
-      console.warn('Notification action:', { notificationId, actionId });
-    },
-    [],
-  );
+  const handleAction = useCallback((notificationId: string, actionId: string) => {
+    // Log action for analytics
+    console.warn('Notification action:', { notificationId, actionId });
+  }, []);
 
   if (notifications.length === 0) {
     return null;
@@ -510,11 +486,7 @@ export const EnhancedNotificationSystem: React.FC<
   };
 
   return (
-    <View
-      style={[styles.container, containerStyle]}
-      testID={testID}
-      pointerEvents='box-none'
-    >
+    <View style={[styles.container, containerStyle]} testID={testID} pointerEvents='box-none'>
       {settings.enableBlur && Platform.OS === 'ios' ? (
         <BlurView intensity={20} style={styles.blurContainer}>
           {notifications.map((notification, index) => (
@@ -546,22 +518,14 @@ export const EnhancedNotificationSystem: React.FC<
         <View style={styles.clearAllContainer}>
           <AnimatedTouchable
             onPress={clearAllNotifications}
-            style={[
-              styles.clearAllButton,
-              { backgroundColor: theme.colors.surfaceVariant },
-            ]}
+            style={[styles.clearAllButton, { backgroundColor: theme.colors.surfaceVariant }]}
             hapticType='medium'
             animationType='scale'
             accessible={true}
             accessibilityRole='button'
             accessibilityLabel='Clear all notifications'
           >
-            <Text
-              style={[
-                styles.clearAllText,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
+            <Text style={[styles.clearAllText, { color: theme.colors.onSurfaceVariant }]}>
               Clear All ({notifications.length})
             </Text>
           </AnimatedTouchable>
@@ -574,9 +538,7 @@ export const EnhancedNotificationSystem: React.FC<
 // Hook for using the notification system
 export const useNotifications = () => {
   const [notificationSystem, setNotificationSystem] = useState<{
-    addNotification: (
-      notification: Omit<NotificationData, 'id' | 'timestamp'>,
-    ) => string;
+    addNotification: (notification: Omit<NotificationData, 'id' | 'timestamp'>) => string;
     removeNotification: (id: string) => void;
     clearAllNotifications: () => void;
   } | null>(null);

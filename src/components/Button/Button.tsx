@@ -1,13 +1,9 @@
-import { HapticFeedbackService } from '../../services/HapticFeedbackService';
 import React from 'react';
-import type { ViewStyle, TextStyle } from 'react-native';
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  View,
-} from 'react-native';
+
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
+
+import { HapticFeedbackService } from '../../services/HapticFeedbackService';
 
 export interface ButtonProps {
   title: string;
@@ -74,28 +70,18 @@ export const Button: React.FC<ButtonProps> = ({
         <View style={styles.loadingContainer}>
           <ActivityIndicator
             size={size === 'small' ? 'small' : 'small'}
-            color={
-              variant === 'primary' || variant === 'danger'
-                ? '#FFFFFF'
-                : '#4CAF50'
-            }
+            color={variant === 'primary' || variant === 'danger' ? '#FFFFFF' : '#4CAF50'}
           />
-          <Text style={[textStyleCombined, styles.loadingText]}>
-            Loading...
-          </Text>
+          <Text style={[textStyleCombined, styles.loadingText]}>Loading...</Text>
         </View>
       );
     }
 
     return (
       <View style={styles.contentContainer}>
-        {icon && iconPosition === 'left' && (
-          <View style={styles.iconContainer}>{icon}</View>
-        )}
+        {icon && iconPosition === 'left' && <View style={styles.iconContainer}>{icon}</View>}
         <Text style={textStyleCombined}>{title}</Text>
-        {icon && iconPosition === 'right' && (
-          <View style={styles.iconContainer}>{icon}</View>
-        )}
+        {icon && iconPosition === 'right' && <View style={styles.iconContainer}>{icon}</View>}
       </View>
     );
   };

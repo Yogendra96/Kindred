@@ -1,8 +1,11 @@
-import { performanceService } from '@services/PerformanceService';
-import { useTheme } from '@theme/ThemeProvider';
 import React, { useMemo } from 'react';
-import { View, StyleSheet, Text, Dimensions, Platform } from 'react-native';
+
+import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
+
+import { useTheme } from '@theme/ThemeProvider';
 import { PieChart } from 'react-native-chart-kit';
+
+import { performanceService } from '@services/PerformanceService';
 
 interface CarbonData {
   transport: number;
@@ -79,14 +82,10 @@ const CarbonFootprintCard: React.FC<Props> = ({
       </Text>
 
       <View style={styles.summaryContainer}>
-        <Text
-          style={[styles.totalEmissions, { color: theme.colors.text.primary }]}
-        >
+        <Text style={[styles.totalEmissions, { color: theme.colors.text.primary }]}>
           {totalEmissions.toFixed(1)}
         </Text>
-        <Text style={[styles.unit, { color: theme.colors.text.secondary }]}>
-          tonnes CO₂e/year
-        </Text>
+        <Text style={[styles.unit, { color: theme.colors.text.secondary }]}>tonnes CO₂e/year</Text>
         <Text style={[styles.impactLevel, { color: emissionLevel.color }]}>
           {emissionLevel.text}
         </Text>
@@ -117,46 +116,27 @@ const CarbonFootprintCard: React.FC<Props> = ({
         {Object.entries(data).map(([category, value]) => (
           <View
             key={category}
-            style={[
-              styles.categoryItem,
-              { borderBottomColor: theme.colors.border },
-            ]}
+            style={[styles.categoryItem, { borderBottomColor: theme.colors.border }]}
           >
             <View style={styles.categoryHeader}>
               <View
                 style={[
                   styles.dot,
                   {
-                    backgroundColor: chartData.find(
-                      item => item.name.toLowerCase() === category,
-                    )?.color,
+                    backgroundColor: chartData.find(item => item.name.toLowerCase() === category)
+                      ?.color,
                   },
                 ]}
               />
-              <Text
-                style={[
-                  styles.categoryName,
-                  { color: theme.colors.text.primary },
-                ]}
-              >
+              <Text style={[styles.categoryName, { color: theme.colors.text.primary }]}>
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </Text>
             </View>
             <View style={styles.categoryValues}>
-              <Text
-                style={[
-                  styles.categoryValue,
-                  { color: theme.colors.text.primary },
-                ]}
-              >
+              <Text style={[styles.categoryValue, { color: theme.colors.text.primary }]}>
                 {value.toFixed(1)}t
               </Text>
-              <Text
-                style={[
-                  styles.categoryPercentage,
-                  { color: theme.colors.text.secondary },
-                ]}
-              >
+              <Text style={[styles.categoryPercentage, { color: theme.colors.text.secondary }]}>
                 {((value / totalEmissions) * 100).toFixed(1)}%
               </Text>
             </View>

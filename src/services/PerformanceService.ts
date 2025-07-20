@@ -81,10 +81,7 @@ class PerformanceService {
     }
   }
 
-  static async startTrace(
-    traceName: string,
-    options: TracingOptions = {},
-  ): Promise<void> {
+  static async startTrace(traceName: string, options: TracingOptions = {}): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -133,11 +130,7 @@ class PerformanceService {
     }
   }
 
-  static async putMetric(
-    traceName: string,
-    metricName: string,
-    value: number,
-  ): Promise<void> {
+  static async putMetric(traceName: string, metricName: string, value: number): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -150,10 +143,7 @@ class PerformanceService {
     }
   }
 
-  static async startNetworkMonitoring(
-    url: string,
-    httpMethod: HttpMethod,
-  ): Promise<string> {
+  static async startNetworkMonitoring(url: string, httpMethod: HttpMethod): Promise<string> {
     if (!this.isEnabled) return '';
 
     try {
@@ -185,9 +175,7 @@ class PerformanceService {
           metric.setHttpResponseCode(responseInfo.responseCode);
         }
         if (responseInfo?.responseSize) {
-          metric.setResponseContentType(
-            responseInfo.contentType || 'application/json',
-          );
+          metric.setResponseContentType(responseInfo.contentType || 'application/json');
           metric.setResponsePayloadSize(responseInfo.responseSize);
         }
         await metric.stop();
@@ -247,10 +235,7 @@ class PerformanceService {
     });
   }
 
-  async measureOperation(
-    operationName: string,
-    operation: () => Promise<any>,
-  ): Promise<any> {
+  async measureOperation(operationName: string, operation: () => Promise<any>): Promise<any> {
     const traceName = `operation_${operationName}`;
     await PerformanceService.startTrace(traceName);
 
@@ -273,10 +258,7 @@ class PerformanceService {
     }
   }
 
-  async measureNetworkRequest(
-    requestName: string,
-    request: () => Promise<any>,
-  ): Promise<any> {
+  async measureNetworkRequest(requestName: string, request: () => Promise<any>): Promise<any> {
     if (!this.isEnabled) return request();
 
     const trace = await perf().startTrace(`network_${requestName}`);

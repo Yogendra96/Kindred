@@ -1,9 +1,11 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import type { AppStateStatus } from 'react-native';
+import { AppState } from 'react-native';
+
 import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
 import { loggingService } from '../services/LoggingService';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import type { AppStateStatus } from 'react-native';
-import { AppState } from 'react-native';
 
 // Global type declarations
 declare global {
@@ -108,7 +110,9 @@ export const usePerformanceMonitoring = (
           `${componentName}_${name}`,
           duration,
           'ms',
-          { component: componentName },
+          {
+            component: componentName,
+          },
         );
 
         if (enableAnalytics) {
@@ -116,7 +120,9 @@ export const usePerformanceMonitoring = (
             `${componentName}_${name}`,
             duration,
             'ms',
-            { component: componentName },
+            {
+              component: componentName,
+            },
           );
         }
 
@@ -137,7 +143,9 @@ export const usePerformanceMonitoring = (
         `${componentName}_${name}`,
         value,
         unit,
-        { component: componentName },
+        {
+          component: componentName,
+        },
       );
 
       if (enableAnalytics) {
@@ -145,7 +153,9 @@ export const usePerformanceMonitoring = (
           `${componentName}_${name}`,
           value,
           unit,
-          { component: componentName },
+          {
+            component: componentName,
+          },
         );
       }
     },
@@ -188,9 +198,7 @@ export const usePerformanceMonitoring = (
       // Track slow renders
       if (trackSlowRenders && isSlow) {
         logger.current.warn(
-          `Slow render detected in ${componentName}: ${renderTime.toFixed(
-            2,
-          )}ms`,
+          `Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`,
         );
 
         if (enableAnalytics) {
@@ -418,7 +426,7 @@ export const useAsyncPerformance = () => {
   const analyticsService = useRef(EnhancedAnalyticsService.getInstance());
 
   const measureAsync = useCallback(
-    async <T = unknown>(
+    async <T = unknown,>(
       name: string,
       asyncFn: () => Promise<T>,
       context?: Record<string, unknown>,
@@ -435,7 +443,7 @@ export const useAsyncPerformance = () => {
   );
 
   const measureSync = useCallback(
-    <T = unknown>(
+    <T = unknown,>(
       name: string,
       syncFn: () => T,
       context?: Record<string, unknown>,

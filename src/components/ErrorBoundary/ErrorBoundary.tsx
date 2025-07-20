@@ -1,17 +1,20 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
-import { PerformanceMonitoringService } from '../../services/PerformanceMonitoringService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Alert,
   Dimensions,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { PerformanceMonitoringService } from '../../services/PerformanceMonitoringService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -44,12 +47,7 @@ export interface ErrorDetails {
 
 export interface ErrorBreadcrumb {
   timestamp: number;
-  category:
-    | 'navigation'
-    | 'user_action'
-    | 'api_call'
-    | 'state_change'
-    | 'lifecycle';
+  category: 'navigation' | 'user_action' | 'api_call' | 'state_change' | 'lifecycle';
   message: string;
   level: 'info' | 'warning' | 'error';
   data?: Record<string, unknown>;
@@ -74,16 +72,8 @@ export interface ErrorBoundaryState {
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: (
-    error: Error,
-    errorInfo: ErrorInfo,
-    retry: () => void,
-  ) => ReactNode;
-  onError?: (
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorDetails: ErrorDetails,
-  ) => void;
+  fallback?: (error: Error, errorInfo: ErrorInfo, retry: () => void) => ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo, errorDetails: ErrorDetails) => void;
   enableReporting?: boolean;
   enableRetry?: boolean;
   maxRetries?: number;
@@ -256,9 +246,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
-  private async sendToReportingService(
-    errorDetails: ErrorDetails,
-  ): Promise<void> {
+  private async sendToReportingService(errorDetails: ErrorDetails): Promise<void> {
     // This would integrate with your crash reporting service
     // Example: Crashlytics, Sentry, Bugsnag, etc.
     try {
@@ -388,31 +376,22 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     };
 
     // This could open an email client, feedback form, or support chat
-    Alert.alert(
-      'Report Issue',
-      'Would you like to report this issue to help us improve the app?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Report',
-          onPress: () => {
-            // Implement your reporting mechanism here
-            console.warn('User reported issue:', reportData);
-            this.hapticService.triggerSuccess();
-          },
+    Alert.alert('Report Issue', 'Would you like to report this issue to help us improve the app?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Report',
+        onPress: () => {
+          // Implement your reporting mechanism here
+          console.warn('User reported issue:', reportData);
+          this.hapticService.triggerSuccess();
         },
-      ],
-    );
+      },
+    ]);
   };
 
   private renderErrorFallback(): ReactNode {
-    const { error, errorInfo, showDetails, retryCount, isReporting } =
-      this.state;
-    const {
-      enableRetry = true,
-      maxRetries = 3,
-      level = 'component',
-    } = this.props;
+    const { error, errorInfo, showDetails, retryCount, isReporting } = this.state;
+    const { enableRetry = true, maxRetries = 3, level = 'component' } = this.props;
 
     if (!error || !errorInfo) return null;
 
@@ -473,9 +452,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               {errorInfo.componentStack && (
                 <>
                   <Text style={styles.detailsTitle}>Component Stack:</Text>
-                  <Text style={styles.stackText}>
-                    {errorInfo.componentStack}
-                  </Text>
+                  <Text style={styles.stackText}>{errorInfo.componentStack}</Text>
                 </>
               )}
             </View>
@@ -490,9 +467,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 activeOpacity={0.8}
               >
                 <Text style={styles.retryButtonText}>
-                  {retryCount > 0
-                    ? `Retry (${retryCount}/${maxRetries})`
-                    : 'Try Again'}
+                  {retryCount > 0 ? `Retry (${retryCount}/${maxRetries})` : 'Try Again'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -662,9 +637,7 @@ export function withErrorBoundary<P extends object>(
     </ErrorBoundary>
   );
 
-  WrappedComponent.displayName = `withErrorBoundary(${
-    Component.displayName || Component.name
-  })`;
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
 
   return WrappedComponent;
 }

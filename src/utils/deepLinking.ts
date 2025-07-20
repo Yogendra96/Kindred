@@ -1,19 +1,15 @@
 import { Linking, Platform } from 'react-native';
 
 export function openAppLink(url: string) {
-  Linking.openURL(url).catch(err => {
+  Linking.openURL(url).catch(error => {
     // Handle error
-    console.warn('Failed to open URL:', err);
+    console.warn('Failed to open URL:', error);
   });
 }
 
 export function getDeepLinkPrefix() {
-  if (Platform.OS === 'android') {
-    return 'kindred://';
-  } else if (Platform.OS === 'ios') {
-    return 'kindred://';
-  }
-  return '';
+  // Both platforms use the same scheme for consistency
+  return Platform.OS === 'android' || Platform.OS === 'ios' ? 'kindred://' : '';
 }
 
 // Example: Handle incoming deep links (to be used in a useEffect or event listener)

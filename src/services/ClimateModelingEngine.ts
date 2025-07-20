@@ -4,16 +4,16 @@
  * File size target: 150-200 lines max
  */
 
-import { observabilityService } from './ObservabilityService';
-import { networkPerformanceOptimizer } from './NetworkPerformanceOptimizer';
 import { ClimateModelingCore } from './ClimateModelingEngine.core';
 import type {
+  ClimateAPIConfig,
   ClimateModelingResult,
+  ClimateScenario,
   GeographicCoordinate,
   MobileClimateConfig,
-  ClimateAPIConfig,
-  ClimateScenario
 } from './ClimateModelingEngine.types';
+import { networkPerformanceOptimizer } from './NetworkPerformanceOptimizer';
+import { observabilityService } from './ObservabilityService';
 
 /**
  * Climate Modeling Engine Service
@@ -35,7 +35,7 @@ class ClimateModelingEngineService {
    */
   async getClimateProjection(
     coordinates: GeographicCoordinate,
-    timeHorizon: number = 30
+    timeHorizon: number = 30,
   ): Promise<ClimateModelingResult> {
     if (!this.isInitialized) {
       await this.initialize();
@@ -58,7 +58,7 @@ class ClimateModelingEngineService {
         longitude: coordinates.longitude,
         timeHorizon,
         confidence: result.confidence.overall,
-        scenarioCount: result.scenarios.length
+        scenarioCount: result.scenarios.length,
       });
 
       console.log(`🌍 Climate Projection Generated:
@@ -85,7 +85,7 @@ class ClimateModelingEngineService {
         latitude: 0,
         longitude: 0,
         region: 'Global',
-        country: 'Global'
+        country: 'Global',
       };
 
       const result = await this.core.generateClimateProjection(dummyCoordinates, timeHorizon);
@@ -117,7 +117,6 @@ class ClimateModelingEngineService {
       // Fallback to OpenWeather
       const openWeatherData = await this.fetchFromOpenWeather(coordinates);
       return { ...openWeatherData, source: 'OpenWeather' };
-
     } catch (error) {
       console.error('All climate API sources failed:', error);
       return this.getEstimatedClimateData(coordinates);
@@ -129,7 +128,7 @@ class ClimateModelingEngineService {
    */
   calculateClimateImpactScore(
     carbonFootprint: number,
-    _location: GeographicCoordinate
+    _location: GeographicCoordinate,
   ): {
     score: number; // 0-100
     category: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
@@ -146,7 +145,7 @@ class ClimateModelingEngineService {
     if (ratio <= 0.5) {
       score = 90 + (0.5 - ratio) * 20; // 90-100
       category = 'excellent';
-      recommendation = 'Outstanding! You\'re leading by example in climate action.';
+      recommendation = "Outstanding! You're leading by example in climate action.";
     } else if (ratio <= 1.0) {
       score = 70 + (1.0 - ratio) * 40; // 70-90
       category = 'good';
@@ -183,7 +182,7 @@ class ClimateModelingEngineService {
       await observabilityService.trackMetric('climate_engine_initialized', {
         timestamp: Date.now(),
         primaryAPI: this.apiConfig.primaryAPI,
-        fallbackCount: this.apiConfig.fallbackAPIs.length
+        fallbackCount: this.apiConfig.fallbackAPIs.length,
       });
 
       console.log('🌍 Climate Modeling Engine initialized');
@@ -208,7 +207,12 @@ class ClimateModelingEngineService {
   private async testAPIConnections(): Promise<void> {
     // Test NASA API connection
     try {
-      const testCoords: GeographicCoordinate = { latitude: 40.7128, longitude: -74.0060, region: 'Test', country: 'Test' };
+      const testCoords: GeographicCoordinate = {
+        latitude: 40.7128,
+        longitude: -74.006,
+        region: 'Test',
+        country: 'Test',
+      };
       await this.fetchFromNASA(testCoords);
     } catch (_error) {
       console.warn('NASA API connection failed:', _error.message);
@@ -218,15 +222,17 @@ class ClimateModelingEngineService {
   private async fetchFromNASA(coordinates: GeographicCoordinate): Promise<any> {
     // Simplified NASA API integration
     const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,PRECTOTCORR&community=RE&longitude=${coordinates.longitude}&latitude=${coordinates.latitude}&start=20230101&end=20231231&format=JSON`;
-    
+
     try {
-      const response = await networkPerformanceOptimizer.optimizeRequest(url, { priority: 'high' });
+      const response = await networkPerformanceOptimizer.optimizeRequest(url, {
+        priority: 'high',
+      });
       const data = await response.json();
-      
+
       return {
         temperature: data.properties?.parameter?.T2M?.['20231215'] || 15,
         precipitation: data.properties?.parameter?.PRECTOTCORR?.['20231215'] || 2.5,
-        airQuality: 85 // NASA doesn't provide AQI directly
+        airQuality: 85, // NASA doesn't provide AQI directly
       };
     } catch (error) {
       throw new Error(`NASA API failed: ${error.message}`);
@@ -243,7 +249,7 @@ class ClimateModelingEngineService {
     return {
       temperature: 15 + (Math.random() - 0.5) * 10,
       precipitation: 2.5 + (Math.random() - 0.5) * 2,
-      airQuality: 80 + (Math.random() - 0.5) * 30
+      airQuality: 80 + (Math.random() - 0.5) * 30,
     };
   }
 
@@ -251,12 +257,12 @@ class ClimateModelingEngineService {
     // Provide estimated data when all APIs fail
     const { latitude } = coordinates;
     const baseTemp = 30 - Math.abs(latitude) * 0.65;
-    
+
     return {
       temperature: baseTemp + (Math.random() - 0.5) * 5,
       precipitation: 2.0 + Math.random() * 3,
       airQuality: 75 + (Math.random() - 0.5) * 40,
-      source: 'Estimated'
+      source: 'Estimated',
     };
   }
 
@@ -271,9 +277,9 @@ class ClimateModelingEngineService {
           temperatureIncrease: 3.0,
           seaLevelRise: 0.8,
           economicImpact: 7.5,
-          biodiversityLoss: 20
+          biodiversityLoss: 20,
         },
-        probability: 0.6
+        probability: 0.6,
       },
       {
         id: 'optimistic',
@@ -284,10 +290,10 @@ class ClimateModelingEngineService {
           temperatureIncrease: 1.8,
           seaLevelRise: 0.5,
           economicImpact: 3.0,
-          biodiversityLoss: 10
+          biodiversityLoss: 10,
         },
-        probability: 0.4
-      }
+        probability: 0.4,
+      },
     ];
   }
 
@@ -297,7 +303,7 @@ class ClimateModelingEngineService {
       maxDataSize: 5 * 1024 * 1024, // 5MB
       offlineCapable: true,
       updateFrequency: 24, // hours
-      backgroundProcessing: !__DEV__
+      backgroundProcessing: !__DEV__,
     };
   }
 
@@ -308,10 +314,10 @@ class ClimateModelingEngineService {
       apiKeys: {
         nasa: process.env.NASA_API_KEY || 'DEMO_KEY',
         noaa: process.env.NOAA_API_KEY || '',
-        openweather: process.env.OPENWEATHER_API_KEY || ''
+        openweather: process.env.OPENWEATHER_API_KEY || '',
       },
       cacheTTL: 3600000, // 1 hour
-      rateLimit: 60 // requests per minute
+      rateLimit: 60, // requests per minute
     };
   }
 }

@@ -1,27 +1,24 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import { AnimatedTouchable, AnimatedProgress } from './MicroInteractions';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@theme/ThemeProvider';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
   Animated,
   Dimensions,
   // ScrollView,
   Modal,
+  StyleSheet,
+  Text,
+  View,
   // Alert,
 } from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@theme/ThemeProvider';
+import { LinearGradient } from 'expo-linear-gradient';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
+
+import { AnimatedProgress, AnimatedTouchable } from './MicroInteractions';
 
 const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
@@ -147,9 +144,7 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
-  const [newAchievement, setNewAchievement] = useState<Achievement | null>(
-    null,
-  );
+  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
 
   useEffect(() => {
     initializeGamification();
@@ -159,15 +154,7 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
     if (autoSave) {
       saveGamificationData();
     }
-  }, [
-    userLevel,
-    achievements,
-    streaks,
-    rewards,
-    challenges,
-    totalPoints,
-    autoSave,
-  ]);
+  }, [userLevel, achievements, streaks, rewards, challenges, totalPoints, autoSave]);
 
   const initializeGamification = async () => {
     try {
@@ -182,21 +169,15 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
 
   const loadGamificationData = async () => {
     try {
-      const [
-        levelData,
-        achievementsData,
-        streaksData,
-        rewardsData,
-        challengesData,
-        pointsData,
-      ] = await Promise.all([
-        AsyncStorage.getItem('user_level'),
-        AsyncStorage.getItem('achievements'),
-        AsyncStorage.getItem('streaks'),
-        AsyncStorage.getItem('rewards'),
-        AsyncStorage.getItem('challenges'),
-        AsyncStorage.getItem('total_points'),
-      ]);
+      const [levelData, achievementsData, streaksData, rewardsData, challengesData, pointsData] =
+        await Promise.all([
+          AsyncStorage.getItem('user_level'),
+          AsyncStorage.getItem('achievements'),
+          AsyncStorage.getItem('streaks'),
+          AsyncStorage.getItem('rewards'),
+          AsyncStorage.getItem('challenges'),
+          AsyncStorage.getItem('total_points'),
+        ]);
 
       if (levelData) setUserLevel(JSON.parse(levelData));
       if (achievementsData) setAchievements(JSON.parse(achievementsData));
@@ -301,9 +282,7 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
       }
 
       const existingIds = new Set(prev.map(a => a.id));
-      const newAchievements = defaultAchievements.filter(
-        a => !existingIds.has(a.id),
-      );
+      const newAchievements = defaultAchievements.filter(a => !existingIds.has(a.id));
 
       return [...prev, ...newAchievements];
     });
@@ -403,9 +382,7 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
       // Remove expired challenges and add new ones
       const activeChallenges = prev.filter(c => c.endDate > now);
       const existingIds = new Set(activeChallenges.map(c => c.id));
-      const newChallenges = defaultChallenges.filter(
-        c => !existingIds.has(c.id),
-      );
+      const newChallenges = defaultChallenges.filter(c => !existingIds.has(c.id));
 
       return [...activeChallenges, ...newChallenges];
     });
@@ -474,29 +451,26 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
     [enableNotifications],
   );
 
-  const updateAchievementProgress = useCallback(
-    (achievementId: string, progress: number) => {
-      setAchievements(prev =>
-        prev.map(achievement => {
-          if (achievement.id === achievementId && !achievement.unlocked) {
-            const newCurrent = Math.min(progress, achievement.target);
-            const shouldUnlock = newCurrent >= achievement.target;
+  const updateAchievementProgress = useCallback((achievementId: string, progress: number) => {
+    setAchievements(prev =>
+      prev.map(achievement => {
+        if (achievement.id === achievementId && !achievement.unlocked) {
+          const newCurrent = Math.min(progress, achievement.target);
+          const shouldUnlock = newCurrent >= achievement.target;
 
-            if (shouldUnlock) {
-              unlockAchievement(achievementId);
-            }
-
-            return {
-              ...achievement,
-              current: newCurrent,
-            };
+          if (shouldUnlock) {
+            unlockAchievement(achievementId);
           }
-          return achievement;
-        }),
-      );
-    },
-    [],
-  );
+
+          return {
+            ...achievement,
+            current: newCurrent,
+          };
+        }
+        return achievement;
+      }),
+    );
+  }, []);
 
   const unlockAchievement = useCallback(
     (achievementId: string) => {
@@ -617,9 +591,7 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
       }
 
       setTotalPoints(prev => prev - reward.cost);
-      setRewards(prev =>
-        prev.map(r => (r.id === rewardId ? { ...r, unlocked: true } : r)),
-      );
+      setRewards(prev => prev.map(r => (r.id === rewardId ? { ...r, unlocked: true } : r)));
 
       if (enableNotifications) {
         HapticFeedbackService.triggerSuccess();
@@ -657,12 +629,8 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({
 
   const getCompletionPercentage = useCallback(() => {
     const totalAchievements = achievements.filter(a => !a.hidden).length;
-    const unlockedCount = achievements.filter(
-      a => a.unlocked && !a.hidden,
-    ).length;
-    return totalAchievements > 0
-      ? (unlockedCount / totalAchievements) * 100
-      : 0;
+    const unlockedCount = achievements.filter(a => a.unlocked && !a.hidden).length;
+    return totalAchievements > 0 ? (unlockedCount / totalAchievements) * 100 : 0;
   }, [achievements]);
 
   const unlockedAchievements = achievements.filter(a => a.unlocked);
@@ -806,9 +774,7 @@ const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
           colors={getRarityGradient(achievement.rarity)}
           style={styles.achievementHeader}
         >
-          <Text style={styles.achievementUnlockedText}>
-            Achievement Unlocked!
-          </Text>
+          <Text style={styles.achievementUnlockedText}>Achievement Unlocked!</Text>
 
           <Animated.View
             style={[
@@ -834,65 +800,38 @@ const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
         </LinearGradient>
 
         <View style={styles.achievementContent}>
-          <Text
-            style={[styles.achievementTitle, { color: theme.colors.onSurface }]}
-          >
+          <Text style={[styles.achievementTitle, { color: theme.colors.onSurface }]}>
             {achievement.title}
           </Text>
 
-          <Text
-            style={[
-              styles.achievementDescription,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
+          <Text style={[styles.achievementDescription, { color: theme.colors.onSurfaceVariant }]}>
             {achievement.description}
           </Text>
 
           <View style={styles.achievementRewards}>
             <View style={styles.rewardItem}>
-              <Ionicons
-                name='star'
-                size={16}
-                color={getRarityColor(achievement.rarity)}
-              />
-              <Text
-                style={[styles.rewardText, { color: theme.colors.onSurface }]}
-              >
+              <Ionicons name='star' size={16} color={getRarityColor(achievement.rarity)} />
+              <Text style={[styles.rewardText, { color: theme.colors.onSurface }]}>
                 {achievement.points} Points
               </Text>
             </View>
 
             <View style={styles.rewardItem}>
-              <Ionicons
-                name='trending-up'
-                size={16}
-                color={theme.colors.primary}
-              />
-              <Text
-                style={[styles.rewardText, { color: theme.colors.onSurface }]}
-              >
+              <Ionicons name='trending-up' size={16} color={theme.colors.primary} />
+              <Text style={[styles.rewardText, { color: theme.colors.onSurface }]}>
                 {achievement.points * 2} XP
               </Text>
             </View>
           </View>
 
-          <Text
-            style={[
-              styles.rarityText,
-              { color: getRarityColor(achievement.rarity) },
-            ]}
-          >
+          <Text style={[styles.rarityText, { color: getRarityColor(achievement.rarity) }]}>
             {achievement.rarity.toUpperCase()}
           </Text>
         </View>
 
         <AnimatedTouchable
           onPress={onClose}
-          style={[
-            styles.closeButton,
-            { backgroundColor: theme.colors.primary },
-          ]}
+          style={[styles.closeButton, { backgroundColor: theme.colors.primary }]}
           animationType='scale'
           hapticType='medium'
         >
@@ -924,15 +863,10 @@ export const UserLevelDisplay: React.FC<UserLevelDisplayProps> = ({
   if (compact) {
     return (
       <View
-        style={[
-          styles.levelDisplayCompact,
-          { backgroundColor: theme.colors.surfaceVariant },
-        ]}
+        style={[styles.levelDisplayCompact, { backgroundColor: theme.colors.surfaceVariant }]}
         testID={testID}
       >
-        <Text style={[styles.levelNumber, { color: theme.colors.primary }]}>
-          {userLevel.level}
-        </Text>
+        <Text style={[styles.levelNumber, { color: theme.colors.primary }]}>{userLevel.level}</Text>
         <View style={styles.levelProgressCompact}>
           <AnimatedProgress
             progress={progressPercentage}
@@ -946,10 +880,7 @@ export const UserLevelDisplay: React.FC<UserLevelDisplayProps> = ({
   }
 
   return (
-    <View
-      style={[styles.levelDisplay, { backgroundColor: theme.colors.surface }]}
-      testID={testID}
-    >
+    <View style={[styles.levelDisplay, { backgroundColor: theme.colors.surface }]} testID={testID}>
       <View style={styles.levelHeader}>
         <View style={styles.levelInfo}>
           <Text style={[styles.levelTitle, { color: theme.colors.onSurface }]}>
@@ -960,9 +891,7 @@ export const UserLevelDisplay: React.FC<UserLevelDisplayProps> = ({
           </Text>
         </View>
 
-        <View
-          style={[styles.levelBadge, { backgroundColor: theme.colors.primary }]}
-        >
+        <View style={[styles.levelBadge, { backgroundColor: theme.colors.primary }]}>
           <Ionicons name='trophy' size={24} color='white' />
         </View>
       </View>
@@ -970,18 +899,10 @@ export const UserLevelDisplay: React.FC<UserLevelDisplayProps> = ({
       {showDetails && (
         <>
           <View style={styles.xpContainer}>
-            <Text
-              style={[styles.xpText, { color: theme.colors.onSurfaceVariant }]}
-            >
-              {userLevel.currentXP} / {userLevel.currentXP + userLevel.xpToNext}{' '}
-              XP
+            <Text style={[styles.xpText, { color: theme.colors.onSurfaceVariant }]}>
+              {userLevel.currentXP} / {userLevel.currentXP + userLevel.xpToNext} XP
             </Text>
-            <Text
-              style={[
-                styles.xpToNext,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
+            <Text style={[styles.xpToNext, { color: theme.colors.onSurfaceVariant }]}>
               {userLevel.xpToNext} XP to next level
             </Text>
           </View>
@@ -996,24 +917,13 @@ export const UserLevelDisplay: React.FC<UserLevelDisplayProps> = ({
 
           {userLevel.perks.length > 0 && (
             <View style={styles.perksContainer}>
-              <Text
-                style={[styles.perksTitle, { color: theme.colors.onSurface }]}
-              >
+              <Text style={[styles.perksTitle, { color: theme.colors.onSurface }]}>
                 Level Perks:
               </Text>
               {userLevel.perks.map((perk, index) => (
                 <View key={index} style={styles.perkItem}>
-                  <Ionicons
-                    name='checkmark-circle'
-                    size={16}
-                    color={theme.colors.primary}
-                  />
-                  <Text
-                    style={[
-                      styles.perkText,
-                      { color: theme.colors.onSurfaceVariant },
-                    ]}
-                  >
+                  <Ionicons name='checkmark-circle' size={16} color={theme.colors.primary} />
+                  <Text style={[styles.perkText, { color: theme.colors.onSurfaceVariant }]}>
                     {perk}
                   </Text>
                 </View>
@@ -1093,9 +1003,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
           <Ionicons
             name={achievement.icon as string}
             size={24}
-            color={
-              achievement.unlocked ? 'white' : theme.colors.onSurfaceVariant
-            }
+            color={achievement.unlocked ? 'white' : theme.colors.onSurfaceVariant}
           />
         </View>
 
@@ -1110,18 +1018,11 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
         )}
       </View>
 
-      <Text
-        style={[styles.achievementCardTitle, { color: theme.colors.onSurface }]}
-      >
+      <Text style={[styles.achievementCardTitle, { color: theme.colors.onSurface }]}>
         {achievement.title}
       </Text>
 
-      <Text
-        style={[
-          styles.achievementCardDescription,
-          { color: theme.colors.onSurfaceVariant },
-        ]}
-      >
+      <Text style={[styles.achievementCardDescription, { color: theme.colors.onSurfaceVariant }]}>
         {achievement.description}
       </Text>
 
@@ -1134,32 +1035,17 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
             height={4}
             borderRadius={2}
           />
-          <Text
-            style={[
-              styles.progressText,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
+          <Text style={[styles.progressText, { color: theme.colors.onSurfaceVariant }]}>
             {achievement.current} / {achievement.target}
           </Text>
         </View>
       )}
 
       <View style={styles.achievementFooter}>
-        <Text
-          style={[
-            styles.pointsText,
-            { color: getRarityColor(achievement.rarity) },
-          ]}
-        >
+        <Text style={[styles.pointsText, { color: getRarityColor(achievement.rarity) }]}>
           {achievement.points} pts
         </Text>
-        <Text
-          style={[
-            styles.rarityBadge,
-            { color: getRarityColor(achievement.rarity) },
-          ]}
-        >
+        <Text style={[styles.rarityBadge, { color: getRarityColor(achievement.rarity) }]}>
           {achievement.rarity.toUpperCase()}
         </Text>
       </View>

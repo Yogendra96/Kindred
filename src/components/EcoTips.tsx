@@ -1,20 +1,23 @@
-import type { CarbonData } from '@components/CarbonFootprintCard';
 // import { Ionicons } from '@expo/vector-icons';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import { useTheme } from '@theme/ThemeProvider';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import React from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Image,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { useTheme } from '@theme/ThemeProvider';
+
+import type { CarbonData } from '@components/CarbonFootprintCard';
 
 interface EcoTip {
   id: string;
@@ -96,9 +99,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       }
 
       _setTips(currentTips =>
-        currentTips.map(t =>
-          t.id === tip.id ? { ...t, completed: !t.completed } : t,
-        ),
+        currentTips.map(t => (t.id === tip.id ? { ...t, completed: !t.completed } : t)),
       );
     } catch (error) {
       console.error('Error updating tip completion:', error);
@@ -178,8 +179,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'f2',
         title: 'Buy Local Produce',
-        description:
-          'Local food requires less transportation and often uses fewer preservatives.',
+        description: 'Local food requires less transportation and often uses fewer preservatives.',
         impact: 'medium',
         category: 'food',
         icon: '@assets/icons/local-market.png',
@@ -189,8 +189,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w1',
         title: 'Start Composting',
-        description:
-          'Composting organic waste reduces methane emissions from landfills.',
+        description: 'Composting organic waste reduces methane emissions from landfills.',
         impact: 'medium',
         category: 'waste',
         icon: '@assets/icons/compost.png',
@@ -199,8 +198,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w2',
         title: 'Improve Recycling',
-        description:
-          'Proper recycling can reduce waste-related emissions by up to 30%.',
+        description: 'Proper recycling can reduce waste-related emissions by up to 30%.',
         impact: 'medium',
         category: 'waste',
         icon: '@assets/icons/recycle.png',
@@ -256,43 +254,25 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
         {personalizedTips.map(tip => (
           <TouchableOpacity
             key={tip.id}
-            style={[
-              styles.tipCard,
-              { backgroundColor: theme.colors.background },
-            ]}
+            style={[styles.tipCard, { backgroundColor: theme.colors.background }]}
             onPress={() => onTipPress?.(tip)}
           >
             <Image source={tip.icon} style={styles.icon} />
             <View style={styles.tipContent}>
-              <Text
-                style={[styles.tipTitle, { color: theme.colors.text.primary }]}
-              >
+              <Text style={[styles.tipTitle, { color: theme.colors.text.primary }]}>
                 {tip.title}
               </Text>
               <Text
-                style={[
-                  styles.tipDescription,
-                  { color: theme.colors.text.secondary },
-                ]}
+                style={[styles.tipDescription, { color: theme.colors.text.secondary }]}
                 numberOfLines={2}
               >
                 {tip.description}
               </Text>
               <View style={styles.impactContainer}>
-                <Text
-                  style={[
-                    styles.impactLabel,
-                    { color: theme.colors.text.secondary },
-                  ]}
-                >
+                <Text style={[styles.impactLabel, { color: theme.colors.text.secondary }]}>
                   Impact:
                 </Text>
-                <Text
-                  style={[
-                    styles.impactValue,
-                    { color: getImpactColor(tip.impact) },
-                  ]}
-                >
+                <Text style={[styles.impactValue, { color: getImpactColor(tip.impact) }]}>
                   {tip.impact.toUpperCase()}
                 </Text>
               </View>

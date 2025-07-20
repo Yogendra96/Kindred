@@ -1,30 +1,33 @@
+import React, { useCallback, useEffect } from 'react';
+
+import {
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import NetInfo from '@react-native-community/netinfo';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { useDispatch, useSelector } from 'react-redux';
+
 import ActivityTracker from '../../components/ActivityTracker';
 import CarbonFootprintCard from '../../components/CarbonFootprintCard';
 import EcoTips from '../../components/EcoTips';
 import type { RootState } from '../../store';
 import {
-  updateFootprint,
-  setFootprintLoading,
-  setHistoryLoading,
-  setHistory,
   setError,
+  setFootprintLoading,
+  setHistory,
+  setHistoryLoading,
+  updateFootprint,
 } from '../../store/slices/carbonSlice';
 import CacheManager from '../../utils/cacheManager';
 import { calculateCarbonFootprint } from '../../utils/carbonCalculator';
-import NetInfo from '@react-native-community/netinfo';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import React, { useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-  Alert,
-} from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
 
 const FOOTPRINT_CACHE_KEY = 'carbon_footprint';
 const HISTORY_CACHE_KEY = 'footprint_history';
@@ -97,15 +100,11 @@ const HomeScreen = () => {
 
         dispatch(setError(null));
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown error occurred';
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         dispatch(setError(errorMessage));
 
         if (await checkConnectivity()) {
-          Alert.alert(
-            'Error',
-            'Failed to update data. Please try again later.',
-          );
+          Alert.alert('Error', 'Failed to update data. Please try again later.');
         }
       } finally {
         dispatch(setFootprintLoading(false));
@@ -116,35 +115,59 @@ const HomeScreen = () => {
   );
 
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+
+    // Only fetch data if component is still mounted
+    if (isMounted) {
+      void fetchData();
+    }
 
     const unsubscribeNetInfo = NetInfo.addEventListener(state => {
-      setIsOnline(!!state.isConnected);
-      if (state.isConnected) {
-        fetchData(true); // Force fetch when coming back online
+      if (isMounted) {
+        setIsOnline(!!state.isConnected);
+        if (state.isConnected) {
+          void fetchData(true); // Force fetch when coming back online
+        }
       }
     });
 
     const user = auth().currentUser;
-    if (!user) return;
+    if (!user) {
+      return () => {
+        isMounted = false;
+        unsubscribeNetInfo();
+      };
+    }
 
     // Set up real-time listener for footprint updates
     const unsubscribeFirestore = firestore()
       .collection('user_activities')
       .doc(user.uid)
-      .onSnapshot(async _doc => {
-        if (isOnline) {
-          try {
-            const newFootprint = await calculateCarbonFootprint();
-            dispatch(updateFootprint(newFootprint));
-            await CacheManager.set({ key: FOOTPRINT_CACHE_KEY }, newFootprint);
-          } catch (error) {
-            console.error('Error updating footprint:', error);
+      .onSnapshot(
+        async _doc => {
+          if (isMounted && isOnline) {
+            try {
+              const newFootprint = await calculateCarbonFootprint();
+              if (isMounted) {
+                dispatch(updateFootprint(newFootprint));
+                await CacheManager.set({ key: FOOTPRINT_CACHE_KEY }, newFootprint);
+              }
+            } catch (error) {
+              if (isMounted) {
+                console.error('Error updating footprint:', error);
+              }
+            }
           }
-        }
-      });
+        },
+        error => {
+          if (isMounted) {
+            console.error('Firestore listener error:', error);
+          }
+        },
+      );
 
     return () => {
+      isMounted = false;
       unsubscribeNetInfo();
       unsubscribeFirestore();
     };
@@ -167,27 +190,50 @@ const HomeScreen = () => {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      accessible={true}
+      accessibilityLabel='Carbon impact dashboard'
+      accessibilityHint='Scroll to view your carbon footprint data and recommendations'
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Your Carbon Impact</Text>
-        <Text style={styles.subtitle}>
+      <View style={styles.header} accessible={true} accessibilityRole='header'>
+        <Text
+          style={styles.title}
+          accessible={true}
+          accessibilityRole='text'
+          accessibilityLabel='Your Carbon Impact'
+        >
+          Your Carbon Impact
+        </Text>
+        <Text
+          style={styles.subtitle}
+          accessible={true}
+          accessibilityRole='text'
+          accessibilityLabel='Track and reduce your environmental footprint'
+        >
           Track and reduce your environmental footprint
         </Text>
       </View>
 
       {!isOnline && (
-        <View style={styles.offlineContainer}>
-          <Text style={styles.offlineText}>
-            You're offline - viewing cached data
-          </Text>
+        <View
+          style={styles.offlineContainer}
+          accessible={true}
+          accessibilityRole='alert'
+          accessibilityLabel='Offline mode'
+          accessibilityHint='You are currently offline and viewing cached data'
+        >
+          <Text style={styles.offlineText}>You're offline - viewing cached data</Text>
         </View>
       )}
 
       {error && (
-        <View style={styles.errorContainer}>
+        <View
+          style={styles.errorContainer}
+          accessible={true}
+          accessibilityRole='alert'
+          accessibilityLabel='Error message'
+          accessibilityHint={`Error occurred: ${error}`}
+        >
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}

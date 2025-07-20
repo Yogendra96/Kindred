@@ -4,11 +4,13 @@
  * Features: Real-time 3D environments, emotional engagement, interactive ecosystems
  */
 
+import { _Dimensions, _Platform } from 'react-native';
+
 import _AsyncStorage from '@react-native-async-storage/async-storage';
-import { _Platform, _Dimensions } from 'react-native';
-import { observabilityService } from './ObservabilityService';
+
 import { adaptiveUIEngine as __adaptiveUIEngine } from './AdaptiveUIEngine';
 import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
+import { observabilityService } from './ObservabilityService';
 
 // Core Immersive Visualization Types
 export interface ImmersiveCarbonVisualizationEngine {
@@ -1408,22 +1410,21 @@ export class ImmersiveCarbonVisualizationEngineService {
 
     try {
       console.log('🌍 Initializing Immersive Carbon Visualization Engine...');
-      
+
       // Initialize 3D rendering engine
       await this.initialize3DEngine();
-      
+
       // Load ecosystem templates
       await this.loadEcosystemTemplates();
-      
+
       // Initialize visualization systems
       await this.initializeVisualizationSystems();
-      
+
       // Setup performance monitoring
       await this.setupPerformanceMonitoring();
-      
+
       this.isInitialized = true;
       console.log('✅ Immersive Carbon Visualization Engine initialized successfully');
-      
     } catch (error) {
       console.error('❌ Failed to initialize Immersive Carbon Visualization Engine:', error);
       throw error;
@@ -1432,32 +1433,35 @@ export class ImmersiveCarbonVisualizationEngineService {
 
   async createEcosystemVisualization(
     carbonData: CarbonVisualizationData,
-    ecosystemType: LivingEcosystem['type']
+    ecosystemType: LivingEcosystem['type'],
   ): Promise<LivingEcosystem> {
     console.log(`🌱 Creating ${ecosystemType} ecosystem visualization...`);
-    
+
     try {
       // Analyze carbon impact on ecosystem
       const ecosystemHealth = await this.analyzeEcosystemHealth(carbonData, ecosystemType);
-      
+
       // Calculate carbon capacity
       const carbonCapacity = await this.calculateCarbonCapacity(ecosystemType, ecosystemHealth);
-      
+
       // Generate biodiversity metrics
       const biodiversity = await this.generateBiodiversityMetrics(ecosystemType, ecosystemHealth);
-      
+
       // Create user impact analysis
       const userImpact = await this.analyzeUserEcosystemImpact(carbonData, ecosystemType);
-      
+
       // Generate ecosystem visualization
-      const visualization = await this.generateEcosystemVisualization(ecosystemType, ecosystemHealth);
-      
+      const visualization = await this.generateEcosystemVisualization(
+        ecosystemType,
+        ecosystemHealth,
+      );
+
       // Create interactivity systems
       const interactivity = await this.createEcosystemInteractivity(ecosystemType, userImpact);
-      
+
       // Setup ecosystem evolution
       const evolution = await this.setupEcosystemEvolution(ecosystemType, carbonData);
-      
+
       const ecosystem: LivingEcosystem = {
         ecosystemId: `ecosystem_${ecosystemType}_${Date.now()}`,
         type: ecosystemType,
@@ -1469,10 +1473,10 @@ export class ImmersiveCarbonVisualizationEngineService {
         interactivity,
         evolution,
       };
-      
+
       // Store ecosystem
       this.ecosystems.set(ecosystem.ecosystemId, ecosystem);
-      
+
       // Track creation
       observabilityService.trackBusinessEvent({
         eventName: 'ecosystem_visualization_created',
@@ -1484,10 +1488,9 @@ export class ImmersiveCarbonVisualizationEngineService {
           userImpact: userImpact.directImpact.carbon_footprint,
         },
       });
-      
+
       console.log(`✅ ${ecosystemType} ecosystem created: ${ecosystem.ecosystemId}`);
       return ecosystem;
-      
     } catch (error) {
       console.error('Ecosystem visualization creation failed:', error);
       throw error;
@@ -1495,24 +1498,24 @@ export class ImmersiveCarbonVisualizationEngineService {
   }
 
   async createCarbonFlowVisualization(
-    carbonData: CarbonVisualizationData
+    carbonData: CarbonVisualizationData,
   ): Promise<CarbonFlowVisualization> {
     console.log('🌊 Creating carbon flow visualization...');
-    
+
     try {
       // Build flow networks
       const flowNetworks = await this.buildCarbonFlowNetworks(carbonData);
-      
+
       // Identify sources and sinks
       const sources = await this.identifyCarbonSources(carbonData);
       const sinks = await this.identifyCarbonSinks(carbonData);
-      
+
       // Model transformations
       const transformations = await this.modelCarbonTransformations(carbonData);
-      
+
       // Create visualization style
       const visualization = await this.createFlowVisualizationStyle(carbonData);
-      
+
       const flowVisualization: CarbonFlowVisualization = {
         flow_networks: flowNetworks,
         sources,
@@ -1520,7 +1523,7 @@ export class ImmersiveCarbonVisualizationEngineService {
         transformations,
         visualization,
       };
-      
+
       // Track creation
       observabilityService.trackBusinessEvent({
         eventName: 'carbon_flow_visualization_created',
@@ -1531,9 +1534,8 @@ export class ImmersiveCarbonVisualizationEngineService {
           transformations: transformations.length,
         },
       });
-      
+
       return flowVisualization;
-      
     } catch (error) {
       console.error('Carbon flow visualization creation failed:', error);
       throw error;
@@ -1542,32 +1544,31 @@ export class ImmersiveCarbonVisualizationEngineService {
 
   async render3DVisualization(
     visualizationId: string,
-    viewportConfig: ViewportConfiguration
+    viewportConfig: ViewportConfiguration,
   ): Promise<RenderingResult> {
     if (!this.renderingEngine) {
       throw new Error('3D rendering engine not initialized');
     }
 
     console.log(`🎨 Rendering 3D visualization: ${visualizationId}`);
-    
+
     try {
       // Get visualization data
       const visualization = this.visualizations.get(visualizationId);
       if (!visualization) {
         throw new Error(`Visualization not found: ${visualizationId}`);
       }
-      
+
       // Setup rendering context
       const context = await this.setupRenderingContext(viewportConfig);
-      
+
       // Render scene
       const result = await this.renderScene(visualization, context);
-      
+
       // Monitor performance
       await this.monitorRenderingPerformance(result);
-      
+
       return result;
-      
     } catch (error) {
       console.error('3D visualization rendering failed:', error);
       throw error;
@@ -1587,12 +1588,12 @@ export class ImmersiveCarbonVisualizationEngineService {
 
   private async analyzeEcosystemHealth(
     carbonData: CarbonVisualizationData,
-    ecosystemType: LivingEcosystem['type']
+    ecosystemType: LivingEcosystem['type'],
   ): Promise<EcosystemHealth> {
     // Complex ecosystem health analysis based on carbon impact
     const baseHealth = this.getBaseEcosystemHealth(ecosystemType);
     const carbonImpact = this.calculateCarbonHealthImpact(carbonData);
-    
+
     return {
       overall: Math.max(0, baseHealth - carbonImpact),
       components: await this.analyzeHealthComponents(ecosystemType, carbonData),
@@ -1612,7 +1613,7 @@ export class ImmersiveCarbonVisualizationEngineService {
       arctic: 0.65,
       wetland: 0.85,
     };
-    
+
     return baseHealthValues[ecosystemType] || 0.5;
   }
 

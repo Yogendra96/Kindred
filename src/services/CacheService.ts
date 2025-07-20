@@ -107,9 +107,7 @@ export class CacheService {
       // Remove oldest items until we're under maxSize
       for (const item of items) {
         if ((await this.getCacheSize()) <= maxSize) break;
-        await this.remove(
-          item.key.replace(this.PREFIX + this.VERSION + ':', ''),
-        );
+        await this.remove(item.key.replace(`${this.PREFIX + this.VERSION}:`, ''));
       }
     } catch (error) {
       console.error('CacheService.cleanup error:', error);

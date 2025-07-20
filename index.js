@@ -1,11 +1,14 @@
 /**
  * @format
  */
+import React, { StrictMode } from 'react';
+
+import { AppRegistry } from 'react-native';
+
+import { enableScreens } from 'react-native-screens';
+
 import App from './App';
 import { name as appName } from './app.json';
-import React, { StrictMode } from 'react';
-import { AppRegistry } from 'react-native';
-import { enableScreens } from 'react-native-screens';
 
 // Enable native screens for better performance
 enableScreens();

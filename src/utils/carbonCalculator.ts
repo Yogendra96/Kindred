@@ -12,7 +12,10 @@ export class CarbonCalculationError extends Error {
 }
 
 export class InputValidationError extends Error {
-  constructor(message: string, public readonly field: string) {
+  constructor(
+    message: string,
+    public readonly field: string,
+  ) {
     super(message);
     this.name = 'InputValidationError';
   }
@@ -159,16 +162,9 @@ export class CarbonCalculator {
    * Validates numeric input
    * @throws {InputValidationError} If validation fails
    */
-  private validateNumericInput(
-    value: number,
-    min: number,
-    fieldName: string,
-  ): void {
+  private validateNumericInput(value: number, min: number, fieldName: string): void {
     if (typeof value !== 'number' || isNaN(value) || value < min) {
-      throw new InputValidationError(
-        `Invalid ${fieldName}: must be a number >= ${min}`,
-        fieldName,
-      );
+      throw new InputValidationError(`Invalid ${fieldName}: must be a number >= ${min}`, fieldName);
     }
   }
 
@@ -176,12 +172,8 @@ export class CarbonCalculator {
     return Number(value.toFixed(DECIMAL_PLACES));
   }
 
-  private logCalculation(
-    type: string,
-    details: Record<string, unknown>,
-    emissions: number,
-  ): void {
-    analyticsService.logEvent('carbon_calculation', {
+  private logCalculation(type: string, details: Record<string, unknown>, emissions: number): void {
+    void analyticsService.logEvent('carbon_calculation', {
       type,
       ...details,
       emissions,
@@ -211,8 +203,7 @@ export class CarbonCalculator {
       let emissions = 0;
 
       if (input.mode === 'car' && input.fuelType) {
-        emissions =
-          EMISSION_FACTORS.transport.car[input.fuelType] * input.distance;
+        emissions = EMISSION_FACTORS.transport.car[input.fuelType] * input.distance;
         if (input.passengers && input.passengers > 1) {
           emissions /= input.passengers;
         }
@@ -221,29 +212,18 @@ export class CarbonCalculator {
           ? EMISSION_FACTORS.transport.plane.shortHaul
           : EMISSION_FACTORS.transport.plane.longHaul;
         emissions = factor * input.distance;
-      } else if (
-        input.mode === 'bus' ||
-        input.mode === 'train' ||
-        input.mode === 'subway'
-      ) {
-        emissions =
-          (EMISSION_FACTORS.transport[input.mode] as number) * input.distance;
+      } else if (input.mode === 'bus' || input.mode === 'train' || input.mode === 'subway') {
+        emissions = (EMISSION_FACTORS.transport[input.mode] as number) * input.distance;
       }
 
       const result = this.roundToTwoDecimals(emissions);
       this.logCalculation('transport', input, result);
       return result;
     } catch (error) {
-      if (
-        error instanceof InputValidationError ||
-        error instanceof CarbonCalculationError
-      ) {
+      if (error instanceof InputValidationError || error instanceof CarbonCalculationError) {
         throw error;
       }
-      throw new CarbonCalculationError(
-        'Error calculating transport emissions',
-        { error, input },
-      );
+      throw new CarbonCalculationError('Error calculating transport emissions', { error, input });
     }
   }
 
@@ -255,11 +235,7 @@ export class CarbonCalculator {
    */
   calculateEnergyEmissions(input: EnergyInput): number {
     try {
-      this.validateNumericInput(
-        input.consumption,
-        MINIMUM_CONSUMPTION,
-        'consumption',
-      );
+      this.validateNumericInput(input.consumption, MINIMUM_CONSUMPTION, 'consumption');
 
       const factors =
         input.type === 'electricity'
@@ -278,10 +254,7 @@ export class CarbonCalculator {
       this.logCalculation('energy', input, result);
       return result;
     } catch (error) {
-      if (
-        error instanceof InputValidationError ||
-        error instanceof CarbonCalculationError
-      ) {
+      if (error instanceof InputValidationError || error instanceof CarbonCalculationError) {
         throw error;
       }
       throw new CarbonCalculationError('Error calculating energy emissions', {
@@ -294,43 +267,13 @@ export class CarbonCalculator {
   calculateFoodEmissions(input: FoodInput): number {
     try {
       this.validateNumericInput(input.quantity, MINIMUM_QUANTITY, 'quantity');
-
-      let factor = 0;
-      if (input.type === 'vegetables') {
-        if (input.isLocal) {
-          factor = EMISSION_FACTORS.food.vegetables.local;
-        } else {
-          factor =
-            EMISSION_FACTORS.food.vegetables[
-              input.isOrganic ? 'organic' : 'standard'
-            ];
-        }
-      } else if (input.type === 'processed') {
-        factor = EMISSION_FACTORS.food.processed;
-      } else if (input.type === 'meat' || input.type === 'dairy') {
-        const category = EMISSION_FACTORS.food[input.type];
-        if (input.subtype && input.subtype in category) {
-          factor = category[input.subtype as keyof typeof category];
-        } else {
-          factor = category[input.isOrganic ? 'organic' : 'standard'];
-        }
-      }
-
-      if (factor === 0) {
-        throw new CarbonCalculationError('Invalid food type or configuration', {
-          input,
-        });
-      }
-
+      const factor = this.getFoodEmissionFactor(input);
       const emissions = factor * input.quantity;
       const result = this.roundToTwoDecimals(emissions);
       this.logCalculation('food', input, result);
       return result;
     } catch (error) {
-      if (
-        error instanceof InputValidationError ||
-        error instanceof CarbonCalculationError
-      ) {
+      if (error instanceof InputValidationError || error instanceof CarbonCalculationError) {
         throw error;
       }
       throw new CarbonCalculationError('Error calculating food emissions', {
@@ -338,6 +281,45 @@ export class CarbonCalculator {
         input,
       });
     }
+  }
+
+  private getFoodEmissionFactor(input: FoodInput): number {
+    const factor = this.determineFoodFactor(input);
+    if (factor === 0) {
+      throw new CarbonCalculationError('Invalid food type or configuration', {
+        input,
+      });
+    }
+    return factor;
+  }
+
+  private determineFoodFactor(input: FoodInput): number {
+    switch (input.type) {
+      case 'vegetables':
+        return this.getVegetableFactor(input);
+      case 'processed':
+        return EMISSION_FACTORS.food.processed;
+      case 'meat':
+      case 'dairy':
+        return this.getAnimalProductFactor(input);
+      default:
+        return 0;
+    }
+  }
+
+  private getVegetableFactor(input: FoodInput): number {
+    if (input.isLocal) {
+      return EMISSION_FACTORS.food.vegetables.local;
+    }
+    return EMISSION_FACTORS.food.vegetables[input.isOrganic ? 'organic' : 'standard'];
+  }
+
+  private getAnimalProductFactor(input: FoodInput): number {
+    const category = EMISSION_FACTORS.food[input.type];
+    if (input.subtype && input.subtype in category) {
+      return category[input.subtype as keyof typeof category];
+    }
+    return category[input.isOrganic ? 'organic' : 'standard'];
   }
 
   calculateWasteEmissions(input: WasteInput): number {
@@ -356,10 +338,7 @@ export class CarbonCalculator {
       this.logCalculation('waste', input, result);
       return result;
     } catch (error) {
-      if (
-        error instanceof InputValidationError ||
-        error instanceof CarbonCalculationError
-      ) {
+      if (error instanceof InputValidationError || error instanceof CarbonCalculationError) {
         throw error;
       }
       throw new CarbonCalculationError('Error calculating waste emissions', {
@@ -382,68 +361,46 @@ export class CarbonCalculator {
   ): EmissionResult {
     try {
       const transportTotal = this.roundToTwoDecimals(
-        transport.reduce(
-          (total, input) => total + this.calculateTransportEmissions(input),
-          0,
-        ),
+        transport.reduce((total, input) => total + this.calculateTransportEmissions(input), 0),
       );
 
       const energyTotal = this.roundToTwoDecimals(
-        energy.reduce(
-          (total, input) => total + this.calculateEnergyEmissions(input),
-          0,
-        ),
+        energy.reduce((total, input) => total + this.calculateEnergyEmissions(input), 0),
       );
 
       const foodTotal = this.roundToTwoDecimals(
-        food.reduce(
-          (total, input) => total + this.calculateFoodEmissions(input),
-          0,
-        ),
+        food.reduce((total, input) => total + this.calculateFoodEmissions(input), 0),
       );
 
       const wasteTotal = this.roundToTwoDecimals(
-        waste.reduce(
-          (total, input) => total + this.calculateWasteEmissions(input),
-          0,
-        ),
+        waste.reduce((total, input) => total + this.calculateWasteEmissions(input), 0),
       );
 
-      const total = this.roundToTwoDecimals(
-        transportTotal + energyTotal + foodTotal + wasteTotal,
-      );
+      const total = this.roundToTwoDecimals(transportTotal + energyTotal + foodTotal + wasteTotal);
 
       const result: EmissionResult = {
         total,
         breakdown: {
           transport: {
             total: transportTotal,
-            percentage: this.roundToTwoDecimals(
-              (transportTotal / total) * PERCENTAGE_MULTIPLIER,
-            ),
+            percentage: this.roundToTwoDecimals((transportTotal / total) * PERCENTAGE_MULTIPLIER),
           },
           energy: {
             total: energyTotal,
-            percentage: this.roundToTwoDecimals(
-              (energyTotal / total) * PERCENTAGE_MULTIPLIER,
-            ),
+            percentage: this.roundToTwoDecimals((energyTotal / total) * PERCENTAGE_MULTIPLIER),
           },
           food: {
             total: foodTotal,
-            percentage: this.roundToTwoDecimals(
-              (foodTotal / total) * PERCENTAGE_MULTIPLIER,
-            ),
+            percentage: this.roundToTwoDecimals((foodTotal / total) * PERCENTAGE_MULTIPLIER),
           },
           waste: {
             total: wasteTotal,
-            percentage: this.roundToTwoDecimals(
-              (wasteTotal / total) * PERCENTAGE_MULTIPLIER,
-            ),
+            percentage: this.roundToTwoDecimals((wasteTotal / total) * PERCENTAGE_MULTIPLIER),
           },
         },
       };
 
-      analyticsService.logEvent('daily_carbon_footprint', result);
+      void analyticsService.logEvent('daily_carbon_footprint', result);
       return result;
     } catch (error) {
       throw new CarbonCalculationError('Error calculating total emissions', {
@@ -452,27 +409,21 @@ export class CarbonCalculator {
     }
   }
 
-  calculateCarbonSaved(
-    oldActivity: TransportationInput,
-    newActivity: TransportationInput,
-  ): number {
+  calculateCarbonSaved(oldActivity: TransportationInput, newActivity: TransportationInput): number {
     try {
       const oldEmissions = this.calculateTransportEmissions(oldActivity);
       const newEmissions = this.calculateTransportEmissions(newActivity);
       const saved = this.roundToTwoDecimals(oldEmissions - newEmissions);
 
       if (saved < 0) {
-        throw new CarbonCalculationError(
-          'New activity produces more emissions than old activity',
-          {
-            oldEmissions,
-            newEmissions,
-            saved,
-          },
-        );
+        throw new CarbonCalculationError('New activity produces more emissions than old activity', {
+          oldEmissions,
+          newEmissions,
+          saved,
+        });
       }
 
-      analyticsService.logEvent('carbon_saved', {
+      void analyticsService.logEvent('carbon_saved', {
         oldActivity,
         newActivity,
         savedEmissions: saved,
@@ -480,10 +431,7 @@ export class CarbonCalculator {
 
       return saved;
     } catch (error) {
-      if (
-        error instanceof InputValidationError ||
-        error instanceof CarbonCalculationError
-      ) {
+      if (error instanceof InputValidationError || error instanceof CarbonCalculationError) {
         throw error;
       }
       throw new CarbonCalculationError('Error calculating carbon saved', {
@@ -492,9 +440,7 @@ export class CarbonCalculator {
     }
   }
 
-  getEmissionReductionTips(
-    category: 'transport' | 'energy' | 'food' | 'waste',
-  ): string[] {
+  getEmissionReductionTips(category: 'transport' | 'energy' | 'food' | 'waste'): string[] {
     const tips: Record<string, string[]> = {
       transport: [
         'Consider using public transportation instead of private vehicles',
@@ -526,7 +472,7 @@ export class CarbonCalculator {
       ],
     };
 
-    return tips[category] || [];
+    return tips[category] ?? [];
   }
 }
 

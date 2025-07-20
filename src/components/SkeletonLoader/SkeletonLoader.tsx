@@ -1,7 +1,9 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
-import type { ViewStyle, ColorValue } from 'react-native';
-import { View, Animated, StyleSheet, Dimensions } from 'react-native';
+
+import type { ColorValue, ViewStyle } from 'react-native';
+import { Animated, Dimensions, StyleSheet, View } from 'react-native';
+
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -106,7 +108,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       case 'vertical':
         return [{ translateY }];
       case 'diagonal':
-        return [{ translateX }, { translateY: translateY }];
+        return [{ translateX }, { translateY }];
       default:
         return [{ translateX }];
     }
@@ -238,8 +240,7 @@ export const SkeletonImage: React.FC<SkeletonImageProps> = ({
   children,
   testID,
 }) => {
-  const calculatedHeight =
-    height || (typeof width === 'number' ? width / aspectRatio : 200);
+  const calculatedHeight = height || (typeof width === 'number' ? width / aspectRatio : 200);
 
   return (
     <Skeleton
@@ -278,11 +279,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
   return (
     <View style={[styles.card, style]} testID={testID}>
       <View style={styles.cardHeader}>
-        <SkeletonCircle
-          size={40}
-          shimmerColors={shimmerColors}
-          shimmerSpeed={shimmerSpeed}
-        />
+        <SkeletonCircle size={40} shimmerColors={shimmerColors} shimmerSpeed={shimmerSpeed} />
         <View style={styles.cardHeaderText}>
           <Skeleton
             width='70%'
@@ -333,11 +330,7 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
 
   const defaultRenderItem = (index: number) => (
     <View key={index} style={[styles.listItem, { height: itemHeight }]}>
-      <SkeletonCircle
-        size={50}
-        shimmerColors={shimmerColors}
-        shimmerSpeed={shimmerSpeed}
-      />
+      <SkeletonCircle size={50} shimmerColors={shimmerColors} shimmerSpeed={shimmerSpeed} />
       <View style={styles.listItemContent}>
         <Skeleton
           width='80%'
@@ -371,31 +364,17 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
 // Predefined Skeleton Layouts
 export const SkeletonLayouts = {
   // Carbon Activity Card
-  CarbonActivityCard: ({
-    isLoading = true,
-    children,
-    ...props
-  }: SkeletonCardProps) => (
+  CarbonActivityCard: ({ isLoading = true, children, ...props }: SkeletonCardProps) => (
     <View style={[styles.card, props.style]} testID={props.testID}>
       {isLoading ? (
         <>
           <View style={styles.activityHeader}>
             <SkeletonCircle size={24} {...props} />
-            <Skeleton
-              width='40%'
-              height={16}
-              style={{ marginLeft: 8 }}
-              {...props}
-            />
+            <Skeleton width='40%' height={16} style={{ marginLeft: 8 }} {...props} />
             <View style={{ flex: 1 }} />
             <Skeleton width={60} height={24} borderRadius={12} {...props} />
           </View>
-          <Skeleton
-            width='100%'
-            height={20}
-            style={{ marginVertical: 8 }}
-            {...props}
-          />
+          <Skeleton width='100%' height={20} style={{ marginVertical: 8 }} {...props} />
           <View style={styles.activityStats}>
             <Skeleton width={80} height={32} borderRadius={16} {...props} />
             <Skeleton width={100} height={32} borderRadius={16} {...props} />
@@ -409,54 +388,25 @@ export const SkeletonLayouts = {
   ),
 
   // User Profile
-  UserProfile: ({
-    isLoading = true,
-    children,
-    ...props
-  }: SkeletonCardProps) => (
+  UserProfile: ({ isLoading = true, children, ...props }: SkeletonCardProps) => (
     <View style={[styles.profileContainer, props.style]} testID={props.testID}>
       {isLoading ? (
         <>
           <SkeletonCircle size={80} {...props} />
-          <Skeleton
-            width={120}
-            height={20}
-            style={{ marginTop: 12 }}
-            {...props}
-          />
-          <Skeleton
-            width={80}
-            height={14}
-            style={{ marginTop: 4 }}
-            {...props}
-          />
+          <Skeleton width={120} height={20} style={{ marginTop: 12 }} {...props} />
+          <Skeleton width={80} height={14} style={{ marginTop: 4 }} {...props} />
           <View style={styles.profileStats}>
             <View style={styles.statItem}>
               <Skeleton width={40} height={24} {...props} />
-              <Skeleton
-                width={60}
-                height={12}
-                style={{ marginTop: 4 }}
-                {...props}
-              />
+              <Skeleton width={60} height={12} style={{ marginTop: 4 }} {...props} />
             </View>
             <View style={styles.statItem}>
               <Skeleton width={40} height={24} {...props} />
-              <Skeleton
-                width={60}
-                height={12}
-                style={{ marginTop: 4 }}
-                {...props}
-              />
+              <Skeleton width={60} height={12} style={{ marginTop: 4 }} {...props} />
             </View>
             <View style={styles.statItem}>
               <Skeleton width={40} height={24} {...props} />
-              <Skeleton
-                width={60}
-                height={12}
-                style={{ marginTop: 4 }}
-                {...props}
-              />
+              <Skeleton width={60} height={12} style={{ marginTop: 4 }} {...props} />
             </View>
           </View>
         </>
@@ -467,11 +417,7 @@ export const SkeletonLayouts = {
   ),
 
   // Leaderboard Item
-  LeaderboardItem: ({
-    isLoading = true,
-    children,
-    ...props
-  }: SkeletonCardProps) => (
+  LeaderboardItem: ({ isLoading = true, children, ...props }: SkeletonCardProps) => (
     <View style={[styles.leaderboardItem, props.style]} testID={props.testID}>
       {isLoading ? (
         <>
@@ -479,12 +425,7 @@ export const SkeletonLayouts = {
           <SkeletonCircle size={40} style={{ marginLeft: 12 }} {...props} />
           <View style={styles.leaderboardContent}>
             <Skeleton width='70%' height={16} {...props} />
-            <Skeleton
-              width='50%'
-              height={12}
-              style={{ marginTop: 4 }}
-              {...props}
-            />
+            <Skeleton width='50%' height={12} style={{ marginTop: 4 }} {...props} />
           </View>
           <Skeleton width={60} height={20} {...props} />
         </>
@@ -495,27 +436,13 @@ export const SkeletonLayouts = {
   ),
 
   // Achievement Badge
-  AchievementBadge: ({
-    isLoading = true,
-    children,
-    ...props
-  }: SkeletonCardProps) => (
+  AchievementBadge: ({ isLoading = true, children, ...props }: SkeletonCardProps) => (
     <View style={[styles.achievementBadge, props.style]} testID={props.testID}>
       {isLoading ? (
         <>
           <SkeletonCircle size={60} {...props} />
-          <Skeleton
-            width={80}
-            height={14}
-            style={{ marginTop: 8 }}
-            {...props}
-          />
-          <Skeleton
-            width={60}
-            height={12}
-            style={{ marginTop: 4 }}
-            {...props}
-          />
+          <Skeleton width={80} height={14} style={{ marginTop: 8 }} {...props} />
+          <Skeleton width={60} height={12} style={{ marginTop: 4 }} {...props} />
         </>
       ) : (
         children
@@ -532,30 +459,15 @@ export const SkeletonLayouts = {
           <View style={styles.chartLegend}>
             <View style={styles.legendItem}>
               <Skeleton width={12} height={12} borderRadius={6} {...props} />
-              <Skeleton
-                width={60}
-                height={12}
-                style={{ marginLeft: 8 }}
-                {...props}
-              />
+              <Skeleton width={60} height={12} style={{ marginLeft: 8 }} {...props} />
             </View>
             <View style={styles.legendItem}>
               <Skeleton width={12} height={12} borderRadius={6} {...props} />
-              <Skeleton
-                width={60}
-                height={12}
-                style={{ marginLeft: 8 }}
-                {...props}
-              />
+              <Skeleton width={60} height={12} style={{ marginLeft: 8 }} {...props} />
             </View>
             <View style={styles.legendItem}>
               <Skeleton width={12} height={12} borderRadius={6} {...props} />
-              <Skeleton
-                width={60}
-                height={12}
-                style={{ marginLeft: 8 }}
-                {...props}
-              />
+              <Skeleton width={60} height={12} style={{ marginLeft: 8 }} {...props} />
             </View>
           </View>
         </>
@@ -566,21 +478,12 @@ export const SkeletonLayouts = {
   ),
 
   // Navigation Tab
-  NavigationTab: ({
-    isLoading = true,
-    children,
-    ...props
-  }: SkeletonCardProps) => (
+  NavigationTab: ({ isLoading = true, children, ...props }: SkeletonCardProps) => (
     <View style={[styles.navTab, props.style]} testID={props.testID}>
       {isLoading ? (
         <>
           <SkeletonCircle size={24} {...props} />
-          <Skeleton
-            width={50}
-            height={12}
-            style={{ marginTop: 4 }}
-            {...props}
-          />
+          <Skeleton width={50} height={12} style={{ marginTop: 4 }} {...props} />
         </>
       ) : (
         children

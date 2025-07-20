@@ -1,14 +1,10 @@
-import React, {
-  Suspense,
-  lazy,
-  type ComponentType,
-  type ReactNode,
-} from 'react';
-import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import React, { type ComponentType, lazy, type ReactNode, Suspense } from 'react';
+
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 // Mock ErrorBoundary for development
 interface ErrorBoundaryProps {
-  FallbackComponent?: ComponentType<unknown>;
+  FallbackComponent?: ComponentType<ErrorFallbackProps>;
   onError?: (error: Error, errorInfo: unknown) => void;
   onReset?: () => void;
   children: ReactNode;
@@ -16,9 +12,11 @@ interface ErrorBoundaryProps {
 
 const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({
   children,
-  _FallbackComponent,
-  _onError,
+  FallbackComponent: _FallbackComponent,
+  onError: _onError,
+  onReset: _onReset,
 }) => {
+  // Simple implementation - in production, use a proper error boundary
   return <>{children}</>;
 };
 
@@ -28,10 +26,7 @@ interface LoadingProps {
   size?: 'small' | 'large';
 }
 
-const LoadingComponent: React.FC<LoadingProps> = ({
-  message = 'Loading...',
-  size = 'large',
-}) => (
+const LoadingComponent: React.FC<LoadingProps> = ({ message = 'Loading...', size = 'large' }) => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size={size} color='#4CAF50' />
     <Text style={styles.loadingText}>{message}</Text>
@@ -44,10 +39,7 @@ interface ErrorFallbackProps {
   resetErrorBoundary: () => void;
 }
 
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({
-  error,
-  resetErrorBoundary,
-}) => (
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => (
   <View style={styles.errorContainer}>
     <Text style={styles.errorTitle}>Something went wrong</Text>
     <Text style={styles.errorMessage}>{error.message}</Text>
@@ -109,7 +101,7 @@ export const createLazyComponent = <T extends ComponentType<unknown>>(
       errorFallback={options.errorFallback}
       onError={options.onError}
     >
-      <LazyComponent {...props} />
+      <LazyComponent {...(props as Record<string, unknown>)} />
     </LazyWrapper>
   );
 
@@ -123,10 +115,7 @@ export const createLazyComponent = <T extends ComponentType<unknown>>(
 export class ComponentPreloader {
   private static preloadedComponents = new Set<string>();
 
-  static preload(
-    componentName: string,
-    importFn: () => Promise<unknown>,
-  ): void {
+  static preload(componentName: string, importFn: () => Promise<unknown>): void {
     if (!this.preloadedComponents.has(componentName)) {
       this.preloadedComponents.add(componentName);
       importFn().catch(error => {
@@ -168,9 +157,7 @@ export const createLazyRoute = (
 };
 
 // Conditional loading based on feature flags
-export const createConditionalLazyComponent = <
-  T extends ComponentType<unknown>,
->(
+export const createConditionalLazyComponent = <T extends ComponentType<unknown>>(
   importFn: () => Promise<{ default: T }>,
   condition: () => boolean | Promise<boolean>,
   fallbackComponent?: ComponentType<unknown>,
@@ -182,15 +169,13 @@ export const createConditionalLazyComponent = <
     } else if (fallbackComponent) {
       return { default: fallbackComponent };
     } else {
-      throw new Error(
-        'Component loading condition not met and no fallback provided',
-      );
+      throw new Error('Component loading condition not met and no fallback provided');
     }
   });
 
   return (props: Record<string, unknown>) => (
     <LazyWrapper errorFallback={ErrorFallback}>
-      <LazyComponent {...props} />
+      <LazyComponent {...(props as Record<string, unknown>)} />
     </LazyWrapper>
   );
 };
@@ -214,10 +199,7 @@ export const BundleSplitter = {
     return {
       load: () => import(`../screens/${category}/index.ts`),
       preload: () =>
-        ComponentPreloader.preload(
-          category,
-          () => import(`../screens/${category}/index.ts`),
-        ),
+        ComponentPreloader.preload(category, () => import(`../screens/${category}/index.ts`)),
     };
   },
 
@@ -226,10 +208,7 @@ export const BundleSplitter = {
     return {
       load: () => import(`../utils/${utilityName}.ts`),
       preload: () =>
-        ComponentPreloader.preload(
-          utilityName,
-          () => import(`../utils/${utilityName}.ts`),
-        ),
+        ComponentPreloader.preload(utilityName, () => import(`../utils/${utilityName}.ts`)),
     };
   },
 };
@@ -252,11 +231,11 @@ export const withLazyLoadingMetrics = <T extends ComponentType<unknown>>(
       // You can integrate with your analytics service here
       // AnalyticsService.track('lazy_component_loaded', {
       //   component: _componentName,
-      //   loadTime,
+      //   loadTime: _loadTime,
       // });
     }, [startTime]);
 
-    return <LazyComponent {...props} />;
+    return <LazyComponent {...(props as Record<string, unknown>)} />;
   };
 };
 

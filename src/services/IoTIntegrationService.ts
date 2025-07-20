@@ -2,19 +2,15 @@ import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { enhancedSecurityService } from './EnhancedSecurityService';
 import { loggingService } from './LoggingService';
 import { webSocketService } from './WebSocketService';
-import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform as _Platform } from 'react-native';
+// AsyncStorage import commented out - not currently used
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// Platform import commented out - not currently used
+// import { Platform } from 'react-native';
 
 export interface IoTDevice {
   id: string;
   name: string;
-  type:
-    | 'thermostat'
-    | 'smart_meter'
-    | 'car'
-    | 'fitness_tracker'
-    | 'smart_plug'
-    | 'solar_panel';
+  type: 'thermostat' | 'smart_meter' | 'car' | 'fitness_tracker' | 'smart_plug' | 'solar_panel';
   brand: string;
   model: string;
   isConnected: boolean;
@@ -121,12 +117,7 @@ class IoTIntegrationService {
       enableAutomation: true,
       dataRetentionDays: 365,
       privacyMode: false,
-      allowedDeviceTypes: [
-        'thermostat',
-        'smart_meter',
-        'car',
-        'fitness_tracker',
-      ],
+      allowedDeviceTypes: ['thermostat', 'smart_meter', 'car', 'fitness_tracker'],
     };
   }
 
@@ -148,11 +139,7 @@ class IoTIntegrationService {
 
       this.isInitialized = true;
 
-      enhancedPerformanceService.recordMetric(
-        'iot_service_init',
-        Date.now() - startTime,
-        'ms',
-      );
+      enhancedPerformanceService.recordMetric('iot_service_init', Date.now() - startTime, 'ms');
 
       loggingService.info('IoT Integration Service initialized', {
         deviceCount: this.devices.size,
@@ -227,9 +214,7 @@ class IoTIntegrationService {
     }
   }
 
-  private async fetchThermostatData(
-    device: IoTDevice,
-  ): Promise<ThermostatData | null> {
+  private async fetchThermostatData(device: IoTDevice): Promise<ThermostatData | null> {
     try {
       const { provider, apiKey: encryptedKey, deviceId } = device.metadata;
       const apiKey = await enhancedSecurityService.decrypt(encryptedKey);
@@ -259,9 +244,7 @@ class IoTIntegrationService {
           hvacState: data.hvac_state,
           humidity: data.humidity,
           energyUsage: data.energy_usage || 0,
-          carbonFootprint: this.calculateThermostatCarbon(
-            data.energy_usage || 0,
-          ),
+          carbonFootprint: this.calculateThermostatCarbon(data.energy_usage || 0),
           timestamp: new Date(),
         };
       }
@@ -276,7 +259,10 @@ class IoTIntegrationService {
     }
   }
 
-  private async fetchNestData(_apiKey: string, _deviceId: string): Promise<Record<string, unknown>> {
+  private async fetchNestData(
+    _apiKey: string,
+    _deviceId: string,
+  ): Promise<Record<string, unknown>> {
     // Mock Nest API implementation
     return {
       current_temperature: 22.5,
@@ -288,10 +274,7 @@ class IoTIntegrationService {
     };
   }
 
-  private async fetchEcobeeData(
-    apiKey: string,
-    deviceId: string,
-  ): Promise<any> {
+  private async fetchEcobeeData(apiKey: string, deviceId: string): Promise<any> {
     // Mock Ecobee API implementation
     return {
       current_temperature: 21.8,
@@ -303,10 +286,7 @@ class IoTIntegrationService {
     };
   }
 
-  private async fetchHoneywellData(
-    apiKey: string,
-    deviceId: string,
-  ): Promise<any> {
+  private async fetchHoneywellData(apiKey: string, deviceId: string): Promise<any> {
     // Mock Honeywell API implementation
     return {
       current_temperature: 23.2,
@@ -337,9 +317,7 @@ class IoTIntegrationService {
         lastSync: new Date(),
         capabilities: ['location', 'battery', 'efficiency', 'charging'],
         metadata: {
-          accessToken: await enhancedSecurityService.encrypt(
-            credentials.accessToken,
-          ),
+          accessToken: await enhancedSecurityService.encrypt(credentials.accessToken),
           vehicleId: credentials.vehicleId,
           provider: credentials.provider,
         },
@@ -375,15 +353,9 @@ class IoTIntegrationService {
     }
   }
 
-  private async fetchVehicleData(
-    device: IoTDevice,
-  ): Promise<VehicleData | null> {
+  private async fetchVehicleData(device: IoTDevice): Promise<VehicleData | null> {
     try {
-      const {
-        provider,
-        accessToken: encryptedToken,
-        vehicleId,
-      } = device.metadata;
+      const { provider, accessToken: encryptedToken, vehicleId } = device.metadata;
       const accessToken = await enhancedSecurityService.decrypt(encryptedToken);
 
       let data: any;
@@ -423,10 +395,7 @@ class IoTIntegrationService {
     }
   }
 
-  private async fetchTeslaData(
-    accessToken: string,
-    vehicleId: string,
-  ): Promise<any> {
+  private async fetchTeslaData(accessToken: string, vehicleId: string): Promise<any> {
     // Mock Tesla API implementation
     return {
       vehicle_type: 'electric',
@@ -441,10 +410,7 @@ class IoTIntegrationService {
     };
   }
 
-  private async fetchBMWData(
-    accessToken: string,
-    vehicleId: string,
-  ): Promise<any> {
+  private async fetchBMWData(accessToken: string, vehicleId: string): Promise<any> {
     // Mock BMW API implementation
     return {
       vehicle_type: 'hybrid',
@@ -478,9 +444,7 @@ class IoTIntegrationService {
         lastSync: new Date(),
         capabilities: ['steps', 'distance', 'activities', 'calories'],
         metadata: {
-          accessToken: await enhancedSecurityService.encrypt(
-            credentials.accessToken,
-          ),
+          accessToken: await enhancedSecurityService.encrypt(credentials.accessToken),
           provider: credentials.provider,
         },
       };
@@ -514,9 +478,7 @@ class IoTIntegrationService {
     }
   }
 
-  private async fetchFitnessData(
-    device: IoTDevice,
-  ): Promise<FitnessData | null> {
+  private async fetchFitnessData(device: IoTDevice): Promise<FitnessData | null> {
     try {
       const { provider, accessToken: encryptedToken } = device.metadata;
       const accessToken = await enhancedSecurityService.decrypt(encryptedToken);
@@ -614,12 +576,8 @@ class IoTIntegrationService {
   }
 
   // Automation Rules
-  async createAutomationRule(
-    rule: Omit<AutomationRule, 'id'>,
-  ): Promise<string> {
-    const ruleId = `rule_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+  async createAutomationRule(rule: Omit<AutomationRule, 'id'>): Promise<string> {
+    const ruleId = `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const automationRule: AutomationRule = {
       ...rule,
       id: ruleId,
@@ -639,17 +597,13 @@ class IoTIntegrationService {
 
   async executeAutomationRule(ruleId: string): Promise<void> {
     const rule = this.automationRules.get(ruleId);
-    if (!rule || !rule.isEnabled) return;
+    if (!rule?.isEnabled) return;
 
     try {
       for (const action of rule.actions) {
         const device = this.devices.get(action.deviceId);
-        if (device && device.isConnected) {
-          await this.executeDeviceAction(
-            device,
-            action.action,
-            action.parameters,
-          );
+        if (device?.isConnected) {
+          await this.executeDeviceAction(device, action.action, action.parameters);
         }
       }
 
@@ -794,9 +748,12 @@ class IoTIntegrationService {
       clearInterval(this.syncTimers.get(deviceId)!);
     }
 
-    const timer = setInterval(async () => {
-      await this.syncDeviceData(deviceId);
-    }, this.config.syncInterval * 60 * 1000);
+    const timer = setInterval(
+      async () => {
+        await this.syncDeviceData(deviceId);
+      },
+      this.config.syncInterval * 60 * 1000,
+    );
 
     this.syncTimers.set(deviceId, timer);
   }
@@ -811,7 +768,7 @@ class IoTIntegrationService {
 
   private async syncDeviceData(deviceId: string): Promise<void> {
     const device = this.devices.get(deviceId);
-    if (!device || !device.isConnected) return;
+    if (!device?.isConnected) return;
 
     try {
       let data: any;
@@ -891,14 +848,8 @@ class IoTIntegrationService {
   private async persistData(): Promise<void> {
     try {
       await Promise.all([
-        enhancedSecurityService.secureStore(
-          'iot_devices',
-          Array.from(this.devices.values()),
-        ),
-        enhancedSecurityService.secureStore(
-          'automation_rules',
-          Array.from(this.automationRules.values()),
-        ),
+        enhancedSecurityService.secureStore('iot_devices', [...this.devices.values()]),
+        enhancedSecurityService.secureStore('automation_rules', [...this.automationRules.values()]),
       ]);
     } catch (error) {
       loggingService.error('Failed to persist IoT data', {
@@ -909,9 +860,7 @@ class IoTIntegrationService {
 
   // Public API
   getConnectedDevices(): IoTDevice[] {
-    return Array.from(this.devices.values()).filter(
-      device => device.isConnected,
-    );
+    return [...this.devices.values()].filter(device => device.isConnected);
   }
 
   getDevice(deviceId: string): IoTDevice | undefined {
@@ -919,7 +868,7 @@ class IoTIntegrationService {
   }
 
   getAutomationRules(): AutomationRule[] {
-    return Array.from(this.automationRules.values());
+    return [...this.automationRules.values()];
   }
 
   async updateConfig(updates: Partial<IoTConfig>): Promise<void> {

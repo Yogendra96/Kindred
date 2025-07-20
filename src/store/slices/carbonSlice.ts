@@ -63,10 +63,7 @@ const carbonSlice = createSlice({
     setGoalsLoading: (state, action: PayloadAction<boolean>) => {
       state.loading.goals = action.payload;
     },
-    updateFootprint: (
-      state,
-      action: PayloadAction<Partial<CarbonFootprint>>,
-    ) => {
+    updateFootprint: (state, action: PayloadAction<Partial<CarbonFootprint>>) => {
       state.footprint = {
         ...state.footprint,
         ...action.payload,
@@ -82,10 +79,7 @@ const carbonSlice = createSlice({
     addHistoryEntry: (state, action: PayloadAction<HistoryEntry>) => {
       state.history = [action.payload, ...state.history].slice(0, 30); // Keep last 30 days
     },
-    setGoals: (
-      state,
-      action: PayloadAction<{ target: number; deadline: string }>,
-    ) => {
+    setGoals: (state, action: PayloadAction<{ target: number; deadline: string }>) => {
       state.goals = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {

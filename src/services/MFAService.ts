@@ -1,9 +1,11 @@
+import { Platform } from 'react-native';
+
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as Keychain from 'react-native-keychain';
+
 import { advancedEncryptionService } from './AdvancedEncryptionService';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { Platform } from 'react-native';
-import * as Keychain from 'react-native-keychain';
 
 export interface TOTPSetup {
   readonly secret: string;
@@ -106,11 +108,7 @@ class MFAService {
       // Load existing MFA configurations
       await this.loadMFAConfigurations();
 
-      enhancedPerformanceService.recordMetric(
-        'mfa_service_init',
-        Date.now() - startTime,
-        'ms',
-      );
+      enhancedPerformanceService.recordMetric('mfa_service_init', Date.now() - startTime, 'ms');
 
       loggingService.info('MFA Service initialized', {
         totpEnabled: this.config.enableTOTP,
@@ -262,8 +260,7 @@ class MFAService {
       }
 
       // Get available biometric types
-      const supportedTypes =
-        await LocalAuthentication.supportedAuthenticationTypesAsync();
+      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
       const biometricType = this.mapBiometricType(supportedTypes);
 
       loggingService.info('Biometric authentication setup', {
@@ -304,8 +301,7 @@ class MFAService {
       if (result.success) {
         await this.recordSuccessfulAuth('current_user', 'biometric');
 
-        const supportedTypes =
-          await LocalAuthentication.supportedAuthenticationTypesAsync();
+        const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
         const biometricType = this.mapBiometricType(supportedTypes);
 
         return {
@@ -349,13 +345,13 @@ class MFAService {
       const userIdBytes = new TextEncoder().encode(userId);
 
       const webAuthnChallenge: WebAuthnChallenge = {
-        challenge: Array.from(challenge),
+        challenge: [...challenge],
         rp: {
           name: 'Kindred',
           id: 'kindred.app',
         },
         user: {
-          id: Array.from(userIdBytes),
+          id: [...userIdBytes],
           name: userEmail,
           displayName: userDisplayName,
         },
@@ -403,7 +399,7 @@ class MFAService {
         this.backupCodes.set(userId, userBackupCodes);
 
         // Update stored backup codes
-        await this.storeBackupCodes(userId, Array.from(userBackupCodes));
+        await this.storeBackupCodes(userId, [...userBackupCodes]);
 
         await this.recordSuccessfulAuth(userId, 'backup_code');
 
@@ -493,11 +489,7 @@ class MFAService {
     return (code % 1000000).toString().padStart(6, '0');
   }
 
-  private generateTOTPQRCode(
-    secret: string,
-    accountName: string,
-    issuer: string,
-  ): string {
+  private generateTOTPQRCode(secret: string, accountName: string, issuer: string): string {
     const params = new URLSearchParams({
       secret,
       issuer,
@@ -516,7 +508,7 @@ class MFAService {
 
     for (let i = 0; i < 10; i++) {
       const bytes = advancedEncryptionService.generateSecureRandomBytes(5);
-      const code = Array.from(bytes)
+      const code = [...bytes]
         .map(byte => byte.toString(16).padStart(2, '0'))
         .join('')
         .toUpperCase();
@@ -528,16 +520,10 @@ class MFAService {
 
   private async storeTOTPSecret(userId: string, secret: string): Promise<void> {
     const encrypted = await advancedEncryptionService.encryptData(secret);
-    await Keychain.setInternetCredentials(
-      `totp_${userId}`,
-      userId,
-      JSON.stringify(encrypted),
-      {
-        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
-        authenticationType:
-          Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
-      },
-    );
+    await Keychain.setInternetCredentials(`totp_${userId}`, userId, JSON.stringify(encrypted), {
+      accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+      authenticationType: Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
+    });
 
     this.totpSecrets.set(userId, secret);
   }
@@ -554,14 +540,10 @@ class MFAService {
       }
 
       // Load from secure storage
-      const credentials = await Keychain.getInternetCredentials(
-        `totp_${userId}`,
-      );
+      const credentials = await Keychain.getInternetCredentials(`totp_${userId}`);
       if (credentials && credentials.password) {
         const encryptedData = JSON.parse(credentials.password);
-        const secret = await advancedEncryptionService.decryptData(
-          encryptedData,
-        );
+        const secret = await advancedEncryptionService.decryptData(encryptedData);
         this.totpSecrets.set(userId, secret);
         return secret;
       }
@@ -576,13 +558,8 @@ class MFAService {
     }
   }
 
-  private async storeBackupCodes(
-    userId: string,
-    codes: string[],
-  ): Promise<void> {
-    const encrypted = await advancedEncryptionService.encryptData(
-      JSON.stringify(codes),
-    );
+  private async storeBackupCodes(userId: string, codes: string[]): Promise<void> {
+    const encrypted = await advancedEncryptionService.encryptData(JSON.stringify(codes));
     await Keychain.setInternetCredentials(
       `backup_codes_${userId}`,
       userId,
@@ -595,19 +572,14 @@ class MFAService {
     this.backupCodes.set(userId, new Set(codes));
   }
 
-  private async storeWebAuthnChallenge(
-    userId: string,
-    challenge: Uint8Array,
-  ): Promise<void> {
+  private async storeWebAuthnChallenge(userId: string, challenge: Uint8Array): Promise<void> {
     // Store challenge temporarily (would expire after timeout)
     const challengeData = {
-      challenge: Array.from(challenge),
+      challenge: [...challenge],
       timestamp: Date.now(),
     };
 
-    const encrypted = await advancedEncryptionService.encryptData(
-      JSON.stringify(challengeData),
-    );
+    const encrypted = await advancedEncryptionService.encryptData(JSON.stringify(challengeData));
     await Keychain.setInternetCredentials(
       `webauthn_challenge_${userId}`,
       userId,
@@ -615,19 +587,13 @@ class MFAService {
     );
   }
 
-  private async recordSuccessfulAuth(
-    userId: string,
-    method: string,
-  ): Promise<void> {
+  private async recordSuccessfulAuth(userId: string, method: string): Promise<void> {
     const now = Date.now();
     const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
 
     this.authenticationState = {
       isAuthenticated: true,
-      authenticationMethods: [
-        ...this.authenticationState.authenticationMethods,
-        method,
-      ],
+      authenticationMethods: [...this.authenticationState.authenticationMethods, method],
       lastAuthTime: now,
       sessionExpiry: now + sessionDuration,
       failedAttempts: 0,
@@ -671,8 +637,7 @@ class MFAService {
 
   private async lockoutUser(userId: string): Promise<void> {
     this.authenticationState.isLockedOut = true;
-    this.authenticationState.lockoutExpiry =
-      Date.now() + this.config.lockoutDuration;
+    this.authenticationState.lockoutExpiry = Date.now() + this.config.lockoutDuration;
 
     // Set timer to unlock user
     const timer = setTimeout(() => {
@@ -711,9 +676,7 @@ class MFAService {
   private mapBiometricType(
     types: LocalAuthentication.AuthenticationType[],
   ): BiometricAuthResult['biometricType'] {
-    if (
-      types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)
-    ) {
+    if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
       return 'face';
     }
     if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
@@ -792,8 +755,7 @@ class MFAService {
   private async checkBiometricAvailability(): Promise<void> {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-    const supportedTypes =
-      await LocalAuthentication.supportedAuthenticationTypesAsync();
+    const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
 
     loggingService.info('Biometric availability check', {
       hasHardware,

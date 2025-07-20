@@ -1,31 +1,35 @@
 // import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
-import { useTheme } from '../theme/ThemeProvider';
-import SkeletonLoader from './SkeletonLoader';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   Dimensions,
-  TouchableOpacity,
   Platform,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+import { LinearGradient } from 'expo-linear-gradient';
 import {
-  LineChart,
   BarChart,
+  LineChart,
   PieChart,
   // ProgressChart,
 } from 'react-native-chart-kit';
 import Animated, {
-  useSharedValue,
+  interpolate,
   useAnimatedStyle,
+  useSharedValue,
   // withTiming,
   withSpring,
-  interpolate,
 } from 'react-native-reanimated';
+
+import { useTheme } from '../theme/ThemeProvider';
+
+import SkeletonLoader from './SkeletonLoader';
 
 const { width: screenWidth } = Dimensions.get('window');
 const chartWidth = screenWidth - 32;
@@ -105,7 +109,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const { theme } = useTheme();
   const [selectedPeriod, setSelectedPeriod] = useState(comparisonPeriod);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const [animationProgress] = useState(() => useSharedValue(0));
+  const animationProgress = useSharedValue(0);
 
   // Animation for dashboard entrance
   useEffect(() => {
@@ -113,7 +117,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       damping: 15,
       stiffness: 150,
     });
-  }, []);
+  }, [animationProgress]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -186,21 +190,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     };
   });
 
-  const renderMetricCard = (metric: MetricCard, index: number) => {
-    const cardAnimatedStyle = useAnimatedStyle(() => {
-      return {
-        opacity: interpolate(animationProgress.value, [0, 1], [0, 1]),
-        transform: [
-          {
-            translateY: interpolate(
-              animationProgress.value,
-              [0, 1],
-              [30 + index * 10, 0],
-            ),
-          },
-        ],
-      };
-    });
+  const renderMetricCard = (metric: MetricCard, _index: number) => {
+    // Create card styles without hook violations
+    const cardStyle = [
+      styles.metricCard,
+      {
+        backgroundColor: theme.colors.surface,
+        borderLeftColor: metric.color ?? theme.colors.primary,
+      },
+    ];
 
     const getChangeColor = () => {
       if (!metric.change) return theme.colors.text;
@@ -227,50 +225,35 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     };
 
     return (
-      <Animated.View key={metric.id} style={cardAnimatedStyle}>
+      <View key={metric.id}>
         <TouchableOpacity
-          style={[
-            styles.metricCard,
-            {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.border,
-              shadowColor: theme.colors.shadow,
-            },
-          ]}
+          style={cardStyle}
           onPress={() => onMetricPress?.(metric)}
           activeOpacity={0.7}
         >
           <LinearGradient
             colors={[
-              metric.color || theme.colors.primary,
-              `${metric.color || theme.colors.primary}80`,
+              metric.color ?? theme.colors.primary,
+              `${metric.color ?? theme.colors.primary}80`,
             ]}
             style={styles.metricGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.metricHeader}>
-              <Text style={[styles.metricTitle, { color: theme.colors.text }]}>
-                {metric.title}
-              </Text>
-              {metric.icon && (
-                <Text style={styles.metricIcon}>{metric.icon}</Text>
-              )}
+              <Text style={[styles.metricTitle, { color: theme.colors.text }]}>{metric.title}</Text>
+              {metric.icon && <Text style={styles.metricIcon}>{metric.icon}</Text>}
             </View>
 
             <View style={styles.metricContent}>
               <Text style={[styles.metricValue, { color: theme.colors.text }]}>
                 {metric.value}
-                {metric.unit && (
-                  <Text style={styles.metricUnit}> {metric.unit}</Text>
-                )}
+                {metric.unit && <Text style={styles.metricUnit}> {metric.unit}</Text>}
               </Text>
 
               {metric.change !== undefined && (
                 <View style={styles.metricChange}>
-                  <Text
-                    style={[styles.changeText, { color: getChangeColor() }]}
-                  >
+                  <Text style={[styles.changeText, { color: getChangeColor() }]}>
                     {getChangeIcon()} {Math.abs(metric.change)}%
                   </Text>
                 </View>
@@ -284,28 +267,20 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     style={[
                       styles.progressFill,
                       {
-                        width: `${Math.min(
-                          (Number(metric.value) / metric.target) * 100,
-                          100,
-                        )}%`,
-                        backgroundColor: metric.color || theme.colors.primary,
+                        width: `${Math.min((Number(metric.value) / metric.target) * 100, 100)}%`,
+                        backgroundColor: metric.color ?? theme.colors.primary,
                       },
                     ]}
                   />
                 </View>
-                <Text
-                  style={[
-                    styles.targetText,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
+                <Text style={[styles.targetText, { color: theme.colors.textSecondary }]}>
                   Target: {metric.target}
                 </Text>
               </View>
             )}
           </LinearGradient>
         </TouchableOpacity>
-      </Animated.View>
+      </View>
     );
   };
 
@@ -326,24 +301,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               styles.periodButton,
               {
                 backgroundColor:
-                  selectedPeriod === period.key
-                    ? theme.colors.primary
-                    : theme.colors.surface,
+                  selectedPeriod === period.key ? theme.colors.primary : theme.colors.surface,
                 borderColor: theme.colors.border,
               },
             ]}
-            onPress={() =>
-              setSelectedPeriod(period.key as typeof comparisonPeriod)
-            }
+            onPress={() => setSelectedPeriod(period.key as typeof comparisonPeriod)}
           >
             <Text
               style={[
                 styles.periodButtonText,
                 {
-                  color:
-                    selectedPeriod === period.key
-                      ? theme.colors.surface
-                      : theme.colors.text,
+                  color: selectedPeriod === period.key ? theme.colors.surface : theme.colors.text,
                 },
               ]}
             >
@@ -376,9 +344,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         onPress={() => onChartPress?.(chartType, data)}
         activeOpacity={0.9}
       >
-        <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-          {title}
-        </Text>
+        <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{title}</Text>
 
         {chartType === 'line' && data && (
           <LineChart
@@ -442,16 +408,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          onRefresh ? (
-            <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
-          ) : undefined
+          onRefresh ? <RefreshControl refreshing={isLoading} onRefresh={onRefresh} /> : undefined
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            {title}
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
           {showComparison && renderPeriodSelector()}
         </View>
 
@@ -469,26 +431,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   styles.filterButton,
                   {
                     backgroundColor:
-                      selectedFilter === filter.id
-                        ? theme.colors.primary
-                        : theme.colors.surface,
+                      selectedFilter === filter.id ? theme.colors.primary : theme.colors.surface,
                     borderColor: theme.colors.border,
                   },
                 ]}
-                onPress={() =>
-                  setSelectedFilter(
-                    selectedFilter === filter.id ? null : filter.id,
-                  )
-                }
+                onPress={() => setSelectedFilter(selectedFilter === filter.id ? null : filter.id)}
               >
                 <Text
                   style={[
                     styles.filterButtonText,
                     {
                       color:
-                        selectedFilter === filter.id
-                          ? theme.colors.surface
-                          : theme.colors.text,
+                        selectedFilter === filter.id ? theme.colors.surface : theme.colors.text,
                     },
                   ]}
                 >
@@ -513,8 +467,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
           {barChartData && renderChart('bar', barChartData, 'Comparison Chart')}
 
-          {pieChartData.length > 0 &&
-            renderChart('pie', pieChartData, 'Distribution')}
+          {pieChartData.length > 0 && renderChart('pie', pieChartData, 'Distribution')}
         </View>
       </ScrollView>
     </Animated.View>

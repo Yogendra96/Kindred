@@ -1,17 +1,19 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
+
+import {
+  Alert,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';
 import * as Haptics from 'expo-haptics';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Alert,
-} from 'react-native';
 
 interface Props {
   children: ReactNode;
@@ -115,11 +117,7 @@ class ErrorBoundary extends Component<Props, State> {
     return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  private logError = async (
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorId: string,
-  ) => {
+  private logError = async (error: Error, errorInfo: ErrorInfo, errorId: string) => {
     const errorLog = {
       id: errorId,
       timestamp: new Date().toISOString(),
@@ -154,11 +152,7 @@ class ErrorBoundary extends Component<Props, State> {
     // console.groupEnd();
   };
 
-  private reportError = async (
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorId: string,
-  ) => {
+  private reportError = async (error: Error, errorInfo: ErrorInfo, errorId: string) => {
     try {
       // Report to Sentry
       captureException(error, {
@@ -214,21 +208,17 @@ class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo?.componentStack,
     };
 
-    Alert.alert(
-      'Report Issue',
-      'Would you like to report this issue to help us improve the app?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Report',
-          onPress: () => {
-            // Here you could integrate with your issue reporting system
-            console.warn('Reporting issue:', errorDetails);
-            Alert.alert('Thank you', 'Your report has been submitted.');
-          },
+    Alert.alert('Report Issue', 'Would you like to report this issue to help us improve the app?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Report',
+        onPress: () => {
+          // Here you could integrate with your issue reporting system
+          console.warn('Reporting issue:', errorDetails);
+          Alert.alert('Thank you', 'Your report has been submitted.');
         },
-      ],
-    );
+      },
+    ]);
   };
 
   private renderErrorDetails = () => {
@@ -245,15 +235,12 @@ class ErrorBoundary extends Component<Props, State> {
             // Toggle details visibility could be implemented here
           }}
         >
-          <Text style={{color: '#666', fontSize: 16}}>ℹ️</Text>
+          <Text style={{ color: '#666', fontSize: 16 }}>ℹ️</Text>
           <Text style={styles.detailsHeaderText}>Error Details</Text>
-          <Text style={{color: '#666', fontSize: 16}}>▼</Text>
+          <Text style={{ color: '#666', fontSize: 16 }}>▼</Text>
         </TouchableOpacity>
 
-        <ScrollView
-          style={styles.detailsContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={styles.detailsContent} showsVerticalScrollIndicator={false}>
           <View style={styles.detailSection}>
             <Text style={styles.detailLabel}>Error ID:</Text>
             <Text style={styles.detailValue}>{errorId}</Text>
@@ -301,14 +288,14 @@ class ErrorBoundary extends Component<Props, State> {
           >
             <View style={styles.errorContainer}>
               <View style={styles.iconContainer}>
-                <Text style={{fontSize: 64, textAlign: 'center'}}>⚠️</Text>
+                <Text style={{ fontSize: 64, textAlign: 'center' }}>⚠️</Text>
               </View>
 
               <Text style={styles.title}>Oops! Something went wrong</Text>
 
               <Text style={styles.message}>
-                We're sorry, but something unexpected happened. The error has
-                been logged and we'll look into it.
+                We're sorry, but something unexpected happened. The error has been logged and we'll
+                look into it.
               </Text>
 
               <View style={styles.buttonContainer}>
@@ -323,7 +310,7 @@ class ErrorBoundary extends Component<Props, State> {
                     </View>
                   ) : (
                     <View style={styles.buttonContent}>
-                      <Text style={{color: 'white', fontSize: 16}}>🔄</Text>
+                      <Text style={{ color: 'white', fontSize: 16 }}>🔄</Text>
                       <Text style={styles.buttonText}>Try Again</Text>
                     </View>
                   )}
@@ -334,7 +321,7 @@ class ErrorBoundary extends Component<Props, State> {
                   onPress={this.handleReportIssue}
                 >
                   <View style={styles.buttonContent}>
-                    <Text style={{color: '#007AFF', fontSize: 16}}>🐛</Text>
+                    <Text style={{ color: '#007AFF', fontSize: 16 }}>🐛</Text>
                     <Text style={styles.secondaryButtonText}>Report Issue</Text>
                   </View>
                 </TouchableOpacity>
@@ -472,9 +459,7 @@ export const withErrorBoundary = <P extends object>(
     </ErrorBoundary>
   );
 
-  WrappedComponent.displayName = `withErrorBoundary(${
-    Component.displayName || Component.name
-  })`;
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
 
   return WrappedComponent;
 };
@@ -482,9 +467,7 @@ export const withErrorBoundary = <P extends object>(
 // Hook for manual error reporting
 export const useErrorHandler = () => {
   const reportError = React.useCallback((error: Error, errorInfo?: Record<string, unknown>) => {
-    const errorId = `manual_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     console.error('Manual error report:', { error, errorInfo, errorId });
 

@@ -4,8 +4,10 @@
  * Features: Multi-modal biometrics, liveness detection, behavioral biometrics, secure enclave
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { observabilityService } from './ObservabilityService';
 import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
 
@@ -196,11 +198,11 @@ interface BehavioralBaseline {
 // Liveness Detection Engine
 class LivenessDetectionEngine {
   private readonly models = new Map<BiometricType, any>();
-  
+
   async detectLiveness(
     biometricType: BiometricType,
     biometricData: any,
-    _metadata: CaptureMetadata
+    _metadata: CaptureMetadata,
   ): Promise<{
     isLive: boolean;
     confidence: number;
@@ -231,7 +233,7 @@ class LivenessDetectionEngine {
 
   private async detectFaceLiveness(
     _faceData: any,
-    metadata: CaptureMetadata
+    metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
     let confidence = 0.9;
@@ -255,7 +257,8 @@ class LivenessDetectionEngine {
     }
 
     // Check capture duration
-    if (metadata.duration < 1000) { // Less than 1 second
+    if (metadata.duration < 1000) {
+      // Less than 1 second
       indicators.push('insufficient_capture_duration');
       confidence -= 0.1;
     }
@@ -280,7 +283,7 @@ class LivenessDetectionEngine {
 
   private async detectFingerprintLiveness(
     _fingerprintData: any,
-    _metadata: CaptureMetadata
+    _metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
     let confidence = 0.85;
@@ -298,8 +301,10 @@ class LivenessDetectionEngine {
     }
 
     // Check for temperature
-    if (_fingerprintData.temperature && 
-        (_fingerprintData.temperature < 25 || _fingerprintData.temperature > 40)) {
+    if (
+      _fingerprintData.temperature &&
+      (_fingerprintData.temperature < 25 || _fingerprintData.temperature > 40)
+    ) {
       indicators.push('abnormal_temperature');
       confidence -= 0.1;
     }
@@ -321,7 +326,7 @@ class LivenessDetectionEngine {
 
   private async detectVoiceLiveness(
     _voiceData: any,
-    _metadata: CaptureMetadata
+    _metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
     let confidence = 0.8;
@@ -361,7 +366,7 @@ class LivenessDetectionEngine {
 
   private async detectIrisLiveness(
     _irisData: any,
-    metadata: CaptureMetadata
+    metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
     let confidence = 0.9;
@@ -403,7 +408,10 @@ class LivenessDetectionEngine {
     return Math.random() * 0.2 + 0.8; // 0.8-1.0 range
   }
 
-  private analyzeBackgroundNoise(_voiceData: any): { suspicious: boolean; score: number } {
+  private analyzeBackgroundNoise(_voiceData: any): {
+    suspicious: boolean;
+    score: number;
+  } {
     // Simplified noise analysis
     const score = Math.random();
     return { suspicious: score < 0.1, score };
@@ -416,29 +424,29 @@ class LivenessDetectionEngine {
 
   private calculateEnvironmentalScore(metadata: CaptureMetadata): number {
     let score = 1.0;
-    
+
     // Quality factor
     if (metadata.quality < 0.8) score -= 0.2;
     if (metadata.quality < 0.6) score -= 0.2;
-    
+
     // Duration factor
     if (metadata.duration < 1000) score -= 0.1;
     if (metadata.duration < 500) score -= 0.2;
-    
+
     // Attempts factor
     if (metadata.attempts > 3) score -= 0.1;
     if (metadata.attempts > 5) score -= 0.2;
-    
+
     return Math.max(0, score);
   }
 
   private calculateAudioEnvironmentalScore(voiceData: any): number {
     let score = 1.0;
-    
+
     if (voiceData.noiseLevel && voiceData.noiseLevel > 0.3) score -= 0.2;
     if (voiceData.echo && voiceData.echo > 0.2) score -= 0.1;
     if (voiceData.distortion && voiceData.distortion > 0.1) score -= 0.15;
-    
+
     return Math.max(0, score);
   }
 }
@@ -451,10 +459,14 @@ class DeviceAttestationEngine {
       const attestationData = await this.getAttestationData();
       const integrityCheck = await this.checkDeviceIntegrity();
       const securityFeatures = await this.detectSecurityFeatures();
-      
-      const trustLevel = this.calculateTrustLevel(attestationData, integrityCheck, securityFeatures);
+
+      const trustLevel = this.calculateTrustLevel(
+        attestationData,
+        integrityCheck,
+        securityFeatures,
+      );
       const riskScore = this.calculateRiskScore(integrityCheck, securityFeatures);
-      
+
       return {
         verified: trustLevel !== 'unknown',
         trustLevel,
@@ -504,7 +516,7 @@ class DeviceAttestationEngine {
       verified: true,
       trustLevel: 0.9,
     };
-    
+
     return [mockCertificate];
   }
 
@@ -519,7 +531,7 @@ class DeviceAttestationEngine {
       verified: true,
       trustLevel: 0.85,
     };
-    
+
     return [mockCertificate];
   }
 
@@ -531,7 +543,7 @@ class DeviceAttestationEngine {
     const rootDetected = await this.checkRootStatus();
     const hookedApis = await this.detectHookedAPIs();
     const suspiciousApps = await this.detectSuspiciousApps();
-    
+
     const integrityScore = this.calculateIntegrityScore({
       bootState,
       systemIntegrity,
@@ -540,7 +552,7 @@ class DeviceAttestationEngine {
       hookedApis,
       suspiciousApps,
     });
-    
+
     return {
       bootState,
       systemIntegrity,
@@ -584,7 +596,7 @@ class DeviceAttestationEngine {
 
   private calculateIntegrityScore(integrity: Partial<DeviceIntegrityCheck>): number {
     let score = 1.0;
-    
+
     if (integrity.bootState === 'compromised') score -= 0.4;
     if (integrity.bootState === 'warning') score -= 0.2;
     if (!integrity.systemIntegrity) score -= 0.3;
@@ -592,13 +604,13 @@ class DeviceAttestationEngine {
     if (integrity.rootDetected) score -= 0.3;
     if (integrity.hookedApis && integrity.hookedApis.length > 0) score -= 0.2;
     if (integrity.suspiciousApps && integrity.suspiciousApps.length > 0) score -= 0.25;
-    
+
     return Math.max(0, score);
   }
 
   private async detectSecurityFeatures(): Promise<SecurityFeature[]> {
     const features: SecurityFeature[] = [];
-    
+
     // Hardware security module
     features.push({
       name: 'Hardware Security Module',
@@ -607,7 +619,7 @@ class DeviceAttestationEngine {
       trustLevel: 0.9,
       description: 'Hardware-backed cryptographic operations',
     });
-    
+
     // Biometric hardware
     features.push({
       name: 'Biometric Hardware',
@@ -616,7 +628,7 @@ class DeviceAttestationEngine {
       trustLevel: 0.85,
       description: 'Hardware-backed biometric authentication',
     });
-    
+
     // Trusted Execution Environment
     features.push({
       name: 'Trusted Execution Environment',
@@ -625,31 +637,31 @@ class DeviceAttestationEngine {
       trustLevel: 0.8,
       description: 'Isolated execution environment',
     });
-    
+
     return features;
   }
 
   private calculateTrustLevel(
     attestation: AttestationCertificate[],
     integrity: DeviceIntegrityCheck,
-    features: SecurityFeature[]
+    features: SecurityFeature[],
   ): 'unknown' | 'basic' | 'hardware' | 'strongbox' {
     if (integrity.integrityScore < 0.5) return 'unknown';
     if (integrity.integrityScore < 0.7) return 'basic';
-    
-    const hasHardwareSecurity = features.some(f => 
-      f.name.includes('Hardware') && f.enabled && f.trustLevel > 0.8
+
+    const hasHardwareSecurity = features.some(
+      f => f.name.includes('Hardware') && f.enabled && f.trustLevel > 0.8,
     );
-    
+
     if (hasHardwareSecurity && integrity.integrityScore > 0.9) return 'strongbox';
     if (hasHardwareSecurity) return 'hardware';
-    
+
     return 'basic';
   }
 
   private calculateRiskScore(
     integrity: DeviceIntegrityCheck,
-    _features: SecurityFeature[]
+    _features: SecurityFeature[],
   ): number {
     return 1.0 - integrity.integrityScore;
   }
@@ -659,15 +671,18 @@ class DeviceAttestationEngine {
 class BehavioralBiometricsEngine {
   private readonly userPatterns = new Map<string, BehavioralPattern>();
 
-  async analyzeUser(userId: string, _sessionData: any): Promise<{
+  async analyzeUser(
+    userId: string,
+    _sessionData: any,
+  ): Promise<{
     isAuthentic: boolean;
     confidence: number;
     anomalies: string[];
     riskScore: number;
   }> {
     const pattern = this.userPatterns.get(userId);
-    
-    if (!pattern || !pattern.baseline.established) {
+
+    if (!pattern?.baseline.established) {
       // New user or insufficient data
       await this.initializeUserPattern(userId, sessionData);
       return {
@@ -680,7 +695,7 @@ class BehavioralBiometricsEngine {
 
     const analysis = await this.performBehavioralAnalysis(pattern, sessionData);
     await this.updateUserPattern(userId, sessionData);
-    
+
     return analysis;
   }
 
@@ -702,13 +717,13 @@ class BehavioralBiometricsEngine {
       },
       lastUpdated: Date.now(),
     };
-    
+
     this.userPatterns.set(userId, pattern);
   }
 
   private async performBehavioralAnalysis(
     pattern: BehavioralPattern,
-    _sessionData: any
+    _sessionData: any,
   ): Promise<{
     isAuthentic: boolean;
     confidence: number;
@@ -861,7 +876,6 @@ export class BiometricAuthenticationService {
 
       this.isInitialized = true;
       console.log('✅ Biometric Authentication Service initialized successfully');
-
     } catch (error) {
       console.error('❌ Failed to initialize Biometric Authentication Service:', error);
       throw error;
@@ -899,7 +913,7 @@ export class BiometricAuthenticationService {
   async enrollBiometric(
     userId: string,
     biometricType: BiometricType,
-    biometricData: any
+    biometricData: any,
   ): Promise<{
     success: boolean;
     templateId?: string;
@@ -923,20 +937,26 @@ export class BiometricAuthenticationService {
       const livenessResult = await this.livenessEngine.detectLiveness(
         biometricType,
         biometricData,
-        metadata
+        metadata,
       );
 
       if (!livenessResult.isLive) {
         return {
           success: false,
           quality: 0,
-          errors: [{
-            code: 'LIVENESS_FAILED',
-            message: 'Liveness detection failed',
-            severity: 'high',
-            recoverable: true,
-            suggestions: ['Ensure proper lighting', 'Look directly at camera', 'Remove any obstructions'],
-          }],
+          errors: [
+            {
+              code: 'LIVENESS_FAILED',
+              message: 'Liveness detection failed',
+              severity: 'high',
+              recoverable: true,
+              suggestions: [
+                'Ensure proper lighting',
+                'Look directly at camera',
+                'Remove any obstructions',
+              ],
+            },
+          ],
         };
       }
 
@@ -984,19 +1004,20 @@ export class BiometricAuthenticationService {
         quality: template.quality,
         errors: [],
       };
-
     } catch (error) {
       console.error('Biometric enrollment failed:', error);
       return {
         success: false,
         quality: 0,
-        errors: [{
-          code: 'ENROLLMENT_FAILED',
-          message: 'Biometric enrollment failed',
-          severity: 'critical',
-          recoverable: true,
-          suggestions: ['Retry enrollment', 'Check device compatibility'],
-        }],
+        errors: [
+          {
+            code: 'ENROLLMENT_FAILED',
+            message: 'Biometric enrollment failed',
+            severity: 'critical',
+            recoverable: true,
+            suggestions: ['Retry enrollment', 'Check device compatibility'],
+          },
+        ],
       };
     }
   }
@@ -1004,7 +1025,7 @@ export class BiometricAuthenticationService {
   async authenticateBiometric(
     biometricType: BiometricType,
     biometricData: any,
-    userId?: string
+    userId?: string,
   ): Promise<BiometricAuthResult> {
     try {
       console.log(`🔐 Authenticating ${biometricType} biometric...`);
@@ -1020,21 +1041,25 @@ export class BiometricAuthenticationService {
           livenessConfirmed: false,
           spoofingDetected: true,
           fallbackRequired: true,
-          errors: [{
-            code: 'DEVICE_COMPROMISED',
-            message: 'Device integrity compromised',
-            severity: 'critical',
-            recoverable: false,
-            suggestions: ['Use a trusted device', 'Contact support'],
-          }],
+          errors: [
+            {
+              code: 'DEVICE_COMPROMISED',
+              message: 'Device integrity compromised',
+              severity: 'critical',
+              recoverable: false,
+              suggestions: ['Use a trusted device', 'Contact support'],
+            },
+          ],
           riskAssessment: {
             overallRisk: 'very-high',
-            factors: [{
-              factor: 'Device Integrity',
-              impact: 'negative',
-              weight: 1.0,
-              description: 'Device failed integrity checks',
-            }],
+            factors: [
+              {
+                factor: 'Device Integrity',
+                impact: 'negative',
+                weight: 1.0,
+                description: 'Device failed integrity checks',
+              },
+            ],
             recommendations: ['Use fallback authentication', 'Verify device security'],
             confidenceLevel: 0.1,
           },
@@ -1055,7 +1080,7 @@ export class BiometricAuthenticationService {
       const livenessResult = await this.livenessEngine.detectLiveness(
         biometricType,
         biometricData,
-        metadata
+        metadata,
       );
 
       // Find matching template
@@ -1070,13 +1095,15 @@ export class BiometricAuthenticationService {
           livenessConfirmed: livenessResult.isLive,
           spoofingDetected: !livenessResult.isLive,
           fallbackRequired: true,
-          errors: [{
-            code: 'NO_MATCH',
-            message: 'Biometric template not found or does not match',
-            severity: 'medium',
-            recoverable: true,
-            suggestions: ['Try again', 'Use alternative authentication', 'Re-enroll biometric'],
-          }],
+          errors: [
+            {
+              code: 'NO_MATCH',
+              message: 'Biometric template not found or does not match',
+              severity: 'medium',
+              recoverable: true,
+              suggestions: ['Try again', 'Use alternative authentication', 'Re-enroll biometric'],
+            },
+          ],
           riskAssessment: {
             overallRisk: 'medium',
             factors: [],
@@ -1087,7 +1114,12 @@ export class BiometricAuthenticationService {
       }
 
       // Perform behavioral analysis if enabled
-      let behavioralResult = { isAuthentic: true, confidence: 1.0, anomalies: [], riskScore: 0 };
+      let behavioralResult = {
+        isAuthentic: true,
+        confidence: 1.0,
+        anomalies: [],
+        riskScore: 0,
+      };
       if (userId) {
         behavioralResult = await this.behavioralEngine.analyzeUser(userId, {
           session: Date.now(),
@@ -1099,11 +1131,11 @@ export class BiometricAuthenticationService {
       const overallConfidence = Math.min(
         matchResult.confidence,
         livenessResult.confidence,
-        behavioralResult.confidence
+        behavioralResult.confidence,
       );
 
       const riskFactors: RiskFactor[] = [];
-      
+
       if (!livenessResult.isLive) {
         riskFactors.push({
           factor: 'Liveness Detection',
@@ -1166,7 +1198,6 @@ export class BiometricAuthenticationService {
           confidenceLevel: overallConfidence,
         },
       };
-
     } catch (error) {
       console.error('Biometric authentication failed:', error);
       return {
@@ -1177,13 +1208,15 @@ export class BiometricAuthenticationService {
         livenessConfirmed: false,
         spoofingDetected: true,
         fallbackRequired: true,
-        errors: [{
-          code: 'AUTHENTICATION_ERROR',
-          message: 'Biometric authentication error',
-          severity: 'high',
-          recoverable: true,
-          suggestions: ['Retry authentication', 'Use alternative method'],
-        }],
+        errors: [
+          {
+            code: 'AUTHENTICATION_ERROR',
+            message: 'Biometric authentication error',
+            severity: 'high',
+            recoverable: true,
+            suggestions: ['Retry authentication', 'Use alternative method'],
+          },
+        ],
         riskAssessment: {
           overallRisk: 'high',
           factors: [],
@@ -1202,7 +1235,7 @@ export class BiometricAuthenticationService {
       hash: await zeroTrustSecurityService['crypto'].hash(JSON.stringify(biometricData)),
       timestamp: Date.now(),
     });
-    
+
     // Encrypt the template
     return zeroTrustSecurityService.encryptSensitiveData(templateData, 'biometric_template');
   }
@@ -1210,14 +1243,14 @@ export class BiometricAuthenticationService {
   private async findMatchingTemplate(
     biometricType: BiometricType,
     biometricData: any,
-    userId?: string
+    userId?: string,
   ): Promise<{
     success: boolean;
     templateId: string;
     confidence: number;
   }> {
-    const candidateTemplates = Array.from(this.biometricTemplates.values()).filter(
-      template => template.type === biometricType && (!userId || template.userId === userId)
+    const candidateTemplates = [...this.biometricTemplates.values()].filter(
+      template => template.type === biometricType && (!userId || template.userId === userId),
     );
 
     if (candidateTemplates.length === 0) {
@@ -1228,7 +1261,7 @@ export class BiometricAuthenticationService {
     // This is a simplified simulation
     for (const template of candidateTemplates) {
       const matchScore = Math.random() * 0.4 + 0.6; // 0.6-1.0 range
-      
+
       if (matchScore > 0.8) {
         return {
           success: true,
@@ -1257,7 +1290,7 @@ export class BiometricAuthenticationService {
 
   private async saveBiometricTemplates(): Promise<void> {
     try {
-      const templates = Array.from(this.biometricTemplates.values());
+      const templates = [...this.biometricTemplates.values()];
       await AsyncStorage.setItem('biometric_templates', JSON.stringify(templates));
     } catch (error) {
       console.error('Failed to save biometric templates:', error);
@@ -1266,16 +1299,16 @@ export class BiometricAuthenticationService {
 
   private calculateOverallRisk(
     factors: RiskFactor[],
-    confidence: number
+    confidence: number,
   ): 'very-low' | 'low' | 'medium' | 'high' | 'very-high' {
     let riskScore = 1.0 - confidence;
-    
+
     for (const factor of factors) {
       if (factor.impact === 'negative') {
         riskScore += factor.weight * 0.3;
       }
     }
-    
+
     if (riskScore >= 0.8) return 'very-high';
     if (riskScore >= 0.6) return 'high';
     if (riskScore >= 0.4) return 'medium';
@@ -1285,35 +1318,37 @@ export class BiometricAuthenticationService {
 
   private generateRecommendations(factors: RiskFactor[], confidence: number): string[] {
     const recommendations: string[] = [];
-    
+
     if (confidence < 0.7) {
       recommendations.push('Consider using additional authentication factors');
     }
-    
+
     if (factors.some(f => f.factor.includes('Liveness'))) {
       recommendations.push('Improve lighting conditions and positioning');
     }
-    
+
     if (factors.some(f => f.factor.includes('Behavioral'))) {
       recommendations.push('Allow time for behavioral pattern establishment');
     }
-    
+
     if (factors.some(f => f.factor.includes('Device'))) {
       recommendations.push('Use a trusted, secure device');
     }
-    
+
     return recommendations;
   }
 
   // Public API
-  async getEnrolledBiometrics(userId: string): Promise<{
-    biometricType: BiometricType;
-    templateId: string;
-    quality: number;
-    enrolledAt: number;
-    lastUsed: number;
-  }[]> {
-    return Array.from(this.biometricTemplates.values())
+  async getEnrolledBiometrics(userId: string): Promise<
+    {
+      biometricType: BiometricType;
+      templateId: string;
+      quality: number;
+      enrolledAt: number;
+      lastUsed: number;
+    }[]
+  > {
+    return [...this.biometricTemplates.values()]
       .filter(template => template.userId === userId)
       .map(template => ({
         biometricType: template.type,

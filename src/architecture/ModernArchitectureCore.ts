@@ -5,7 +5,10 @@
  */
 
 import { EventEmitter } from 'events';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { loggingService } from '../services/LoggingService';
 import { observabilityService } from '../services/ObservabilityService';
 
 // Core Architecture Interfaces
@@ -59,24 +62,30 @@ export class AdvancedServiceContainer implements ServiceContainer {
   resolve<T>(token: string): T {
     // Check singletons first
     if (this.singletons.has(token)) {
-      return this.singletons.get(token);
+      return this.singletons.get(token) as T;
     }
 
     // Check regular services
     if (this.services.has(token)) {
-      return this.services.get(token);
+      return this.services.get(token) as T;
     }
 
     // Check factories
     if (this.factories.has(token)) {
-      const instance = this.factories.get(token)!();
-      this.singletons.set(token, instance);
-      return instance;
+      const factory = this.factories.get(token);
+      if (factory) {
+        const instance = factory();
+        this.singletons.set(token, instance);
+        return instance as T;
+      }
     }
 
     // Check scoped factories
     if (this.scopedFactories.has(token)) {
-      return this.scopedFactories.get(token)!();
+      const factory = this.scopedFactories.get(token);
+      if (factory) {
+        return factory() as T;
+      }
     }
 
     throw new Error(`Service not registered: ${token}`);
@@ -91,7 +100,7 @@ export class AdvancedServiceContainer implements ServiceContainer {
   }
 
   addDependency(service: string, dependency: string): void {
-    const deps = this.dependencies.get(service) || [];
+    const deps = this.dependencies.get(service) ?? [];
     deps.push(dependency);
     this.dependencies.set(service, deps);
   }
@@ -100,7 +109,7 @@ export class AdvancedServiceContainer implements ServiceContainer {
     for (const [service, deps] of this.dependencies.entries()) {
       for (const dep of deps) {
         if (!this.hasService(dep)) {
-          observabilityService.error(`Missing dependency ${dep} for service ${service}`);
+          loggingService.error(`Missing dependency ${dep} for service ${service}`);
           return false;
         }
       }
@@ -109,23 +118,21 @@ export class AdvancedServiceContainer implements ServiceContainer {
   }
 
   private hasService(token: string): boolean {
-    return this.services.has(token) || 
-           this.factories.has(token) || 
-           this.scopedFactories.has(token);
+    return this.services.has(token) || this.factories.has(token) || this.scopedFactories.has(token);
   }
 
   dispose(): void {
     // Cleanup singletons that implement dispose
     for (const [token, instance] of this.singletons.entries()) {
-      if (typeof instance.dispose === 'function') {
+      if (instance && typeof (instance as { dispose?: () => void }).dispose === 'function') {
         try {
-          instance.dispose();
+          (instance as { dispose: () => void }).dispose();
         } catch (error) {
-          observabilityService.error(`Error disposing ${token}:`, error);
+          loggingService.error(`Error disposing ${token}:`, { error });
         }
       }
     }
-    
+
     this.services.clear();
     this.singletons.clear();
     this.factories.clear();
@@ -142,17 +149,17 @@ export class EventStore {
 
   async appendEvent(event: Event): Promise<void> {
     this.events.push(event);
-    
+
     // Persist to storage
     await this.persistEvent(event);
-    
+
     // Trigger handlers
-    const handlers = this.eventHandlers.get(event.type) || [];
+    const handlers = this.eventHandlers.get(event.type) ?? [];
     for (const handler of handlers) {
       try {
         handler(event);
       } catch (error) {
-        observabilityService.error(`Error handling event ${event.type}:`, error);
+        loggingService.error(`Error handling event ${event.type}:`, { error });
       }
     }
 
@@ -168,8 +175,8 @@ export class EventStore {
   }
 
   async getEvents(aggregateId: string, fromVersion = 0): Promise<Event[]> {
-    return this.events.filter(event => 
-      event.source === aggregateId && event.version >= fromVersion
+    return this.events.filter(
+      event => event.source === aggregateId && event.version >= fromVersion,
     );
   }
 
@@ -184,14 +191,14 @@ export class EventStore {
       version,
       timestamp: Date.now(),
     };
-    
+
     this.snapshots.set(aggregateId, snapshot);
     await AsyncStorage.setItem(`snapshot_${aggregateId}`, JSON.stringify(snapshot));
   }
 
   async getSnapshot(aggregateId: string): Promise<unknown> {
     let snapshot = this.snapshots.get(aggregateId);
-    
+
     if (!snapshot) {
       try {
         const stored = await AsyncStorage.getItem(`snapshot_${aggregateId}`);
@@ -200,21 +207,23 @@ export class EventStore {
           this.snapshots.set(aggregateId, snapshot);
         }
       } catch (error) {
-        observabilityService.error(`Error loading snapshot for ${aggregateId}:`, error);
+        loggingService.error(`Error loading snapshot for ${aggregateId}:`, {
+          error,
+        });
       }
     }
-    
+
     return snapshot;
   }
 
   subscribe(eventType: string, handler: (event: Event) => void): () => void {
-    const handlers = this.eventHandlers.get(eventType) || [];
+    const handlers = this.eventHandlers.get(eventType) ?? [];
     handlers.push(handler);
     this.eventHandlers.set(eventType, handlers);
-    
+
     // Return unsubscribe function
     return () => {
-      const currentHandlers = this.eventHandlers.get(eventType) || [];
+      const currentHandlers = this.eventHandlers.get(eventType) ?? [];
       const index = currentHandlers.indexOf(handler);
       if (index >= 0) {
         currentHandlers.splice(index, 1);
@@ -228,23 +237,27 @@ export class EventStore {
       const key = `event_${event.timestamp}_${event.source}`;
       await AsyncStorage.setItem(key, JSON.stringify(event));
     } catch (error) {
-      observabilityService.error('Error persisting event:', error);
+      loggingService.error('Error persisting event:', { error });
     }
   }
 
-  async replay(aggregateId: string): Promise<{ snapshot?: unknown; events: Event<unknown>[] }> {
-    const snapshot = await this.getSnapshot(aggregateId);
-    const events = await this.getEvents(
-      aggregateId, 
-      snapshot ? snapshot.version + 1 : 0
-    );
-    
+  async replay(aggregateId: string): Promise<{
+    snapshot?: unknown;
+    events: Event<unknown>[];
+    currentVersion: number;
+  }> {
+    const snapshot = (await this.getSnapshot(aggregateId)) as {
+      version: number;
+      state: unknown;
+    } | null;
+    const events = await this.getEvents(aggregateId, snapshot ? snapshot.version + 1 : 0);
+
     return {
       snapshot: snapshot?.state,
       events,
       currentVersion: Math.max(
-        snapshot?.version || 0,
-        events.length > 0 ? events[events.length - 1].version : 0
+        snapshot?.version ?? 0,
+        events.length > 0 ? (events[events.length - 1] as Event & { version: number }).version : 0,
       ),
     };
   }
@@ -253,7 +266,7 @@ export class EventStore {
 // CQRS Implementation
 export abstract class CommandHandler<T extends Command> {
   abstract handle(command: T): Promise<void>;
-  
+
   protected async validate(_command: T): Promise<boolean> {
     // Override in specific handlers
     return true;
@@ -262,7 +275,7 @@ export abstract class CommandHandler<T extends Command> {
 
 export abstract class QueryHandler<T extends Query, R> {
   abstract handle(query: T): Promise<R>;
-  
+
   protected async authorize(_query: T): Promise<boolean> {
     // Override in specific handlers
     return true;
@@ -271,7 +284,9 @@ export abstract class QueryHandler<T extends Query, R> {
 
 export class CommandBus {
   private readonly handlers = new Map<string, CommandHandler<unknown>>();
-  private readonly middleware: Array<(command: Command, next: () => Promise<void>) => Promise<void>> = [];
+  private readonly middleware: Array<
+    (command: Command, next: () => Promise<void>) => Promise<void>
+  > = [];
 
   register<T extends Command>(commandType: string, handler: CommandHandler<T>): void {
     this.handlers.set(commandType, handler);
@@ -315,7 +330,7 @@ export class QueryBus {
     if (cacheTtl > 0) {
       const cacheKey = this.generateCacheKey(query);
       const cached = this.cache.get(cacheKey);
-      
+
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
         return cached.data;
       }
@@ -406,14 +421,14 @@ export abstract class AggregateRoot {
 
   static fromHistory<T extends AggregateRoot>(
     constructor: new (id: string) => T,
-    events: Event[]
+    events: Event[],
   ): T {
     if (events.length === 0) {
       throw new Error('Cannot create aggregate from empty event history');
     }
 
     const aggregate = new constructor(events[0].source);
-    
+
     for (const event of events) {
       aggregate.apply(event);
     }
@@ -427,24 +442,24 @@ export abstract class AggregateRoot {
 export abstract class Repository<T extends AggregateRoot> {
   constructor(
     protected readonly eventStore: EventStore,
-    protected readonly aggregateConstructor: new (id: string) => T
+    protected readonly aggregateConstructor: new (id: string) => T,
   ) {}
 
   async save(aggregate: T): Promise<void> {
     const events = aggregate.getUncommittedEvents();
-    
+
     for (const event of events) {
       await this.eventStore.appendEvent(event);
     }
-    
+
     aggregate.markEventsAsCommitted();
-    
+
     // Create snapshot periodically
     if (aggregate.getVersion() % 10 === 0) {
       await this.eventStore.createSnapshot(
         aggregate.getId(),
         this.serializeAggregate(aggregate),
-        aggregate.getVersion()
+        aggregate.getVersion(),
       );
     }
   }
@@ -452,13 +467,13 @@ export abstract class Repository<T extends AggregateRoot> {
   async findById(id: string): Promise<T | null> {
     try {
       const { snapshot, events } = await this.eventStore.replay(id);
-      
+
       if (!snapshot && events.length === 0) {
         return null;
       }
 
       let aggregate: T;
-      
+
       if (snapshot) {
         aggregate = this.deserializeAggregate(id, snapshot);
       } else {
@@ -473,7 +488,7 @@ export abstract class Repository<T extends AggregateRoot> {
       aggregate.markEventsAsCommitted();
       return aggregate;
     } catch (error) {
-      observabilityService.error(`Error loading aggregate ${id}:`, error);
+      loggingService.error(`Error loading aggregate ${id}:`, { error });
       return null;
     }
   }
@@ -497,17 +512,17 @@ export abstract class Saga {
   protected async executeStep(
     stepName: string,
     action: () => Promise<void>,
-    compensation?: () => Promise<void>
+    compensation?: () => Promise<void>,
   ): Promise<void> {
     try {
       await action();
       this.steps.set(stepName, true);
-      
+
       if (compensation) {
         this.compensations.push(compensation);
       }
     } catch (error) {
-      observabilityService.error(`Saga step ${stepName} failed:`, error);
+      loggingService.error(`Saga step ${stepName} failed:`, { error });
       await this.compensate();
       throw error;
     }
@@ -515,19 +530,20 @@ export abstract class Saga {
 
   protected async compensate(): Promise<void> {
     observabilityService.info(`Compensating saga ${this.id}...`);
-    
+
     // Execute compensations in reverse order
-    for (let i = this.compensations.length - 1; i >= 0; i--) {
+    const compensationsReversed = [...this.compensations].reverse();
+    for (const compensation of compensationsReversed) {
       try {
-        await this.compensations[i]();
+        await compensation();
       } catch (error) {
-        observabilityService.error(`Compensation failed:`, error);
+        loggingService.error(`Compensation failed:`, { error });
       }
     }
   }
 
   isCompleted(): boolean {
-    return Array.from(this.steps.values()).every(completed => completed);
+    return [...this.steps.values()].every(completed => completed);
   }
 }
 
@@ -556,10 +572,10 @@ export class ModernArchitectureCore {
 
       // Register core services
       this.registerCoreServices();
-      
+
       // Setup middleware
       this.setupMiddleware();
-      
+
       // Validate dependencies
       if (!this.container.validateDependencies()) {
         throw new Error('Dependency validation failed');
@@ -567,9 +583,8 @@ export class ModernArchitectureCore {
 
       this.isInitialized = true;
       observabilityService.info('✅ Modern Architecture Core initialized successfully');
-
     } catch (error) {
-      observabilityService.error('❌ Failed to initialize Modern Architecture Core:', error);
+      loggingService.error('❌ Failed to initialize Modern Architecture Core:', { error });
       throw error;
     }
   }
@@ -586,13 +601,13 @@ export class ModernArchitectureCore {
     this.commandBus.addMiddleware(async (command, next) => {
       observabilityService.info(`Executing command: ${command.type}`);
       const start = Date.now();
-      
+
       try {
         await next();
         const duration = Date.now() - start;
         observabilityService.info(`Command ${command.type} completed in ${duration}ms`);
       } catch (error) {
-        observabilityService.error(`Command ${command.type} failed:`, error);
+        loggingService.error(`Command ${command.type} failed:`, { error });
         throw error;
       }
     });
@@ -602,7 +617,7 @@ export class ModernArchitectureCore {
       const start = Date.now();
       await next();
       const duration = Date.now() - start;
-      
+
       observabilityService.trackPerformance({
         metricType: 'custom',
         name: 'command_execution_time',
@@ -681,7 +696,9 @@ export class ModernArchitectureCore {
     } catch (error) {
       return {
         status: 'unhealthy',
-        details: { error: error instanceof Error ? error.message : String(error) },
+        details: {
+          error: error instanceof Error ? error.message : String(error),
+        },
       };
     }
   }

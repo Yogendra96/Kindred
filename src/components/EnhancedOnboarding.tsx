@@ -1,22 +1,26 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import { AnimatedTouchable, AnimatedProgress } from './MicroInteractions';
+import React, { useEffect, useRef, useState } from 'react';
+
+import type { PanGestureHandlerGestureEvent } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  Image,
+  PanGestureHandler,
+  ScrollView,
+  State,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@theme/ThemeProvider';
 // import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState, useRef, useEffect } from 'react';
-import type { PanGestureHandlerGestureEvent } from 'react-native';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  PanGestureHandler,
-  State,
-  ScrollView,
-  Image,
-} from 'react-native';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
+
+import { AnimatedProgress, AnimatedTouchable } from './MicroInteractions';
 
 const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
@@ -218,10 +222,9 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
     }
   };
 
-  const onGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: translateX } }],
-    { useNativeDriver: true },
-  );
+  const onGestureEvent = Animated.event([{ nativeEvent: { translationX: translateX } }], {
+    useNativeDriver: true,
+  });
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
     if (!enableSwipeNavigation) return;
@@ -229,8 +232,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
       const threshold = screenWidth * 0.3;
-      const shouldSwipe =
-        Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
+      const shouldSwipe = Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
 
       if (shouldSwipe) {
         if (translationX > 0 && currentStep > 0) {
@@ -256,10 +258,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
     const textColor = step.textColor || theme.colors.onBackground;
 
     return (
-      <View
-        key={step.id}
-        style={[styles.stepContainer, { backgroundColor, width: screenWidth }]}
-      >
+      <View key={step.id} style={[styles.stepContainer, { backgroundColor, width: screenWidth }]}>
         <Animated.View
           style={[
             styles.stepContent,
@@ -311,10 +310,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             >
               {step.title}
             </Text>
-            <Text
-              style={[styles.stepDescription, { color: textColor }]}
-              accessible={true}
-            >
+            <Text style={[styles.stepDescription, { color: textColor }]} accessible={true}>
               {step.description}
             </Text>
           </View>
@@ -322,10 +318,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
           {/* Interactive Component */}
           {step.interactive && (
             <View style={styles.interactiveContainer}>
-              <Text
-                style={[styles.interactiveDescription, { color: textColor }]}
-                accessible={true}
-              >
+              <Text style={[styles.interactiveDescription, { color: textColor }]} accessible={true}>
                 {step.interactive.description}
               </Text>
               {step.interactive.component}
@@ -337,22 +330,14 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             <View style={styles.actionContainer}>
               <AnimatedTouchable
                 onPress={step.action.onPress}
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: theme.colors.primary },
-                ]}
+                style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
                 hapticType='medium'
                 animationType='scale'
                 accessible={true}
                 accessibilityRole='button'
                 accessibilityLabel={step.action.label}
               >
-                <Text
-                  style={[
-                    styles.actionButtonText,
-                    { color: theme.colors.onPrimary },
-                  ]}
-                >
+                <Text style={[styles.actionButtonText, { color: theme.colors.onPrimary }]}>
                   {step.action.label}
                 </Text>
               </AnimatedTouchable>
@@ -383,9 +368,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
               styles.dot,
               {
                 backgroundColor:
-                  index === currentStep
-                    ? theme.colors.primary
-                    : theme.colors.surfaceVariant,
+                  index === currentStep ? theme.colors.primary : theme.colors.surfaceVariant,
                 width: index === currentStep ? 24 : 8,
               },
             ]}
@@ -406,10 +389,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      testID={testID}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]} testID={testID}>
       {/* Custom Header */}
       {customHeader}
 
@@ -425,14 +405,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             accessibilityRole='button'
             accessibilityLabel='Skip onboarding'
           >
-            <Text
-              style={[
-                styles.skipText,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              Skip
-            </Text>
+            <Text style={[styles.skipText, { color: theme.colors.onSurfaceVariant }]}>Skip</Text>
           </AnimatedTouchable>
         </View>
       )}
@@ -491,17 +464,8 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
               accessibilityRole='button'
               accessibilityLabel='Previous step'
             >
-              <Ionicons
-                name='chevron-back'
-                size={20}
-                color={theme.colors.onSurface}
-              />
-              <Text
-                style={[
-                  styles.navButtonText,
-                  { color: theme.colors.onSurface },
-                ]}
-              >
+              <Ionicons name='chevron-back' size={20} color={theme.colors.onSurface} />
+              <Text style={[styles.navButtonText, { color: theme.colors.onSurface }]}>
                 Previous
               </Text>
             </AnimatedTouchable>
@@ -511,32 +475,20 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
 
           <AnimatedTouchable
             onPress={handleNext}
-            style={[
-              styles.navButton,
-              styles.nextButton,
-              { backgroundColor: theme.colors.primary },
-            ]}
+            style={[styles.navButton, styles.nextButton, { backgroundColor: theme.colors.primary }]}
             hapticType='medium'
             animationType='scale'
             accessible={true}
             accessibilityRole='button'
             accessibilityLabel={
-              currentStep === steps.length - 1
-                ? 'Complete onboarding'
-                : 'Next step'
+              currentStep === steps.length - 1 ? 'Complete onboarding' : 'Next step'
             }
           >
-            <Text
-              style={[styles.navButtonText, { color: theme.colors.onPrimary }]}
-            >
+            <Text style={[styles.navButtonText, { color: theme.colors.onPrimary }]}>
               {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
             </Text>
             <Ionicons
-              name={
-                currentStep === steps.length - 1
-                  ? 'checkmark'
-                  : 'chevron-forward'
-              }
+              name={currentStep === steps.length - 1 ? 'checkmark' : 'chevron-forward'}
               size={20}
               color={theme.colors.onPrimary}
             />

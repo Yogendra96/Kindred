@@ -1,42 +1,38 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import { AnimatedTouchable } from './MicroInteractions';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@theme/ThemeProvider';
-// import { BlurView } from 'expo-blur';
 import React, {
-  useState,
-  useEffect,
   useCallback,
+  useEffect,
   useRef,
+  useState,
   // useMemo,
 } from 'react';
+
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
   Animated,
   Dimensions,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
   // TouchableOpacity,
   // Platform,
   // Keyboard,
   // Alert,
 } from 'react-native';
 
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@theme/ThemeProvider';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
+
+import { AnimatedTouchable } from './MicroInteractions';
+
+// import { BlurView } from 'expo-blur';
+
 const { width: _screenWidth } = Dimensions.get('window');
 
 interface ValidationRule {
-  type:
-    | 'required'
-    | 'email'
-    | 'phone'
-    | 'url'
-    | 'number'
-    | 'min'
-    | 'max'
-    | 'pattern'
-    | 'custom';
+  type: 'required' | 'email' | 'phone' | 'url' | 'number' | 'min' | 'max' | 'pattern' | 'custom';
   value?: unknown;
   message: string;
   validator?: (value: string) => boolean;
@@ -184,10 +180,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
     async (text: string) => {
       if (text.length < 2) return;
 
-      const newHistory = [
-        text,
-        ...inputHistory.filter(item => item !== text),
-      ].slice(0, 10);
+      const newHistory = [text, ...inputHistory.filter(item => item !== text)].slice(0, 10);
       setInputHistory(newHistory);
 
       try {
@@ -224,7 +217,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               break;
             }
             case 'phone': {
-              const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+              const phoneRegex = /^\+?[1-9]\d{0,15}$/;
               if (text && !phoneRegex.test(text.replace(/\s/g, ''))) {
                 errors.push(rule.message);
               }
@@ -315,17 +308,8 @@ export const SmartInput: React.FC<SmartInputProps> = ({
         smartSuggestions.push(...predefinedSuggestions);
 
         // Auto-completion suggestions
-        if (
-          keyboardType === 'email-address' &&
-          text.includes('@') &&
-          !text.includes('.')
-        ) {
-          const emailDomains = [
-            'gmail.com',
-            'yahoo.com',
-            'outlook.com',
-            'hotmail.com',
-          ];
+        if (keyboardType === 'email-address' && text.includes('@') && !text.includes('.')) {
+          const emailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
           const completions = emailDomains.map(domain => ({
             text: text + domain.substring(text.split('@')[1]?.length || 0),
             type: 'completion' as const,
@@ -515,11 +499,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
       <Animated.View style={[styles.inputContainer, borderStyle]}>
         {leftIcon && (
           <View style={styles.leftIconContainer}>
-            <Ionicons
-              name={leftIcon as string}
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <Ionicons name={leftIcon as string} size={20} color={theme.colors.onSurfaceVariant} />
           </View>
         )}
 
@@ -577,9 +557,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               hapticType='selection'
               accessible={true}
               accessibilityRole='button'
-              accessibilityLabel={
-                showPassword ? 'Hide password' : 'Show password'
-              }
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
             >
               <Ionicons
                 name={showPassword ? 'eye-off' : 'eye'}
@@ -602,11 +580,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               accessibilityRole='button'
               accessibilityLabel='Voice input'
             >
-              <Ionicons
-                name='mic'
-                size={20}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <Ionicons name='mic' size={20} color={theme.colors.onSurfaceVariant} />
             </AnimatedTouchable>
           )}
 
@@ -623,11 +597,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               accessibilityRole='button'
               accessibilityLabel='Scan barcode'
             >
-              <Ionicons
-                name='barcode'
-                size={20}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <Ionicons name='barcode' size={20} color={theme.colors.onSurfaceVariant} />
             </AnimatedTouchable>
           )}
 
@@ -650,11 +620,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
           )}
 
           {statusIcon && (
-            <Ionicons
-              name={statusIcon as string}
-              size={20}
-              color={getStatusColor()}
-            />
+            <Ionicons name={statusIcon as string} size={20} color={getStatusColor()} />
           )}
         </View>
       </Animated.View>
@@ -688,10 +654,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               <AnimatedTouchable
                 key={index}
                 onPress={() => handleSuggestionPress(suggestion)}
-                style={[
-                  styles.suggestionItem,
-                  { backgroundColor: theme.colors.surfaceVariant },
-                ]}
+                style={[styles.suggestionItem, { backgroundColor: theme.colors.surfaceVariant }]}
                 animationType='scale'
                 hapticType='selection'
                 accessible={true}
@@ -706,10 +669,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
                   />
                 )}
                 <Text
-                  style={[
-                    styles.suggestionText,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
+                  style={[styles.suggestionText, { color: theme.colors.onSurfaceVariant }]}
                   numberOfLines={1}
                 >
                   {suggestion.text}
@@ -721,25 +681,15 @@ export const SmartInput: React.FC<SmartInputProps> = ({
       )}
 
       {/* Help Text */}
-      {helpText &&
-        !inputState.isFocused &&
-        displayErrors.length === 0 &&
-        !successText && (
-          <Text
-            style={[styles.helpText, { color: theme.colors.onSurfaceVariant }]}
-          >
-            {helpText}
-          </Text>
-        )}
+      {helpText && !inputState.isFocused && displayErrors.length === 0 && !successText && (
+        <Text style={[styles.helpText, { color: theme.colors.onSurfaceVariant }]}>{helpText}</Text>
+      )}
 
       {/* Error Messages */}
       {displayErrors.length > 0 && (
         <View style={styles.messagesContainer}>
           {displayErrors.map((error, index) => (
-            <Text
-              key={index}
-              style={[styles.errorText, { color: theme.colors.error }]}
-            >
+            <Text key={index} style={[styles.errorText, { color: theme.colors.error }]}>
               {error}
             </Text>
           ))}
@@ -748,9 +698,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
 
       {/* Success Message */}
       {successText && displayErrors.length === 0 && (
-        <Text style={[styles.successText, { color: theme.colors.primary }]}>
-          {successText}
-        </Text>
+        <Text style={[styles.successText, { color: theme.colors.primary }]}>{successText}</Text>
       )}
 
       {/* Character Count */}
@@ -760,9 +708,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
             styles.characterCount,
             {
               color:
-                value.length > maxLength * 0.9
-                  ? theme.colors.error
-                  : theme.colors.onSurfaceVariant,
+                value.length > maxLength * 0.9 ? theme.colors.error : theme.colors.onSurfaceVariant,
             },
           ]}
         >
@@ -835,9 +781,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
 
     try {
       // Validate all fields
-      const hasErrors = Object.keys(formErrors).some(
-        key => formErrors[key].length > 0,
-      );
+      const hasErrors = Object.keys(formErrors).some(key => formErrors[key].length > 0);
 
       if (hasErrors) {
         HapticFeedbackService.triggerError();

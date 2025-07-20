@@ -4,8 +4,10 @@
  * Features: Smart chunking, lazy loading, performance prediction, size monitoring
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { _Platform } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { observabilityService } from './ObservabilityService';
 
 // Bundle Analysis Types
@@ -120,10 +122,10 @@ class DynamicImportManager {
 
   async importModule<T = any>(
     moduleId: string,
-    priority: 'immediate' | 'high' | 'normal' | 'low' = 'normal'
+    priority: 'immediate' | 'high' | 'normal' | 'low' = 'normal',
   ): Promise<T> {
     const startTime = Date.now();
-    
+
     // Check cache first
     if (this.importCache.has(moduleId)) {
       const cached = await this.importCache.get(moduleId)!;
@@ -138,10 +140,10 @@ class DynamicImportManager {
     try {
       const module = await importPromise;
       const loadTime = Date.now() - startTime;
-      
+
       this.loadTimes.set(moduleId, loadTime);
       this.recordAccess(moduleId);
-      
+
       // Track performance
       observabilityService.trackPerformance({
         metricType: 'network',
@@ -180,31 +182,31 @@ class DynamicImportManager {
     const now = Date.now();
     const pattern = this.accessPatterns.get(moduleId) || [];
     pattern.push(now);
-    
+
     // Keep only recent accesses (last 100)
     if (pattern.length > 100) {
       pattern.shift();
     }
-    
+
     this.accessPatterns.set(moduleId, pattern);
   }
 
   predictNextImports(): string[] {
     const predictions: Array<{ moduleId: string; score: number }> = [];
-    
+
     for (const [moduleId, pattern] of this.accessPatterns.entries()) {
       if (pattern.length < 2) continue;
-      
+
       // Calculate access frequency
       const frequency = pattern.length;
       const recency = Date.now() - pattern[pattern.length - 1];
       const regularity = this.calculateRegularity(pattern);
-      
+
       // Scoring algorithm
-      const score = (frequency * 0.4) + ((1 / (recency + 1)) * 0.3) + (regularity * 0.3);
+      const score = frequency * 0.4 + (1 / (recency + 1)) * 0.3 + regularity * 0.3;
       predictions.push({ moduleId, score });
     }
-    
+
     return predictions
       .sort((a, b) => b.score - a.score)
       .slice(0, 5)
@@ -213,18 +215,20 @@ class DynamicImportManager {
 
   private calculateRegularity(pattern: number[]): number {
     if (pattern.length < 3) return 0;
-    
+
     const intervals = pattern.slice(1).map((time, i) => time - pattern[i]);
     const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
-    const variance = intervals.reduce((sum, interval) => sum + (interval - avgInterval) ** 2, 0) / intervals.length;
-    
+    const variance =
+      intervals.reduce((sum, interval) => sum + (interval - avgInterval) ** 2, 0) /
+      intervals.length;
+
     // Lower variance = higher regularity
     return 1 / (variance + 1);
   }
 
   async preloadPredictedModules(): Promise<void> {
     const predictions = this.predictNextImports();
-    
+
     for (const moduleId of predictions) {
       if (!this.importCache.has(moduleId)) {
         // Preload in background
@@ -242,18 +246,20 @@ class DynamicImportManager {
     slowestImports: Array<{ moduleId: string; loadTime: number }>;
   } {
     const totalImports = this.loadTimes.size;
-    const loadTimes = Array.from(this.loadTimes.values());
+    const loadTimes = [...this.loadTimes.values()];
     const averageLoadTime = loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length || 0;
-    
-    const cacheAccesses = Array.from(this.accessPatterns.values())
-      .reduce((sum, pattern) => sum + pattern.length, 0);
+
+    const cacheAccesses = [...this.accessPatterns.values()].reduce(
+      (sum, pattern) => sum + pattern.length,
+      0,
+    );
     const cacheHitRate = totalImports > 0 ? (cacheAccesses - totalImports) / cacheAccesses : 0;
-    
-    const slowestImports = Array.from(this.loadTimes.entries())
+
+    const slowestImports = [...this.loadTimes.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([moduleId, loadTime]) => ({ moduleId, loadTime }));
-    
+
     return {
       totalImports,
       averageLoadTime,
@@ -278,11 +284,11 @@ class TreeShakingAnalyzer {
 
   getUnusedExports(): UnusedExportAnalysis[] {
     const unused: UnusedExportAnalysis[] = [];
-    
+
     for (const [moduleId, exports] of this.exportMap.entries()) {
       const usedExports = this.usageMap.get(moduleId) || new Set();
       const unusedExports = exports.filter(exp => !usedExports.has(exp));
-      
+
       if (unusedExports.length > 0) {
         unused.push({
           file: moduleId,
@@ -293,7 +299,7 @@ class TreeShakingAnalyzer {
         });
       }
     }
-    
+
     return unused;
   }
 
@@ -309,12 +315,12 @@ class TreeShakingAnalyzer {
 
   private analyzeUsageConfidence(
     moduleId: string,
-    unusedExports: string[]
+    unusedExports: string[],
   ): 'definitely-unused' | 'probably-unused' | 'uncertain' {
     // Simplified heuristic - in production, this would be more sophisticated
     const totalExports = this.exportMap.get(moduleId)?.length || 0;
     const unusedRatio = unusedExports.length / totalExports;
-    
+
     if (unusedRatio > 0.8) return 'definitely-unused';
     if (unusedRatio > 0.5) return 'probably-unused';
     return 'uncertain';
@@ -334,12 +340,12 @@ class BundleSizeMonitor {
       timestamp: Date.now(),
       size,
     });
-    
+
     // Keep only recent history (last 100 builds)
     if (this.sizeHistory.length > 100) {
       this.sizeHistory.shift();
     }
-    
+
     this.checkThresholds(size);
   }
 
@@ -371,21 +377,22 @@ class BundleSizeMonitor {
     if (this.sizeHistory.length < 10) {
       return { trend: 'stable', growthRate: 0, projection: 0 };
     }
-    
+
     const recent = this.sizeHistory.slice(-10);
     const first = recent[0];
     const last = recent[recent.length - 1];
-    
+
     const timeDiff = last.timestamp - first.timestamp;
     const sizeDiff = last.size - first.size;
-    
+
     const growthRate = (sizeDiff / timeDiff) * (24 * 60 * 60 * 1000); // bytes per day
-    const projection = last.size + (growthRate * 30);
-    
+    const projection = last.size + growthRate * 30;
+
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
-    if (growthRate > 1024 * 100) trend = 'increasing'; // >100KB/day
+    if (growthRate > 1024 * 100)
+      trend = 'increasing'; // >100KB/day
     else if (growthRate < -1024 * 100) trend = 'decreasing';
-    
+
     return { trend, growthRate, projection };
   }
 }
@@ -446,10 +453,10 @@ export class IntelligentBundleOptimizer {
 
       // Load previous optimization data
       await this.loadOptimizationHistory();
-      
+
       // Setup bundle monitoring
       this.setupBundleMonitoring();
-      
+
       // Initialize preloading if enabled
       if (this.config.preloading.enabled) {
         this.setupIntelligentPreloading();
@@ -457,7 +464,6 @@ export class IntelligentBundleOptimizer {
 
       this.isInitialized = true;
       console.log('✅ Intelligent Bundle Optimizer initialized successfully');
-
     } catch (error) {
       console.error('❌ Failed to initialize Intelligent Bundle Optimizer:', error);
       throw error;
@@ -493,14 +499,14 @@ export class IntelligentBundleOptimizer {
 
   async importModule<T = any>(
     moduleId: string,
-    priority?: 'immediate' | 'high' | 'normal' | 'low'
+    priority?: 'immediate' | 'high' | 'normal' | 'low',
   ): Promise<T> {
     return this.dynamicImports.importModule<T>(moduleId, priority);
   }
 
   async analyzeBundleStructure(): Promise<BundleAnalysis> {
     console.log('🔍 Analyzing bundle structure...');
-    
+
     // In a real implementation, this would analyze the actual bundle
     const mockAnalysis: BundleAnalysis = {
       totalSize: 2.5 * 1024 * 1024, // 2.5MB
@@ -556,7 +562,7 @@ export class IntelligentBundleOptimizer {
     const analysis = await this.analyzeBundleStructure();
     const statistics = this.dynamicImports.getImportStatistics();
     const sizeGrowth = this.sizeMonitor.getSizeGrowthTrend();
-    
+
     const recommendations = {
       immediate: [] as string[],
       shortTerm: [] as string[],
@@ -569,24 +575,26 @@ export class IntelligentBundleOptimizer {
       recommendations.immediate.push(
         `Remove ${analysis.unusedExports.length} unused exports (saves ~${
           analysis.unusedExports.reduce((sum, exp) => sum + exp.potentialSavings, 0) / 1024
-        }KB)`
+        }KB)`,
       );
     }
 
     if (statistics.averageLoadTime > 1000) {
       recommendations.immediate.push(
-        'Optimize slow dynamic imports (current avg: ' + Math.round(statistics.averageLoadTime) + 'ms)'
+        `Optimize slow dynamic imports (current avg: ${Math.round(statistics.averageLoadTime)}ms)`,
       );
     }
 
     // Short-term optimizations
     if (analysis.compressionRatio < 0.7) {
-      recommendations.shortTerm.push('Improve compression (current ratio: ' + (analysis.compressionRatio * 100).toFixed(1) + '%)');
+      recommendations.shortTerm.push(
+        `Improve compression (current ratio: ${(analysis.compressionRatio * 100).toFixed(1)}%)`,
+      );
     }
 
     if (sizeGrowth.trend === 'increasing') {
       recommendations.shortTerm.push(
-        'Address bundle growth trend (+' + Math.round(sizeGrowth.growthRate / 1024) + 'KB/day)'
+        `Address bundle growth trend (+${Math.round(sizeGrowth.growthRate / 1024)}KB/day)`,
       );
     }
 
@@ -598,10 +606,8 @@ export class IntelligentBundleOptimizer {
     recommendations.longTerm.push('Consider migrating to ES modules for better tree-shaking');
 
     // Calculate estimated savings
-    recommendations.estimatedSavings = analysis.unusedExports.reduce(
-      (sum, exp) => sum + exp.potentialSavings,
-      0
-    ) * 0.8; // Conservative estimate
+    recommendations.estimatedSavings =
+      analysis.unusedExports.reduce((sum, exp) => sum + exp.potentialSavings, 0) * 0.8; // Conservative estimate
 
     return recommendations;
   }
@@ -609,17 +615,16 @@ export class IntelligentBundleOptimizer {
   private async analyzeCurrentBundle(): Promise<void> {
     try {
       const analysis = await this.analyzeBundleStructure();
-      
+
       // Store analysis for historical tracking
       await this.storeAnalysis(analysis);
-      
+
       // Check for optimization opportunities
       const recommendations = await this.generateOptimizationRecommendations();
-      
+
       if (recommendations.immediate.length > 0) {
         console.log('🚨 Immediate optimizations available:', recommendations.immediate);
       }
-      
     } catch (error) {
       console.error('Bundle analysis failed:', error);
     }
@@ -627,7 +632,7 @@ export class IntelligentBundleOptimizer {
 
   private async storeAnalysis(analysis: BundleAnalysis): Promise<void> {
     try {
-      const key = 'bundle_analysis_' + new Date().toISOString().split('T')[0];
+      const key = `bundle_analysis_${new Date().toISOString().split('T')[0]}`;
       await AsyncStorage.setItem(key, JSON.stringify(analysis));
     } catch (error) {
       console.warn('Failed to store bundle analysis:', error);

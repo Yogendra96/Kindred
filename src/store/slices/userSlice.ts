@@ -42,16 +42,10 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    updateProfile: (
-      state,
-      action: PayloadAction<Partial<UserState['profile']>>,
-    ) => {
+    updateProfile: (state, action: PayloadAction<Partial<UserState['profile']>>) => {
       state.profile = { ...state.profile, ...action.payload };
     },
-    updatePreferences: (
-      state,
-      action: PayloadAction<Partial<UserPreferences>>,
-    ) => {
+    updatePreferences: (state, action: PayloadAction<Partial<UserPreferences>>) => {
       state.preferences = { ...state.preferences, ...action.payload };
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -63,6 +57,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { updateProfile, updatePreferences, setLoading, setError } =
-  userSlice.actions;
+export const { updateProfile, updatePreferences, setLoading, setError } = userSlice.actions;
 export default userSlice.reducer;

@@ -1,18 +1,14 @@
-import { useTheme } from '../../theme/ThemeProvider';
+import React from 'react';
+
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import auth from '@react-native-firebase/auth';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useAppNavigation } from '@hooks/useAppNavigation';
 import { useNetworkStatus } from '@hooks/useNetworkStatus';
-import auth from '@react-native-firebase/auth';
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useTheme } from '../../theme/ThemeProvider';
 
 const ProfileScreen = () => {
   const user = auth().currentUser;
@@ -54,13 +50,9 @@ const ProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView>
-        <View
-          style={[styles.header, { borderBottomColor: theme.colors.border }]}
-        >
+        <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
           <Image
             source={{
               uri: user?.photoURL || 'https://via.placeholder.com/150',
@@ -70,111 +62,76 @@ const ProfileScreen = () => {
           <Text style={[styles.name, { color: theme.colors.text.primary }]}>
             {user?.displayName || 'User'}
           </Text>
-          <Text style={[styles.email, { color: theme.colors.text.secondary }]}>
-            {user?.email}
-          </Text>
+          <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
         </View>
 
-        <View
-          style={[styles.section, { borderBottomColor: theme.colors.border }]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
+        <View style={[styles.section, { borderBottomColor: theme.colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
             Account Settings
           </Text>
           <TouchableOpacity
-            style={[
-              styles.settingItem,
-              { borderBottomColor: theme.colors.border },
-            ]}
+            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
             onPress={handleEditProfile}
             accessible={true}
             accessibilityLabel='Edit Profile'
             accessibilityHint='Edit your profile information'
             accessibilityRole='button'
           >
-            <Text
-              style={[styles.settingText, { color: theme.colors.text.primary }]}
-            >
+            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
               Edit Profile
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.settingItem,
-              { borderBottomColor: theme.colors.border },
-            ]}
+            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
             onPress={handlePrivacySettings}
             accessible={true}
             accessibilityLabel='Privacy Settings'
             accessibilityHint='Adjust your privacy preferences'
             accessibilityRole='button'
           >
-            <Text
-              style={[styles.settingText, { color: theme.colors.text.primary }]}
-            >
+            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
               Privacy Settings
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.settingItem,
-              { borderBottomColor: theme.colors.border },
-            ]}
+            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
             onPress={handleNotifications}
             accessible={true}
             accessibilityLabel='Notifications'
             accessibilityHint='Manage notification preferences'
             accessibilityRole='button'
           >
-            <Text
-              style={[styles.settingText, { color: theme.colors.text.primary }]}
-            >
+            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
               Notifications
             </Text>
           </TouchableOpacity>
         </View>
 
-        <View
-          style={[styles.section, { borderBottomColor: theme.colors.border }]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
+        <View style={[styles.section, { borderBottomColor: theme.colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
             Display Settings
           </Text>
           <TouchableOpacity
-            style={[
-              styles.settingItem,
-              { borderBottomColor: theme.colors.border },
-            ]}
+            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
             onPress={toggleTheme}
             accessible={true}
             accessibilityLabel='Toggle Theme'
             accessibilityHint='Switch between light and dark theme'
             accessibilityRole='button'
           >
-            <Text
-              style={[styles.settingText, { color: theme.colors.text.primary }]}
-            >
+            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
               Toggle Theme
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.settingItem,
-              { borderBottomColor: theme.colors.border },
-            ]}
+            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
             onPress={toggleHighContrast}
             accessible={true}
             accessibilityLabel='High Contrast Mode'
             accessibilityHint='Toggle high contrast mode for better visibility'
             accessibilityRole='button'
           >
-            <Text
-              style={[styles.settingText, { color: theme.colors.text.primary }]}
-            >
+            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
               {isHighContrast ? 'Disable' : 'Enable'} High Contrast
             </Text>
           </TouchableOpacity>

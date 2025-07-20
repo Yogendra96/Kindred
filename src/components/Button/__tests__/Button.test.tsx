@@ -1,7 +1,9 @@
+import React from 'react';
+
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+
 import { HapticFeedbackService } from '../../../services/HapticFeedbackService';
 import { Button } from '../Button';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import React from 'react';
 
 // Mock the HapticFeedbackService
 jest.mock('../../../services/HapticFeedbackService', () => ({
@@ -10,10 +12,9 @@ jest.mock('../../../services/HapticFeedbackService', () => ({
   },
 }));
 
-const mockHapticFeedback =
-  HapticFeedbackService.triggerSuccess as jest.MockedFunction<
-    typeof HapticFeedbackService.triggerSuccess
-  >;
+const mockHapticFeedback = HapticFeedbackService.triggerSuccess as jest.MockedFunction<
+  typeof HapticFeedbackService.triggerSuccess
+>;
 
 describe('Button Component', () => {
   const mockOnPress = jest.fn();
@@ -24,17 +25,13 @@ describe('Button Component', () => {
 
   describe('Rendering', () => {
     it('renders correctly with default props', () => {
-      const { getByText } = render(
-        <Button title='Test Button' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Test Button' onPress={mockOnPress} />);
 
       expect(getByText('Test Button')).toBeTruthy();
     });
 
     it('renders with custom title', () => {
-      const { getByText } = render(
-        <Button title='Custom Title' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Custom Title' onPress={mockOnPress} />);
 
       expect(getByText('Custom Title')).toBeTruthy();
     });
@@ -77,9 +74,7 @@ describe('Button Component', () => {
     });
 
     it('renders ghost variant correctly', () => {
-      const { getByText } = render(
-        <Button title='Ghost' onPress={mockOnPress} variant='ghost' />,
-      );
+      const { getByText } = render(<Button title='Ghost' onPress={mockOnPress} variant='ghost' />);
 
       const button = getByText('Ghost').parent;
       expect(button).toHaveStyle({
@@ -105,9 +100,7 @@ describe('Button Component', () => {
 
   describe('Sizes', () => {
     it('renders small size correctly', () => {
-      const { getByText } = render(
-        <Button title='Small' onPress={mockOnPress} size='small' />,
-      );
+      const { getByText } = render(<Button title='Small' onPress={mockOnPress} size='small' />);
 
       const button = getByText('Small').parent;
       expect(button).toHaveStyle({
@@ -118,9 +111,7 @@ describe('Button Component', () => {
     });
 
     it('renders medium size correctly', () => {
-      const { getByText } = render(
-        <Button title='Medium' onPress={mockOnPress} size='medium' />,
-      );
+      const { getByText } = render(<Button title='Medium' onPress={mockOnPress} size='medium' />);
 
       const button = getByText('Medium').parent;
       expect(button).toHaveStyle({
@@ -131,9 +122,7 @@ describe('Button Component', () => {
     });
 
     it('renders large size correctly', () => {
-      const { getByText } = render(
-        <Button title='Large' onPress={mockOnPress} size='large' />,
-      );
+      const { getByText } = render(<Button title='Large' onPress={mockOnPress} size='large' />);
 
       const button = getByText('Large').parent;
       expect(button).toHaveStyle({
@@ -146,18 +135,14 @@ describe('Button Component', () => {
 
   describe('States', () => {
     it('renders disabled state correctly', () => {
-      const { getByText } = render(
-        <Button title='Disabled' onPress={mockOnPress} disabled />,
-      );
+      const { getByText } = render(<Button title='Disabled' onPress={mockOnPress} disabled />);
 
       const button = getByText('Disabled').parent;
       expect(button).toHaveStyle({ opacity: 0.6 });
     });
 
     it('renders loading state correctly', () => {
-      const { getByText } = render(
-        <Button title='Loading' onPress={mockOnPress} loading />,
-      );
+      const { getByText } = render(<Button title='Loading' onPress={mockOnPress} loading />);
 
       expect(getByText('Loading...')).toBeTruthy();
       // ActivityIndicator should be present
@@ -166,9 +151,7 @@ describe('Button Component', () => {
     });
 
     it('renders full width correctly', () => {
-      const { getByText } = render(
-        <Button title='Full Width' onPress={mockOnPress} fullWidth />,
-      );
+      const { getByText } = render(<Button title='Full Width' onPress={mockOnPress} fullWidth />);
 
       const button = getByText('Full Width').parent;
       expect(button).toHaveStyle({ width: '100%' });
@@ -177,18 +160,14 @@ describe('Button Component', () => {
 
   describe('Interactions', () => {
     it('calls onPress when pressed', () => {
-      const { getByText } = render(
-        <Button title='Press Me' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Press Me' onPress={mockOnPress} />);
 
       fireEvent.press(getByText('Press Me'));
       expect(mockOnPress).toHaveBeenCalledTimes(1);
     });
 
     it('triggers haptic feedback when pressed', async () => {
-      const { getByText } = render(
-        <Button title='Haptic' onPress={mockOnPress} hapticFeedback />,
-      );
+      const { getByText } = render(<Button title='Haptic' onPress={mockOnPress} hapticFeedback />);
 
       fireEvent.press(getByText('Haptic'));
 
@@ -199,11 +178,7 @@ describe('Button Component', () => {
 
     it('does not trigger haptic feedback when disabled', () => {
       const { getByText } = render(
-        <Button
-          title='Disabled'
-          onPress={mockOnPress}
-          hapticFeedback={false}
-        />,
+        <Button title='Disabled' onPress={mockOnPress} hapticFeedback={false} />,
       );
 
       fireEvent.press(getByText('Disabled'));
@@ -211,18 +186,14 @@ describe('Button Component', () => {
     });
 
     it('does not call onPress when disabled', () => {
-      const { getByText } = render(
-        <Button title='Disabled' onPress={mockOnPress} disabled />,
-      );
+      const { getByText } = render(<Button title='Disabled' onPress={mockOnPress} disabled />);
 
       fireEvent.press(getByText('Disabled'));
       expect(mockOnPress).not.toHaveBeenCalled();
     });
 
     it('does not call onPress when loading', () => {
-      const { getByText } = render(
-        <Button title='Loading' onPress={mockOnPress} loading />,
-      );
+      const { getByText } = render(<Button title='Loading' onPress={mockOnPress} loading />);
 
       fireEvent.press(getByText('Loading...'));
       expect(mockOnPress).not.toHaveBeenCalled();
@@ -242,12 +213,7 @@ describe('Button Component', () => {
 
     it('renders icon on the right when specified', () => {
       const { getByTestId } = render(
-        <Button
-          title='With Icon'
-          onPress={mockOnPress}
-          icon={<MockIcon />}
-          iconPosition='right'
-        />,
+        <Button title='With Icon' onPress={mockOnPress} icon={<MockIcon />} iconPosition='right' />,
       );
 
       expect(getByTestId('mock-icon')).toBeTruthy();
@@ -258,11 +224,7 @@ describe('Button Component', () => {
     it('applies custom button style', () => {
       const customStyle = { backgroundColor: 'red' };
       const { getByText } = render(
-        <Button
-          title='Custom Style'
-          onPress={mockOnPress}
-          style={customStyle}
-        />,
+        <Button title='Custom Style' onPress={mockOnPress} style={customStyle} />,
       );
 
       const button = getByText('Custom Style').parent;
@@ -272,11 +234,7 @@ describe('Button Component', () => {
     it('applies custom text style', () => {
       const customTextStyle = { fontSize: 20 };
       const { getByText } = render(
-        <Button
-          title='Custom Text'
-          onPress={mockOnPress}
-          textStyle={customTextStyle}
-        />,
+        <Button title='Custom Text' onPress={mockOnPress} textStyle={customTextStyle} />,
       );
 
       const text = getByText('Custom Text');
@@ -286,18 +244,14 @@ describe('Button Component', () => {
 
   describe('Accessibility', () => {
     it('is accessible by default', () => {
-      const { getByText } = render(
-        <Button title='Accessible' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Accessible' onPress={mockOnPress} />);
 
       const button = getByText('Accessible').parent;
       expect(button).toBeTruthy();
     });
 
     it('has correct accessibility state when disabled', () => {
-      const { getByText } = render(
-        <Button title='Disabled' onPress={mockOnPress} disabled />,
-      );
+      const { getByText } = render(<Button title='Disabled' onPress={mockOnPress} disabled />);
 
       const button = getByText('Disabled').parent;
       expect(button.props.disabled).toBe(true);

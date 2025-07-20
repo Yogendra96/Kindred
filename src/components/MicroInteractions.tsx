@@ -1,10 +1,13 @@
-import HapticFeedbackService from '../services/HapticFeedbackService';
-import { useTheme } from '../theme/ThemeProvider';
-import React, { useRef, /* useCallback, */ useEffect } from 'react';
-import { Animated, TouchableOpacity, View, Text } from 'react-native';
+import React, { useEffect, /* useCallback, */ useRef } from 'react';
+
+import { Animated, Text, TouchableOpacity, View } from 'react-native';
 import type { TouchableOpacityProps, ViewStyle } from 'react-native';
+
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+
+import HapticFeedbackService from '../services/HapticFeedbackService';
+import { useTheme } from '../theme/ThemeProvider';
 
 // Enhanced TouchableOpacity with micro-interactions
 interface AnimatedTouchableProps extends TouchableOpacityProps {
@@ -221,18 +224,16 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(1)).current;
 
-  const onGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: translateX } }],
-    { useNativeDriver: true },
-  );
+  const onGestureEvent = Animated.event([{ nativeEvent: { translationX: translateX } }], {
+    useNativeDriver: true,
+  });
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
     if (disabled) return;
 
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
-      const shouldSwipe =
-        Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > 500;
+      const shouldSwipe = Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > 500;
 
       if (shouldSwipe) {
         const direction = translationX > 0 ? 'right' : 'left';

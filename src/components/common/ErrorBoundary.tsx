@@ -1,6 +1,7 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // TODO: Add analytics and performance monitoring when needed
 // import analytics from '@react-native-firebase/analytics';
@@ -58,9 +59,7 @@ class ErrorBoundary extends Component<Props, State> {
               <Text style={styles.buttonText}>Restart App</Text>
             </TouchableOpacity>
           </View>
-          {__DEV__ && (
-            <Text style={styles.stackTrace}>{this.state.error?.stack}</Text>
-          )}
+          {__DEV__ && <Text style={styles.stackTrace}>{this.state.error?.stack}</Text>}
         </View>
       );
     }

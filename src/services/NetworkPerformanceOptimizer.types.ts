@@ -108,7 +108,7 @@ export interface AutoOptimizationConfig {
 }
 
 // Network Specific Types
-export type ConnectionType = 
+export type ConnectionType =
   | 'wifi'
   | 'cellular_5g'
   | 'cellular_4g'
@@ -117,14 +117,9 @@ export type ConnectionType =
   | 'ethernet'
   | 'unknown';
 
-export type CacheStrategy = 
-  | 'lru'
-  | 'lfu'
-  | 'fifo'
-  | 'ttl'
-  | 'adaptive';
+export type CacheStrategy = 'lru' | 'lfu' | 'fifo' | 'ttl' | 'adaptive';
 
-export type OptimizationType = 
+export type OptimizationType =
   | 'caching'
   | 'compression'
   | 'batching'

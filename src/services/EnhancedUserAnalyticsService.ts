@@ -1,8 +1,10 @@
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { Dimensions, Platform } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { Platform, Dimensions } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+
+import { PerformanceMonitoringService } from './PerformanceMonitoringService';
 
 // Core analytics types
 export interface UserProfile {
@@ -428,10 +430,7 @@ class EnhancedUserAnalyticsService {
   }
 
   // User management
-  async identifyUser(
-    userId: string,
-    traits?: Record<string, any>,
-  ): Promise<void> {
+  async identifyUser(userId: string, traits?: Record<string, any>): Promise<void> {
     if (!this.currentUser) {
       throw new Error('Analytics service not initialized');
     }
@@ -458,9 +457,7 @@ class EnhancedUserAnalyticsService {
     await this.track('user_profile_updated', { updates });
   }
 
-  async setUserPreferences(
-    preferences: Partial<UserPreferences>,
-  ): Promise<void> {
+  async setUserPreferences(preferences: Partial<UserPreferences>): Promise<void> {
     if (!this.currentUser) {
       throw new Error('Analytics service not initialized');
     }
@@ -517,10 +514,7 @@ class EnhancedUserAnalyticsService {
   }
 
   // Screen tracking
-  async screen(
-    screenName: string,
-    properties?: Record<string, any>,
-  ): Promise<void> {
+  async screen(screenName: string, properties?: Record<string, any>): Promise<void> {
     const screenView: ScreenView = {
       id: this.generateEventId(),
       name: screenName,
@@ -536,9 +530,7 @@ class EnhancedUserAnalyticsService {
     // End previous screen view
     if (this.currentSession && this.currentSession.screenViews.length > 0) {
       const lastScreen =
-        this.currentSession.screenViews[
-          this.currentSession.screenViews.length - 1
-        ];
+        this.currentSession.screenViews[this.currentSession.screenViews.length - 1];
       if (!lastScreen.endTime) {
         lastScreen.endTime = Date.now();
         lastScreen.duration = lastScreen.endTime - lastScreen.startTime;
@@ -590,25 +582,20 @@ class EnhancedUserAnalyticsService {
     );
   }
 
-  async endSession(
-    reason: 'user' | 'timeout' | 'crash' | 'background' = 'user',
-  ): Promise<void> {
+  async endSession(reason: 'user' | 'timeout' | 'crash' | 'background' = 'user'): Promise<void> {
     if (!this.currentSession) {
       return;
     }
 
     this.currentSession.endTime = Date.now();
-    this.currentSession.duration =
-      this.currentSession.endTime - this.currentSession.startTime;
+    this.currentSession.duration = this.currentSession.endTime - this.currentSession.startTime;
     this.currentSession.isActive = false;
     this.currentSession.exitReason = reason;
 
     // End last screen view
     if (this.currentSession.screenViews.length > 0) {
       const lastScreen =
-        this.currentSession.screenViews[
-          this.currentSession.screenViews.length - 1
-        ];
+        this.currentSession.screenViews[this.currentSession.screenViews.length - 1];
       if (!lastScreen.endTime) {
         lastScreen.endTime = this.currentSession.endTime;
         lastScreen.duration = lastScreen.endTime - lastScreen.startTime;
@@ -722,8 +709,7 @@ class EnhancedUserAnalyticsService {
     if (this.currentUser) {
       this.currentUser.carbonFootprint.totalEmissions += emissions;
       this.currentUser.carbonFootprint.categories[category] =
-        (this.currentUser.carbonFootprint.categories[category] || 0) +
-        emissions;
+        (this.currentUser.carbonFootprint.categories[category] || 0) + emissions;
 
       await this.cacheUserData();
     }
@@ -989,9 +975,7 @@ class EnhancedUserAnalyticsService {
   private getCurrentScreenName(): string {
     if (this.currentSession && this.currentSession.screenViews.length > 0) {
       const lastScreen =
-        this.currentSession.screenViews[
-          this.currentSession.screenViews.length - 1
-        ];
+        this.currentSession.screenViews[this.currentSession.screenViews.length - 1];
       return lastScreen.name;
     }
     return 'unknown';
@@ -1157,10 +1141,7 @@ class EnhancedUserAnalyticsService {
   private async cacheUserData(): Promise<void> {
     try {
       if (this.currentUser) {
-        await AsyncStorage.setItem(
-          'analytics_user',
-          JSON.stringify(this.currentUser),
-        );
+        await AsyncStorage.setItem('analytics_user', JSON.stringify(this.currentUser));
       }
     } catch (error) {
       console.error('Failed to cache user data:', error);
@@ -1176,10 +1157,7 @@ class EnhancedUserAnalyticsService {
         // Keep only last 100 sessions
         const recentSessions = sessions.slice(-100);
 
-        await AsyncStorage.setItem(
-          'analytics_sessions',
-          JSON.stringify(recentSessions),
-        );
+        await AsyncStorage.setItem('analytics_sessions', JSON.stringify(recentSessions));
       }
     } catch (error) {
       console.error('Failed to cache session data:', error);
@@ -1194,10 +1172,7 @@ class EnhancedUserAnalyticsService {
       // Keep only last 1000 events
       const recentEvents = cachedEvents.slice(-1000);
 
-      await AsyncStorage.setItem(
-        'analytics_events',
-        JSON.stringify(recentEvents),
-      );
+      await AsyncStorage.setItem('analytics_events', JSON.stringify(recentEvents));
     } catch (error) {
       console.error('Failed to cache events:', error);
     }

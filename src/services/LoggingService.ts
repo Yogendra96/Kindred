@@ -1,5 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -52,10 +53,7 @@ class LoggingService {
 
   private async persistLogs(): Promise<void> {
     try {
-      await AsyncStorage.setItem(
-        '@logs',
-        JSON.stringify(this.logs.slice(-this.maxLogs)),
-      );
+      await AsyncStorage.setItem('@logs', JSON.stringify(this.logs.slice(-this.maxLogs)));
     } catch (error) {
       // Note: Cannot use loggingService here due to circular dependency
       if (__DEV__) {
@@ -74,11 +72,7 @@ class LoggingService {
     return currentLevelIndex >= minLevelIndex;
   }
 
-  private createLogEntry(
-    level: LogLevel,
-    message: string,
-    context?: LogContext,
-  ): LogEntry {
+  private createLogEntry(level: LogLevel, message: string, context?: LogContext): LogEntry {
     return {
       level,
       message,
@@ -108,15 +102,12 @@ class LoggingService {
         entry.level === 'error'
           ? console.error
           : entry.level === 'warn'
-          ? console.warn
-          : entry.level === 'info'
-          ? console.info
-          : console.log;
+            ? console.warn
+            : entry.level === 'info'
+              ? console.info
+              : console.log;
 
-      logMethod(
-        `[${entry.level.toUpperCase()}] ${entry.message}`,
-        entry.context || '',
-      );
+      logMethod(`[${entry.level.toUpperCase()}] ${entry.message}`, entry.context || '');
     }
   }
 
@@ -153,9 +144,7 @@ class LoggingService {
   }
 
   getLogs(level?: LogLevel, limit?: number): LogEntry[] {
-    const filteredLogs = level
-      ? this.logs.filter(log => log.level === level)
-      : this.logs;
+    const filteredLogs = level ? this.logs.filter(log => log.level === level) : this.logs;
     return limit ? filteredLogs.slice(-limit) : filteredLogs;
   }
 

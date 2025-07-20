@@ -1,17 +1,14 @@
 import type { AppStateStatus } from 'react-native';
-import { Platform, Alert, AppState, Dimensions } from 'react-native';
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { loggingService } from './LoggingService';
-import { advancedEncryptionService } from './AdvancedEncryptionService';
+import { Alert, AppState, Dimensions, Platform } from 'react-native';
+
 import DeviceInfo from 'react-native-device-info';
 
+import { advancedEncryptionService } from './AdvancedEncryptionService';
+import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { loggingService } from './LoggingService';
+
 export interface SecurityThreat {
-  readonly type:
-    | 'debugging'
-    | 'tampering'
-    | 'emulation'
-    | 'injection'
-    | 'hooking';
+  readonly type: 'debugging' | 'tampering' | 'emulation' | 'injection' | 'hooking';
   readonly severity: 'low' | 'medium' | 'high' | 'critical';
   readonly description: string;
   readonly timestamp: number;
@@ -48,13 +45,7 @@ class RuntimeSecurityService {
   private readonly SECURITY_CONSTANTS = {
     DEBUG_DETECTION_INTERVAL: 5000, // 5 seconds
     MAX_VIOLATIONS_BEFORE_BLOCK: 3,
-    TAMPER_CHECK_FUNCTIONS: [
-      'eval',
-      'Function',
-      'setTimeout',
-      'setInterval',
-      'XMLHttpRequest',
-    ],
+    TAMPER_CHECK_FUNCTIONS: ['eval', 'Function', 'setTimeout', 'setInterval', 'XMLHttpRequest'],
     SUSPICIOUS_GLOBAL_PROPERTIES: [
       '__REACT_DEVTOOLS_GLOBAL_HOOK__',
       '__FLIPPER__',
@@ -212,9 +203,7 @@ class RuntimeSecurityService {
       }
 
       // Check for React DevTools
-      if (
-        typeof (global as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined'
-      ) {
+      if (typeof (global as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined') {
         threats.push({
           type: 'debugging',
           severity: 'high',
@@ -280,9 +269,7 @@ class RuntimeSecurityService {
         threats.push({
           type: 'tampering',
           severity: 'high',
-          description: `Modified global objects detected: ${modifiedGlobals.join(
-            ', ',
-          )}`,
+          description: `Modified global objects detected: ${modifiedGlobals.join(', ')}`,
           timestamp: Date.now(),
         });
       }
@@ -293,9 +280,7 @@ class RuntimeSecurityService {
         threats.push({
           type: 'tampering',
           severity: 'medium',
-          description: `Suspicious global properties: ${suspiciousProps.join(
-            ', ',
-          )}`,
+          description: `Suspicious global properties: ${suspiciousProps.join(', ')}`,
           timestamp: Date.now(),
         });
       }
@@ -306,9 +291,7 @@ class RuntimeSecurityService {
         threats.push({
           type: 'tampering',
           severity: 'critical',
-          description: `Modified core functions: ${modifiedFunctions.join(
-            ', ',
-          )}`,
+          description: `Modified core functions: ${modifiedFunctions.join(', ')}`,
           timestamp: Date.now(),
         });
       }
@@ -346,8 +329,7 @@ class RuntimeSecurityService {
           severity: 'medium',
           description: 'Application running on emulator/simulator',
           timestamp: Date.now(),
-          mitigation:
-            'Consider blocking emulator access for sensitive operations',
+          mitigation: 'Consider blocking emulator access for sensitive operations',
         });
       }
 
@@ -379,18 +361,15 @@ class RuntimeSecurityService {
 
     try {
       // Check if critical functions have been hooked
-      const hookedFunctions =
-        this.SECURITY_CONSTANTS.TAMPER_CHECK_FUNCTIONS.filter(funcName =>
-          this.isFunctionHooked((global as any)[funcName]),
-        );
+      const hookedFunctions = this.SECURITY_CONSTANTS.TAMPER_CHECK_FUNCTIONS.filter(funcName =>
+        this.isFunctionHooked((global as any)[funcName]),
+      );
 
       if (hookedFunctions.length > 0) {
         threats.push({
           type: 'hooking',
           severity: 'high',
-          description: `Function hooking detected: ${hookedFunctions.join(
-            ', ',
-          )}`,
+          description: `Function hooking detected: ${hookedFunctions.join(', ')}`,
           timestamp: Date.now(),
         });
       }
@@ -466,9 +445,7 @@ class RuntimeSecurityService {
   /**
    * Handle critical security threats
    */
-  private async handleCriticalThreat(
-    threats: readonly SecurityThreat[],
-  ): Promise<void> {
+  private async handleCriticalThreat(threats: readonly SecurityThreat[]): Promise<void> {
     const criticalThreats = threats.filter(t => t.severity === 'critical');
 
     if (criticalThreats.length > 0) {
@@ -480,10 +457,7 @@ class RuntimeSecurityService {
         violations: this.securityViolations,
       });
 
-      if (
-        this.securityViolations >=
-        this.SECURITY_CONSTANTS.MAX_VIOLATIONS_BEFORE_BLOCK
-      ) {
+      if (this.securityViolations >= this.SECURITY_CONSTANTS.MAX_VIOLATIONS_BEFORE_BLOCK) {
         // Block application
         Alert.alert(
           'Security Alert',
@@ -552,9 +526,7 @@ class RuntimeSecurityService {
 
   // Private helper methods
 
-  private calculateRiskLevel(
-    threats: SecurityThreat[],
-  ): 'low' | 'medium' | 'high' | 'critical' {
+  private calculateRiskLevel(threats: SecurityThreat[]): 'low' | 'medium' | 'high' | 'critical' {
     if (threats.some(t => t.severity === 'critical')) return 'critical';
     if (threats.some(t => t.severity === 'high')) return 'high';
     if (threats.some(t => t.severity === 'medium')) return 'medium';
@@ -615,10 +587,7 @@ class RuntimeSecurityService {
   private isFunctionModified(func: Function): boolean {
     try {
       const funcString = func.toString();
-      return (
-        funcString.includes('[native code]') === false ||
-        funcString.length > 100
-      ); // Native functions are usually short
+      return funcString.includes('[native code]') === false || funcString.length > 100; // Native functions are usually short
     } catch {
       return true; // If we can't check, assume it's modified
     }
@@ -631,17 +600,9 @@ class RuntimeSecurityService {
       const funcString = func.toString();
 
       // Check for common hooking signatures
-      const hookingSignatures = [
-        'frida',
-        'hook',
-        'intercept',
-        'replace',
-        'proxy',
-      ];
+      const hookingSignatures = ['frida', 'hook', 'intercept', 'replace', 'proxy'];
 
-      return hookingSignatures.some(sig =>
-        funcString.toLowerCase().includes(sig),
-      );
+      return hookingSignatures.some(sig => funcString.toLowerCase().includes(sig));
     } catch {
       return false;
     }
@@ -652,9 +613,7 @@ class RuntimeSecurityService {
       // Check for common injection framework signatures
       const injectionSignatures = ['frida', 'xposed', 'substrate', 'cydia'];
 
-      return injectionSignatures.some(
-        sig => typeof (global as any)[sig] !== 'undefined',
-      );
+      return injectionSignatures.some(sig => typeof (global as any)[sig] !== 'undefined');
     } catch {
       return false;
     }
@@ -668,18 +627,12 @@ class RuntimeSecurityService {
       const model = await DeviceInfo.getModel();
 
       // Check for common emulator names
-      const emulatorKeywords = [
-        'emulator',
-        'simulator',
-        'genymotion',
-        'android_x86',
-      ];
+      const emulatorKeywords = ['emulator', 'simulator', 'genymotion', 'android_x86'];
 
       if (
         emulatorKeywords.some(
           keyword =>
-            deviceName.toLowerCase().includes(keyword) ||
-            model.toLowerCase().includes(keyword),
+            deviceName.toLowerCase().includes(keyword) || model.toLowerCase().includes(keyword),
         )
       ) {
         threats.push({
@@ -738,9 +691,7 @@ class RuntimeSecurityService {
     }
   }
 
-  private async logSecurityThreats(
-    threats: readonly SecurityThreat[],
-  ): Promise<void> {
+  private async logSecurityThreats(threats: readonly SecurityThreat[]): Promise<void> {
     for (const threat of threats) {
       loggingService.warn('Security threat detected', {
         type: threat.type,

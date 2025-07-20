@@ -1,19 +1,20 @@
 /**
- * 🧠 Enhanced Memory Manager - Core Logic Module  
+ * 🧠 Enhanced Memory Manager - Core Logic Module
  * Following KISS principle: Focused memory management logic
  * File size target: 200-300 lines max
  */
 
 import { Platform } from 'react-native';
+
 import type {
   MemoryAnalysisResult,
-  MemoryManagerConfig,
   MemoryBreakdown,
   MemoryLeak,
+  MemoryManagerConfig,
   MemoryOptimization,
-  MemoryTrend,
   MemorySample,
-  ReactNativeMemoryMetrics
+  MemoryTrend,
+  ReactNativeMemoryMetrics,
 } from './EnhancedMemoryManager.types';
 
 export class MemoryManagerCore {
@@ -37,7 +38,7 @@ export class MemoryManagerCore {
     this.isMonitoring = true;
     this.monitoringInterval = setInterval(
       () => this.collectMemorySample(),
-      this.config.monitoring.interval
+      this.config.monitoring.interval,
     );
 
     console.log('🧠 Memory monitoring started');
@@ -81,7 +82,7 @@ export class MemoryManagerCore {
         breakdown,
         leaks,
         recommendations,
-        trend
+        trend,
       };
     } catch (error) {
       console.error('Memory analysis failed:', error);
@@ -139,7 +140,7 @@ export class MemoryManagerCore {
         before: beforeUsage,
         after: afterUsage,
         savings,
-        actions
+        actions,
       };
     } catch (error) {
       console.error('Memory cleanup failed:', error);
@@ -156,7 +157,7 @@ export class MemoryManagerCore {
       timestamp: Date.now(),
       usage: usage.used,
       available: usage.available,
-      gcCount: this.getGCCount()
+      gcCount: this.getGCCount(),
     };
 
     this.samples.push(sample);
@@ -170,7 +171,11 @@ export class MemoryManagerCore {
     this.checkMemoryThresholds(usage.used);
   }
 
-  private getCurrentMemoryUsage(): { used: number; available: number; total: number } {
+  private getCurrentMemoryUsage(): {
+    used: number;
+    available: number;
+    total: number;
+  } {
     // React Native memory detection
     if (Platform.OS === 'ios' && (global as any).nativePerformanceNow) {
       // iOS memory detection via JSI
@@ -184,7 +189,11 @@ export class MemoryManagerCore {
     return this.getJSHeapEstimate();
   }
 
-  private getIOSMemoryUsage(): { used: number; available: number; total: number } {
+  private getIOSMemoryUsage(): {
+    used: number;
+    available: number;
+    total: number;
+  } {
     // Simplified iOS memory detection
     const estimated = this.getJSHeapEstimate();
     const total = this.metrics.deviceMemory;
@@ -194,7 +203,11 @@ export class MemoryManagerCore {
     return { used, available, total };
   }
 
-  private getAndroidMemoryUsage(): { used: number; available: number; total: number } {
+  private getAndroidMemoryUsage(): {
+    used: number;
+    available: number;
+    total: number;
+  } {
     // Simplified Android memory detection
     const estimated = this.getJSHeapEstimate();
     const total = this.metrics.deviceMemory;
@@ -204,36 +217,40 @@ export class MemoryManagerCore {
     return { used, available, total };
   }
 
-  private getJSHeapEstimate(): { used: number; available: number; total: number } {
+  private getJSHeapEstimate(): {
+    used: number;
+    available: number;
+    total: number;
+  } {
     // Estimate based on performance.memory if available
     if ((performance as any).memory) {
       const memory = (performance as any).memory;
       return {
         used: memory.usedJSHeapSize || 50 * 1024 * 1024, // 50MB default
         available: memory.totalJSHeapSize - memory.usedJSHeapSize || 100 * 1024 * 1024,
-        total: memory.totalJSHeapSize || 150 * 1024 * 1024
+        total: memory.totalJSHeapSize || 150 * 1024 * 1024,
       };
     }
 
     // Fallback estimation
     return {
-      used: 50 * 1024 * 1024,  // 50MB
+      used: 50 * 1024 * 1024, // 50MB
       available: 100 * 1024 * 1024, // 100MB
-      total: 150 * 1024 * 1024  // 150MB
+      total: 150 * 1024 * 1024, // 150MB
     };
   }
 
   private async getMemoryBreakdown(): Promise<MemoryBreakdown> {
     const total = this.getCurrentMemoryUsage().used;
-    
+
     // Estimate breakdown (in real implementation would use native modules)
     return {
-      jsHeap: Math.round(total * 0.4),    // 40% JS heap
-      images: Math.round(total * 0.25),   // 25% images
+      jsHeap: Math.round(total * 0.4), // 40% JS heap
+      images: Math.round(total * 0.25), // 25% images
       components: Math.round(total * 0.15), // 15% components
-      services: Math.round(total * 0.1),  // 10% services
-      cache: Math.round(total * 0.05),    // 5% cache
-      other: Math.round(total * 0.05)     // 5% other
+      services: Math.round(total * 0.1), // 10% services
+      cache: Math.round(total * 0.05), // 5% cache
+      other: Math.round(total * 0.05), // 5% other
     };
   }
 
@@ -244,9 +261,10 @@ export class MemoryManagerCore {
     if (this.samples.length >= 10) {
       const recentSamples = this.samples.slice(-10);
       const growth = recentSamples[recentSamples.length - 1].usage - recentSamples[0].usage;
-      const growthRate = growth / (10 * this.config.monitoring.interval / 1000); // bytes per second
+      const growthRate = growth / ((10 * this.config.monitoring.interval) / 1000); // bytes per second
 
-      if (growthRate > 1024 * 1024) { // Growing > 1MB/s
+      if (growthRate > 1024 * 1024) {
+        // Growing > 1MB/s
         leaks.push({
           id: `trend_leak_${Date.now()}`,
           type: 'growing_cache',
@@ -254,7 +272,7 @@ export class MemoryManagerCore {
           location: 'Unknown',
           retainedObjects: Math.round(growth / 1000),
           severity: growthRate > 5 * 1024 * 1024 ? 'critical' : 'high',
-          detectedAt: Date.now()
+          detectedAt: Date.now(),
         });
       }
     }
@@ -264,31 +282,33 @@ export class MemoryManagerCore {
 
   private generateRecommendations(
     breakdown: MemoryBreakdown,
-    leaks: MemoryLeak[]
+    leaks: MemoryLeak[],
   ): MemoryOptimization[] {
     const recommendations: MemoryOptimization[] = [];
 
     // Image optimization recommendation
-    if (breakdown.images > 50 * 1024 * 1024) { // > 50MB
+    if (breakdown.images > 50 * 1024 * 1024) {
+      // > 50MB
       recommendations.push({
         type: 'image_compression',
         description: 'Optimize image cache and compression',
         expectedSavings: Math.round(breakdown.images * 0.3),
         effort: 'medium',
         implementation: 'Enable image compression and implement LRU cache eviction',
-        priority: 8
+        priority: 8,
       });
     }
 
     // Component pooling recommendation
-    if (breakdown.components > 30 * 1024 * 1024) { // > 30MB
+    if (breakdown.components > 30 * 1024 * 1024) {
+      // > 30MB
       recommendations.push({
         type: 'component_pooling',
         description: 'Implement component pooling for heavy components',
         expectedSavings: Math.round(breakdown.components * 0.4),
         effort: 'high',
         implementation: 'Use React.memo and implement component recycling',
-        priority: 7
+        priority: 7,
       });
     }
 
@@ -301,7 +321,7 @@ export class MemoryManagerCore {
           expectedSavings: leak.size,
           effort: 'low',
           implementation: 'Add TTL to cache entries and implement size limits',
-          priority: 9
+          priority: 9,
         });
       }
     });
@@ -318,8 +338,8 @@ export class MemoryManagerCore {
         prediction: {
           timeToLimit: Infinity,
           confidence: 0,
-          growthPattern: 'linear'
-        }
+          growthPattern: 'linear',
+        },
       };
     }
 
@@ -331,7 +351,8 @@ export class MemoryManagerCore {
     const rate = (usageDiff / timeDiff) * 60000; // bytes per minute
 
     let direction: 'increasing' | 'stable' | 'decreasing';
-    if (Math.abs(rate) < 1024 * 100) { // < 100KB/min
+    if (Math.abs(rate) < 1024 * 100) {
+      // < 100KB/min
       direction = 'stable';
     } else if (rate > 0) {
       direction = 'increasing';
@@ -339,9 +360,10 @@ export class MemoryManagerCore {
       direction = 'decreasing';
     }
 
-    const timeToLimit = rate > 0 
-      ? (this.config.limits.critical - lastSample.usage) / (rate / 60) // minutes
-      : Infinity;
+    const timeToLimit =
+      rate > 0
+        ? (this.config.limits.critical - lastSample.usage) / (rate / 60) // minutes
+        : Infinity;
 
     return {
       direction,
@@ -350,8 +372,8 @@ export class MemoryManagerCore {
       prediction: {
         timeToLimit,
         confidence: recentSamples.length >= 10 ? 0.8 : 0.4,
-        growthPattern: 'linear' // Simplified
-      }
+        growthPattern: 'linear', // Simplified
+      },
     };
   }
 
@@ -409,7 +431,7 @@ export class MemoryManagerCore {
       availableMemory: 512 * 1024 * 1024, // 512MB
       appMemoryLimit: Platform.OS === 'ios' ? 1024 * 1024 * 1024 : 512 * 1024 * 1024, // 1GB iOS, 512MB Android
       hermes: !!(global as any).HermesInternal,
-      bridgeMemory: 20 * 1024 * 1024 // 20MB estimate
+      bridgeMemory: 20 * 1024 * 1024, // 20MB estimate
     };
   }
 

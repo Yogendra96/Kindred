@@ -1,27 +1,23 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import { AnimatedTouchable } from './MicroInteractions';
-import type { NetInfoState , NetInfoState } from '@react-native-netinfo/netinfo';
-import NetInfo from '@react-native-netinfo/netinfo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-netinfo/netinfo';
-import { useTheme } from '@theme/ThemeProvider';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
+  Alert,
   Animated,
   Dimensions,
-  Alert,
+  StyleSheet,
+  Text,
+  View,
   // Platform,
 } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { NetInfoState, NetInfoState } from '@react-native-netinfo/netinfo';
+import NetInfo from '@react-native-netinfo/netinfo';
+import { useTheme } from '@theme/ThemeProvider';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
+
+import { AnimatedTouchable } from './MicroInteractions';
 
 const { width: _screenWidth } = Dimensions.get('window');
 
@@ -118,11 +114,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   maxQueueSize = 100,
   defaultCacheTTL = 3600000, // 1 hour
 }) => {
-  const [networkStatus, setNetworkStatus] =
-    useState<NetworkStatus>(defaultNetworkStatus);
+  const [networkStatus, setNetworkStatus] = useState<NetworkStatus>(defaultNetworkStatus);
   const [offlineQueue, setOfflineQueue] = useState<OfflineData[]>([]);
-  const [syncProgress, setSyncProgress] =
-    useState<SyncProgress>(defaultSyncProgress);
+  const [syncProgress, setSyncProgress] = useState<SyncProgress>(defaultSyncProgress);
   const [cache, setCache] = useState<Map<string, CacheItem>>(new Map());
 
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -159,7 +153,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   };
 
   const setupNetworkListener = () => {
-    const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
+    return NetInfo.addEventListener((state: NetInfoState) => {
       const newStatus: NetworkStatus = {
         isConnected: state.isConnected ?? false,
         type: state.type,
@@ -184,13 +178,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
         HapticFeedbackService.triggerWarning();
       }
     });
-
-    return unsubscribe;
   };
 
-  const getConnectionStrength = (
-    state: NetInfoState,
-  ): NetworkStatus['strength'] => {
+  const getConnectionStrength = (state: NetInfoState): NetworkStatus['strength'] => {
     if (!state.isConnected) return null;
 
     if (state.type === 'wifi') {
@@ -358,9 +348,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
         // Mark as synced
         setOfflineQueue(prev =>
           prev.map(queueItem =>
-            queueItem.id === item.id
-              ? { ...queueItem, synced: true }
-              : queueItem,
+            queueItem.id === item.id ? { ...queueItem, synced: true } : queueItem,
           ),
         );
 
@@ -389,9 +377,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
 
     // Clean up synced items
     setOfflineQueue(prev => {
-      const updated = prev.filter(
-        item => !item.synced || item.retryCount < item.maxRetries,
-      );
+      const updated = prev.filter(item => !item.synced || item.retryCount < item.maxRetries);
       saveOfflineQueue(updated);
       return updated;
     });
@@ -417,9 +403,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
 
   const simulateSync = async (_item: OfflineData): Promise<void> => {
     // Simulate network delay
-    await new Promise(resolve =>
-      setTimeout(resolve, 500 + Math.random() * 1000),
-    );
+    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
 
     // Simulate occasional failures
     if (Math.random() < 0.1) {
@@ -443,9 +427,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   const isDataAvailableOffline = useCallback(
     (type: string, id?: string) => {
       if (id) {
-        return offlineQueue.some(
-          item => item.type === type && item.data.id === id,
-        );
+        return offlineQueue.some(item => item.type === type && item.data.id === id);
       }
       return offlineQueue.some(item => item.type === type);
     },
@@ -470,11 +452,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   );
 
   const setCachedData = useCallback(
-    async (
-      key: string,
-      data: unknown,
-      ttl: number = defaultCacheTTL,
-    ): Promise<void> => {
+    async (key: string, data: unknown, ttl: number = defaultCacheTTL): Promise<void> => {
       const item: CacheItem = {
         data,
         timestamp: Date.now(),
@@ -519,11 +497,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     clearExpiredCache,
   };
 
-  return (
-    <OfflineContext.Provider value={contextValue}>
-      {children}
-    </OfflineContext.Provider>
-  );
+  return <OfflineContext.Provider value={contextValue}>{children}</OfflineContext.Provider>;
 };
 
 // Network Status Indicator Component
@@ -543,9 +517,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
   const { theme: _theme } = useTheme();
   const { networkStatus, isOnline } = useOffline();
   const [visible, setVisible] = useState(!isOnline);
-  const slideAnim = useRef(
-    new Animated.Value(position === 'top' ? -100 : 100),
-  ).current;
+  const slideAnim = useRef(new Animated.Value(position === 'top' ? -100 : 100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -645,9 +617,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
       <Ionicons name={getStatusIcon() as string} size={16} color='white' />
       <Text style={styles.statusText}>{getStatusText()}</Text>
       {showDetails && networkStatus.speed && (
-        <Text style={styles.speedText}>
-          {networkStatus.speed.toFixed(0)} Mbps
-        </Text>
+        <Text style={styles.speedText}>{networkStatus.speed.toFixed(0)} Mbps</Text>
       )}
     </Animated.View>
   );
@@ -666,18 +636,10 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
   testID,
 }) => {
   const { theme } = useTheme();
-  const {
-    offlineQueue,
-    syncProgress,
-    syncOfflineData,
-    clearOfflineData,
-    isOnline,
-  } = useOffline();
+  const { offlineQueue, syncProgress, syncOfflineData, clearOfflineData, isOnline } = useOffline();
 
   const pendingItems = offlineQueue.filter(item => !item.synced);
-  const failedItems = offlineQueue.filter(
-    item => item.retryCount >= item.maxRetries,
-  );
+  const failedItems = offlineQueue.filter(item => item.retryCount >= item.maxRetries);
 
   if (pendingItems.length === 0 && !syncProgress.inProgress) {
     return null;
@@ -696,24 +658,15 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
     >
       <View style={styles.queueHeader}>
         <View style={styles.queueInfo}>
-          <Ionicons
-            name='cloud-upload'
-            size={20}
-            color={theme.colors.primary}
-          />
-          <Text style={[styles.queueTitle, { color: theme.colors.onSurface }]}>
-            Offline Queue
-          </Text>
+          <Ionicons name='cloud-upload' size={20} color={theme.colors.primary} />
+          <Text style={[styles.queueTitle, { color: theme.colors.onSurface }]}>Offline Queue</Text>
         </View>
 
         <View style={styles.queueActions}>
           {showSyncButton && isOnline && (
             <AnimatedTouchable
               onPress={syncOfflineData}
-              style={[
-                styles.actionButton,
-                { backgroundColor: theme.colors.primary },
-              ]}
+              style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
               disabled={syncProgress.inProgress}
               hapticType='medium'
               animationType='scale'
@@ -748,10 +701,7 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
                   ],
                 );
               }}
-              style={[
-                styles.actionButton,
-                { backgroundColor: theme.colors.error },
-              ]}
+              style={[styles.actionButton, { backgroundColor: theme.colors.error }]}
               hapticType='medium'
               animationType='scale'
               accessible={true}
@@ -770,11 +720,7 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
           <Text style={[styles.statValue, { color: theme.colors.primary }]}>
             {pendingItems.length}
           </Text>
-          <Text
-            style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}
-          >
-            Pending
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>Pending</Text>
         </View>
 
         {failedItems.length > 0 && (
@@ -782,14 +728,7 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
             <Text style={[styles.statValue, { color: theme.colors.error }]}>
               {failedItems.length}
             </Text>
-            <Text
-              style={[
-                styles.statLabel,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              Failed
-            </Text>
+            <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>Failed</Text>
           </View>
         )}
 
@@ -798,45 +737,26 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
             <Text style={[styles.statValue, { color: theme.colors.secondary }]}>
               {syncProgress.completed}/{syncProgress.total}
             </Text>
-            <Text
-              style={[
-                styles.statLabel,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              Synced
-            </Text>
+            <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>Synced</Text>
           </View>
         )}
       </View>
 
       {syncProgress.inProgress && (
         <View style={styles.progressContainer}>
-          <View
-            style={[
-              styles.progressBar,
-              { backgroundColor: theme.colors.surfaceVariant },
-            ]}
-          >
+          <View style={[styles.progressBar, { backgroundColor: theme.colors.surfaceVariant }]}>
             <View
               style={[
                 styles.progressFill,
                 {
                   backgroundColor: theme.colors.primary,
-                  width: `${
-                    (syncProgress.completed / syncProgress.total) * 100
-                  }%`,
+                  width: `${(syncProgress.completed / syncProgress.total) * 100}%`,
                 },
               ]}
             />
           </View>
           {syncProgress.currentItem && (
-            <Text
-              style={[
-                styles.currentItem,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
+            <Text style={[styles.currentItem, { color: theme.colors.onSurfaceVariant }]}>
               {syncProgress.currentItem}
             </Text>
           )}
@@ -848,8 +768,7 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
 
 // Hook for offline-first data operations
 export const useOfflineData = () => {
-  const { addToOfflineQueue, getCachedData, setCachedData, isOnline } =
-    useOffline();
+  const { addToOfflineQueue, getCachedData, setCachedData, isOnline } = useOffline();
 
   const createOffline = useCallback(
     async (type: string, data: unknown, endpoint?: string) => {

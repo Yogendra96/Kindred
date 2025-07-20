@@ -1,32 +1,28 @@
 // Import services for middleware integration
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { configureStore, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
+import { combineReducers } from 'redux';
+import {
+  FLUSH,
+  PAUSE,
+  PERSIST,
+  persistReducer,
+  persistStore,
+  PURGE,
+  REGISTER,
+  REHYDRATE,
+} from 'redux-persist';
+
 import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { loggingService } from '../services/LoggingService';
-import analyticsReducer, {
-  addEvent,
-} from './slices/analyticsSlice';
+
+import analyticsReducer, { addEvent } from './slices/analyticsSlice';
 // Import all reducers
 import authReducer, { loginSuccess, logout } from './slices/authSlice';
 import carbonReducer from './slices/carbonSlice';
 import locationReducer from './slices/locationSlice';
 import settingsReducer from './slices/settingsSlice';
 import userReducer from './slices/userSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  configureStore,
-  createListenerMiddleware,
-  isAnyOf,
-} from '@reduxjs/toolkit';
-import { combineReducers } from 'redux';
-import {
-  persistStore,
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from 'redux-persist';
 
 // Create listener middleware for side effects
 const listenerMiddleware = createListenerMiddleware();
@@ -61,12 +57,7 @@ listenerMiddleware.startListening({
       await enhancedAnalyticsService.endSession();
 
       // Track logout event
-      enhancedAnalyticsService.trackEvent(
-        'user_logout',
-        {},
-        'user_action',
-        'medium',
-      );
+      enhancedAnalyticsService.trackEvent('user_logout', {}, 'user_action', 'medium');
 
       loggingService.info('User logged out');
     }
@@ -78,12 +69,7 @@ listenerMiddleware.startListening({
   actionCreator: addEvent,
   effect: async (action, _listenerApi) => {
     const event = action.payload;
-    enhancedAnalyticsService.trackEvent(
-      event.name,
-      event.properties,
-      event.category,
-      'medium',
-    );
+    enhancedAnalyticsService.trackEvent(event.name, event.properties, event.category, 'medium');
   },
 });
 

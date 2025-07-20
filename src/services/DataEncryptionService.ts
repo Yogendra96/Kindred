@@ -1,6 +1,7 @@
+import { Platform as _Platform } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
-import { Platform as _Platform } from 'react-native';
 
 // Types for Data Encryption
 export interface EncryptionConfig {
@@ -102,7 +103,7 @@ class DataEncryptionService {
 
       // Encrypt data
       const encrypted = CryptoJS.AES.encrypt(data, key, {
-        iv: iv,
+        iv,
         mode: CryptoJS.mode[finalConfig.mode || 'CBC'],
         padding: CryptoJS.pad[finalConfig.padding || 'Pkcs7'],
       });
@@ -116,12 +117,7 @@ class DataEncryptionService {
       };
 
       // Record metrics
-      this.recordEncryptionMetrics(
-        'encrypt',
-        startTime,
-        data.length,
-        result.data.length,
-      );
+      this.recordEncryptionMetrics('encrypt', startTime, data.length, result.data.length);
 
       return result;
     } catch (error) {
@@ -159,12 +155,7 @@ class DataEncryptionService {
       }
 
       // Record metrics
-      this.recordEncryptionMetrics(
-        'decrypt',
-        startTime,
-        encryptedData.data.length,
-        result.length,
-      );
+      this.recordEncryptionMetrics('decrypt', startTime, encryptedData.data.length, result.length);
 
       return result;
     } catch (error) {
@@ -174,14 +165,9 @@ class DataEncryptionService {
   }
 
   // Secure storage operations
-  async secureStore(
-    key: string,
-    data: any,
-    options: SecureStorageOptions = {},
-  ): Promise<void> {
+  async secureStore(key: string, data: any, options: SecureStorageOptions = {}): Promise<void> {
     try {
-      let processedData =
-        typeof data === 'string' ? data : JSON.stringify(data);
+      let processedData = typeof data === 'string' ? data : JSON.stringify(data);
 
       // Compress data if requested
       if (options.compress) {
@@ -210,10 +196,7 @@ class DataEncryptionService {
     }
   }
 
-  async secureRetrieve(
-    key: string,
-    options: SecureStorageOptions = {},
-  ): Promise<any> {
+  async secureRetrieve(key: string, options: SecureStorageOptions = {}): Promise<any> {
     try {
       let storedData = await AsyncStorage.getItem(key);
 
@@ -274,10 +257,7 @@ class DataEncryptionService {
   }
 
   // Hash functions
-  hash(
-    data: string,
-    algorithm: 'SHA1' | 'SHA256' | 'SHA512' | 'MD5' = 'SHA256',
-  ): string {
+  hash(data: string, algorithm: 'SHA1' | 'SHA256' | 'SHA512' | 'MD5' = 'SHA256'): string {
     try {
       switch (algorithm) {
         case 'SHA1':
@@ -405,10 +385,7 @@ class DataEncryptionService {
       const result = { ...data };
 
       for (const field of secureFields) {
-        if (
-          result[field.fieldName] &&
-          typeof result[field.fieldName] === 'object'
-        ) {
+        if (result[field.fieldName] && typeof result[field.fieldName] === 'object') {
           try {
             const decrypted = await this.decrypt(result[field.fieldName]);
 
@@ -517,7 +494,7 @@ class DataEncryptionService {
     averageCompressionRatio: number;
     totalOperations: number;
   } {
-    const metrics = Array.from(this.encryptionMetrics.values());
+    const metrics = [...this.encryptionMetrics.values()];
 
     if (metrics.length === 0) {
       return {
@@ -528,26 +505,17 @@ class DataEncryptionService {
       };
     }
 
-    const encryptionTimes = metrics
-      .filter(m => m.encryptionTime > 0)
-      .map(m => m.encryptionTime);
-    const decryptionTimes = metrics
-      .filter(m => m.decryptionTime > 0)
-      .map(m => m.decryptionTime);
-    const compressionRatios = metrics
-      .filter(m => m.compressionRatio)
-      .map(m => m.compressionRatio!);
+    const encryptionTimes = metrics.filter(m => m.encryptionTime > 0).map(m => m.encryptionTime);
+    const decryptionTimes = metrics.filter(m => m.decryptionTime > 0).map(m => m.decryptionTime);
+    const compressionRatios = metrics.filter(m => m.compressionRatio).map(m => m.compressionRatio!);
 
     return {
       averageEncryptionTime:
-        encryptionTimes.reduce((a, b) => a + b, 0) / encryptionTimes.length ||
-        0,
+        encryptionTimes.reduce((a, b) => a + b, 0) / encryptionTimes.length || 0,
       averageDecryptionTime:
-        decryptionTimes.reduce((a, b) => a + b, 0) / decryptionTimes.length ||
-        0,
+        decryptionTimes.reduce((a, b) => a + b, 0) / decryptionTimes.length || 0,
       averageCompressionRatio:
-        compressionRatios.reduce((a, b) => a + b, 0) /
-          compressionRatios.length || 1,
+        compressionRatios.reduce((a, b) => a + b, 0) / compressionRatios.length || 1,
       totalOperations: metrics.length,
     };
   }

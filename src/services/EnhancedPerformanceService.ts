@@ -1,26 +1,33 @@
-import { loggingService } from './LoggingService';
-import { Platform, Dimensions } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
+
 import DeviceInfo from 'react-native-device-info';
-import NetInfo as _NetInfo, { NetInfoState as _NetInfoState } from '@react-native-community/netinfo';
-import {
-  EnhancedPerformanceMetric,
-  NativeMemoryMetrics,
-  EnhancedNetworkMetrics,
-  CoreVitalMetric,
-  PerformanceAlertRule,
-  PerformanceAlert,
-  UserJourneyEvent,
-  JourneyPerformanceInsight as _JourneyPerformanceInsight,
-  MemoryLeak,
+
+// NetInfo imports commented out - not currently used
+// import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import type {
   ComponentLifecycleEvent,
+  CoreVitalMetric,
   DeviceContext,
-  SessionPerformanceData as _SessionPerformanceData,
+  EnhancedNetworkMetrics,
+  EnhancedPerformanceMetric,
+  MemoryLeak,
+  NativeMemoryMetrics,
+  PerformanceAlert,
+  PerformanceAlertRule,
   PerformanceConfig,
-  DEFAULT_PERFORMANCE_CONFIG,
+  UserJourneyEvent,
+} from '../types/performance';
+import {
   CircularBuffer as _ICircularBuffer,
+  JourneyPerformanceInsight as _JourneyPerformanceInsight,
+  SessionPerformanceData as _SessionPerformanceData,
+  DEFAULT_PERFORMANCE_CONFIG,
 } from '../types/performance';
 import { CircularBuffer } from '../utils/CircularBuffer';
-import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { loggingService } from './LoggingService';
+// AsyncStorage import commented out - not currently used
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Global type declarations
 declare global {
@@ -77,70 +84,70 @@ interface BundleMetrics {
  */
 export class EnhancedPerformanceService {
   private static instance: EnhancedPerformanceService;
-  
+
   // Core dependencies
   private logger: typeof loggingService;
   private config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG;
-  
+
   // Enhanced data storage with circular buffers for high-frequency data
   private metrics: Map<string, EnhancedPerformanceMetric[]> = new Map();
   private metricsBuffer: CircularBuffer<EnhancedPerformanceMetric>;
   private memoryMetrics: CircularBuffer<NativeMemoryMetrics>;
   private networkMetrics: CircularBuffer<EnhancedNetworkMetrics>;
   private coreVitals: Map<string, CoreVitalMetric[]> = new Map();
-  
+
   // Legacy compatibility
   private renderMetrics: RenderMetrics[] = [];
   private bundleMetrics: BundleMetrics | null = null;
-  
+
   // Real-time monitoring state
   private isMonitoring: boolean = false;
   private memoryInterval: ReturnType<typeof setTimeout> | null = null;
   private performanceObserver: PerformanceObserver | null = null;
-  
+
   // Session and user tracking
   private currentSessionId: string = '';
   private currentUserId?: string;
   private deviceContext: DeviceContext | null = null;
-  
+
   // Alert system
   private alertRules: Map<string, PerformanceAlertRule> = new Map();
   private activeAlerts: Map<string, PerformanceAlert> = new Map();
-  
+
   // Memory leak detection
   private componentLifecycles: Map<string, ComponentLifecycleEvent[]> = new Map();
   private memoryLeaks: MemoryLeak[] = [];
-  
+
   // User journey correlation
   private journeyEvents: UserJourneyEvent[] = [];
   private screenStartTimes: Map<string, number> = new Map();
-  
+
   // Network interception
   private originalFetch: typeof fetch;
   private originalXMLHttpRequest: typeof XMLHttpRequest;
-  
+
   // Performance tracking
   private screenRenderStartTime: number = 0;
   private interactionStartTime: number = 0;
-  
+
   // Connection state
   private connectionType: string = 'unknown';
 
   private constructor() {
     this.logger = loggingService;
-    
+
     // Initialize circular buffers with optimal capacity
     this.metricsBuffer = new CircularBuffer<EnhancedPerformanceMetric>(1000);
     this.memoryMetrics = new CircularBuffer<NativeMemoryMetrics>(500);
     this.networkMetrics = new CircularBuffer<EnhancedNetworkMetrics>(500);
-    
+
     // Generate unique session ID
     this.currentSessionId = this.generateSessionId();
-    
+
     // Store original network functions for interception
     this.originalFetch = global.fetch;
     this.originalXMLHttpRequest = global.XMLHttpRequest;
-    
+
     // Set up default alert rules
     this.setupDefaultAlertRules();
   }
@@ -161,35 +168,35 @@ export class EnhancedPerformanceService {
       if (config) {
         this.config = { ...this.config, ...config };
       }
-      
+
       // Initialize device context
       await this.initializeDeviceContext();
-      
+
       // Set up monitoring systems
       this.setupPerformanceObservers();
       this.startMemoryMonitoring();
       this.setupNetworkMonitoring();
-      
+
       // Initialize features based on config
       if (this.config.features.networkInterception) {
         this.setupNetworkInterception();
       }
-      
+
       if (this.config.features.memoryLeakDetection) {
         this.startMemoryLeakDetection();
       }
-      
+
       // Start session tracking
       this.startSession();
-      
+
       this.isMonitoring = true;
-      
+
       this.logger.info('Enhanced performance monitoring initialized', {
         sessionId: this.currentSessionId,
         features: this.config.features,
         deviceContext: this.deviceContext,
       });
-      
+
       // Record initialization metric
       this.recordEnhancedMetric({
         name: 'apm_initialization',
@@ -201,7 +208,6 @@ export class EnhancedPerformanceService {
           features: this.config.features,
         },
       });
-      
     } catch (error) {
       this.logger.error('Failed to initialize enhanced performance monitoring', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -217,40 +223,39 @@ export class EnhancedPerformanceService {
   async stop(): Promise<void> {
     try {
       this.isMonitoring = false;
-      
+
       // End current session
       await this.endSession();
-      
+
       // Clean up intervals and observers
       if (this.memoryInterval) {
         clearInterval(this.memoryInterval);
         this.memoryInterval = null;
       }
-      
+
       if (this.performanceObserver) {
         this.performanceObserver.disconnect();
         this.performanceObserver = null;
       }
-      
+
       // Restore original network functions
       if (this.config.features.networkInterception) {
         this.restoreNetworkFunctions();
       }
-      
+
       // Save final session data
       await this.saveSessionData();
-      
+
       if (this.memoryInterval) {
         clearInterval(this.memoryInterval);
         this.memoryInterval = null;
       }
-      
+
       this.logger.info('Enhanced performance monitoring stopped', {
         sessionId: this.currentSessionId,
         metricsCollected: this.metricsBuffer.size,
         alertsTriggered: this.activeAlerts.size,
       });
-      
     } catch (error) {
       this.logger.error('Error stopping performance monitoring', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -288,10 +293,7 @@ export class EnhancedPerformanceService {
     }
 
     if (__DEV__) {
-      this.logger.debug(
-        `Performance metric recorded: ${name} = ${value}${unit}`,
-        context,
-      );
+      this.logger.debug(`Performance metric recorded: ${name} = ${value}${unit}`, context);
     }
   }
 
@@ -370,11 +372,7 @@ export class EnhancedPerformanceService {
     // Log slow renders in development
     if (__DEV__ && renderTime > 16) {
       // 16ms = 60fps threshold
-      this.logger.warn(
-        `Slow render detected: ${componentName} took ${renderTime.toFixed(
-          2,
-        )}ms`,
-      );
+      this.logger.warn(`Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`);
     }
   }
 
@@ -407,9 +405,7 @@ export class EnhancedPerformanceService {
     // Log slow network requests
     if (__DEV__ && duration > 3000) {
       // 3 seconds threshold
-      this.logger.warn(
-        `Slow network request: ${method} ${url} took ${duration}ms`,
-      );
+      this.logger.warn(`Slow network request: ${method} ${url} took ${duration}ms`);
     }
   }
 
@@ -435,13 +431,10 @@ export class EnhancedPerformanceService {
    * Get performance summary
    */
   getPerformanceSummary(): any {
-    const summary = {
+    return {
       overview: {
         isMonitoring: this.isMonitoring,
-        totalMetrics: Array.from(this.metrics.values()).reduce(
-          (sum, arr) => sum + arr.length,
-          0,
-        ),
+        totalMetrics: [...this.metrics.values()].reduce((sum, arr) => sum + arr.length, 0),
         memorySnapshots: this.memoryMetrics.length,
         renderMetrics: this.renderMetrics.length,
         networkRequests: this.networkMetrics.length,
@@ -452,8 +445,6 @@ export class EnhancedPerformanceService {
       bundle: this.bundleMetrics,
       customMetrics: this.getCustomMetricsSummary(),
     };
-
-    return summary;
   }
 
   /**
@@ -464,8 +455,7 @@ export class EnhancedPerformanceService {
 
     const latest = this.memoryMetrics[this.memoryMetrics.length - 1];
     const peak = this.memoryMetrics.reduce(
-      (max, metric) =>
-        metric.usedJSHeapSize > max.usedJSHeapSize ? metric : max,
+      (max, metric) => (metric.usedJSHeapSize > max.usedJSHeapSize ? metric : max),
       this.memoryMetrics[0],
     );
 
@@ -474,9 +464,7 @@ export class EnhancedPerformanceService {
         used: this.formatBytes(latest.usedJSHeapSize),
         total: this.formatBytes(latest.totalJSHeapSize),
         limit: this.formatBytes(latest.jsHeapSizeLimit),
-        utilization:
-          ((latest.usedJSHeapSize / latest.jsHeapSizeLimit) * 100).toFixed(2) +
-          '%',
+        utilization: `${((latest.usedJSHeapSize / latest.jsHeapSizeLimit) * 100).toFixed(2)}%`,
       },
       peak: {
         used: this.formatBytes(peak.usedJSHeapSize),
@@ -491,18 +479,13 @@ export class EnhancedPerformanceService {
   private getRenderingSummary(): any {
     if (this.renderMetrics.length === 0) return null;
 
-    const totalRenderTime = this.renderMetrics.reduce(
-      (sum, metric) => sum + metric.renderTime,
-      0,
-    );
+    const totalRenderTime = this.renderMetrics.reduce((sum, metric) => sum + metric.renderTime, 0);
     const averageRenderTime = totalRenderTime / this.renderMetrics.length;
-    const slowRenders = this.renderMetrics.filter(
-      metric => metric.renderTime > 16,
-    );
+    const slowRenders = this.renderMetrics.filter(metric => metric.renderTime > 16);
 
     return {
       totalRenders: this.renderMetrics.length,
-      averageRenderTime: averageRenderTime.toFixed(2) + 'ms',
+      averageRenderTime: `${averageRenderTime.toFixed(2)}ms`,
       slowRenders: slowRenders.length,
       slowestRender: this.renderMetrics.reduce(
         (max, metric) => (metric.renderTime > max.renderTime ? metric : max),
@@ -519,25 +502,17 @@ export class EnhancedPerformanceService {
 
     const totalRequests = this.networkMetrics.length;
     const averageDuration =
-      this.networkMetrics.reduce((sum, metric) => sum + metric.duration, 0) /
-      totalRequests;
-    const slowRequests = this.networkMetrics.filter(
-      metric => metric.duration > 3000,
-    );
-    const errorRequests = this.networkMetrics.filter(
-      metric => metric.statusCode >= 400,
-    );
+      this.networkMetrics.reduce((sum, metric) => sum + metric.duration, 0) / totalRequests;
+    const slowRequests = this.networkMetrics.filter(metric => metric.duration > 3000);
+    const errorRequests = this.networkMetrics.filter(metric => metric.statusCode >= 400);
 
     return {
       totalRequests,
-      averageDuration: averageDuration.toFixed(2) + 'ms',
+      averageDuration: `${averageDuration.toFixed(2)}ms`,
       slowRequests: slowRequests.length,
       errorRequests: errorRequests.length,
       totalDataTransferred: this.formatBytes(
-        this.networkMetrics.reduce(
-          (sum, metric) => sum + metric.responseSize,
-          0,
-        ),
+        this.networkMetrics.reduce((sum, metric) => sum + metric.responseSize, 0),
       ),
     };
   }
@@ -599,7 +574,9 @@ export class EnhancedPerformanceService {
         });
         resourceObserver.observe({ entryTypes: ['resource'] });
       } catch (error) {
-        this.logger.warn('Performance observers not supported', { error: error.message });
+        this.logger.warn('Performance observers not supported', {
+          error: error.message,
+        });
       }
     }
   }
@@ -655,7 +632,7 @@ export class EnhancedPerformanceService {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -703,7 +680,9 @@ export class EnhancedPerformanceService {
         screenHeight: Dimensions.get('screen').height,
       };
     } catch (error) {
-      this.logger.warn('Failed to initialize device context', { error: error.message });
+      this.logger.warn('Failed to initialize device context', {
+        error: error.message,
+      });
     }
   }
 
@@ -739,12 +718,16 @@ export class EnhancedPerformanceService {
 
   private async saveSessionData(): Promise<void> {
     // Save session data for persistence
-    this.logger.debug('Session data saved', { sessionId: this.currentSessionId });
+    this.logger.debug('Session data saved', {
+      sessionId: this.currentSessionId,
+    });
   }
 
   private setupNetworkInterception(): void {
     // Set up network interception for monitoring
-    this.logger.debug('Network interception setup', { sessionId: this.currentSessionId });
+    this.logger.debug('Network interception setup', {
+      sessionId: this.currentSessionId,
+    });
   }
 
   private restoreNetworkFunctions(): void {
@@ -756,7 +739,9 @@ export class EnhancedPerformanceService {
 
   private startMemoryLeakDetection(): void {
     // Start memory leak detection
-    this.logger.debug('Memory leak detection started', { sessionId: this.currentSessionId });
+    this.logger.debug('Memory leak detection started', {
+      sessionId: this.currentSessionId,
+    });
   }
 
   private recordEnhancedMetric(metric: EnhancedPerformanceMetric): void {
@@ -770,6 +755,5 @@ export class EnhancedPerformanceService {
 }
 
 // Create and export singleton instance
-export const enhancedPerformanceService =
-  EnhancedPerformanceService.getInstance();
+export const enhancedPerformanceService = EnhancedPerformanceService.getInstance();
 export default enhancedPerformanceService;

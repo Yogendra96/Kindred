@@ -4,19 +4,21 @@
  * File size target: 250-300 lines max
  */
 
-import { Platform } from 'react-native';
+// Platform available for platform-specific network optimizations
+
 import NetInfo from '@react-native-community/netinfo';
-import { observabilityService } from './ObservabilityService';
+
 import type {
-  NetworkAnalysisResult,
-  NetworkOptimizerConfig,
-  RequestMetrics,
-  NetworkOptimization,
-  ConnectionQuality,
   CacheEfficiency,
-  MobileNetworkConstraints,
-  NetworkPerformanceMetrics
+  ConnectionQuality,
+  // MobileNetworkConstraints available for mobile-specific constraints
+  NetworkAnalysisResult,
+  NetworkOptimization,
+  NetworkOptimizerConfig,
+  NetworkPerformanceMetrics,
+  RequestMetrics,
 } from './NetworkPerformanceOptimizer.types';
+import { observabilityService } from './ObservabilityService';
 
 /**
  * Network Performance Optimizer Service
@@ -39,33 +41,45 @@ class NetworkPerformanceOptimizerService {
    */
   async optimizeRequest(
     url: string,
-    options: RequestInit & { priority?: 'critical' | 'high' | 'medium' | 'low' } = {}
+    options: RequestInit & {
+      priority?: 'critical' | 'high' | 'medium' | 'low';
+    } = {},
   ): Promise<Response> {
     const startTime = performance.now();
-    const requestId = this.generateRequestId();
+    const _requestId = this.generateRequestId();
 
     try {
       // Check cache first
       if (this.shouldUseCache(url, options.method || 'GET')) {
         const cached = this.getCachedResponse(url);
         if (cached) {
-          await this.trackRequest(url, options.method || 'GET', performance.now() - startTime, 0, 200, true);
+          await this.trackRequest(
+            url,
+            options.method || 'GET',
+            performance.now() - startTime,
+            0,
+            200,
+            true,
+          );
           return new Response(JSON.stringify(cached.data), {
             status: 200,
-            headers: { 'X-Cache': 'HIT' }
+            headers: { 'X-Cache': 'HIT' },
           });
         }
       }
 
       // Apply compression headers
       const optimizedOptions = this.applyOptimizations(options);
-      
+
       // Perform request with retry logic
       const response = await this.performRequestWithRetry(url, optimizedOptions);
-      
+
       // Cache successful responses
       if (response.ok && this.shouldCache(url, options.method || 'GET')) {
-        const data = await response.clone().json().catch(() => null);
+        const data = await response
+          .clone()
+          .json()
+          .catch(() => null);
         if (data) {
           this.cacheResponse(url, data, response.headers.get('content-length') || '0');
         }
@@ -73,8 +87,15 @@ class NetworkPerformanceOptimizerService {
 
       const responseTime = performance.now() - startTime;
       const size = parseInt(response.headers.get('content-length') || '0');
-      
-      await this.trackRequest(url, options.method || 'GET', responseTime, size, response.status, false);
+
+      await this.trackRequest(
+        url,
+        options.method || 'GET',
+        responseTime,
+        size,
+        response.status,
+        false,
+      );
 
       return response;
     } catch (error) {
@@ -95,8 +116,8 @@ class NetworkPerformanceOptimizerService {
       const metrics = this.calculateMetrics(recentRequests);
       const optimizations = this.generateOptimizationSuggestions(metrics, recentRequests);
       const cacheEfficiency = this.calculateCacheEfficiency();
-      
-      const connectionQuality = this.connectionQuality || await this.detectConnectionQuality();
+
+      const connectionQuality = this.connectionQuality || (await this.detectConnectionQuality());
 
       const analysisTime = performance.now() - startTime;
 
@@ -105,7 +126,7 @@ class NetworkPerformanceOptimizerService {
         averageLatency: metrics.averageLatency,
         throughput: metrics.throughput,
         errorRate: metrics.errorRate,
-        cacheHitRate: metrics.cacheHitRate
+        cacheHitRate: metrics.cacheHitRate,
       });
 
       console.log(`🌐 Network Analysis:
@@ -121,7 +142,7 @@ class NetworkPerformanceOptimizerService {
         requestMetrics: recentRequests,
         optimizations,
         cacheEfficiency,
-        connectionQuality
+        connectionQuality,
       };
     } catch (error) {
       await observabilityService.trackError('network_analysis_failed', error as Error);
@@ -143,14 +164,13 @@ class NetworkPerformanceOptimizerService {
    */
   async clearCache(): Promise<{ clearedItems: number; freedBytes: number }> {
     const clearedItems = this.cache.size;
-    const freedBytes = Array.from(this.cache.values())
-      .reduce((sum, item) => sum + item.size, 0);
+    const freedBytes = [...this.cache.values()].reduce((sum, item) => sum + item.size, 0);
 
     this.cache.clear();
 
     await observabilityService.trackMetric('network_cache_cleared', {
       clearedItems,
-      freedBytes
+      freedBytes,
     });
 
     return { clearedItems, freedBytes };
@@ -185,32 +205,32 @@ class NetworkPerformanceOptimizerService {
       strength: state.details?.strength || 1,
       bandwidth: this.estimateBandwidth(state.type, state.details),
       packetLoss: 0, // Would need native implementation
-      jitter: 0 // Would need native implementation
+      jitter: 0, // Would need native implementation
     };
   }
 
   private mapConnectionType(type: string): any {
-    const mapping: Record<string, any> = {
-      'wifi': 'wifi',
-      'cellular': 'cellular_4g', // Default assumption
-      'ethernet': 'ethernet',
-      'other': 'unknown',
-      'none': 'unknown'
-    };
-    return mapping[type] || 'unknown';
+    const mapping = new Map<string, string>([
+      ['wifi', 'wifi'],
+      ['cellular', 'cellular_4g'], // Default assumption
+      ['ethernet', 'ethernet'],
+      ['other', 'unknown'],
+      ['none', 'unknown'],
+    ]);
+    return mapping.get(type) ?? 'unknown';
   }
 
   private estimateBandwidth(type: string, _details: any): number {
     // Rough bandwidth estimates in bytes per second
-    const bandwidthMap: Record<string, number> = {
-      'wifi': 50 * 1024 * 1024, // 50 Mbps
-      'cellular': 20 * 1024 * 1024, // 20 Mbps
-      'ethernet': 100 * 1024 * 1024, // 100 Mbps
-      'other': 5 * 1024 * 1024, // 5 Mbps
-      'none': 0
-    };
+    const bandwidthMap = new Map<string, number>([
+      ['wifi', 50 * 1024 * 1024], // 50 Mbps
+      ['cellular', 20 * 1024 * 1024], // 20 Mbps
+      ['ethernet', 100 * 1024 * 1024], // 100 Mbps
+      ['other', 5 * 1024 * 1024], // 5 Mbps
+      ['none', 0],
+    ]);
 
-    return bandwidthMap[type] || 10 * 1024 * 1024;
+    return bandwidthMap.get(type) ?? 10 * 1024 * 1024;
   }
 
   private shouldUseCache(url: string, method: string): boolean {
@@ -236,11 +256,10 @@ class NetworkPerformanceOptimizerService {
 
   private cacheResponse(url: string, data: any, contentLength: string): void {
     const size = parseInt(contentLength) || JSON.stringify(data).length;
-    
+
     // Check cache size limit
-    const currentSize = Array.from(this.cache.values())
-      .reduce((sum, item) => sum + item.size, 0);
-    
+    const currentSize = [...this.cache.values()].reduce((sum, item) => sum + item.size, 0);
+
     if (currentSize + size > this.config.caching.maxSize) {
       this.evictOldestEntries(size);
     }
@@ -248,13 +267,12 @@ class NetworkPerformanceOptimizerService {
     this.cache.set(url, {
       data,
       timestamp: Date.now(),
-      size
+      size,
     });
   }
 
   private evictOldestEntries(neededSpace: number): void {
-    const entries = Array.from(this.cache.entries())
-      .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const entries = [...this.cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
 
     let freedSpace = 0;
     for (const [key, value] of entries) {
@@ -266,7 +284,7 @@ class NetworkPerformanceOptimizerService {
 
   private applyOptimizations(options: RequestInit): RequestInit {
     const headers = new Headers(options.headers);
-    
+
     // Add compression headers
     if (this.config.compression.enabled) {
       headers.set('Accept-Encoding', 'gzip, deflate');
@@ -282,26 +300,26 @@ class NetworkPerformanceOptimizerService {
 
   private async performRequestWithRetry(url: string, options: RequestInit): Promise<Response> {
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= this.config.retry.maxRetries; attempt++) {
       try {
         const response = await fetch(url, options);
-        
+
         if (response.ok || !this.shouldRetry(response.status)) {
           return response;
         }
-        
+
         throw new Error(`HTTP ${response.status}`);
       } catch (error) {
         lastError = error as Error;
-        
+
         if (attempt < this.config.retry.maxRetries) {
           const delay = this.calculateRetryDelay(attempt);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     }
-    
+
     throw lastError!;
   }
 
@@ -312,7 +330,7 @@ class NetworkPerformanceOptimizerService {
 
   private calculateRetryDelay(attempt: number): number {
     const { backoffStrategy, initialDelay, maxDelay } = this.config.retry;
-    
+
     let delay: number;
     switch (backoffStrategy) {
       case 'exponential':
@@ -324,7 +342,7 @@ class NetworkPerformanceOptimizerService {
       default:
         delay = initialDelay;
     }
-    
+
     return Math.min(delay, maxDelay);
   }
 
@@ -335,7 +353,7 @@ class NetworkPerformanceOptimizerService {
     size: number,
     statusCode: number,
     fromCache: boolean,
-    retries = 0
+    retries = 0,
   ): Promise<void> {
     const metrics: RequestMetrics = {
       url,
@@ -345,7 +363,7 @@ class NetworkPerformanceOptimizerService {
       statusCode,
       fromCache,
       retries,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.requestHistory.push(metrics);
@@ -359,7 +377,7 @@ class NetworkPerformanceOptimizerService {
   }
 
   private getRecentRequests(): RequestMetrics[] {
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
     return this.requestHistory.filter(req => req.timestamp > oneHourAgo);
   }
 
@@ -372,7 +390,7 @@ class NetworkPerformanceOptimizerService {
         throughput: 0,
         cacheHitRate: 0,
         dataUsage: 0,
-        requestCount: 0
+        requestCount: 0,
       };
     }
 
@@ -389,13 +407,13 @@ class NetworkPerformanceOptimizerService {
       throughput: totalTime > 0 ? totalBytes / (totalTime / 1000) : 0,
       cacheHitRate: cacheHits.length / requests.length,
       dataUsage: totalBytes,
-      requestCount: requests.length
+      requestCount: requests.length,
     };
   }
 
   private generateOptimizationSuggestions(
     metrics: NetworkPerformanceMetrics,
-    requests: RequestMetrics[]
+    requests: RequestMetrics[],
   ): NetworkOptimization[] {
     const suggestions: NetworkOptimization[] = [];
 
@@ -407,7 +425,7 @@ class NetworkPerformanceOptimizerService {
         expectedImprovement: 40,
         effort: 'medium',
         implementation: 'Increase cache TTL and implement smarter cache invalidation',
-        priority: 8
+        priority: 8,
       });
     }
 
@@ -420,7 +438,7 @@ class NetworkPerformanceOptimizerService {
         expectedImprovement: 60,
         effort: 'low',
         implementation: 'Enable gzip/brotli compression for responses > 1KB',
-        priority: 9
+        priority: 9,
       });
     }
 
@@ -432,7 +450,7 @@ class NetworkPerformanceOptimizerService {
         expectedImprovement: 30,
         effort: 'medium',
         implementation: 'Use HTTP/2 and connection keep-alive',
-        priority: 7
+        priority: 7,
       });
     }
 
@@ -442,14 +460,14 @@ class NetworkPerformanceOptimizerService {
   private calculateCacheEfficiency(): CacheEfficiency {
     const recentRequests = this.getRecentRequests();
     const cacheHits = recentRequests.filter(r => r.fromCache);
-    const totalSize = Array.from(this.cache.values()).reduce((sum, item) => sum + item.size, 0);
+    const totalSize = [...this.cache.values()].reduce((sum, item) => sum + item.size, 0);
 
     return {
       hitRate: recentRequests.length > 0 ? cacheHits.length / recentRequests.length : 0,
       missCount: recentRequests.length - cacheHits.length,
       totalRequests: recentRequests.length,
       cacheSize: totalSize,
-      evictions: 0 // Would need to track this
+      evictions: 0, // Would need to track this
     };
   }
 
@@ -464,7 +482,7 @@ class NetworkPerformanceOptimizerService {
         strength: 0.5,
         bandwidth: 10 * 1024 * 1024,
         packetLoss: 0,
-        jitter: 0
+        jitter: 0,
       };
     }
   }
@@ -477,8 +495,9 @@ class NetworkPerformanceOptimizerService {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
+    const unit = sizes.at(i) ?? 'B';
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${unit}`;
   }
 
   private getDefaultConfig(): NetworkOptimizerConfig {
@@ -489,7 +508,7 @@ class NetworkPerformanceOptimizerService {
         ttl: 5 * 60 * 1000, // 5 minutes
         strategy: 'lru',
         compression: true,
-        persistToDisk: !__DEV__
+        persistToDisk: !__DEV__,
       },
       retry: {
         enabled: true,
@@ -498,20 +517,24 @@ class NetworkPerformanceOptimizerService {
         initialDelay: 1000,
         maxDelay: 10000,
         retryConditions: [
-          { statusCodes: [408, 429, 500, 502, 503, 504], errorTypes: ['network'], networkErrors: true }
-        ]
+          {
+            statusCodes: [408, 429, 500, 502, 503, 504],
+            errorTypes: ['network'],
+            networkErrors: true,
+          },
+        ],
       },
       compression: {
         enabled: true,
         algorithm: 'gzip',
         level: 6,
-        minSize: 1024
+        minSize: 1024,
       },
       batching: {
         enabled: false, // Complex to implement safely
         maxBatchSize: 10,
         maxWaitTime: 100,
-        batchableEndpoints: []
+        batchableEndpoints: [],
       },
       monitoring: {
         trackPerformance: true,
@@ -520,16 +543,16 @@ class NetworkPerformanceOptimizerService {
           maxLatency: 3000,
           minThroughput: 1024 * 1024,
           maxErrorRate: 0.05,
-          minCacheHitRate: 0.3
+          minCacheHitRate: 0.3,
         },
-        retentionPeriod: 24 * 60 * 60 * 1000 // 24 hours
+        retentionPeriod: 24 * 60 * 60 * 1000, // 24 hours
       },
       optimization: {
         adaptiveCaching: true,
         dynamicRetry: true,
         intelligentBatching: false,
-        networkAwareRequests: true
-      }
+        networkAwareRequests: true,
+      },
     };
   }
 }

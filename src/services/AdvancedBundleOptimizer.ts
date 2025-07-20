@@ -4,14 +4,14 @@
  * File size target: 100-200 lines max
  */
 
-import { observabilityService } from './ObservabilityService';
 import { BundleOptimizerCore } from './AdvancedBundleOptimizer.core';
 import type {
+  PerformanceTargets as _PerformanceTargets,
   BundleAnalysisResult,
   BundleOptimizerConfig,
   OptimizationSuggestion,
-  PerformanceTargets as _PerformanceTargets
 } from './AdvancedBundleOptimizer.types';
+import { observabilityService } from './ObservabilityService';
 
 /**
  * Advanced Bundle Optimizer Service
@@ -41,22 +41,22 @@ class AdvancedBundleOptimizerService {
     try {
       // In a real implementation, this would get the actual bundle path
       const bundlePath = this.getCurrentBundlePath();
-      
+
       await observabilityService.trackMetric('bundle_analysis_started', {
         timestamp: Date.now(),
-        bundlePath
+        bundlePath,
       });
 
       const result = await this.core.analyzeBundleStructure(bundlePath);
       this.lastAnalysis = result;
 
       const analysisTime = performance.now() - startTime;
-      
+
       await observabilityService.trackMetric('bundle_analysis_completed', {
         duration: analysisTime,
         totalSize: result.totalSize,
         moduleCount: result.modules.length,
-        suggestionCount: result.optimizationSuggestions.length
+        suggestionCount: result.optimizationSuggestions.length,
       });
 
       console.log(`📦 Bundle Analysis Complete:
@@ -83,13 +83,11 @@ class AdvancedBundleOptimizerService {
       throw new Error('No bundle analysis available. Run analyzeAppBundle() first.');
     }
 
-    return this.lastAnalysis.optimizationSuggestions
-      .slice(0, limit)
-      .map(suggestion => ({
-        ...suggestion,
-        expectedSavings: suggestion.expectedSavings,
-        priority: this.calculatePriority(suggestion)
-      }));
+    return this.lastAnalysis.optimizationSuggestions.slice(0, limit).map(suggestion => ({
+      ...suggestion,
+      expectedSavings: suggestion.expectedSavings,
+      priority: this.calculatePriority(suggestion),
+    }));
   }
 
   /**
@@ -109,23 +107,31 @@ class AdvancedBundleOptimizerService {
     const failures: string[] = [];
 
     if (this.lastAnalysis.totalSize > targets.maxBundleSize) {
-      failures.push(`Bundle size ${this.formatBytes(this.lastAnalysis.totalSize)} exceeds limit ${this.formatBytes(targets.maxBundleSize)}`);
+      failures.push(
+        `Bundle size ${this.formatBytes(this.lastAnalysis.totalSize)} exceeds limit ${this.formatBytes(targets.maxBundleSize)}`,
+      );
     }
 
     if (impact.startupTime > targets.maxStartupTime) {
-      failures.push(`Startup time ${impact.startupTime}ms exceeds limit ${targets.maxStartupTime}ms`);
+      failures.push(
+        `Startup time ${impact.startupTime}ms exceeds limit ${targets.maxStartupTime}ms`,
+      );
     }
 
     if (impact.memoryUsage > targets.maxMemoryUsage) {
-      failures.push(`Memory usage ${impact.memoryUsage}MB exceeds limit ${targets.maxMemoryUsage}MB`);
+      failures.push(
+        `Memory usage ${impact.memoryUsage}MB exceeds limit ${targets.maxMemoryUsage}MB`,
+      );
     }
 
     if (impact.cacheEfficiency < targets.minCacheHitRate) {
-      failures.push(`Cache efficiency ${(impact.cacheEfficiency * 100).toFixed(1)}% below minimum ${(targets.minCacheHitRate * 100).toFixed(1)}%`);
+      failures.push(
+        `Cache efficiency ${(impact.cacheEfficiency * 100).toFixed(1)}% below minimum ${(targets.minCacheHitRate * 100).toFixed(1)}%`,
+      );
     }
 
     const passed = failures.length === 0;
-    const score = Math.max(0, 100 - (failures.length * 25)); // 25 points per failure
+    const score = Math.max(0, 100 - failures.length * 25); // 25 points per failure
 
     return { passed, failures, score };
   }
@@ -147,7 +153,7 @@ class AdvancedBundleOptimizerService {
       thirdParty: 0,
       firstParty: 0,
       critical: 0,
-      lazy: 0
+      lazy: 0,
     };
 
     this.lastAnalysis.modules.forEach(module => {
@@ -179,16 +185,18 @@ class AdvancedBundleOptimizerService {
       throw new Error('No bundle analysis available. Run analyzeAppBundle() first.');
     }
 
-    const totalSavings = this.lastAnalysis.optimizationSuggestions
-      .reduce((sum, suggestion) => sum + suggestion.expectedSavings, 0);
+    const totalSavings = this.lastAnalysis.optimizationSuggestions.reduce(
+      (sum, suggestion) => sum + suggestion.expectedSavings,
+      0,
+    );
 
-    const startupImprovement = Math.round(totalSavings / 1000 * 2); // ~2ms per KB saved
-    const memoryReduction = Math.round(totalSavings / (1024 * 1024) * 1.5); // ~1.5x in memory
+    const startupImprovement = Math.round((totalSavings / 1000) * 2); // ~2ms per KB saved
+    const memoryReduction = Math.round((totalSavings / (1024 * 1024)) * 1.5); // ~1.5x in memory
 
     return {
       totalSavings,
       startupImprovement,
-      memoryReduction
+      memoryReduction,
     };
   }
 
@@ -201,35 +209,35 @@ class AdvancedBundleOptimizerService {
         includeDev: __DEV__,
         analyzeSource: true,
         trackDuplicates: true,
-        minModuleSize: 1000 // 1KB minimum
+        minModuleSize: 1000, // 1KB minimum
       },
       treeshaking: {
         aggressiveMode: !__DEV__,
         preserveComments: __DEV__,
         removeUnusedImports: true,
-        sideEffects: ['*.css', '*.scss']
+        sideEffects: ['*.css', '*.scss'],
       },
       splitting: {
         strategy: 'automatic',
         chunkSize: {
-          min: 20000,   // 20KB
-          max: 200000,  // 200KB
-          target: 100000 // 100KB
+          min: 20000, // 20KB
+          max: 200000, // 200KB
+          target: 100000, // 100KB
         },
-        splitPoints: []
+        splitPoints: [],
       },
       compression: {
         gzip: true,
         brotli: false, // Not widely supported on mobile
         level: 6,
-        strategy: 'balanced'
+        strategy: 'balanced',
       },
       performance: {
         maxBundleSize: 150 * 1024 * 1024, // 150MB
-        maxStartupTime: 3000,              // 3 seconds
-        maxMemoryUsage: 200,               // 200MB
-        minCacheHitRate: 0.8               // 80%
-      }
+        maxStartupTime: 3000, // 3 seconds
+        maxMemoryUsage: 200, // 200MB
+        minCacheHitRate: 0.8, // 80%
+      },
     };
   }
 

@@ -1,18 +1,15 @@
 import { Platform } from 'react-native';
 
 // Example: Background fetch task registration (requires additional setup for real use)
-export function registerBackgroundTask(
-  _taskName: string,
-  _task: () => Promise<void>,
-) {
+export function registerBackgroundTask(_taskName: string, _task: () => Promise<void>) {
+  // Background task registration (pseudo-code)
+  // Use libraries like react-native-background-fetch for real implementation
   if (Platform.OS === 'android') {
-    // Android-specific background task registration (pseudo-code)
-    // Use libraries like react-native-background-fetch for real implementation
+    // Android-specific background task registration
     // BackgroundFetch.registerHeadlessTask(taskName, task);
   } else if (Platform.OS === 'ios') {
-    // iOS-specific background task registration (pseudo-code)
-    // Use libraries like react-native-background-fetch or react-native-background-task
-    // BackgroundFetch.configure({ minimumFetchInterval: 15 }, task);
+    // iOS-specific background task configuration  
+    // BackgroundFetch.configure({ minimumFetchInterval: 15000 }, task);
   }
 }
 

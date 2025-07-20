@@ -1,8 +1,10 @@
-import PerformanceMonitoringService from './PerformanceMonitoringService';
+import { Share } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { Share } from 'react-native';
+
+import PerformanceMonitoringService from './PerformanceMonitoringService';
 
 // Types for Social Features
 export interface UserProfile {
@@ -157,12 +159,7 @@ export interface Leaderboard {
 export interface Activity {
   id: string;
   uid: string;
-  type:
-    | 'carbon_saved'
-    | 'challenge_completed'
-    | 'badge_earned'
-    | 'level_up'
-    | 'streak_milestone';
+  type: 'carbon_saved' | 'challenge_completed' | 'badge_earned' | 'level_up' | 'streak_milestone';
   title: string;
   description: string;
   data: {
@@ -307,10 +304,7 @@ class SocialFeaturesService {
 
       const updatedProfile = { ...this.currentUser, ...updates };
 
-      await firestore()
-        .collection('users')
-        .doc(this.currentUser.uid)
-        .update(updates);
+      await firestore().collection('users').doc(this.currentUser.uid).update(updates);
 
       this.currentUser = updatedProfile;
       await this.saveCachedData();
@@ -325,10 +319,7 @@ class SocialFeaturesService {
   }
 
   // Friend Management
-  public async sendFriendRequest(
-    toUid: string,
-    message?: string,
-  ): Promise<void> {
+  public async sendFriendRequest(toUid: string, message?: string): Promise<void> {
     try {
       if (!this.currentUser) throw new Error('No current user');
 
@@ -361,9 +352,7 @@ class SocialFeaturesService {
       const batch = firestore().batch();
 
       // Update friend request status
-      const requestRef = firestore()
-        .collection('friendRequests')
-        .doc(requestId);
+      const requestRef = firestore().collection('friendRequests').doc(requestId);
       batch.update(requestRef, { status: response });
 
       if (response === 'accepted') {
@@ -479,10 +468,7 @@ class SocialFeaturesService {
 
   // Activity Feed
   public async createActivity(
-    activity: Omit<
-      Activity,
-      'id' | 'uid' | 'timestamp' | 'likes' | 'comments' | 'shares'
-    >,
+    activity: Omit<Activity, 'id' | 'uid' | 'timestamp' | 'likes' | 'comments' | 'shares'>,
   ): Promise<void> {
     try {
       if (!this.currentUser) throw new Error('No current user');
@@ -567,10 +553,7 @@ class SocialFeaturesService {
     }
   }
 
-  public async commentOnActivity(
-    activityId: string,
-    text: string,
-  ): Promise<void> {
+  public async commentOnActivity(activityId: string, text: string): Promise<void> {
     try {
       if (!this.currentUser) throw new Error('No current user');
 
@@ -619,10 +602,7 @@ class SocialFeaturesService {
         friendUids.push(this.currentUser.uid);
 
         // For friends leaderboard, we need to get user stats and calculate
-        const entries = await this.calculateFriendsLeaderboard(
-          period,
-          category,
-        );
+        const entries = await this.calculateFriendsLeaderboard(period, category);
 
         await this.performanceService.stopTrace('load_leaderboard', {
           type,
@@ -638,10 +618,8 @@ class SocialFeaturesService {
           entries,
           lastUpdated: new Date().toISOString(),
           totalParticipants: entries.length,
-          userRank:
-            entries.findIndex(entry => entry.uid === this.currentUser?.uid) + 1,
-          userScore: entries.find(entry => entry.uid === this.currentUser?.uid)
-            ?.score,
+          userRank: entries.findIndex(entry => entry.uid === this.currentUser?.uid) + 1,
+          userScore: entries.find(entry => entry.uid === this.currentUser?.uid)?.score,
         };
       }
 
@@ -833,9 +811,7 @@ class SocialFeaturesService {
           .collection('activities')
           .doc(activity.id)
           .update({
-            'shares.users': firestore.FieldValue.arrayUnion(
-              this.currentUser.uid,
-            ),
+            'shares.users': firestore.FieldValue.arrayUnion(this.currentUser.uid),
             'shares.count': firestore.FieldValue.increment(1),
           });
       }
@@ -861,17 +837,14 @@ class SocialFeaturesService {
   }
 
   // Search and Discovery
-  public async searchUsers(
-    query: string,
-    limit: number = 20,
-  ): Promise<UserProfile[]> {
+  public async searchUsers(query: string, limit: number = 20): Promise<UserProfile[]> {
     try {
       // Note: Firestore doesn't support full-text search natively
       // In a production app, you'd use Algolia or similar service
       const usersSnapshot = await firestore()
         .collection('users')
         .where('displayName', '>=', query)
-        .where('displayName', '<=', query + '\uf8ff')
+        .where('displayName', '<=', `${query}\uf8ff`)
         .where('privacy.profileVisible', '==', true)
         .limit(limit)
         .get();
@@ -883,15 +856,12 @@ class SocialFeaturesService {
     }
   }
 
-  public async searchChallenges(
-    query: string,
-    limit: number = 20,
-  ): Promise<Challenge[]> {
+  public async searchChallenges(query: string, limit: number = 20): Promise<Challenge[]> {
     try {
       const challengesSnapshot = await firestore()
         .collection('challenges')
         .where('title', '>=', query)
-        .where('title', '<=', query + '\uf8ff')
+        .where('title', '<=', `${query}\uf8ff`)
         .where('isPublic', '==', true)
         .limit(limit)
         .get();
@@ -911,11 +881,7 @@ class SocialFeaturesService {
     try {
       if (!this.currentUser) return;
 
-      await Promise.all([
-        this.loadFriends(),
-        this.loadActivities(),
-        this.loadChallenges(),
-      ]);
+      await Promise.all([this.loadFriends(), this.loadActivities(), this.loadChallenges()]);
     } catch (error) {
       console.error('Error syncing user data:', error);
     }
@@ -924,13 +890,12 @@ class SocialFeaturesService {
   // Cache Management
   private async loadCachedData(): Promise<void> {
     try {
-      const [userData, friendsData, activitiesData, challengesData] =
-        await Promise.all([
-          AsyncStorage.getItem('social_current_user'),
-          AsyncStorage.getItem('social_friends'),
-          AsyncStorage.getItem('social_activities'),
-          AsyncStorage.getItem('social_challenges'),
-        ]);
+      const [userData, friendsData, activitiesData, challengesData] = await Promise.all([
+        AsyncStorage.getItem('social_current_user'),
+        AsyncStorage.getItem('social_friends'),
+        AsyncStorage.getItem('social_activities'),
+        AsyncStorage.getItem('social_challenges'),
+      ]);
 
       if (userData) {
         this.currentUser = JSON.parse(userData);
@@ -952,19 +917,10 @@ class SocialFeaturesService {
   private async saveCachedData(): Promise<void> {
     try {
       await Promise.all([
-        AsyncStorage.setItem(
-          'social_current_user',
-          JSON.stringify(this.currentUser),
-        ),
+        AsyncStorage.setItem('social_current_user', JSON.stringify(this.currentUser)),
         AsyncStorage.setItem('social_friends', JSON.stringify(this.friends)),
-        AsyncStorage.setItem(
-          'social_activities',
-          JSON.stringify(this.activities),
-        ),
-        AsyncStorage.setItem(
-          'social_challenges',
-          JSON.stringify(this.challenges),
-        ),
+        AsyncStorage.setItem('social_activities', JSON.stringify(this.activities)),
+        AsyncStorage.setItem('social_challenges', JSON.stringify(this.challenges)),
       ]);
     } catch (error) {
       console.error('Error saving cached social data:', error);
@@ -1020,14 +976,10 @@ export const SocialUtils = {
     const now = new Date();
 
     if (now < start) {
-      const daysUntilStart = Math.ceil(
-        (start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      );
+      const daysUntilStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       return `Starts in ${daysUntilStart} days`;
     } else if (now <= end) {
-      const daysRemaining = Math.ceil(
-        (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      );
+      const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       return `${daysRemaining} days remaining`;
     } else {
       return 'Completed';

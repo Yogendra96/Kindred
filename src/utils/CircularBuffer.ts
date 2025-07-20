@@ -49,7 +49,13 @@ export class CircularBuffer<T> {
     let current = this._head;
 
     for (let i = 0; i < this._size; i++) {
-      result.push(this._data[current]);
+      const safeIndex = current % this._capacity;
+      if (safeIndex >= 0 && safeIndex < this._data.length) {
+        const item = this._data[safeIndex];
+        if (item !== undefined) {
+          result.push(item);
+        }
+      }
       current = (current + 1) % this._capacity;
     }
 
@@ -71,7 +77,13 @@ export class CircularBuffer<T> {
     let start = (this._head + this._size - actualCount) % this._capacity;
 
     for (let i = 0; i < actualCount; i++) {
-      result.push(this._data[start]);
+      const safeIndex = start % this._capacity;
+      if (safeIndex >= 0 && safeIndex < this._data.length) {
+        const item = this._data[safeIndex];
+        if (item !== undefined) {
+          result.push(item);
+        }
+      }
       start = (start + 1) % this._capacity;
     }
 
@@ -82,8 +94,9 @@ export class CircularBuffer<T> {
    * Get items within a time range (assuming T has timestamp property)
    */
   getInTimeRange(startTime: number, endTime: number): T[] {
-    return this.getAll().filter((item: T & { timestamp?: number }) => {
-      const timestamp = item.timestamp || 0;
+    return this.getAll().filter(item => {
+      const timestampItem = item as T & { timestamp?: number };
+      const timestamp = timestampItem.timestamp ?? 0;
       return timestamp >= startTime && timestamp <= endTime;
     });
   }
@@ -98,7 +111,10 @@ export class CircularBuffer<T> {
 
     // The most recent item is at (tail - 1)
     const latestIndex = this._tail === 0 ? this._capacity - 1 : this._tail - 1;
-    return this._data[latestIndex];
+    if (latestIndex >= 0 && latestIndex < this._data.length) {
+      return this._data[latestIndex];
+    }
+    return undefined;
   }
 
   /**
@@ -181,13 +197,13 @@ export class CircularBuffer<T> {
     const values = this.getAll().map(valueExtractor);
     const sorted = values.sort((a, b) => a - b);
 
-    const min = sorted[0];
-    const max = sorted[sorted.length - 1];
+    const min = sorted[0] ?? 0;
+    const max = sorted[sorted.length - 1] ?? 0;
     const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
     const median =
       sorted.length % 2 === 0
-        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-        : sorted[Math.floor(sorted.length / 2)];
+        ? ((sorted[sorted.length / 2 - 1] ?? 0) + (sorted[sorted.length / 2] ?? 0)) / 2
+        : (sorted[Math.floor(sorted.length / 2)] ?? 0);
 
     return { min, max, avg, median, count: values.length };
   }
@@ -195,10 +211,7 @@ export class CircularBuffer<T> {
   /**
    * Calculate percentile (0-100)
    */
-  getPercentile(
-    percentile: number,
-    valueExtractor: (item: T) => number,
-  ): number | null {
+  getPercentile(percentile: number, valueExtractor: (item: T) => number): number | null {
     if (this._size === 0 || percentile < 0 || percentile > 100) {
       return null;
     }
@@ -208,7 +221,7 @@ export class CircularBuffer<T> {
       .sort((a, b) => a - b);
     const index = Math.ceil((percentile / 100) * values.length) - 1;
 
-    return values[Math.max(0, index)];
+    return values[Math.max(0, index)] ?? null;
   }
 
   /**

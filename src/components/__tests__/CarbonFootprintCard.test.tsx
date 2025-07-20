@@ -1,6 +1,8 @@
-import CarbonFootprintCard from '../CarbonFootprintCard';
-import { render, screen } from '@testing-library/react-native';
 import React from 'react';
+
+import { render, screen } from '@testing-library/react-native';
+
+import CarbonFootprintCard from '../CarbonFootprintCard';
 
 describe('CarbonFootprintCard', () => {
   const mockProps = {

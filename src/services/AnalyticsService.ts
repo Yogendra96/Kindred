@@ -1,7 +1,9 @@
-import { loggingService } from './LoggingService';
-import analytics from '@react-native-firebase/analytics';
 import { Platform } from 'react-native';
+
+import analytics from '@react-native-firebase/analytics';
 import DeviceInfo from 'react-native-device-info';
+
+import { loggingService } from './LoggingService';
 
 export type ScreenName =
   | 'Login'
@@ -69,10 +71,7 @@ class AnalyticsService {
     }
   }
 
-  async logScreen(
-    screenName: ScreenName,
-    params?: Record<string, any>,
-  ): Promise<void> {
+  async logScreen(screenName: ScreenName, params?: Record<string, any>): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -86,10 +85,7 @@ class AnalyticsService {
     }
   }
 
-  async logEvent(
-    eventName: string,
-    params?: Record<string, any>,
-  ): Promise<void> {
+  async logEvent(eventName: string, params?: Record<string, any>): Promise<void> {
     if (!this.isEnabled) return;
 
     try {
@@ -104,10 +100,7 @@ class AnalyticsService {
   }
 
   // Carbon footprint tracking events
-  async logCarbonFootprintAdded(
-    value: number,
-    category: string,
-  ): Promise<void> {
+  async logCarbonFootprintAdded(value: number, category: string): Promise<void> {
     await this.logEvent('carbon_footprint_added', {
       value,
       category,
@@ -115,11 +108,7 @@ class AnalyticsService {
     });
   }
 
-  async logActivityCompleted(
-    type: string,
-    duration: number,
-    carbonSaved: number,
-  ): Promise<void> {
+  async logActivityCompleted(type: string, duration: number, carbonSaved: number): Promise<void> {
     await this.logEvent('activity_completed', {
       type,
       duration,
@@ -148,11 +137,7 @@ class AnalyticsService {
   }
 
   // Error tracking
-  async logError(
-    errorCode: string,
-    message: string,
-    fatal: boolean = false,
-  ): Promise<void> {
+  async logError(errorCode: string, message: string, fatal: boolean = false): Promise<void> {
     await this.logEvent('app_error', {
       error_code: errorCode,
       error_message: message,

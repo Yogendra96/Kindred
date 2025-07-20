@@ -19,12 +19,7 @@ interface UserSession {
 
 interface AnalyticsEvent {
   name: string;
-  category:
-    | 'user_action'
-    | 'performance'
-    | 'error'
-    | 'navigation'
-    | 'feature_usage';
+  category: 'user_action' | 'performance' | 'error' | 'navigation' | 'feature_usage';
   properties?: Record<string, any>;
   timestamp: number;
 }
@@ -71,10 +66,7 @@ const analyticsSlice = createSlice({
   name: 'analytics',
   initialState,
   reducers: {
-    startSession: (
-      state,
-      action: PayloadAction<{ sessionId: string; timestamp: number }>,
-    ) => {
+    startSession: (state, action: PayloadAction<{ sessionId: string; timestamp: number }>) => {
       state.currentSession = {
         sessionId: action.payload.sessionId,
         startTime: action.payload.timestamp,
@@ -147,10 +139,7 @@ const analyticsSlice = createSlice({
         state.crashReports = state.crashReports.slice(0, 50);
       }
     },
-    updateSettings: (
-      state,
-      action: PayloadAction<Partial<AnalyticsState['settings']>>,
-    ) => {
+    updateSettings: (state, action: PayloadAction<Partial<AnalyticsState['settings']>>) => {
       state.settings = { ...state.settings, ...action.payload };
     },
     setOnlineStatus: (state, action: PayloadAction<boolean>) => {

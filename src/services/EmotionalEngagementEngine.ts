@@ -4,7 +4,8 @@
  * Features: Emotional AI, behavioral psychology, flow state optimization, social dynamics
  */
 
-import AsyncStorage as _AsyncStorage from '@react-native-async-storage/async-storage';
+// AsyncStorage is imported but not used - keeping for future implementation
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import { observabilityService } from './ObservabilityService';
 
 // Core Emotional Engagement Types
@@ -148,7 +149,7 @@ interface EmotionDefinition {
   readonly physiological_markers: PhysiologicalMarker[];
 }
 
-type EmotionCategory = 
+type EmotionCategory =
   | 'primary'
   | 'secondary'
   | 'complex'
@@ -777,7 +778,12 @@ interface CarbonEmotionIntegration {
 }
 
 interface CarbonEmotionMapping {
-  readonly carbon_state: 'low_footprint' | 'improving' | 'high_footprint' | 'worsening' | 'goal_achieved';
+  readonly carbon_state:
+    | 'low_footprint'
+    | 'improving'
+    | 'high_footprint'
+    | 'worsening'
+    | 'goal_achieved';
   readonly target_emotions: string[];
   readonly response_intensity: number;
 }
@@ -1263,7 +1269,12 @@ interface CarbonEngagementProfile {
 
 interface MotivationModel {
   readonly model_id: string;
-  readonly framework: 'self_determination' | 'flow' | 'behaviorist' | 'cognitive' | 'social_cognitive';
+  readonly framework:
+    | 'self_determination'
+    | 'flow'
+    | 'behaviorist'
+    | 'cognitive'
+    | 'social_cognitive';
   readonly components: MotivationComponent[];
   readonly carbon_application: CarbonMotivationApplication;
 }
@@ -1473,25 +1484,24 @@ export class EmotionalEngagementEngineService {
 
     try {
       console.log('💫 Initializing Emotional Engagement Engine...');
-      
+
       // Initialize emotion recognition systems
       await this.initializeEmotionRecognition();
-      
+
       // Setup gamification engine
       await this.initializeGamificationEngine();
-      
+
       // Initialize motivational psychology systems
       await this.initializeMotivationalPsychology();
-      
+
       // Setup flow state optimization
       await this.initializeFlowStateOptimization();
-      
+
       // Initialize social dynamics
       await this.initializeSocialDynamics();
-      
+
       this.isInitialized = true;
       console.log('✅ Emotional Engagement Engine initialized successfully');
-      
     } catch (error) {
       console.error('❌ Failed to initialize Emotional Engagement Engine:', error);
       throw error;
@@ -1500,23 +1510,23 @@ export class EmotionalEngagementEngineService {
 
   async detectUserEmotion(
     userId: string,
-    inputData: EmotionInputData
+    inputData: EmotionInputData,
   ): Promise<EmotionDetectionResult> {
     console.log(`👀 Detecting emotion for user: ${userId}`);
-    
+
     try {
       // Process input data through recognition pipeline
       const recognitionResults = await this.processEmotionRecognition(inputData);
-      
+
       // Apply contextual analysis
       const contextualResults = await this.applyContextualAnalysis(recognitionResults, userId);
-      
+
       // Update user emotional profile
       await this.updateUserEmotionalProfile(userId, contextualResults);
-      
+
       // Generate emotional response strategy
       const responseStrategy = await this.generateEmotionalResponse(contextualResults, userId);
-      
+
       const result: EmotionDetectionResult = {
         userId,
         detectedEmotions: contextualResults.emotions,
@@ -1525,7 +1535,7 @@ export class EmotionalEngagementEngineService {
         responseStrategy,
         timestamp: Date.now(),
       };
-      
+
       // Track emotion detection
       observabilityService.trackBusinessEvent({
         eventName: 'emotion_detected',
@@ -1536,9 +1546,8 @@ export class EmotionalEngagementEngineService {
           responseStrategy: responseStrategy.strategy_id,
         },
       });
-      
+
       return result;
-      
     } catch (error) {
       console.error('Emotion detection failed:', error);
       throw error;
@@ -1548,26 +1557,30 @@ export class EmotionalEngagementEngineService {
   async createGamifiedExperience(
     userId: string,
     carbonActivity: CarbonActivityData,
-    userGoals: UserGoal[]
+    userGoals: UserGoal[],
   ): Promise<GamifiedExperience> {
     console.log(`🎮 Creating gamified experience for user: ${userId}`);
-    
+
     try {
       // Analyze user's gaming preferences
       const gamingProfile = await this.analyzeGamingProfile(userId);
-      
+
       // Design appropriate game mechanics
-      const gameMechanics = await this.designGameMechanics(carbonActivity, userGoals, gamingProfile);
-      
+      const gameMechanics = await this.designGameMechanics(
+        carbonActivity,
+        userGoals,
+        gamingProfile,
+      );
+
       // Create progression system
       const progressionSystem = await this.createProgressionSystem(userGoals, gamingProfile);
-      
+
       // Generate achievements and rewards
       const achievementSystem = await this.generateAchievementSystem(carbonActivity, userGoals);
-      
+
       // Create social elements
       const socialElements = await this.createSocialElements(userId, gamingProfile);
-      
+
       const experience: GamifiedExperience = {
         experienceId: `gamified_${userId}_${Date.now()}`,
         userId,
@@ -1579,7 +1592,7 @@ export class EmotionalEngagementEngineService {
         emotionalHooks: await this.createEmotionalHooks(userId, carbonActivity),
         adaptationEngine: await this.setupAdaptationEngine(userId),
       };
-      
+
       // Track gamified experience creation
       observabilityService.trackBusinessEvent({
         eventName: 'gamified_experience_created',
@@ -1591,9 +1604,8 @@ export class EmotionalEngagementEngineService {
           socialFeaturesEnabled: socialElements.enabled,
         },
       });
-      
+
       return experience;
-      
     } catch (error) {
       console.error('Gamified experience creation failed:', error);
       throw error;
@@ -1603,23 +1615,31 @@ export class EmotionalEngagementEngineService {
   async optimizeFlowState(
     userId: string,
     currentActivity: ActivityContext,
-    userCapabilities: UserCapabilities
+    userCapabilities: UserCapabilities,
   ): Promise<FlowStateOptimization> {
     console.log(`🌊 Optimizing flow state for user: ${userId}`);
-    
+
     try {
       // Assess current flow state
       const flowAssessment = await this.assessCurrentFlowState(userId, currentActivity);
-      
+
       // Analyze challenge-skill balance
-      const challengeSkillBalance = await this.analyzeChallengeSkillBalance(currentActivity, userCapabilities);
-      
+      const challengeSkillBalance = await this.analyzeChallengeSkillBalance(
+        currentActivity,
+        userCapabilities,
+      );
+
       // Generate optimization recommendations
-      const optimizationRecommendations = await this.generateFlowOptimizations(flowAssessment, challengeSkillBalance);
-      
+      const optimizationRecommendations = await this.generateFlowOptimizations(
+        flowAssessment,
+        challengeSkillBalance,
+      );
+
       // Create adaptive interface adjustments
-      const interfaceAdjustments = await this.createFlowInterfaceAdjustments(optimizationRecommendations);
-      
+      const interfaceAdjustments = await this.createFlowInterfaceAdjustments(
+        optimizationRecommendations,
+      );
+
       const optimization: FlowStateOptimization = {
         optimizationId: `flow_${userId}_${Date.now()}`,
         userId,
@@ -1629,12 +1649,11 @@ export class EmotionalEngagementEngineService {
         interfaceAdjustments,
         monitoringStrategy: await this.createFlowMonitoringStrategy(userId),
       };
-      
+
       // Apply optimizations
       await this.applyFlowOptimizations(optimization);
-      
+
       return optimization;
-      
     } catch (error) {
       console.error('Flow state optimization failed:', error);
       throw error;
@@ -1644,7 +1663,7 @@ export class EmotionalEngagementEngineService {
   // Private implementation methods
   private async initializeEmotionRecognition(): Promise<void> {
     console.log('👀 Initializing emotion recognition systems...');
-    
+
     // Load emotion recognition methods
     const recognitionMethods = await this.loadEmotionRecognitionMethods();
     for (const method of recognitionMethods) {
@@ -1692,13 +1711,17 @@ export class EmotionalEngagementEngineService {
       accuracy: {
         overall_accuracy: 0.87,
         per_emotion: [
-          { emotion: 'joy', precision: 0.92, recall: 0.89, f1_score: 0.90 },
+          { emotion: 'joy', precision: 0.92, recall: 0.89, f1_score: 0.9 },
           { emotion: 'sadness', precision: 0.85, recall: 0.88, f1_score: 0.86 },
           { emotion: 'anger', precision: 0.89, recall: 0.84, f1_score: 0.86 },
         ],
         confidence_calibration: {
           calibration_curve: [
-            { predicted_confidence: 0.9, actual_accuracy: 0.88, sample_count: 1000 },
+            {
+              predicted_confidence: 0.9,
+              actual_accuracy: 0.88,
+              sample_count: 1000,
+            },
           ],
           reliability: 0.92,
           uncertainty_quantification: true,

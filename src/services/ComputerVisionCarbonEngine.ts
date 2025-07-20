@@ -142,7 +142,15 @@ export interface AutomaticMobilityTracking {
 
 interface TransportationMode {
   readonly modeId: string;
-  readonly type: 'walking' | 'cycling' | 'car' | 'bus' | 'train' | 'plane' | 'motorcycle' | 'scooter';
+  readonly type:
+    | 'walking'
+    | 'cycling'
+    | 'car'
+    | 'bus'
+    | 'train'
+    | 'plane'
+    | 'motorcycle'
+    | 'scooter';
   readonly confidence: number;
   readonly duration: number; // minutes
   readonly distance: number; // km
@@ -623,7 +631,14 @@ interface ActivityRecognition {
 
 interface RecognizedActivity {
   readonly activityId: string;
-  readonly type: 'sitting' | 'standing' | 'walking' | 'running' | 'cycling' | 'exercising' | 'sleeping';
+  readonly type:
+    | 'sitting'
+    | 'standing'
+    | 'walking'
+    | 'running'
+    | 'cycling'
+    | 'exercising'
+    | 'sleeping';
   readonly duration: number;
   readonly intensity: 'low' | 'medium' | 'high';
   readonly location: string;
@@ -739,19 +754,18 @@ export class ComputerVisionCarbonEngine {
 
     try {
       console.log('📷 Initializing Computer Vision Carbon Engine...');
-      
+
       // Initialize product database
       await this.initializeProductDatabase();
-      
+
       // Initialize ML models
       await this.initializeMLModels();
-      
+
       // Setup camera permissions
       await this.setupCameraPermissions();
-      
+
       this.isInitialized = true;
       console.log('✅ Computer Vision Carbon Engine initialized successfully');
-      
     } catch (error) {
       console.error('❌ Failed to initialize Computer Vision Carbon Engine:', error);
       throw error;
@@ -760,28 +774,31 @@ export class ComputerVisionCarbonEngine {
 
   async scanProductForCarbon(_imageData: string): Promise<InstantCarbonFootprintScan> {
     console.log('🔍 Scanning product for carbon footprint...');
-    
+
     const scanId = `scan_${Date.now()}_${Math.random().toString(36).substring(2)}`;
     const startTime = Date.now();
-    
+
     try {
       // Analyze image using computer vision
       const productAnalysis = await this.analyzeProductImage(_imageData);
-      
+
       // Get carbon data
       const carbonData = await this.getCarbonData(productAnalysis);
-      
+
       // Find alternatives
       const alternatives = await this.findSustainableAlternatives(productAnalysis);
-      
+
       // Generate recommendations
-      const recommendations = await this.generatePurchaseRecommendations(productAnalysis, carbonData);
-      
+      const recommendations = await this.generatePurchaseRecommendations(
+        productAnalysis,
+        carbonData,
+      );
+
       // Create impact visualization
       const impactVisualization = await this.createImpactVisualization(carbonData);
-      
+
       const processingTime = Date.now() - startTime;
-      
+
       const result: InstantCarbonFootprintScan = {
         scanId,
         confidence: productAnalysis.confidence,
@@ -792,7 +809,7 @@ export class ComputerVisionCarbonEngine {
         recommendations,
         impactVisualization,
       };
-      
+
       // Track scan
       observabilityService.trackBusinessEvent({
         eventName: 'product_carbon_scan',
@@ -804,37 +821,46 @@ export class ComputerVisionCarbonEngine {
           confidence: productAnalysis.confidence,
         },
       });
-      
-      console.log(`✅ Product scan completed: ${productAnalysis.name} (${carbonData.totalFootprint} kg CO2e)`);
+
+      console.log(
+        `✅ Product scan completed: ${productAnalysis.name} (${carbonData.totalFootprint} kg CO2e)`,
+      );
       return result;
-      
     } catch (error) {
       console.error('Product scan failed:', error);
       throw error;
     }
   }
 
-  async detectTransportationMode(motionData: MotionSensorData[]): Promise<AutomaticMobilityTracking> {
+  async detectTransportationMode(
+    motionData: MotionSensorData[],
+  ): Promise<AutomaticMobilityTracking> {
     console.log('🚗 Detecting transportation mode...');
-    
+
     const sessionId = `transport_${Date.now()}`;
-    
+
     try {
       // Analyze motion patterns
       const detectedModes = await this.analyzeMotionPatterns(motionData);
-      
+
       // Analyze route
       const routeAnalysis = await this.analyzeRoute(motionData);
-      
+
       // Calculate emissions
-      const emissionCalculation = await this.calculateTransportEmissions(detectedModes, routeAnalysis);
-      
+      const emissionCalculation = await this.calculateTransportEmissions(
+        detectedModes,
+        routeAnalysis,
+      );
+
       // Generate optimization suggestions
-      const optimizationSuggestions = await this.generateMobilityOptimizations(detectedModes, routeAnalysis);
-      
+      const optimizationSuggestions = await this.generateMobilityOptimizations(
+        detectedModes,
+        routeAnalysis,
+      );
+
       // Extract behavior insights
       const behaviorInsights = await this.extractMobilityInsights(detectedModes, routeAnalysis);
-      
+
       const result: AutomaticMobilityTracking = {
         sessionId,
         detectedModes,
@@ -843,7 +869,7 @@ export class ComputerVisionCarbonEngine {
         optimizationSuggestions,
         behaviorInsights,
       };
-      
+
       // Track detection
       observabilityService.trackBusinessEvent({
         eventName: 'transport_detection',
@@ -854,9 +880,8 @@ export class ComputerVisionCarbonEngine {
           totalEmissions: emissionCalculation.totalEmissions,
         },
       });
-      
+
       return result;
-      
     } catch (error) {
       console.error('Transportation detection failed:', error);
       throw error;
@@ -865,27 +890,30 @@ export class ComputerVisionCarbonEngine {
 
   async performHomeEnergyAudit(roomImages: RoomImageData[]): Promise<VisualEfficiencyAnalysis> {
     console.log('🏠 Performing visual home energy audit...');
-    
+
     const auditId = `audit_${Date.now()}`;
-    
+
     try {
       // Analyze each room
       const roomAnalysis = await Promise.all(
-        roomImages.map(roomImage => this.analyzeRoomEnergy(roomImage))
+        roomImages.map(roomImage => this.analyzeRoomEnergy(roomImage)),
       );
-      
+
       // Detect appliances
       const applianceDetection = await this.detectAppliances(roomImages);
-      
+
       // Identify inefficiencies
-      const inefficiencies = await this.identifyEnergyInefficiencies(roomAnalysis, applianceDetection);
-      
+      const inefficiencies = await this.identifyEnergyInefficiencies(
+        roomAnalysis,
+        applianceDetection,
+      );
+
       // Generate recommendations
       const recommendations = await this.generateEnergyRecommendations(inefficiencies);
-      
+
       // Calculate potential savings
       const potentialSavings = await this.calculateEnergySavings(recommendations);
-      
+
       const result: VisualEfficiencyAnalysis = {
         auditId,
         roomAnalysis,
@@ -894,7 +922,7 @@ export class ComputerVisionCarbonEngine {
         recommendations,
         potentialSavings,
       };
-      
+
       // Track audit
       observabilityService.trackBusinessEvent({
         eventName: 'home_energy_audit',
@@ -906,36 +934,44 @@ export class ComputerVisionCarbonEngine {
           potentialSavings: potentialSavings.totalSavings.carbonSavings,
         },
       });
-      
+
       return result;
-      
     } catch (error) {
       console.error('Home energy audit failed:', error);
       throw error;
     }
   }
 
-  async optimizeMealPlanning(kitchenImages: string[], preferences: DietaryPreferences): Promise<AIOptimizedMealPlanning> {
+  async optimizeMealPlanning(
+    kitchenImages: string[],
+    preferences: DietaryPreferences,
+  ): Promise<AIOptimizedMealPlanning> {
     console.log('🍽️ Optimizing meal planning with AI...');
-    
+
     const planId = `meal_plan_${Date.now()}`;
-    
+
     try {
       // Analyze current inventory
       const currentInventory = await this.analyzeKitchenInventory(kitchenImages);
-      
+
       // Generate meal recommendations
-      const mealRecommendations = await this.generateMealRecommendations(currentInventory, preferences);
-      
+      const mealRecommendations = await this.generateMealRecommendations(
+        currentInventory,
+        preferences,
+      );
+
       // Analyze waste reduction potential
-      const wasteReduction = await this.analyzeWasteReduction(currentInventory, mealRecommendations);
-      
+      const wasteReduction = await this.analyzeWasteReduction(
+        currentInventory,
+        mealRecommendations,
+      );
+
       // Optimize nutrition
       const nutritionOptimization = await this.optimizeNutrition(mealRecommendations);
-      
+
       // Optimize carbon footprint
       const carbonOptimization = await this.optimizeFoodCarbon(mealRecommendations);
-      
+
       const result: AIOptimizedMealPlanning = {
         planId,
         currentInventory,
@@ -944,7 +980,7 @@ export class ComputerVisionCarbonEngine {
         nutritionOptimization,
         carbonOptimization,
       };
-      
+
       // Track meal planning
       observabilityService.trackBusinessEvent({
         eventName: 'meal_planning_optimization',
@@ -956,9 +992,8 @@ export class ComputerVisionCarbonEngine {
           carbonReduction: carbonOptimization.reductionPotential,
         },
       });
-      
+
       return result;
-      
     } catch (error) {
       console.error('Meal planning optimization failed:', error);
       throw error;
@@ -967,29 +1002,29 @@ export class ComputerVisionCarbonEngine {
 
   async analyzeBehaviorPatterns(motionData: MotionSensorData[]): Promise<MotionPatternInsights> {
     console.log('📊 Analyzing motion patterns for behavior insights...');
-    
+
     const analysisId = `behavior_${Date.now()}`;
-    
+
     try {
       // Recognize activities
       const activityRecognition = await this.recognizeActivities(motionData);
-      
+
       // Analyze behavior patterns
       const behaviorPatterns = await this.analyzeBehaviorPatterns(activityRecognition);
-      
+
       // Calculate health metrics
       const healthMetrics = await this.calculateHealthMetrics(activityRecognition);
-      
+
       // Assess carbon implications
       const carbonImplications = await this.assessActivityCarbonImpact(activityRecognition);
-      
+
       // Generate recommendations
       const recommendations = await this.generateActivityRecommendations(
         behaviorPatterns,
         healthMetrics,
-        carbonImplications
+        carbonImplications,
       );
-      
+
       const result: MotionPatternInsights = {
         analysisId,
         activityRecognition,
@@ -998,7 +1033,7 @@ export class ComputerVisionCarbonEngine {
         carbonImplications,
         recommendations,
       };
-      
+
       // Track behavior analysis
       observabilityService.trackBusinessEvent({
         eventName: 'behavior_pattern_analysis',
@@ -1010,9 +1045,8 @@ export class ComputerVisionCarbonEngine {
           carbonImpact: carbonImplications.netImpact,
         },
       });
-      
+
       return result;
-      
     } catch (error) {
       console.error('Behavior pattern analysis failed:', error);
       throw error;
@@ -1023,7 +1057,7 @@ export class ComputerVisionCarbonEngine {
   private async initializeProductDatabase(): Promise<void> {
     // Initialize with sample products
     console.log('📄 Initializing product carbon database...');
-    
+
     // This would load from a comprehensive product database in production
     const sampleProducts = [
       {
@@ -1036,7 +1070,12 @@ export class ComputerVisionCarbonEngine {
           packaging: 2.0,
           usePhase: 6.0,
           endOfLife: 2.0,
-          uncertainty: { lower: 60.0, upper: 80.0, confidence: 0.85, distribution: 'normal' as const },
+          uncertainty: {
+            lower: 60.0,
+            upper: 80.0,
+            confidence: 0.85,
+            distribution: 'normal' as const,
+          },
         },
         source: 'database' as const,
         accuracy: 'high' as const,
@@ -1045,7 +1084,7 @@ export class ComputerVisionCarbonEngine {
         methodology: 'ISO 14040/14044 LCA',
       },
     ];
-    
+
     for (const product of sampleProducts) {
       this.productDatabase.set(product.productId, product);
     }
@@ -1092,7 +1131,7 @@ export class ComputerVisionCarbonEngine {
     if (stored) {
       return stored;
     }
-    
+
     // Estimate carbon footprint if not in database
     return {
       totalFootprint: 15.5,
@@ -1103,7 +1142,12 @@ export class ComputerVisionCarbonEngine {
         packaging: 1.0,
         usePhase: 1.0,
         endOfLife: 0.5,
-        uncertainty: { lower: 12.0, upper: 19.0, confidence: 0.7, distribution: 'normal' },
+        uncertainty: {
+          lower: 12.0,
+          upper: 19.0,
+          confidence: 0.7,
+          distribution: 'normal',
+        },
       },
       source: 'estimation',
       accuracy: 'medium',

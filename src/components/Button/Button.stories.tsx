@@ -1,7 +1,9 @@
-import { Button } from './Button';
+import React from 'react';
+
 import { action } from '@storybook/addon-actions';
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
+
+import { Button } from './Button';
 
 // Mock the Button component if it doesn't exist yet
 const MockButton = ({
@@ -15,12 +17,7 @@ const MockButton = ({
   ...props
 }) => {
   const baseStyles = {
-    padding:
-      size === 'small'
-        ? '8px 16px'
-        : size === 'large'
-        ? '16px 32px'
-        : '12px 24px',
+    padding: size === 'small' ? '8px 16px' : size === 'large' ? '16px 32px' : '12px 24px',
     borderRadius: '8px',
     border: 'none',
     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -94,8 +91,7 @@ const meta: Meta<typeof ButtonComponent> = {
     layout: 'centered',
     docs: {
       description: {
-        component:
-          'A versatile button component with multiple variants, sizes, and states.',
+        component: 'A versatile button component with multiple variants, sizes, and states.',
       },
     },
   },
@@ -251,26 +247,10 @@ export const ShareButton: Story = {
 export const AllVariants: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-      <ButtonComponent
-        title='Primary'
-        variant='primary'
-        onPress={action('primary')}
-      />
-      <ButtonComponent
-        title='Secondary'
-        variant='secondary'
-        onPress={action('secondary')}
-      />
-      <ButtonComponent
-        title='Danger'
-        variant='danger'
-        onPress={action('danger')}
-      />
-      <ButtonComponent
-        title='Ghost'
-        variant='ghost'
-        onPress={action('ghost')}
-      />
+      <ButtonComponent title='Primary' variant='primary' onPress={action('primary')} />
+      <ButtonComponent title='Secondary' variant='secondary' onPress={action('secondary')} />
+      <ButtonComponent title='Danger' variant='danger' onPress={action('danger')} />
+      <ButtonComponent title='Ghost' variant='ghost' onPress={action('ghost')} />
     </div>
   ),
   parameters: {
@@ -294,11 +274,7 @@ export const AllSizes: Story = {
       }}
     >
       <ButtonComponent title='Small' size='small' onPress={action('small')} />
-      <ButtonComponent
-        title='Medium'
-        size='medium'
-        onPress={action('medium')}
-      />
+      <ButtonComponent title='Medium' size='medium' onPress={action('medium')} />
       <ButtonComponent title='Large' size='large' onPress={action('large')} />
     </div>
   ),
@@ -325,8 +301,7 @@ export const Playground: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Interactive playground to test different button configurations.',
+        story: 'Interactive playground to test different button configurations.',
       },
     },
   },
@@ -388,8 +363,7 @@ export const Accessibility: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Button with proper accessibility attributes and keyboard navigation support.',
+        story: 'Button with proper accessibility attributes and keyboard navigation support.',
       },
     },
     a11y: {

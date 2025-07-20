@@ -216,18 +216,13 @@ export const zIndex = {
 
 export type ThemeMode = 'light' | 'dark' | 'system' | 'highContrast';
 
-export const getTheme = (
-  mode: ThemeMode,
-  systemScheme: 'light' | 'dark' = 'light',
-) => {
+export const getTheme = (mode: ThemeMode, systemScheme: 'light' | 'dark' = 'light') => {
   let selectedColors;
   if (mode === 'highContrast') {
     selectedColors = highContrastColors;
   } else if (mode === 'system') {
     selectedColors =
-      systemScheme === 'dark'
-        ? { ...colors, mode: 'dark' }
-        : { ...colors, mode: 'light' };
+      systemScheme === 'dark' ? { ...colors, mode: 'dark' } : { ...colors, mode: 'light' };
   } else if (mode === 'dark') {
     selectedColors = { ...colors, mode: 'dark' };
   } else {
@@ -260,13 +255,9 @@ const theme = {
 
 export type Theme = typeof theme;
 
-export function useAppTheme(
-  mode: ThemeMode = 'system',
-  isHighContrast: boolean = false,
-) {
+export function useAppTheme(mode: ThemeMode = 'system', isHighContrast: boolean = false) {
   const colorScheme = useColorScheme();
-  const systemMode: 'light' | 'dark' =
-    colorScheme === 'dark' ? 'dark' : 'light';
+  const systemMode: 'light' | 'dark' = colorScheme === 'dark' ? 'dark' : 'light';
 
   if (isHighContrast) {
     return getTheme('highContrast', systemMode);

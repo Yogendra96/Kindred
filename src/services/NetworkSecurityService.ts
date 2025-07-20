@@ -1,7 +1,8 @@
+import { Platform } from 'react-native';
+
 import { advancedEncryptionService } from './AdvancedEncryptionService';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
-import { Platform } from 'react-native';
 
 export interface CertificatePin {
   readonly hostname: string;
@@ -155,11 +156,7 @@ class NetworkSecurityService {
       // Validate response
       await this.validateResponse(response);
 
-      enhancedPerformanceService.recordMetric(
-        'secure_request_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      enhancedPerformanceService.recordMetric('secure_request_time', Date.now() - startTime, 'ms');
 
       return response;
     } catch (error) {
@@ -183,18 +180,13 @@ class NetworkSecurityService {
     try {
       const timestamp = Date.now().toString();
       const nonce = this.generateNonce();
-      const requestData = `${method.toUpperCase()}${url}${timestamp}${nonce}${
-        body || ''
-      }`;
+      const requestData = `${method.toUpperCase()}${url}${timestamp}${nonce}${body || ''}`;
 
       // Get signing key
       const signingKey = await this.getSigningKey();
 
       // Create HMAC signature
-      const signature = await advancedEncryptionService.createHMAC(
-        requestData,
-        signingKey,
-      );
+      const signature = await advancedEncryptionService.createHMAC(requestData, signingKey);
 
       const signedHeaders = {
         ...headers,
@@ -249,22 +241,16 @@ class NetworkSecurityService {
 
       // Check nonce (prevent replay attacks)
       if (this.requestNonces.has(nonce)) {
-        loggingService.warn(
-          'Request signature verification failed: nonce reuse',
-          {
-            nonce,
-          },
-        );
+        loggingService.warn('Request signature verification failed: nonce reuse', {
+          nonce,
+        });
         return false;
       }
 
       // Recreate signature
       const requestData = `${method}${url}${timestamp}${nonce}${body || ''}`;
       const signingKey = await this.getSigningKey();
-      const expectedSignature = await advancedEncryptionService.createHMAC(
-        requestData,
-        signingKey,
-      );
+      const expectedSignature = await advancedEncryptionService.createHMAC(requestData, signingKey);
 
       // Verify signature
       const isValid = await advancedEncryptionService.verifyHMAC(
@@ -274,9 +260,7 @@ class NetworkSecurityService {
       );
 
       if (!isValid) {
-        loggingService.warn(
-          'Request signature verification failed: invalid signature',
-        );
+        loggingService.warn('Request signature verification failed: invalid signature');
         return false;
       }
 
@@ -330,9 +314,7 @@ class NetworkSecurityService {
       this.currentApiKey = newApiKey;
 
       loggingService.info('API key rotated', {
-        oldKeyHash: oldApiKey
-          ? await advancedEncryptionService.hashData(oldApiKey)
-          : 'none',
+        oldKeyHash: oldApiKey ? await advancedEncryptionService.hashData(oldApiKey) : 'none',
         newKeyHash: await advancedEncryptionService.hashData(newApiKey),
       });
     } catch (error) {
@@ -357,9 +339,7 @@ class NetworkSecurityService {
 
   private async generateApiKey(): Promise<string> {
     const randomBytes = advancedEncryptionService.generateSecureRandomBytes(32);
-    const apiKey = Array.from(randomBytes)
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('');
+    const apiKey = [...randomBytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
 
     return `ak_${apiKey}`;
   }
@@ -397,7 +377,7 @@ class NetworkSecurityService {
 
     if (!pin) {
       // Check for subdomain pins
-      const subdomainPin = Array.from(this.certificatePins.values()).find(
+      const subdomainPin = [...this.certificatePins.values()].find(
         p => p.includeSubdomains && hostname.endsWith(`.${p.hostname}`),
       );
 
@@ -405,12 +385,9 @@ class NetworkSecurityService {
         if (!this.config.allowInsecure) {
           throw new Error(`No certificate pin found for ${hostname}`);
         }
-        loggingService.warn(
-          'No certificate pin found, allowing insecure connection',
-          {
-            hostname,
-          },
-        );
+        loggingService.warn('No certificate pin found, allowing insecure connection', {
+          hostname,
+        });
         return;
       }
     }
@@ -465,8 +442,7 @@ class NetworkSecurityService {
     // Sign request if enabled
     if (enableSigning) {
       const method = fetchOptions.method || 'GET';
-      const body =
-        typeof fetchOptions.body === 'string' ? fetchOptions.body : undefined;
+      const body = typeof fetchOptions.body === 'string' ? fetchOptions.body : undefined;
 
       const signedRequest = await this.signRequest(method, url, body, headers);
       headers = signedRequest.headers;
@@ -488,11 +464,7 @@ class NetworkSecurityService {
 
     let lastError: Error | undefined;
 
-    for (
-      let attempt = 1;
-      attempt <= (enableRetry ? maxRetries : 1);
-      attempt++
-    ) {
+    for (let attempt = 1; attempt <= (enableRetry ? maxRetries : 1); attempt++) {
       try {
         const response = await fetch(url, options);
 
@@ -541,11 +513,7 @@ class NetworkSecurityService {
     }
 
     // Check for security headers
-    const securityHeaders = [
-      'x-content-type-options',
-      'x-frame-options',
-      'x-xss-protection',
-    ];
+    const securityHeaders = ['x-content-type-options', 'x-frame-options', 'x-xss-protection'];
 
     for (const header of securityHeaders) {
       if (!response.headers.get(header)) {
@@ -559,9 +527,7 @@ class NetworkSecurityService {
 
   private generateNonce(): string {
     const bytes = advancedEncryptionService.generateSecureRandomBytes(16);
-    return Array.from(bytes)
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('');
+    return [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private generateRequestId(): string {
@@ -575,7 +541,7 @@ class NetworkSecurityService {
 
     // Clean up old nonces (keep only last 1000)
     if (this.requestNonces.size > 1000) {
-      const noncesArray = Array.from(this.requestNonces);
+      const noncesArray = [...this.requestNonces];
       const toDelete = noncesArray.slice(0, noncesArray.length - 1000);
       for (const oldNonce of toDelete) {
         this.requestNonces.delete(oldNonce);
@@ -601,9 +567,7 @@ class NetworkSecurityService {
   }
 
   private getUserAgent(): string {
-    return `Kindred/${this.getClientVersion()} (${Platform.OS} ${
-      Platform.Version
-    })`;
+    return `Kindred/${this.getClientVersion()} (${Platform.OS} ${Platform.Version})`;
   }
 
   private sanitizeUrl(url: string): string {
@@ -655,9 +619,7 @@ class RateLimiter {
     }
 
     // Clean old requests outside the window
-    this.requests = this.requests.filter(
-      timestamp => now - timestamp < this.config.windowMs,
-    );
+    this.requests = this.requests.filter(timestamp => now - timestamp < this.config.windowMs);
 
     // Check if we've exceeded the limit
     if (this.requests.length >= this.config.maxRequests) {

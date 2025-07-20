@@ -1,68 +1,132 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect } from 'react';
+
 import type { ViewStyle } from 'react-native';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
+
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue,
+  Easing,
+  interpolate,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  interpolate,
-  Easing,
 } from 'react-native-reanimated';
 
 const { width: screenWidth } = Dimensions.get('window');
 
+/**
+ * Props for the base SkeletonLoader component
+ */
 export interface SkeletonLoaderProps {
+  /** Width of the skeleton element */
   width?: number | string;
+  /** Height of the skeleton element */
   height?: number;
+  /** Border radius for rounded corners */
   borderRadius?: number;
+  /** Additional styles to apply */
   style?: ViewStyle;
+  /** Children to show when not loading */
   children?: React.ReactNode;
+  /** Whether to show skeleton or content */
   isLoading?: boolean;
+  /** Duration of shimmer animation in milliseconds */
   animationDuration?: number;
+  /** Colors for shimmer gradient */
   shimmerColors?: string[];
+  /** Direction of shimmer animation */
   direction?: 'horizontal' | 'vertical';
+  /** Intensity of shimmer effect */
   intensity?: 'low' | 'medium' | 'high';
 }
 
+/**
+ * Props for SkeletonText component
+ */
 export interface SkeletonTextProps {
+  /** Number of text lines to display */
   lines?: number;
+  /** Height of each text line */
   lineHeight?: number;
+  /** Spacing between lines */
   lineSpacing?: number;
+  /** Width of the last line (for natural text appearance) */
   lastLineWidth?: number | string;
+  /** Additional styles to apply */
   style?: ViewStyle;
+  /** Whether to show skeleton or content */
   isLoading?: boolean;
 }
 
+/**
+ * Props for SkeletonCircle component
+ */
 export interface SkeletonCircleProps {
+  /** Diameter of the circle */
   size?: number;
+  /** Additional styles to apply */
   style?: ViewStyle;
+  /** Whether to show skeleton or content */
   isLoading?: boolean;
 }
 
+/**
+ * Props for SkeletonImage component
+ */
 export interface SkeletonImageProps {
+  /** Width of the image placeholder */
   width?: number | string;
+  /** Height of the image placeholder */
   height?: number;
+  /** Border radius for rounded corners */
   borderRadius?: number;
+  /** Additional styles to apply */
   style?: ViewStyle;
+  /** Whether to show skeleton or content */
   isLoading?: boolean;
 }
 
+/**
+ * Props for SkeletonCard component
+ */
 export interface SkeletonCardProps {
+  /** Additional styles to apply */
   style?: ViewStyle;
+  /** Whether to show skeleton or content */
   isLoading?: boolean;
+  /** Show avatar section */
   showAvatar?: boolean;
+  /** Show title section */
   showTitle?: boolean;
+  /** Show subtitle section */
   showSubtitle?: boolean;
+  /** Show content section */
   showContent?: boolean;
+  /** Show actions section */
   showActions?: boolean;
+  /** Size of the avatar */
   avatarSize?: number;
+  /** Number of title lines */
   titleLines?: number;
+  /** Number of content lines */
   contentLines?: number;
 }
 
-// Base Skeleton Loader Component
+/**
+ * Base Skeleton Loader Component
+ *
+ * Displays an animated shimmer effect while content is loading.
+ * Can be used standalone or as a building block for other skeleton components.
+ *
+ * @example
+ * ```tsx
+ * <SkeletonLoader width={200} height={20} />
+ * <SkeletonLoader isLoading={loading}>
+ *   <Text>Content to show when loaded</Text>
+ * </SkeletonLoader>
+ * ```
+ */
 export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   width = '100%',
   height = 20,
@@ -132,12 +196,11 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   return (
     <View
       style={[
+        styles.skeleton,
         {
           width,
           height,
           borderRadius,
-          backgroundColor: '#f0f0f0',
-          overflow: 'hidden',
         },
         style,
       ]}
@@ -175,9 +238,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
           key={index}
           width={index === lines - 1 ? lastLineWidth : '100%'}
           height={lineHeight}
-          style={{
-            marginBottom: index < lines - 1 ? lineSpacing : 0,
-          }}
+          style={index < lines - 1 ? { marginBottom: lineSpacing } : undefined}
           isLoading={isLoading}
           {...props}
         />
@@ -249,13 +310,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
       {/* Header with Avatar and Title */}
       {(showAvatar || showTitle || showSubtitle) && (
         <View style={styles.cardHeader}>
-          {showAvatar && (
-            <SkeletonCircle
-              size={avatarSize}
-              isLoading={isLoading}
-              {...props}
-            />
-          )}
+          {showAvatar && <SkeletonCircle size={avatarSize} isLoading={isLoading} {...props} />}
           <View style={styles.cardHeaderText}>
             {showTitle && (
               <SkeletonText
@@ -271,7 +326,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
               <SkeletonLoader
                 width='60%'
                 height={14}
-                style={{ marginTop: 4 }}
+                style={styles.cardSubtitle}
                 isLoading={isLoading}
                 {...props}
               />
@@ -352,28 +407,19 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
             <View style={styles.listItem}>
               <SkeletonCircle size={40} isLoading={isLoading} {...props} />
               <View style={styles.listItemContent}>
-                <SkeletonLoader
-                  width='80%'
-                  height={16}
-                  isLoading={isLoading}
-                  {...props}
-                />
+                <SkeletonLoader width='80%' height={16} isLoading={isLoading} {...props} />
                 <SkeletonLoader
                   width='60%'
                   height={12}
-                  style={{ marginTop: 6 }}
+                  style={styles.listItemSubtitle}
                   isLoading={isLoading}
                   {...props}
                 />
               </View>
             </View>
           )}
-          {showSeparator && index < itemCount - 1 && (
-            <View style={styles.separator} />
-          )}
-          {!showSeparator && index < itemCount - 1 && (
-            <View style={{ height: itemSpacing }} />
-          )}
+          {showSeparator && index < itemCount - 1 && <View style={styles.separator} />}
+          {!showSeparator && index < itemCount - 1 && <View style={{ height: itemSpacing }} />}
         </View>
       ))}
     </View>
@@ -423,8 +469,7 @@ export const SkeletonGrid: React.FC<SkeletonGridProps> = ({
                 width: itemWidth,
                 height: itemHeight,
                 marginRight: col < columns - 1 ? itemSpacing : 0,
-                marginBottom:
-                  row < Math.ceil(itemCount / columns) - 1 ? itemSpacing : 0,
+                marginBottom: row < Math.ceil(itemCount / columns) - 1 ? itemSpacing : 0,
               },
             ]}
           >
@@ -472,11 +517,7 @@ export const SkeletonChart: React.FC<SkeletonChartProps> = ({
       case 'pie':
         return (
           <View style={styles.pieChart}>
-            <SkeletonCircle
-              size={height * 0.8}
-              isLoading={isLoading}
-              {...props}
-            />
+            <SkeletonCircle size={height * 0.8} isLoading={isLoading} {...props} />
           </View>
         );
       case 'bar':
@@ -507,12 +548,14 @@ export const SkeletonChart: React.FC<SkeletonChartProps> = ({
     }
   };
 
-  return (
-    <View style={[{ width, height }, style]}>{renderChartSkeleton()}</View>
-  );
+  return <View style={[{ width, height }, style]}>{renderChartSkeleton()}</View>;
 };
 
 const styles = StyleSheet.create({
+  skeleton: {
+    backgroundColor: '#f0f0f0',
+    overflow: 'hidden',
+  },
   textContainer: {
     width: '100%',
   },
@@ -539,6 +582,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
   },
+  cardSubtitle: {
+    marginTop: 4,
+  },
   cardContent: {
     marginBottom: 16,
   },
@@ -558,6 +604,9 @@ const styles = StyleSheet.create({
   listItemContent: {
     flex: 1,
     marginLeft: 12,
+  },
+  listItemSubtitle: {
+    marginTop: 6,
   },
   separator: {
     height: 1,

@@ -4,94 +4,100 @@
  * User Journey Correlation, and Predictive Analytics for React Native
  */
 
-import { Platform, Dimensions } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import { Dimensions, Platform } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loggingService } from './LoggingService';
-import {
-  EnhancedPerformanceMetric,
-  NativeMemoryMetrics,
-  EnhancedNetworkMetrics,
+import type { NetInfoState } from '@react-native-community/netinfo';
+import NetInfo from '@react-native-community/netinfo';
+import DeviceInfo from 'react-native-device-info';
+
+import type {
+  ComponentLifecycleEvent,
   CoreVitalMetric,
   CoreVitalType,
-  PerformanceAlertRule,
-  PerformanceAlert,
-  UserJourneyEvent,
+  DeviceContext,
+  EnhancedNetworkMetrics,
+  EnhancedPerformanceMetric,
   JourneyPerformanceInsight,
   MemoryLeak,
-  ComponentLifecycleEvent,
-  DeviceContext,
-  SessionPerformanceData,
+  NativeMemoryMetrics,
+  PerformanceAlert,
+  PerformanceAlertRule,
   PerformanceConfig,
-  DEFAULT_PERFORMANCE_CONFIG,
+  SessionPerformanceData,
+  UserJourneyEvent,
+} from '../types/performance';
+import {
   DEFAULT_CORE_VITAL_THRESHOLDS,
-  PerformancePrediction,
+  DEFAULT_PERFORMANCE_CONFIG,
   OptimizationRecommendation,
+  PerformancePrediction,
 } from '../types/performance';
 import { CircularBuffer } from '../utils/CircularBuffer';
 
+import { loggingService } from './LoggingService';
+
 export class ModernAPMService {
   private static instance: ModernAPMService;
-  
+
   // Core dependencies
   private logger: typeof loggingService;
   private config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG;
-  
+
   // Enhanced data storage with circular buffers
   private metricsBuffer: CircularBuffer<EnhancedPerformanceMetric>;
   private memoryMetrics: CircularBuffer<NativeMemoryMetrics>;
   private networkMetrics: CircularBuffer<EnhancedNetworkMetrics>;
   private coreVitals: Map<string, CoreVitalMetric[]> = new Map();
-  
+
   // Session and user tracking
   private currentSessionId: string = '';
   private currentUserId?: string;
   private currentScreenName: string = 'unknown';
   private deviceContext: DeviceContext | null = null;
-  
+
   // Alert system
   private alertRules: Map<string, PerformanceAlertRule> = new Map();
   private activeAlerts: Map<string, PerformanceAlert> = new Map();
   private alertCooldowns: Map<string, number> = new Map();
-  
+
   // Memory leak detection
   private componentLifecycles: Map<string, ComponentLifecycleEvent[]> = new Map();
   private memoryLeaks: MemoryLeak[] = [];
   private memoryBaseline: number = 0;
   private memoryGrowthThreshold: number = 50 * 1024 * 1024; // 50MB
-  
+
   // User journey correlation
   private journeyEvents: UserJourneyEvent[] = [];
   private screenStartTimes: Map<string, number> = new Map();
-  
+
   // Network interception
   private originalFetch: typeof fetch;
   private originalXMLHttpRequest: typeof XMLHttpRequest;
-  
+
   // Performance tracking
   private isMonitoring: boolean = false;
   private memoryInterval: ReturnType<typeof setTimeout> | null = null;
   private performanceObserver: PerformanceObserver | null = null;
-  
+
   // Connection state
   private connectionType: string = 'unknown';
 
   private constructor() {
     this.logger = loggingService;
-    
+
     // Initialize circular buffers with optimal capacity for mobile
     this.metricsBuffer = new CircularBuffer<EnhancedPerformanceMetric>(1000);
     this.memoryMetrics = new CircularBuffer<NativeMemoryMetrics>(500);
     this.networkMetrics = new CircularBuffer<EnhancedNetworkMetrics>(500);
-    
+
     // Generate unique session ID
     this.currentSessionId = this.generateSessionId();
-    
+
     // Store original network functions for interception
     this.originalFetch = global.fetch;
     this.originalXMLHttpRequest = global.XMLHttpRequest;
-    
+
     // Set up default alert rules
     this.setupDefaultAlertRules();
   }
@@ -104,7 +110,7 @@ export class ModernAPMService {
   }
 
   // ===== INITIALIZATION & LIFECYCLE =====
-  
+
   /**
    * Initialize modern APM with comprehensive monitoring
    */
@@ -114,34 +120,34 @@ export class ModernAPMService {
       if (config) {
         this.config = { ...this.config, ...config };
       }
-      
+
       // Initialize device context
       await this.initializeDeviceContext();
-      
+
       // Set up monitoring systems
       this.setupPerformanceObservers();
       this.startMemoryMonitoring();
-      
+
       // Initialize features based on config
       if (this.config.features.networkInterception) {
         this.setupNetworkInterception();
       }
-      
+
       if (this.config.features.memoryLeakDetection) {
         this.startMemoryLeakDetection();
       }
-      
+
       // Start session tracking
       this.startSession();
-      
+
       this.isMonitoring = true;
-      
+
       this.logger.info('Modern APM initialized', {
         sessionId: this.currentSessionId,
         features: this.config.features,
         deviceContext: this.deviceContext,
       });
-      
+
       // Record initialization metric
       this.recordEnhancedMetric({
         name: 'apm_initialization',
@@ -153,7 +159,6 @@ export class ModernAPMService {
           features: this.config.features,
         },
       });
-      
     } catch (error) {
       this.logger.error('Failed to initialize Modern APM', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -162,42 +167,41 @@ export class ModernAPMService {
       throw error;
     }
   }
-  
+
   /**
    * Stop monitoring and clean up resources
    */
   async stop(): Promise<void> {
     try {
       this.isMonitoring = false;
-      
+
       // End current session
       await this.endSession();
-      
+
       // Clean up intervals and observers
       if (this.memoryInterval) {
         clearInterval(this.memoryInterval);
         this.memoryInterval = null;
       }
-      
+
       if (this.performanceObserver) {
         this.performanceObserver.disconnect();
         this.performanceObserver = null;
       }
-      
+
       // Restore original network functions
       if (this.config.features.networkInterception) {
         this.restoreNetworkFunctions();
       }
-      
+
       // Save final session data
       await this.saveSessionData();
-      
+
       this.logger.info('Modern APM stopped', {
         sessionId: this.currentSessionId,
         metricsCollected: this.metricsBuffer.size,
         alertsTriggered: this.activeAlerts.size,
       });
-      
     } catch (error) {
       this.logger.error('Error stopping Modern APM', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -206,7 +210,7 @@ export class ModernAPMService {
   }
 
   // ===== CORE WEB VITALS IMPLEMENTATION =====
-  
+
   /**
    * Record Core Web Vital metric with React Native equivalents
    */
@@ -214,14 +218,14 @@ export class ModernAPMService {
     type: CoreVitalType,
     value: number,
     screenName?: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): void {
     if (!this.isMonitoring) return;
-    
+
     const screen = screenName || this.currentScreenName;
     const threshold = DEFAULT_CORE_VITAL_THRESHOLDS[type];
     const isGoodScore = value <= threshold.good;
-    
+
     const metric: CoreVitalMetric = {
       type,
       value,
@@ -231,13 +235,13 @@ export class ModernAPMService {
       isGoodScore,
       threshold,
     };
-    
+
     // Store in core vitals collection
     if (!this.coreVitals.has(screen)) {
       this.coreVitals.set(screen, []);
     }
     this.coreVitals.get(screen)!.push(metric);
-    
+
     // Also record as enhanced metric
     this.recordEnhancedMetric({
       name: `core_vital_${type.toLowerCase()}`,
@@ -251,7 +255,7 @@ export class ModernAPMService {
         ...context,
       },
     });
-    
+
     this.logger.debug('Core Web Vital recorded', {
       type,
       value,
@@ -260,7 +264,7 @@ export class ModernAPMService {
       sessionId: this.currentSessionId,
     });
   }
-  
+
   /**
    * Start tracking screen render performance (FCP equivalent)
    */
@@ -268,7 +272,7 @@ export class ModernAPMService {
     const startTime = performance.now();
     this.screenStartTimes.set(screenName, startTime);
     this.currentScreenName = screenName;
-    
+
     // Record journey event
     this.recordJourneyEvent({
       eventType: 'screen_view',
@@ -276,32 +280,34 @@ export class ModernAPMService {
       action: 'start_render',
       context: { renderStartTime: startTime },
     });
-    
+
     this.logger.debug('Screen render started', {
       screenName,
       startTime,
       sessionId: this.currentSessionId,
     });
   }
-  
+
   /**
    * End screen render tracking and record FCP
    */
   endScreenRender(screenName: string, context?: Record<string, any>): void {
     const startTime = this.screenStartTimes.get(screenName);
     if (!startTime) {
-      this.logger.warn('Screen render end called without start', { screenName });
+      this.logger.warn('Screen render end called without start', {
+        screenName,
+      });
       return;
     }
-    
+
     const renderTime = performance.now() - startTime;
-    
+
     // Record as Core Web Vital (FCP)
     this.recordCoreVital('FCP', renderTime, screenName, context);
-    
+
     // Clean up tracking
     this.screenStartTimes.delete(screenName);
-    
+
     // Record journey event
     this.recordJourneyEvent({
       eventType: 'screen_view',
@@ -309,14 +315,14 @@ export class ModernAPMService {
       action: 'render_complete',
       context: { renderTime, ...context },
     });
-    
+
     this.logger.debug('Screen render completed', {
       screenName,
       renderTime,
       sessionId: this.currentSessionId,
     });
   }
-  
+
   /**
    * Record interaction ready time (TTI equivalent)
    */
@@ -325,7 +331,7 @@ export class ModernAPMService {
       interactionType: 'ready',
     });
   }
-  
+
   /**
    * Record touch interaction delay (FID equivalent)
    */
@@ -335,7 +341,7 @@ export class ModernAPMService {
       interactionType: 'touch',
     });
   }
-  
+
   /**
    * Record layout stability score (CLS equivalent)
    */
@@ -345,7 +351,7 @@ export class ModernAPMService {
       ...context,
     });
   }
-  
+
   /**
    * Record largest element render time (LCP equivalent)
    */
@@ -357,15 +363,15 @@ export class ModernAPMService {
   }
 
   // ===== ENHANCED METRICS SYSTEM =====
-  
+
   /**
    * Record enhanced performance metric with full context
    */
   recordEnhancedMetric(
-    metric: Omit<EnhancedPerformanceMetric, 'id' | 'timestamp' | 'sessionId' | 'screenName'>
+    metric: Omit<EnhancedPerformanceMetric, 'id' | 'timestamp' | 'sessionId' | 'screenName'>,
   ): void {
     if (!this.isMonitoring) return;
-    
+
     const enhancedMetric: EnhancedPerformanceMetric = {
       id: this.generateMetricId(),
       timestamp: Date.now(),
@@ -374,13 +380,13 @@ export class ModernAPMService {
       screenName: this.currentScreenName,
       ...metric,
     };
-    
+
     // Add to circular buffer for real-time access
     this.metricsBuffer.add(enhancedMetric);
-    
+
     // Evaluate alerts
     this.evaluateAlerts(enhancedMetric);
-    
+
     // Log if severity is medium or higher
     if (metric.severity !== 'low') {
       this.logger.info('Performance metric recorded', {
@@ -391,7 +397,7 @@ export class ModernAPMService {
       });
     }
   }
-  
+
   /**
    * Get core vitals report for a screen or overall
    */
@@ -401,14 +407,17 @@ export class ModernAPMService {
     score: number;
     summary: Record<CoreVitalType, { avg: number; p95: number; good: number; total: number }>;
   }[] {
-    const screens = screenName ? [screenName] : Array.from(this.coreVitals.keys());
-    
+    const screens = screenName ? [screenName] : [...this.coreVitals.keys()];
+
     return screens.map(screen => {
       const metrics = this.coreVitals.get(screen) || [];
       const score = this.calculateCoreVitalScore(metrics);
-      
-      const summary = {} as Record<CoreVitalType, { avg: number; p95: number; good: number; total: number }>;
-      
+
+      const summary = {} as Record<
+        CoreVitalType,
+        { avg: number; p95: number; good: number; total: number }
+      >;
+
       (['FCP', 'LCP', 'FID', 'CLS', 'TTI'] as CoreVitalType[]).forEach(type => {
         const typeMetrics = metrics.filter(m => m.type === type);
         if (typeMetrics.length > 0) {
@@ -417,17 +426,17 @@ export class ModernAPMService {
           const p95Index = Math.floor(values.length * 0.95);
           const p95 = values[p95Index] || values[values.length - 1];
           const good = typeMetrics.filter(m => m.isGoodScore).length;
-          
+
           summary[type] = { avg, p95, good, total: typeMetrics.length };
         }
       });
-      
+
       return { screenName: screen, metrics, score, summary };
     });
   }
 
   // ===== NATIVE MEMORY MONITORING =====
-  
+
   /**
    * Track native memory usage with comprehensive metrics
    */
@@ -438,14 +447,14 @@ export class ModernAPMService {
         DeviceInfo.getFreeDiskStorage(), // This is disk storage, not memory
         DeviceInfo.getUsedMemory?.() || Promise.resolve(0),
       ]);
-      
+
       // Get JS heap size from performance API
       const jsHeapSize = (performance as any).memory?.usedJSHeapSize || 0;
-      
+
       // Calculate memory pressure
       const availableMemory = totalMemory - usedMemory;
       const memoryPressure = this.calculateMemoryPressure(usedMemory, totalMemory);
-      
+
       const memoryMetrics: NativeMemoryMetrics = {
         totalMemory,
         freeMemory: availableMemory, // Corrected to use available memory
@@ -458,17 +467,17 @@ export class ModernAPMService {
         timestamp: Date.now(),
         platform: Platform.OS as 'ios' | 'android',
       };
-      
+
       // Add to circular buffer
       this.memoryMetrics.add(memoryMetrics);
-      
+
       // Record as enhanced metric
       this.recordEnhancedMetric({
         name: 'memory_usage',
         value: usedMemory,
         unit: 'bytes',
-        severity: memoryPressure === 'critical' ? 'critical' : 
-                 memoryPressure === 'high' ? 'high' : 'low',
+        severity:
+          memoryPressure === 'critical' ? 'critical' : memoryPressure === 'high' ? 'high' : 'low',
         context: {
           memoryPressure,
           totalMemory,
@@ -477,24 +486,23 @@ export class ModernAPMService {
           platform: Platform.OS,
         },
       });
-      
+
       // Update device context
       if (this.deviceContext) {
         this.deviceContext.availableMemory = availableMemory;
       }
-      
+
       // Detect memory leaks
       if (this.config.features.memoryLeakDetection) {
         this.detectMemoryLeaks(memoryMetrics);
       }
-      
+
       return memoryMetrics;
-      
     } catch (error) {
       this.logger.error('Failed to track native memory', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
-      
+
       // Return fallback metrics
       return {
         totalMemory: 0,
@@ -518,30 +526,30 @@ export class ModernAPMService {
     if (this.memoryInterval) {
       clearInterval(this.memoryInterval);
     }
-    
+
     // Monitor memory every 10 seconds
     this.memoryInterval = setInterval(async () => {
       if (this.isMonitoring) {
         await this.trackNativeMemory();
       }
     }, 10000);
-    
+
     // Get baseline memory usage
     setTimeout(async () => {
       const baseline = await this.trackNativeMemory();
       this.memoryBaseline = baseline.usedMemory;
     }, 1000);
   }
-  
+
   /**
    * Calculate memory pressure level
    */
   private calculateMemoryPressure(
     usedMemory: number,
-    totalMemory: number
+    totalMemory: number,
   ): 'low' | 'medium' | 'high' | 'critical' {
     const usagePercentage = (usedMemory / totalMemory) * 100;
-    
+
     if (usagePercentage > 90) return 'critical';
     if (usagePercentage > 75) return 'high';
     if (usagePercentage > 60) return 'medium';
@@ -549,25 +557,25 @@ export class ModernAPMService {
   }
 
   // ===== NETWORK INTERCEPTION & MONITORING =====
-  
+
   /**
    * Set up network request interception
    */
   private setupNetworkInterception(): void {
     if (!this.config.features.networkInterception) return;
-    
+
     // Intercept fetch
     global.fetch = async (url: string | Request, options?: RequestInit) => {
       const startTime = performance.now();
       const requestUrl = typeof url === 'string' ? url : url.url;
       const method = options?.method || 'GET';
       const requestSize = this.calculateRequestSize(options);
-      
+
       try {
         const response = await this.originalFetch(url, options);
         const duration = performance.now() - startTime;
         const responseSize = this.calculateResponseSize(response);
-        
+
         // Record network metric
         this.recordNetworkMetric({
           url: requestUrl,
@@ -580,11 +588,11 @@ export class ModernAPMService {
           retryCount: 0,
           cacheHit: this.isCacheHit(response),
         });
-        
+
         return response;
       } catch (error) {
         const duration = performance.now() - startTime;
-        
+
         this.recordNetworkMetric({
           url: requestUrl,
           method,
@@ -597,19 +605,19 @@ export class ModernAPMService {
           retryCount: 0,
           cacheHit: false,
         });
-        
+
         throw error;
       }
     };
-    
+
     this.logger.debug('Network interception enabled');
   }
-  
+
   /**
    * Record network performance metric
    */
   recordNetworkMetric(
-    metric: Omit<EnhancedNetworkMetrics, 'id' | 'timestamp' | 'sessionId' | 'connectionType'>
+    metric: Omit<EnhancedNetworkMetrics, 'id' | 'timestamp' | 'sessionId' | 'connectionType'>,
   ): void {
     const networkMetric: EnhancedNetworkMetrics = {
       id: this.generateMetricId(),
@@ -618,17 +626,21 @@ export class ModernAPMService {
       connectionType: this.connectionType,
       ...metric,
     };
-    
+
     // Add to circular buffer
     this.networkMetrics.add(networkMetric);
-    
+
     // Record as enhanced metric
     this.recordEnhancedMetric({
       name: 'network_request',
       value: metric.duration,
       unit: 'ms',
-      severity: metric.duration > this.config.thresholds.network.verySlowRequest ? 'high' :
-               metric.duration > this.config.thresholds.network.slowRequest ? 'medium' : 'low',
+      severity:
+        metric.duration > this.config.thresholds.network.verySlowRequest
+          ? 'high'
+          : metric.duration > this.config.thresholds.network.slowRequest
+            ? 'medium'
+            : 'low',
       context: {
         url: metric.url,
         method: metric.method,
@@ -643,7 +655,7 @@ export class ModernAPMService {
   }
 
   // ===== MEMORY LEAK DETECTION =====
-  
+
   /**
    * Start memory leak detection
    */
@@ -651,7 +663,7 @@ export class ModernAPMService {
     // This will be called during memory monitoring
     this.logger.debug('Memory leak detection enabled');
   }
-  
+
   /**
    * Detect potential memory leaks
    */
@@ -660,9 +672,9 @@ export class ModernAPMService {
       this.memoryBaseline = currentMemory.usedMemory;
       return;
     }
-    
+
     const memoryGrowth = currentMemory.usedMemory - this.memoryBaseline;
-    
+
     // Check for significant memory growth
     if (memoryGrowth > this.memoryGrowthThreshold) {
       const leak: MemoryLeak = {
@@ -678,9 +690,9 @@ export class ModernAPMService {
           'Check for memory-intensive operations',
         ],
       };
-      
+
       this.memoryLeaks.push(leak);
-      
+
       // Record as metric
       this.recordEnhancedMetric({
         name: 'memory_leak_detected',
@@ -694,7 +706,7 @@ export class ModernAPMService {
           current: currentMemory.usedMemory,
         },
       });
-      
+
       this.logger.warn('Potential memory leak detected', {
         memoryGrowth,
         baseline: this.memoryBaseline,
@@ -703,17 +715,17 @@ export class ModernAPMService {
       });
     }
   }
-  
+
   /**
    * Track component lifecycle for leak detection
    */
   trackComponentLifecycle(
     componentName: string,
     event: 'mount' | 'unmount' | 'update',
-    props?: Record<string, any>
+    props?: Record<string, any>,
   ): void {
     if (!this.isMonitoring) return;
-    
+
     const lifecycleEvent: ComponentLifecycleEvent = {
       componentName,
       event,
@@ -721,25 +733,25 @@ export class ModernAPMService {
       props,
       memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
     };
-    
+
     if (!this.componentLifecycles.has(componentName)) {
       this.componentLifecycles.set(componentName, []);
     }
-    
+
     this.componentLifecycles.get(componentName)!.push(lifecycleEvent);
-    
+
     // Keep only recent events per component
     const events = this.componentLifecycles.get(componentName)!;
     if (events.length > 20) {
       this.componentLifecycles.set(componentName, events.slice(-10));
     }
-    
+
     // Check for potential component memory leaks
     if (event === 'unmount') {
       this.checkComponentMemoryLeak(componentName);
     }
   }
-  
+
   /**
    * Check for component-specific memory leaks
    */
@@ -747,7 +759,7 @@ export class ModernAPMService {
     const events = this.componentLifecycles.get(componentName) || [];
     const mountEvents = events.filter(e => e.event === 'mount');
     const unmountEvents = events.filter(e => e.event === 'unmount');
-    
+
     // Check if there are more mounts than unmounts (potential leak)
     if (mountEvents.length > unmountEvents.length + 1) {
       const leak: MemoryLeak = {
@@ -764,9 +776,9 @@ export class ModernAPMService {
           'Review subscriptions and timers cleanup',
         ],
       };
-      
+
       this.memoryLeaks.push(leak);
-      
+
       this.logger.warn('Component memory leak detected', {
         componentName,
         mountEvents: mountEvents.length,
@@ -776,7 +788,7 @@ export class ModernAPMService {
   }
 
   // ===== REAL-TIME ALERTING SYSTEM =====
-  
+
   /**
    * Define custom alert rules
    */
@@ -788,38 +800,38 @@ export class ModernAPMService {
       threshold: rule.threshold,
     });
   }
-  
+
   /**
    * Evaluate alerts for a metric
    */
   private evaluateAlerts(metric: EnhancedPerformanceMetric): void {
     for (const [ruleId, rule] of this.alertRules) {
       if (!rule.enabled) continue;
-      
+
       // Check if this metric matches the rule
       if (rule.metricType !== metric.name) continue;
-      
+
       // Check cooldown
       const lastAlertTime = this.alertCooldowns.get(ruleId) || 0;
       const cooldownPeriod = rule.cooldownMinutes * 60 * 1000;
       if (Date.now() - lastAlertTime < cooldownPeriod) continue;
-      
+
       // Evaluate threshold
       const thresholdMet = this.evaluateThreshold(metric.value, rule.threshold, rule.comparison);
-      
+
       if (thresholdMet) {
         this.triggerAlert(rule, metric);
       }
     }
   }
-  
+
   /**
    * Evaluate threshold condition
    */
   private evaluateThreshold(
     value: number,
     threshold: number,
-    comparison: 'greater' | 'less' | 'equal'
+    comparison: 'greater' | 'less' | 'equal',
   ): boolean {
     switch (comparison) {
       case 'greater':
@@ -832,7 +844,7 @@ export class ModernAPMService {
         return false;
     }
   }
-  
+
   /**
    * Trigger performance alert
    */
@@ -853,10 +865,10 @@ export class ModernAPMService {
         deviceInfo: this.deviceContext,
       },
     };
-    
+
     this.activeAlerts.set(alert.id, alert);
     this.alertCooldowns.set(rule.id, Date.now());
-    
+
     // Log alert
     this.logger.warn('Performance alert triggered', {
       alertId: alert.id,
@@ -867,7 +879,7 @@ export class ModernAPMService {
       severity: rule.severity,
       sessionId: this.currentSessionId,
     });
-    
+
     // Record alert as metric
     this.recordEnhancedMetric({
       name: 'performance_alert',
@@ -882,7 +894,7 @@ export class ModernAPMService {
       },
     });
   }
-  
+
   /**
    * Acknowledge an alert
    */
@@ -896,7 +908,7 @@ export class ModernAPMService {
       });
     }
   }
-  
+
   /**
    * Resolve an alert
    */
@@ -905,7 +917,7 @@ export class ModernAPMService {
     if (alert) {
       alert.resolvedAt = Date.now();
       this.activeAlerts.delete(alertId);
-      
+
       this.logger.info('Performance alert resolved', {
         alertId,
         ruleId: alert.ruleId,
@@ -915,12 +927,12 @@ export class ModernAPMService {
   }
 
   // ===== USER JOURNEY CORRELATION =====
-  
+
   /**
    * Record user journey event
    */
   private recordJourneyEvent(
-    event: Omit<UserJourneyEvent, 'eventId' | 'sessionId' | 'timestamp'>
+    event: Omit<UserJourneyEvent, 'eventId' | 'sessionId' | 'timestamp'>,
   ): void {
     const journeyEvent: UserJourneyEvent = {
       eventId: this.generateMetricId(),
@@ -929,21 +941,21 @@ export class ModernAPMService {
       timestamp: Date.now(),
       ...event,
     };
-    
+
     this.journeyEvents.push(journeyEvent);
-    
+
     // Keep only recent events (last 100 events)
     if (this.journeyEvents.length > 100) {
       this.journeyEvents = this.journeyEvents.slice(-50);
     }
   }
-  
+
   /**
    * Set current user for journey correlation
    */
   setCurrentUser(userId: string): void {
     this.currentUserId = userId;
-    
+
     this.recordEnhancedMetric({
       name: 'user_session_start',
       value: Date.now(),
@@ -955,39 +967,38 @@ export class ModernAPMService {
       },
     });
   }
-  
+
   /**
    * Get journey performance insights for current session
    */
   getJourneyInsights(): JourneyPerformanceInsight {
     const sessionEvents = this.journeyEvents.filter(e => e.sessionId === this.currentSessionId);
     const screenViews = sessionEvents.filter(e => e.eventType === 'screen_view');
-    
+
     // Calculate screen transition performance
     const screenTransitions = screenViews.length - 1;
-    const coreVitalsData = Array.from(this.coreVitals.values()).flat();
-    
-    const screenLoadTimes = coreVitalsData
-      .filter(cv => cv.type === 'FCP')
-      .map(cv => cv.value);
-    
-    const averageScreenLoadTime = screenLoadTimes.length > 0
-      ? screenLoadTimes.reduce((sum, time) => sum + time, 0) / screenLoadTimes.length
-      : 0;
-    
+    const coreVitalsData = [...this.coreVitals.values()].flat();
+
+    const screenLoadTimes = coreVitalsData.filter(cv => cv.type === 'FCP').map(cv => cv.value);
+
+    const averageScreenLoadTime =
+      screenLoadTimes.length > 0
+        ? screenLoadTimes.reduce((sum, time) => sum + time, 0) / screenLoadTimes.length
+        : 0;
+
     const slowestScreenData = coreVitalsData
       .filter(cv => cv.type === 'FCP')
       .sort((a, b) => b.value - a.value)[0];
-    
+
     const slowestScreen = slowestScreenData?.screenName || 'none';
-    
+
     // Calculate performance score
     const performanceScore = this.calculatePerformanceScore();
     const coreVitalsScore = this.calculateCoreVitalScore(coreVitalsData);
-    
+
     // Identify bottlenecks
     const bottlenecks = this.identifyBottlenecks();
-    
+
     return {
       sessionId: this.currentSessionId,
       totalDuration: Date.now() - parseInt(this.currentSessionId.split('_')[1]),
@@ -1002,15 +1013,15 @@ export class ModernAPMService {
   }
 
   // ===== HELPER METHODS =====
-  
+
   private generateSessionId(): string {
     return `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
   }
-  
+
   private generateMetricId(): string {
     return `metric_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
-  
+
   private async initializeDeviceContext(): Promise<void> {
     try {
       const [deviceModel, osVersion, appVersion, connectionState] = await Promise.all([
@@ -1019,9 +1030,9 @@ export class ModernAPMService {
         DeviceInfo.getVersion(),
         NetInfo.fetch(),
       ]);
-      
+
       const screenSize = Dimensions.get('screen');
-      
+
       this.deviceContext = {
         platform: Platform.OS as 'ios' | 'android',
         osVersion,
@@ -1034,9 +1045,9 @@ export class ModernAPMService {
           height: screenSize.height,
         },
       };
-      
+
       this.connectionType = connectionState.type || 'unknown';
-      
+
       // Update connection type when it changes
       NetInfo.addEventListener((state: NetInfoState) => {
         this.connectionType = state.type || 'unknown';
@@ -1044,14 +1055,13 @@ export class ModernAPMService {
           this.deviceContext.connectionType = this.connectionType;
         }
       });
-      
     } catch (error) {
       this.logger.error('Failed to initialize device context', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
-  
+
   private setupDefaultAlertRules(): void {
     // Screen render time alert (FCP)
     this.alertRules.set('slow_screen_render', {
@@ -1064,7 +1074,7 @@ export class ModernAPMService {
       cooldownMinutes: 5,
       enabled: true,
     });
-    
+
     // Memory pressure alert
     this.alertRules.set('high_memory_usage', {
       id: 'high_memory_usage',
@@ -1076,7 +1086,7 @@ export class ModernAPMService {
       cooldownMinutes: 10,
       enabled: true,
     });
-    
+
     // Network request timeout alert
     this.alertRules.set('slow_network_request', {
       id: 'slow_network_request',
@@ -1088,7 +1098,7 @@ export class ModernAPMService {
       cooldownMinutes: 2,
       enabled: true,
     });
-    
+
     // Touch interaction delay alert (FID)
     this.alertRules.set('slow_touch_response', {
       id: 'slow_touch_response',
@@ -1101,14 +1111,14 @@ export class ModernAPMService {
       enabled: true,
     });
   }
-  
+
   private setupPerformanceObservers(): void {
     // Set up performance observers if available
     if (typeof PerformanceObserver !== 'undefined') {
       try {
-        this.performanceObserver = new PerformanceObserver((list) => {
+        this.performanceObserver = new PerformanceObserver(list => {
           const entries = list.getEntries();
-          entries.forEach((entry) => {
+          entries.forEach(entry => {
             if (entry.entryType === 'measure' || entry.entryType === 'mark') {
               this.recordEnhancedMetric({
                 name: `performance_${entry.entryType}`,
@@ -1123,7 +1133,7 @@ export class ModernAPMService {
             }
           });
         });
-        
+
         this.performanceObserver.observe({ entryTypes: ['measure', 'mark'] });
       } catch (error) {
         this.logger.warn('PerformanceObserver not supported', {
@@ -1132,7 +1142,7 @@ export class ModernAPMService {
       }
     }
   }
-  
+
   private startSession(): void {
     this.recordEnhancedMetric({
       name: 'session_start',
@@ -1145,10 +1155,10 @@ export class ModernAPMService {
       },
     });
   }
-  
+
   private async endSession(): Promise<void> {
     const sessionDuration = Date.now() - parseInt(this.currentSessionId.split('_')[1]);
-    
+
     this.recordEnhancedMetric({
       name: 'session_end',
       value: sessionDuration,
@@ -1163,7 +1173,7 @@ export class ModernAPMService {
       },
     });
   }
-  
+
   private async saveSessionData(): Promise<void> {
     try {
       const sessionData: SessionPerformanceData = {
@@ -1171,31 +1181,30 @@ export class ModernAPMService {
         userId: this.currentUserId,
         startTime: parseInt(this.currentSessionId.split('_')[1]),
         endTime: Date.now(),
-        screenViews: Array.from(this.coreVitals.keys()),
-        coreVitals: Array.from(this.coreVitals.values()).flat(),
+        screenViews: [...this.coreVitals.keys()],
+        coreVitals: [...this.coreVitals.values()].flat(),
         performanceMetrics: this.metricsBuffer.getAll(),
         networkMetrics: this.networkMetrics.getAll(),
         memoryMetrics: this.memoryMetrics.getAll(),
-        alerts: Array.from(this.activeAlerts.values()),
+        alerts: [...this.activeAlerts.values()],
         performanceScore: this.calculatePerformanceScore(),
         deviceContext: this.deviceContext!,
       };
-      
+
       // Save to AsyncStorage with compression for mobile
       const storageKey = `apm_session_${this.currentSessionId}`;
       const compressedData = JSON.stringify(sessionData);
-      
+
       await AsyncStorage.setItem(storageKey, compressedData);
-      
+
       // Clean up old sessions based on retention policy
       await this.cleanupOldSessions();
-      
+
       this.logger.debug('Session data saved', {
         sessionId: this.currentSessionId,
         dataSize: compressedData.length,
         metricsCount: sessionData.performanceMetrics.length,
       });
-      
     } catch (error) {
       this.logger.error('Failed to save session data', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -1203,56 +1212,64 @@ export class ModernAPMService {
       });
     }
   }
-  
+
   private calculatePerformanceScore(): number {
     // Calculate weighted performance score from 0-100
-    const allCoreVitals = Array.from(this.coreVitals.values()).flat();
+    const allCoreVitals = [...this.coreVitals.values()].flat();
     if (allCoreVitals.length === 0) return 100;
-    
+
     const goodScores = allCoreVitals.filter(cv => cv.isGoodScore).length;
     const coreVitalScore = (goodScores / allCoreVitals.length) * 100;
-    
+
     // Factor in memory pressure (20% weight)
     const latestMemory = this.memoryMetrics.getLatest();
-    const memoryScore = latestMemory ? 
-      (latestMemory.memoryPressure === 'low' ? 100 :
-       latestMemory.memoryPressure === 'medium' ? 75 :
-       latestMemory.memoryPressure === 'high' ? 50 : 25) : 100;
-    
+    const memoryScore = latestMemory
+      ? latestMemory.memoryPressure === 'low'
+        ? 100
+        : latestMemory.memoryPressure === 'medium'
+          ? 75
+          : latestMemory.memoryPressure === 'high'
+            ? 50
+            : 25
+      : 100;
+
     // Factor in network performance (20% weight)
     const recentNetworkMetrics = this.networkMetrics.getLast(10);
-    const avgNetworkTime = recentNetworkMetrics.length > 0 ?
-      recentNetworkMetrics.reduce((sum, m) => sum + m.duration, 0) / recentNetworkMetrics.length : 0;
-    
-    const networkScore = avgNetworkTime === 0 ? 100 :
-      avgNetworkTime < 500 ? 100 :
-      avgNetworkTime < 1000 ? 80 :
-      avgNetworkTime < 2000 ? 60 : 40;
-    
+    const avgNetworkTime =
+      recentNetworkMetrics.length > 0
+        ? recentNetworkMetrics.reduce((sum, m) => sum + m.duration, 0) / recentNetworkMetrics.length
+        : 0;
+
+    const networkScore =
+      avgNetworkTime === 0
+        ? 100
+        : avgNetworkTime < 500
+          ? 100
+          : avgNetworkTime < 1000
+            ? 80
+            : avgNetworkTime < 2000
+              ? 60
+              : 40;
+
     // Calculate weighted score
-    const finalScore = Math.round(
-      coreVitalScore * 0.6 +
-      memoryScore * 0.2 +
-      networkScore * 0.2
-    );
-    
+    const finalScore = Math.round(coreVitalScore * 0.6 + memoryScore * 0.2 + networkScore * 0.2);
+
     return Math.max(0, Math.min(100, finalScore));
   }
-  
+
   private calculateCoreVitalScore(vitals: CoreVitalMetric[]): number {
     if (vitals.length === 0) return 100;
-    
+
     const goodScores = vitals.filter(cv => cv.isGoodScore).length;
     return Math.round((goodScores / vitals.length) * 100);
   }
-  
+
   private identifyBottlenecks(): any[] {
     const bottlenecks: any[] = [];
-    
+
     // Identify slow screens
-    const fcpMetrics = Array.from(this.coreVitals.values()).flat()
-      .filter(cv => cv.type === 'FCP');
-    
+    const fcpMetrics = [...this.coreVitals.values()].flat().filter(cv => cv.type === 'FCP');
+
     const slowScreens = fcpMetrics.filter(cv => !cv.isGoodScore);
     slowScreens.forEach(cv => {
       bottlenecks.push({
@@ -1264,11 +1281,12 @@ export class ModernAPMService {
         metrics: [cv],
       });
     });
-    
+
     // Identify network bottlenecks
-    const slowNetworkRequests = this.networkMetrics.getAll()
+    const slowNetworkRequests = this.networkMetrics
+      .getAll()
       .filter(nm => nm.duration > this.config.thresholds.network.slowRequest);
-    
+
     if (slowNetworkRequests.length > 0) {
       bottlenecks.push({
         type: 'network',
@@ -1279,7 +1297,7 @@ export class ModernAPMService {
         metrics: slowNetworkRequests,
       });
     }
-    
+
     // Identify memory bottlenecks
     if (this.memoryLeaks.length > 0) {
       bottlenecks.push({
@@ -1291,13 +1309,13 @@ export class ModernAPMService {
         metrics: this.memoryLeaks,
       });
     }
-    
+
     return bottlenecks;
   }
-  
+
   private generateRecommendations(bottlenecks: any[]): string[] {
     const recommendations: string[] = [];
-    
+
     bottlenecks.forEach(bottleneck => {
       switch (bottleneck.type) {
         case 'render':
@@ -1317,31 +1335,31 @@ export class ModernAPMService {
           break;
       }
     });
-    
+
     return [...new Set(recommendations)]; // Remove duplicates
   }
-  
+
   private async cleanupOldSessions(): Promise<void> {
     try {
       const allKeys = await AsyncStorage.getAllKeys();
       const sessionKeys = allKeys.filter(key => key.startsWith('apm_session_'));
-      
+
       // Sort by timestamp (newest first)
       const sortedKeys = sessionKeys.sort((a, b) => {
         const timestampA = parseInt(a.split('_')[2]);
         const timestampB = parseInt(b.split('_')[2]);
         return timestampB - timestampA;
       });
-      
+
       // Keep only sessions within retention period
       const retentionPeriod = this.config.retention.aggregatedDays * 24 * 60 * 60 * 1000;
       const cutoffTime = Date.now() - retentionPeriod;
-      
+
       const keysToDelete = sortedKeys.filter(key => {
         const timestamp = parseInt(key.split('_')[2]);
         return timestamp < cutoffTime;
       });
-      
+
       if (keysToDelete.length > 0) {
         await AsyncStorage.multiRemove(keysToDelete);
         this.logger.info('Cleaned up old APM session data', {
@@ -1349,40 +1367,39 @@ export class ModernAPMService {
           retentionDays: this.config.retention.aggregatedDays,
         });
       }
-      
     } catch (error) {
       this.logger.error('Failed to cleanup old APM sessions', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
-  
+
   private restoreNetworkFunctions(): void {
     global.fetch = this.originalFetch;
     global.XMLHttpRequest = this.originalXMLHttpRequest;
   }
-  
+
   // Network utility methods
   private calculateRequestSize(options?: RequestInit): number {
     if (!options?.body) return 0;
-    
+
     if (typeof options.body === 'string') {
       return new Blob([options.body]).size;
     }
-    
+
     if (options.body instanceof FormData) {
       // Rough estimate for FormData
       return 1024; // Default estimate
     }
-    
+
     return 0;
   }
-  
+
   private calculateResponseSize(response: Response): number {
     const contentLength = response.headers.get('content-length');
     return contentLength ? parseInt(contentLength, 10) : 0;
   }
-  
+
   private extractHeaders(response: Response): Record<string, string> {
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => {
@@ -1393,17 +1410,17 @@ export class ModernAPMService {
     });
     return headers;
   }
-  
+
   private isCacheHit(response: Response): boolean {
     const cacheControl = response.headers.get('cache-control');
     const etag = response.headers.get('etag');
     const lastModified = response.headers.get('last-modified');
-    
+
     return !!(cacheControl && (etag || lastModified));
   }
 
   // ===== PUBLIC API METHODS =====
-  
+
   /**
    * Get current session performance summary
    */
@@ -1418,8 +1435,8 @@ export class ModernAPMService {
     memoryUsage: NativeMemoryMetrics | undefined;
   } {
     const sessionDuration = Date.now() - parseInt(this.currentSessionId.split('_')[1]);
-    const allCoreVitals = Array.from(this.coreVitals.values()).flat();
-    
+    const allCoreVitals = [...this.coreVitals.values()].flat();
+
     return {
       sessionId: this.currentSessionId,
       duration: sessionDuration,
@@ -1431,7 +1448,7 @@ export class ModernAPMService {
       memoryUsage: this.memoryMetrics.getLatest(),
     };
   }
-  
+
   /**
    * Get real-time metrics for dashboard
    */
@@ -1443,14 +1460,14 @@ export class ModernAPMService {
     networkTrend: EnhancedNetworkMetrics[];
   } {
     return {
-      coreVitals: Array.from(this.coreVitals.values()).flat().slice(-20),
+      coreVitals: [...this.coreVitals.values()].flat().slice(-20),
       recentMetrics: this.metricsBuffer.getLast(50),
-      activeAlerts: Array.from(this.activeAlerts.values()),
+      activeAlerts: [...this.activeAlerts.values()],
       memoryTrend: this.memoryMetrics.getLast(20),
       networkTrend: this.networkMetrics.getLast(20),
     };
   }
-  
+
   /**
    * Export session data for analysis
    */
@@ -1460,17 +1477,17 @@ export class ModernAPMService {
       userId: this.currentUserId,
       startTime: parseInt(this.currentSessionId.split('_')[1]),
       endTime: Date.now(),
-      screenViews: Array.from(this.coreVitals.keys()),
-      coreVitals: Array.from(this.coreVitals.values()).flat(),
+      screenViews: [...this.coreVitals.keys()],
+      coreVitals: [...this.coreVitals.values()].flat(),
       performanceMetrics: this.metricsBuffer.getAll(),
       networkMetrics: this.networkMetrics.getAll(),
       memoryMetrics: this.memoryMetrics.getAll(),
-      alerts: Array.from(this.activeAlerts.values()),
+      alerts: [...this.activeAlerts.values()],
       performanceScore: this.calculatePerformanceScore(),
       deviceContext: this.deviceContext!,
     };
   }
-  
+
   /**
    * Get memory leak report
    */
@@ -1485,9 +1502,9 @@ export class ModernAPMService {
       recommendations: this.generateMemoryLeakRecommendations(),
     };
   }
-  
+
   private generateMemoryLeakRecommendations(): string[] {
-    const recommendations = [
+    return [
       'Implement proper cleanup in useEffect hooks',
       'Remove event listeners on component unmount',
       'Use weak references for cached data',
@@ -1496,8 +1513,6 @@ export class ModernAPMService {
       'Monitor component mount/unmount patterns',
       'Use React DevTools Profiler for memory analysis',
     ];
-    
-    return recommendations;
   }
 }
 

@@ -4,20 +4,23 @@
  * Features: Gesture recognition, morphing animations, contextual actions, smart layouts
  */
 
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import type { LayoutChangeEvent } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
   Animated,
-  PanGestureHandler,
-  TapGestureHandler,
-  LongPressGestureHandler,
-  State as GestureState,
   Dimensions,
-  LayoutChangeEvent,
+  State as GestureState,
+  LongPressGestureHandler,
+  PanGestureHandler,
+  StyleSheet,
+  TapGestureHandler,
+  Text,
+  View,
 } from 'react-native';
-import { ModernDesignSystem, Theme } from '../../design-system/ModernDesignSystem';
+
+import type { Theme } from '../../design-system/ModernDesignSystem';
+import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
 import { hapticFeedbackService } from '../../services/HapticFeedbackService';
 import { observabilityService } from '../../services/ObservabilityService';
 
@@ -32,13 +35,13 @@ export interface ModernCardProps {
   image?: React.ReactNode;
   badge?: string | number;
   actions?: CardAction[];
-  
+
   // Layout & Appearance
   variant?: 'elevated' | 'outlined' | 'filled' | 'glass';
   size?: 'compact' | 'standard' | 'expanded';
   aspectRatio?: number;
   fullWidth?: boolean;
-  
+
   // Interactive Features
   onPress?: () => void;
   onLongPress?: () => void;
@@ -46,20 +49,20 @@ export interface ModernCardProps {
   onSwipeRight?: () => void;
   onSwipeUp?: () => void;
   onSwipeDown?: () => void;
-  
+
   // Advanced Behaviors
   expandable?: boolean;
   dismissible?: boolean;
   pinchToZoom?: boolean;
   morphOnPress?: boolean;
   contextualActions?: boolean;
-  
+
   // Animations
   entranceAnimation?: 'fadeIn' | 'slideUp' | 'scaleIn' | 'flipIn' | 'morphIn';
   exitAnimation?: 'fadeOut' | 'slideDown' | 'scaleOut' | 'flipOut' | 'morphOut';
   hoverEffect?: boolean;
   pressEffect?: 'scale' | 'glow' | 'lift' | 'ripple';
-  
+
   // Accessibility
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -68,12 +71,12 @@ export interface ModernCardProps {
     label: string;
     onActivate: () => void;
   }>;
-  
+
   // Theme & Styling
   theme?: Theme;
   style?: Record<string, unknown>;
   contentStyle?: Record<string, unknown>;
-  
+
   // Performance
   lazyLoad?: boolean;
   virtualized?: boolean;
@@ -96,31 +99,39 @@ class CardGestureManager {
   private scale = new Animated.Value(1);
   private rotation = new Animated.Value(0);
   private opacity = new Animated.Value(1);
-  
+
   constructor(private onGesture?: (gesture: string, data: Record<string, unknown>) => void) {}
-  
+
   handlePanGesture = (event: Record<string, unknown>) => {
     const { translationX, translationY, velocityX, velocityY } = event.nativeEvent;
-    
+
     // Update pan values
     this.panX.setValue(translationX);
     this.panY.setValue(translationY);
-    
+
     // Calculate swipe direction and intensity
     const swipeThreshold = 100;
     const velocityThreshold = 500;
-    
+
     if (Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > velocityThreshold) {
       const direction = translationX > 0 ? 'right' : 'left';
-      this.onGesture?.('swipe', { direction, distance: Math.abs(translationX), velocity: velocityX });
+      this.onGesture?.('swipe', {
+        direction,
+        distance: Math.abs(translationX),
+        velocity: velocityX,
+      });
     }
-    
+
     if (Math.abs(translationY) > swipeThreshold || Math.abs(velocityY) > velocityThreshold) {
       const direction = translationY > 0 ? 'down' : 'up';
-      this.onGesture?.('swipe', { direction, distance: Math.abs(translationY), velocity: velocityY });
+      this.onGesture?.('swipe', {
+        direction,
+        distance: Math.abs(translationY),
+        velocity: velocityY,
+      });
     }
   };
-  
+
   handlePanEnd = () => {
     // Spring back to original position
     Animated.parallel([
@@ -138,24 +149,24 @@ class CardGestureManager {
       }),
     ]).start();
   };
-  
+
   handlePinchGesture = (event: Record<string, unknown>) => {
     const { scale } = event.nativeEvent;
     this.scale.setValue(scale);
-    
+
     if (scale > 1.5) {
       this.onGesture?.('pinch', { scale, type: 'zoom-in' });
     } else if (scale < 0.8) {
       this.onGesture?.('pinch', { scale, type: 'zoom-out' });
     }
   };
-  
+
   handleRotationGesture = (event: Record<string, unknown>) => {
     const { rotation } = event.nativeEvent;
     this.rotation.setValue(rotation);
     this.onGesture?.('rotate', { rotation });
   };
-  
+
   animatePress = (pressed: boolean) => {
     Animated.parallel([
       Animated.spring(this.scale, {
@@ -171,7 +182,7 @@ class CardGestureManager {
       }),
     ]).start();
   };
-  
+
   animateEntrance = (type: NonNullable<ModernCardProps['entranceAnimation']>) => {
     const animations: Record<string, Animated.CompositeAnimation> = {
       fadeIn: Animated.timing(this.opacity, {
@@ -217,23 +228,25 @@ class CardGestureManager {
         }),
       ]),
     };
-    
+
     return animations[type] || animations.fadeIn;
   };
-  
+
   getTransformStyle = () => ({
     transform: [
       { translateX: this.panX },
       { translateY: this.panY },
       { scale: this.scale },
-      { rotateZ: this.rotation.interpolate({
-        inputRange: [0, Math.PI * 2],
-        outputRange: ['0deg', '360deg'],
-      }) },
+      {
+        rotateZ: this.rotation.interpolate({
+          inputRange: [0, Math.PI * 2],
+          outputRange: ['0deg', '360deg'],
+        }),
+      },
     ],
     opacity: this.opacity,
   });
-  
+
   reset = () => {
     this.panX.setValue(0);
     this.panY.setValue(0);
@@ -249,7 +262,7 @@ class _SmartLayoutCalculator {
     cardCount: number,
     containerWidth: number,
     cardAspectRatio: number,
-    spacing: number
+    spacing: number,
   ): {
     columns: number;
     cardWidth: number;
@@ -265,7 +278,7 @@ class _SmartLayoutCalculator {
         layout: 'stack',
       };
     }
-    
+
     if (cardCount <= 4 && containerWidth > 600) {
       // Tablet layout
       const columns = 2;
@@ -277,7 +290,7 @@ class _SmartLayoutCalculator {
         layout: 'grid',
       };
     }
-    
+
     if (cardCount > 10) {
       // Many cards - use carousel
       const cardWidth = containerWidth * 0.8;
@@ -288,11 +301,11 @@ class _SmartLayoutCalculator {
         layout: 'carousel',
       };
     }
-    
+
     // Default mobile layout
     const columns = containerWidth > 400 ? 2 : 1;
     const cardWidth = (containerWidth - spacing * (columns + 1)) / columns;
-    
+
     return {
       columns,
       cardWidth,
@@ -344,26 +357,26 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   const [isHovered, _setIsHovered] = useState(false);
   const [cardDimensions, setCardDimensions] = useState({ width: 0, height: 0 });
   const [isVisible, _setIsVisible] = useState(!lazyLoad);
-  
+
   // Gesture management
   const gestureManager = useRef(
     new CardGestureManager((gesture, data) => {
       handleGestureAction(gesture, data);
-    })
+    }),
   ).current;
-  
+
   // Animation refs
   const glowAnim = useRef(new Animated.Value(0)).current;
   const _elevationAnim = useRef(new Animated.Value(0)).current;
   const rippleAnim = useRef(new Animated.Value(0)).current;
-  
+
   // Initialize entrance animation
   useEffect(() => {
     if (isVisible) {
       gestureManager.animateEntrance(entranceAnimation).start();
     }
   }, [isVisible, entranceAnimation]);
-  
+
   // Setup glow effect
   useEffect(() => {
     if (hoverEffect && isHovered) {
@@ -379,50 +392,53 @@ export const ModernCard: React.FC<ModernCardProps> = ({
             duration: 1000,
             useNativeDriver: false,
           }),
-        ])
+        ]),
       ).start();
     } else {
       glowAnim.setValue(0);
     }
   }, [isHovered, hoverEffect, glowAnim]);
-  
+
   // Handle gesture actions
-  const handleGestureAction = useCallback((gesture: string, data: Record<string, unknown>) => {
-    hapticFeedbackService.impact('light');
-    
-    if (gesture === 'swipe') {
-      switch (data.direction) {
-        case 'left':
-          onSwipeLeft?.();
-          break;
-        case 'right':
-          onSwipeRight?.();
-          break;
-        case 'up':
-          onSwipeUp?.();
-          break;
-        case 'down':
-          onSwipeDown?.();
-          break;
+  const handleGestureAction = useCallback(
+    (gesture: string, data: Record<string, unknown>) => {
+      hapticFeedbackService.impact('light');
+
+      if (gesture === 'swipe') {
+        switch (data.direction) {
+          case 'left':
+            onSwipeLeft?.();
+            break;
+          case 'right':
+            onSwipeRight?.();
+            break;
+          case 'up':
+            onSwipeUp?.();
+            break;
+          case 'down':
+            onSwipeDown?.();
+            break;
+        }
       }
-    }
-    
-    // Track interaction
-    observabilityService.trackUserAction('card_gesture', 'current', {
-      gesture,
-      data,
-      cardVariant: variant,
-      cardSize: size,
-    });
-  }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, variant, size]);
-  
+
+      // Track interaction
+      observabilityService.trackUserAction('card_gesture', 'current', {
+        gesture,
+        data,
+        cardVariant: variant,
+        cardSize: size,
+      });
+    },
+    [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, variant, size],
+  );
+
   // Handle press events
   const handlePress = useCallback(() => {
     if (expandable) {
       setIsExpanded(!isExpanded);
       hapticFeedbackService.impact('medium');
     }
-    
+
     if (morphOnPress) {
       // Trigger morph animation
       Animated.sequence([
@@ -438,34 +454,34 @@ export const ModernCard: React.FC<ModernCardProps> = ({
         }),
       ]).start();
     }
-    
+
     onPress?.();
   }, [expandable, isExpanded, morphOnPress, onPress]);
-  
+
   const handleLongPress = useCallback(() => {
     hapticFeedbackService.impact('heavy');
-    
+
     if (contextualActions && actions.length > 0) {
       // Show contextual action menu
       setIsExpanded(true);
     }
-    
+
     onLongPress?.();
   }, [contextualActions, actions.length, onLongPress]);
-  
+
   // Layout calculation
   const handleLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     setCardDimensions({ width, height });
   }, []);
-  
+
   // Style calculations
   const getVariantStyles = () => {
     const baseStyles = {
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.lg,
     };
-    
+
     switch (variant) {
       case 'elevated':
         return {
@@ -489,24 +505,20 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       case 'glass':
         return {
           ...baseStyles,
-          backgroundColor: theme.isDark 
-            ? 'rgba(255, 255, 255, 0.1)' 
-            : 'rgba(0, 0, 0, 0.05)',
+          backgroundColor: theme.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
           backdropFilter: 'blur(10px)',
           borderWidth: 1,
-          borderColor: theme.isDark 
-            ? 'rgba(255, 255, 255, 0.2)' 
-            : 'rgba(0, 0, 0, 0.1)',
+          borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
         };
       default:
         return baseStyles;
     }
   };
-  
+
   const getSizeStyles = () => {
     const padding = theme.spacing[4];
     const baseStyles = { padding };
-    
+
     switch (size) {
       case 'compact':
         return {
@@ -527,39 +539,43 @@ export const ModernCard: React.FC<ModernCardProps> = ({
         };
     }
   };
-  
+
   // Render badge
   const renderBadge = () => {
     if (!badge) return null;
-    
+
     return (
-      <View style={[
-        styles.badge,
-        {
-          backgroundColor: theme.colors.primary,
-          borderRadius: theme.borderRadius.full,
-        }
-      ]}>
-        <Text style={[
-          styles.badgeText,
+      <View
+        style={[
+          styles.badge,
           {
-            color: theme.colors.textInverse,
-            fontSize: theme.typography.fontSize.xs,
-          }
-        ]}>
+            backgroundColor: theme.colors.primary,
+            borderRadius: theme.borderRadius.full,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.badgeText,
+            {
+              color: theme.colors.textInverse,
+              fontSize: theme.typography.fontSize.xs,
+            },
+          ]}
+        >
           {badge}
         </Text>
       </View>
     );
   };
-  
+
   // Render actions
   const renderActions = () => {
     if (!contextualActions || actions.length === 0) return null;
-    
+
     return (
       <View style={styles.actionsContainer}>
-        {actions.map((action) => (
+        {actions.map(action => (
           <TouchableOpacity
             key={action.id}
             style={[
@@ -567,19 +583,21 @@ export const ModernCard: React.FC<ModernCardProps> = ({
               {
                 backgroundColor: theme.colors.backgroundSecondary,
                 borderRadius: theme.borderRadius.base,
-              }
+              },
             ]}
             onPress={action.onPress}
             disabled={action.disabled}
           >
             {action.icon}
-            <Text style={[
-              styles.actionLabel,
-              {
-                color: theme.colors.text,
-                fontSize: theme.typography.fontSize.sm,
-              }
-            ]}>
+            <Text
+              style={[
+                styles.actionLabel,
+                {
+                  color: theme.colors.text,
+                  fontSize: theme.typography.fontSize.sm,
+                },
+              ]}
+            >
               {action.label}
             </Text>
           </TouchableOpacity>
@@ -587,66 +605,67 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       </View>
     );
   };
-  
+
   // Render content
   const renderContent = () => (
     <View style={[getSizeStyles(), contentStyle]}>
       {image && <View style={styles.imageContainer}>{image}</View>}
-      
+
       {title && (
-        <Text style={[
-          styles.title,
-          {
-            color: theme.colors.text,
-            fontSize: theme.typography.fontSize.lg,
-            fontFamily: theme.typography.fontFamily.primary,
-            fontWeight: theme.typography.fontWeight.semibold,
-          }
-        ]}>
+        <Text
+          style={[
+            styles.title,
+            {
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.lg,
+              fontFamily: theme.typography.fontFamily.primary,
+              fontWeight: theme.typography.fontWeight.semibold,
+            },
+          ]}
+        >
           {title}
         </Text>
       )}
-      
+
       {subtitle && (
-        <Text style={[
-          styles.subtitle,
-          {
-            color: theme.colors.textSecondary,
-            fontSize: theme.typography.fontSize.sm,
-            fontFamily: theme.typography.fontFamily.secondary,
-          }
-        ]}>
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              color: theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.sm,
+              fontFamily: theme.typography.fontFamily.secondary,
+            },
+          ]}
+        >
           {subtitle}
         </Text>
       )}
-      
-      {children && (
-        <View style={styles.content}>
-          {children}
-        </View>
-      )}
-      
+
+      {children && <View style={styles.content}>{children}</View>}
+
       {isExpanded && renderActions()}
     </View>
   );
-  
+
   // Main render
   const cardStyle = [
     getVariantStyles(),
     {
       width: fullWidth ? '100%' : cardDimensions.width || SCREEN_WIDTH * 0.9,
-      aspectRatio: aspectRatio,
+      aspectRatio,
     },
-    isHovered && hoverEffect && {
-      shadowColor: theme.colors.primary,
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: glowAnim,
-      shadowRadius: 10,
-      elevation: 8,
-    },
+    isHovered &&
+      hoverEffect && {
+        shadowColor: theme.colors.primary,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: glowAnim,
+        shadowRadius: 10,
+        elevation: 8,
+      },
     style,
   ];
-  
+
   if (!isVisible && lazyLoad) {
     return (
       <View style={[cardStyle, { backgroundColor: theme.colors.backgroundSecondary }]}>
@@ -654,13 +673,10 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       </View>
     );
   }
-  
+
   const CardComponent = (
     <Animated.View
-      style={[
-        cardStyle,
-        gestureManager.getTransformStyle(),
-      ]}
+      style={[cardStyle, gestureManager.getTransformStyle()]}
       onLayout={handleLayout}
       accessible={true}
       accessibilityLabel={accessibilityLabel || title}
@@ -669,30 +685,34 @@ export const ModernCard: React.FC<ModernCardProps> = ({
     >
       {renderBadge()}
       {renderContent()}
-      
+
       {/* Ripple effect overlay */}
       {pressEffect === 'ripple' && isPressed && (
-        <Animated.View style={[
-          StyleSheet.absoluteFillObject,
-          {
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: theme.borderRadius.lg,
-            transform: [{
-              scale: rippleAnim.interpolate({
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: theme.borderRadius.lg,
+              transform: [
+                {
+                  scale: rippleAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 2],
+                  }),
+                },
+              ],
+              opacity: rippleAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0, 2],
+                outputRange: [1, 0],
               }),
-            }],
-            opacity: rippleAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 0],
-            }),
-          }
-        ]} />
+            },
+          ]}
+        />
       )}
     </Animated.View>
   );
-  
+
   // Wrap with gesture handlers
   return (
     <LongPressGestureHandler

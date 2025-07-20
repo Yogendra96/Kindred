@@ -1,6 +1,8 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { loggingService } from '../services/LoggingService';
 
 interface Props {
@@ -152,23 +154,17 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Oops! Something went wrong</Text>
           <Text style={styles.errorMessage}>
-            We're sorry, but something unexpected happened. The error has been
-            reported and we'll fix it soon.
+            We're sorry, but something unexpected happened. The error has been reported and we'll
+            fix it soon.
           </Text>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={this.handleRetry}
-            >
+            <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
               <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
 
             {__DEV__ && (
-              <TouchableOpacity
-                style={styles.reportButton}
-                onPress={this.handleReportError}
-              >
+              <TouchableOpacity style={styles.reportButton} onPress={this.handleReportError}>
                 <Text style={styles.reportButtonText}>Report Error</Text>
               </TouchableOpacity>
             )}
@@ -283,27 +279,22 @@ const styles = StyleSheet.create({
 
 // Hook for functional components
 export const useErrorHandler = () => {
-  const reportError = React.useCallback(
-    (error: Error, errorInfo?: Record<string, unknown>) => {
-      const errorId = `manual_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
+  const reportError = React.useCallback((error: Error, errorInfo?: Record<string, unknown>) => {
+    const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      loggingService.error('Manual error report:', {
-        error: error.message,
-        stack: error.stack,
-        errorInfo,
-        errorId,
-      });
+    loggingService.error('Manual error report:', {
+      error: error.message,
+      stack: error.stack,
+      errorInfo,
+      errorId,
+    });
 
-      if (__DEV__) {
-        console.error('Manual Error Report:', { error, errorInfo, errorId });
-      }
+    if (__DEV__) {
+      console.error('Manual Error Report:', { error, errorInfo, errorId });
+    }
 
-      return errorId;
-    },
-    [],
-  );
+    return errorId;
+  }, []);
 
   return { reportError };
 };

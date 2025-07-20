@@ -1,30 +1,35 @@
-import HapticFeedbackService from '../services/HapticFeedbackService';
-import { useTheme } from '../theme/ThemeProvider';
-import { AnimatedTouchable } from './MicroInteractions';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { LinearGradient } from 'expo-linear-gradient';
 import React, {
-  useState,
   useEffect,
+  useMemo,
   // useCallback,
   useRef,
-  useMemo,
+  useState,
 } from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  ScrollView,
-  Switch,
-  Slider,
   Alert,
-  Platform,
-  StatusBar,
+  Animated,
   Appearance,
+  Dimensions,
+  Platform,
+  ScrollView,
+  Slider,
+  StatusBar,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
 } from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import HapticFeedbackService from '../services/HapticFeedbackService';
+import { useTheme } from '../theme/ThemeProvider';
+
+import { AnimatedTouchable } from './MicroInteractions';
+
+// import { LinearGradient } from 'expo-linear-gradient';
 
 // Note: expo-blur would need to be installed separately
 // import { BlurView } from 'expo-blur';
@@ -60,14 +65,7 @@ interface ThemePreset {
     light: ColorPalette;
     dark: ColorPalette;
   };
-  category:
-    | 'default'
-    | 'nature'
-    | 'ocean'
-    | 'sunset'
-    | 'minimal'
-    | 'vibrant'
-    | 'accessibility';
+  category: 'default' | 'nature' | 'ocean' | 'sunset' | 'minimal' | 'vibrant' | 'accessibility';
   accessibility?: {
     highContrast?: boolean;
     colorBlindFriendly?: boolean;
@@ -302,10 +300,7 @@ const DEFAULT_CUSTOMIZATION: ThemeCustomization = {
 };
 
 interface DynamicThemingProps {
-  onThemeChange?: (
-    preset: ThemePreset,
-    customization: ThemeCustomization,
-  ) => void;
+  onThemeChange?: (preset: ThemePreset, customization: ThemeCustomization) => void;
   onClose?: () => void;
   testID?: string;
 }
@@ -397,22 +392,13 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
     switch (state.colorBlindnessType) {
       case 'protanopia':
         // Red-blind simulation
-        return color.replace(
-          /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i,
-          '#00$2$3',
-        );
+        return color.replace(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i, '#00$2$3');
       case 'deuteranopia':
         // Green-blind simulation
-        return color.replace(
-          /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i,
-          '#$100$3',
-        );
+        return color.replace(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i, '#$100$3');
       case 'tritanopia':
         // Blue-blind simulation
-        return color.replace(
-          /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i,
-          '#$1$200',
-        );
+        return color.replace(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i, '#$1$200');
       default:
         return color;
     }
@@ -440,14 +426,11 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
   const filteredPresets = useMemo(() => {
     if (selectedCategory === 'all') return DEFAULT_PRESETS;
-    return DEFAULT_PRESETS.filter(
-      preset => preset.category === selectedCategory,
-    );
+    return DEFAULT_PRESETS.filter(preset => preset.category === selectedCategory);
   }, [selectedCategory]);
 
   const currentPreset =
-    DEFAULT_PRESETS.find(p => p.id === state.currentPreset) ||
-    DEFAULT_PRESETS[0];
+    DEFAULT_PRESETS.find(p => p.id === state.currentPreset) || DEFAULT_PRESETS[0];
 
   const handlePresetChange = (preset: ThemePreset) => {
     saveThemeSettings({ currentPreset: preset.id });
@@ -455,10 +438,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
     HapticFeedbackService.triggerSelection();
   };
 
-  const handleCustomizationChange = (
-    key: keyof ThemeCustomization,
-    value: number,
-  ) => {
+  const handleCustomizationChange = (key: keyof ThemeCustomization, value: number) => {
     const newCustomization = { ...state.customization, [key]: value };
     saveThemeSettings({ customization: newCustomization });
     onThemeChange?.(currentPreset, newCustomization);
@@ -567,9 +547,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
           styles.presetCard,
           {
             backgroundColor: theme.colors.surface,
-            borderColor: isSelected
-              ? theme.colors.primary
-              : theme.colors.outline,
+            borderColor: isSelected ? theme.colors.primary : theme.colors.outline,
             borderWidth: isSelected ? 2 : 1,
           },
         ]}
@@ -577,70 +555,33 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
         hapticType='selection'
       >
         <View style={styles.presetHeader}>
-          <View
-            style={[styles.presetIcon, { backgroundColor: colors.primary }]}
-          >
-            <Ionicons
-              name={preset.icon as string}
-              size={24}
-              color={colors.onPrimary}
-            />
+          <View style={[styles.presetIcon, { backgroundColor: colors.primary }]}>
+            <Ionicons name={preset.icon as string} size={24} color={colors.onPrimary} />
           </View>
 
           {isSelected && (
-            <View
-              style={[
-                styles.selectedBadge,
-                { backgroundColor: theme.colors.primary },
-              ]}
-            >
-              <Ionicons
-                name='checkmark'
-                size={16}
-                color={theme.colors.onPrimary}
-              />
+            <View style={[styles.selectedBadge, { backgroundColor: theme.colors.primary }]}>
+              <Ionicons name='checkmark' size={16} color={theme.colors.onPrimary} />
             </View>
           )}
         </View>
 
-        <Text style={[styles.presetName, { color: theme.colors.onSurface }]}>
-          {preset.name}
-        </Text>
+        <Text style={[styles.presetName, { color: theme.colors.onSurface }]}>{preset.name}</Text>
 
-        <Text
-          style={[
-            styles.presetDescription,
-            { color: theme.colors.onSurfaceVariant },
-          ]}
-        >
+        <Text style={[styles.presetDescription, { color: theme.colors.onSurfaceVariant }]}>
           {preset.description}
         </Text>
 
         <View style={styles.colorPreview}>
-          <View
-            style={[styles.colorSwatch, { backgroundColor: colors.primary }]}
-          />
-          <View
-            style={[styles.colorSwatch, { backgroundColor: colors.secondary }]}
-          />
-          <View
-            style={[styles.colorSwatch, { backgroundColor: colors.tertiary }]}
-          />
+          <View style={[styles.colorSwatch, { backgroundColor: colors.primary }]} />
+          <View style={[styles.colorSwatch, { backgroundColor: colors.secondary }]} />
+          <View style={[styles.colorSwatch, { backgroundColor: colors.tertiary }]} />
         </View>
 
         {preset.accessibility && (
           <View style={styles.accessibilityBadge}>
-            <Ionicons
-              name='accessibility'
-              size={12}
-              color={theme.colors.primary}
-            />
-            <Text
-              style={[
-                styles.accessibilityText,
-                { color: theme.colors.primary },
-              ]}
-            >
+            <Ionicons name='accessibility' size={12} color={theme.colors.primary} />
+            <Text style={[styles.accessibilityText, { color: theme.colors.primary }]}>
               Accessible
             </Text>
           </View>
@@ -659,15 +600,8 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
     return (
       <View style={styles.sliderContainer}>
         <View style={styles.sliderHeader}>
-          <Text style={[styles.sliderLabel, { color: theme.colors.onSurface }]}>
-            {label}
-          </Text>
-          <Text
-            style={[
-              styles.sliderValue,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
+          <Text style={[styles.sliderLabel, { color: theme.colors.onSurface }]}>{label}</Text>
+          <Text style={[styles.sliderValue, { color: theme.colors.onSurfaceVariant }]}>
             {(state.customization[key] * 100).toFixed(0)}%
           </Text>
         </View>
@@ -678,9 +612,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
           maximumValue={max}
           step={step}
           value={state.customization[key]}
-          onValueChange={(value: number) =>
-            handleCustomizationChange(key, value)
-          }
+          onValueChange={(value: number) => handleCustomizationChange(key, value)}
           minimumTrackTintColor={theme.colors.primary}
           maximumTrackTintColor={theme.colors.outline}
           thumbTintColor={theme.colors.primary}
@@ -698,17 +630,8 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
-            <Text
-              style={[styles.settingLabel, { color: theme.colors.onSurface }]}
-            >
-              Auto Theme
-            </Text>
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
+            <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>Auto Theme</Text>
+            <Text style={[styles.settingDescription, { color: theme.colors.onSurfaceVariant }]}>
               Follow system appearance
             </Text>
           </View>
@@ -728,17 +651,10 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
-            <Text
-              style={[styles.settingLabel, { color: theme.colors.onSurface }]}
-            >
+            <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>
               Adaptive Colors
             </Text>
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
+            <Text style={[styles.settingDescription, { color: theme.colors.onSurfaceVariant }]}>
               Colors adapt to time of day
             </Text>
           </View>
@@ -758,17 +674,10 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
-            <Text
-              style={[styles.settingLabel, { color: theme.colors.onSurface }]}
-            >
+            <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>
               Accessibility Mode
             </Text>
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
+            <Text style={[styles.settingDescription, { color: theme.colors.onSurfaceVariant }]}>
               Enhanced contrast and readability
             </Text>
           </View>
@@ -777,9 +686,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
             onValueChange={(value: boolean) => {
               saveThemeSettings({ accessibilityMode: value });
               if (value) {
-                handlePresetChange(
-                  DEFAULT_PRESETS.find(p => p.id === 'accessibility')!,
-                );
+                handlePresetChange(DEFAULT_PRESETS.find(p => p.id === 'accessibility')!);
               }
               HapticFeedbackService.triggerSelection();
             }}
@@ -818,25 +725,15 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
         ]}
       >
         <BlurView intensity={20} style={styles.previewContent}>
-          <Text
-            style={[styles.previewTitle, { color: theme.colors.onSurface }]}
-          >
+          <Text style={[styles.previewTitle, { color: theme.colors.onSurface }]}>
             Theme Preview
           </Text>
 
           <View style={styles.previewDemo}>
             <View
-              style={[
-                styles.demoCard,
-                { backgroundColor: currentPreset?.colors.light.surface },
-              ]}
+              style={[styles.demoCard, { backgroundColor: currentPreset?.colors.light.surface }]}
             >
-              <Text
-                style={[
-                  styles.demoText,
-                  { color: currentPreset?.colors.light.onSurface },
-                ]}
-              >
+              <Text style={[styles.demoText, { color: currentPreset?.colors.light.onSurface }]}>
                 Sample Card
               </Text>
               <View
@@ -846,10 +743,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
                 ]}
               >
                 <Text
-                  style={[
-                    styles.demoButtonText,
-                    { color: currentPreset?.colors.light.onPrimary },
-                  ]}
+                  style={[styles.demoButtonText, { color: currentPreset?.colors.light.onPrimary }]}
                 >
                   Button
                 </Text>
@@ -859,10 +753,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
           <AnimatedTouchable
             onPress={togglePreviewMode}
-            style={[
-              styles.previewCloseButton,
-              { backgroundColor: theme.colors.primary },
-            ]}
+            style={[styles.previewCloseButton, { backgroundColor: theme.colors.primary }]}
             animationType='scale'
             hapticType='selection'
           >
@@ -874,68 +765,42 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      testID={testID}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]} testID={testID}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.surface}
       />
 
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-          Theme Customization
-        </Text>
+        <Text style={[styles.title, { color: theme.colors.onSurface }]}>Theme Customization</Text>
 
         <View style={styles.headerActions}>
           <AnimatedTouchable
             onPress={togglePreviewMode}
-            style={[
-              styles.headerButton,
-              { backgroundColor: theme.colors.surfaceVariant },
-            ]}
+            style={[styles.headerButton, { backgroundColor: theme.colors.surfaceVariant }]}
             animationType='scale'
             hapticType='selection'
           >
-            <Ionicons
-              name='eye'
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <Ionicons name='eye' size={20} color={theme.colors.onSurfaceVariant} />
           </AnimatedTouchable>
 
           <AnimatedTouchable
             onPress={resetToDefaults}
-            style={[
-              styles.headerButton,
-              { backgroundColor: theme.colors.surfaceVariant },
-            ]}
+            style={[styles.headerButton, { backgroundColor: theme.colors.surfaceVariant }]}
             animationType='scale'
             hapticType='selection'
           >
-            <Ionicons
-              name='refresh'
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <Ionicons name='refresh' size={20} color={theme.colors.onSurfaceVariant} />
           </AnimatedTouchable>
 
           {onClose && (
             <AnimatedTouchable
               onPress={onClose}
-              style={[
-                styles.headerButton,
-                { backgroundColor: theme.colors.surfaceVariant },
-              ]}
+              style={[styles.headerButton, { backgroundColor: theme.colors.surfaceVariant }]}
               animationType='scale'
               hapticType='selection'
             >
-              <Ionicons
-                name='close'
-                size={20}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <Ionicons name='close' size={20} color={theme.colors.onSurfaceVariant} />
             </AnimatedTouchable>
           )}
         </View>
@@ -944,14 +809,10 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {renderCategoryFilter()}
 
-        <View style={styles.presetsGrid}>
-          {filteredPresets.map(renderPresetCard)}
-        </View>
+        <View style={styles.presetsGrid}>{filteredPresets.map(renderPresetCard)}</View>
 
         <View style={styles.customizationSection}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
-          >
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             Customization
           </Text>
 
@@ -960,12 +821,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
           {renderCustomizationSlider('Spacing', 'spacing')}
           {renderCustomizationSlider('Icon Size', 'iconSize')}
           {renderCustomizationSlider('Button Height', 'buttonHeight')}
-          {renderCustomizationSlider(
-            'Animation Speed',
-            'animationDuration',
-            0.1,
-            3.0,
-          )}
+          {renderCustomizationSlider('Animation Speed', 'animationDuration', 0.1, 3.0)}
         </View>
 
         {renderAdvancedSettings()}

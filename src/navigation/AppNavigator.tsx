@@ -1,11 +1,13 @@
 // Import screens (we'll create these next)
+import React from 'react';
+
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Icon from 'react-native-vector-icons/Ionicons';
+
 import HomeScreen from '../screens/main/HomeScreen';
 import MapScreen from '../screens/main/MapScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();

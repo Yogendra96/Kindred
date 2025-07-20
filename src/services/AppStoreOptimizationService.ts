@@ -1,6 +1,8 @@
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { Linking, Platform } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, Linking } from 'react-native';
+
+import { PerformanceMonitoringService } from './PerformanceMonitoringService';
 
 // Types for App Store Optimization
 export interface AppStoreMetadata {
@@ -127,13 +129,7 @@ export interface CohortData {
 }
 
 export interface ASORecommendation {
-  type:
-    | 'keyword'
-    | 'description'
-    | 'screenshots'
-    | 'rating'
-    | 'localization'
-    | 'pricing';
+  type: 'keyword' | 'description' | 'screenshots' | 'rating' | 'localization' | 'pricing';
   priority: 'high' | 'medium' | 'low';
   title: string;
   description: string;
@@ -261,18 +257,12 @@ class AppStoreOptimizationService {
     analysis: KeywordAnalysis[];
   }> {
     try {
-      const analysis = await this.analyzeKeywords([
-        ...currentKeywords,
-        ...targetKeywords,
-      ]);
+      const analysis = await this.analyzeKeywords([...currentKeywords, ...targetKeywords]);
 
       // Sort by relevance and difficulty
       const sortedKeywords = analysis
         .filter(k => k.relevance > 0.5 && k.difficulty < 0.8)
-        .sort(
-          (a, b) =>
-            b.relevance * (1 - b.difficulty) - a.relevance * (1 - a.difficulty),
-        )
+        .sort((a, b) => b.relevance * (1 - b.difficulty) - a.relevance * (1 - a.difficulty))
         .slice(0, 100); // App Store limit
 
       const recommended = sortedKeywords.map(k => k.keyword);
@@ -354,20 +344,23 @@ class AppStoreOptimizationService {
     };
   }
 
-  private analyzeScreenshots(
-    screenshots: Screenshot[],
-    _deviceType: string,
-  ): ScreenshotAnalysis {
+  private analyzeScreenshots(screenshots: Screenshot[], _deviceType: string): ScreenshotAnalysis {
     return {
       count: screenshots.length,
-      deviceCoverage: screenshots.reduce((acc, s) => {
-        acc[s.deviceType] = (acc[s.deviceType] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      orientationMix: screenshots.reduce((acc, s) => {
-        acc[s.orientation] = (acc[s.orientation] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
+      deviceCoverage: screenshots.reduce(
+        (acc, s) => {
+          acc[s.deviceType] = (acc[s.deviceType] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+      orientationMix: screenshots.reduce(
+        (acc, s) => {
+          acc[s.orientation] = (acc[s.orientation] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
       hasCaption: screenshots.filter(s => s.caption).length,
       qualityScore: Math.random() * 100, // Placeholder
       recommendations: [],
@@ -378,9 +371,7 @@ class AppStoreOptimizationService {
   async createABTest(
     test: Omit<ASOABTest, 'id' | 'status' | 'metrics' | 'confidence'>,
   ): Promise<string> {
-    const testId = `test_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const testId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const abTest: ASOABTest = {
       ...test,
@@ -439,9 +430,7 @@ class AppStoreOptimizationService {
   } {
     // Statistical analysis to determine winning variant
     const bestVariant = test.variants.reduce((best, current) =>
-      current.performance.conversionRate > best.performance.conversionRate
-        ? current
-        : best,
+      current.performance.conversionRate > best.performance.conversionRate ? current : best,
     );
 
     // Calculate statistical confidence (simplified)
@@ -463,8 +452,7 @@ class AppStoreOptimizationService {
     const sentiment = this.analyzeSentiment(reviews);
     const topics = this.extractTopics(reviews);
     const actionableInsights = this.generateInsights(sentiment, topics);
-    const responseRecommendations =
-      this.generateResponseRecommendations(reviews);
+    const responseRecommendations = this.generateResponseRecommendations(reviews);
 
     return {
       sentiment,
@@ -484,12 +472,7 @@ class AppStoreOptimizationService {
       positive: positive / reviews.length,
       negative: negative / reviews.length,
       neutral: neutral / reviews.length,
-      overall:
-        positive > negative
-          ? 'positive'
-          : negative > positive
-          ? 'negative'
-          : 'neutral',
+      overall: positive > negative ? 'positive' : negative > positive ? 'negative' : 'neutral',
       trend: Math.random() > 0.5 ? 'improving' : 'declining',
     };
   }
@@ -506,45 +489,31 @@ class AppStoreOptimizationService {
     }));
   }
 
-  private generateInsights(
-    sentiment: ReviewSentiment,
-    topics: ReviewTopic[],
-  ): string[] {
+  private generateInsights(sentiment: ReviewSentiment, topics: ReviewTopic[]): string[] {
     const insights: string[] = [];
 
     if (sentiment.negative > 0.3) {
-      insights.push(
-        'High negative sentiment detected - focus on addressing common complaints',
-      );
+      insights.push('High negative sentiment detected - focus on addressing common complaints');
     }
 
-    const negativeTopics = topics.filter(
-      t => t.sentiment === 'negative' && t.frequency > 5,
-    );
+    const negativeTopics = topics.filter(t => t.sentiment === 'negative' && t.frequency > 5);
     if (negativeTopics.length > 0) {
-      insights.push(
-        `Common issues: ${negativeTopics.map(t => t.topic).join(', ')}`,
-      );
+      insights.push(`Common issues: ${negativeTopics.map(t => t.topic).join(', ')}`);
     }
 
     if (sentiment.trend === 'declining') {
-      insights.push(
-        'Review sentiment is declining - immediate action recommended',
-      );
+      insights.push('Review sentiment is declining - immediate action recommended');
     }
 
     return insights;
   }
 
-  private generateResponseRecommendations(
-    _reviews: any[],
-  ): ResponseRecommendation[] {
+  private generateResponseRecommendations(_reviews: any[]): ResponseRecommendation[] {
     return [
       {
         type: 'negative',
         priority: 'high',
-        template:
-          "Thank you for your feedback. We're sorry to hear about your experience...",
+        template: "Thank you for your feedback. We're sorry to hear about your experience...",
         guidelines: [
           'Acknowledge the issue',
           'Provide solution or timeline',
@@ -554,24 +523,15 @@ class AppStoreOptimizationService {
       {
         type: 'positive',
         priority: 'medium',
-        template:
-          "Thank you for the wonderful review! We're thrilled that you're enjoying...",
-        guidelines: [
-          'Express gratitude',
-          'Highlight mentioned features',
-          'Encourage sharing',
-        ],
+        template: "Thank you for the wonderful review! We're thrilled that you're enjoying...",
+        guidelines: ['Express gratitude', 'Highlight mentioned features', 'Encourage sharing'],
       },
     ];
   }
 
   // Competitor analysis
-  async analyzeCompetitors(
-    competitorIds: string[],
-  ): Promise<CompetitorAnalysis> {
-    const competitors = await Promise.all(
-      competitorIds.map(id => this.fetchCompetitorData(id)),
-    );
+  async analyzeCompetitors(competitorIds: string[]): Promise<CompetitorAnalysis> {
+    const competitors = await Promise.all(competitorIds.map(id => this.fetchCompetitorData(id)));
 
     return {
       competitors,
@@ -594,9 +554,7 @@ class AppStoreOptimizationService {
     };
   }
 
-  private calculateMarketPosition(
-    competitors: CompetitorMetrics[],
-  ): MarketPosition {
+  private calculateMarketPosition(competitors: CompetitorMetrics[]): MarketPosition {
     return {
       rank: Math.floor(Math.random() * competitors.length) + 1,
       percentile: Math.random() * 100,
@@ -652,10 +610,7 @@ class AppStoreOptimizationService {
     }
 
     // Rating recommendations
-    if (
-      this.metrics.ranking &&
-      Object.values(this.metrics.ranking).some(rank => rank > 50)
-    ) {
+    if (this.metrics.ranking && Object.values(this.metrics.ranking).some(rank => rank > 50)) {
       recommendations.push({
         type: 'rating',
         priority: 'high',
@@ -735,8 +690,7 @@ class AppStoreOptimizationService {
     };
 
     metrics.userAcquisition.totalDownloads =
-      metrics.userAcquisition.organicDownloads +
-      metrics.userAcquisition.paidDownloads;
+      metrics.userAcquisition.organicDownloads + metrics.userAcquisition.paidDownloads;
 
     this.metrics = metrics;
     return metrics;
@@ -803,10 +757,7 @@ class AppStoreOptimizationService {
   private async cacheMetadata(): Promise<void> {
     try {
       if (this.metadata) {
-        await AsyncStorage.setItem(
-          'aso_metadata',
-          JSON.stringify(this.metadata),
-        );
+        await AsyncStorage.setItem('aso_metadata', JSON.stringify(this.metadata));
       }
     } catch (error) {
       console.error('Failed to cache metadata:', error);
@@ -842,7 +793,7 @@ class AppStoreOptimizationService {
   }
 
   getABTests(): ASOABTest[] {
-    return Array.from(this.abTests.values());
+    return [...this.abTests.values()];
   }
 
   debugInfo(): {

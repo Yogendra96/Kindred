@@ -145,8 +145,7 @@ jest.mock('@tanstack/react-query', () => ({
     getQueryData: jest.fn(),
     prefetchQuery: jest.fn(),
   })),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
   useQuery: jest.fn(() => ({
     data: null,
     isLoading: false,
@@ -184,9 +183,7 @@ jest.mock('expo-haptics', () => ({
 
 jest.mock('expo-barcode-scanner', () => ({
   BarCodeScanner: {
-    requestPermissionsAsync: jest.fn(() =>
-      Promise.resolve({ status: 'granted' }),
-    ),
+    requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
     Constants: {
       BarCodeType: {
         qr: 'qr',
@@ -211,9 +208,7 @@ jest.mock('expo-local-authentication', () => ({
 // Mock React Native Keychain
 jest.mock('react-native-keychain', () => ({
   setInternetCredentials: jest.fn(() => Promise.resolve()),
-  getInternetCredentials: jest.fn(() =>
-    Promise.resolve({ username: 'test', password: 'test' }),
-  ),
+  getInternetCredentials: jest.fn(() => Promise.resolve({ username: 'test', password: 'test' })),
   resetInternetCredentials: jest.fn(() => Promise.resolve()),
   canImplyAuthentication: jest.fn(() => Promise.resolve(true)),
   getSupportedBiometryType: jest.fn(() => Promise.resolve('FaceID')),
@@ -478,17 +473,14 @@ if (typeof global !== 'undefined') {
   if (typeof global.TextDecoder === 'undefined') {
     (global as any).TextDecoder = class TextDecoder {
       decode(bytes: Uint8Array) {
-        return String.fromCharCode(...Array.from(bytes));
+        return String.fromCharCode(...[...bytes]);
       }
     };
   }
 }
 
 // Mock Performance API
-if (
-  typeof global !== 'undefined' &&
-  typeof global.performance === 'undefined'
-) {
+if (typeof global !== 'undefined' && typeof global.performance === 'undefined') {
   (global as any).performance = {
     now: jest.fn(() => Date.now()),
     mark: jest.fn(),
@@ -501,10 +493,7 @@ if (
 }
 
 // Mock PerformanceObserver
-if (
-  typeof global !== 'undefined' &&
-  typeof global.PerformanceObserver === 'undefined'
-) {
+if (typeof global !== 'undefined' && typeof global.PerformanceObserver === 'undefined') {
   (global as any).PerformanceObserver = class PerformanceObserver {
     constructor(_callback: any) {}
     observe() {}

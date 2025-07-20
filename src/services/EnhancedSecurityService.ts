@@ -1,8 +1,10 @@
-import { loggingService } from './LoggingService';
+import { Platform } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
-import { Platform } from 'react-native';
 import _Keychain from 'react-native-keychain';
+
+import { loggingService } from './LoggingService';
 
 // Global type declarations
 declare global {
@@ -22,12 +24,7 @@ interface SecurityConfig {
 }
 
 interface SecurityEvent {
-  type:
-    | 'login'
-    | 'logout'
-    | 'failed_login'
-    | 'data_access'
-    | 'security_violation';
+  type: 'login' | 'logout' | 'failed_login' | 'data_access' | 'security_violation';
   timestamp: number;
   userId?: string;
   details?: Record<string, any>;
@@ -355,7 +352,7 @@ export class EnhancedSecurityService {
 
     // SQL injection patterns
     const sqlPatterns = [
-      /('|(\-\-)|(;)|(\||\|)|(\*|\*))/i,
+      /('|(--)|(;)|(\|)|(\*))/i,
       /(exec(\s|\+)+(s|x)p\w+)/i,
       /union.*select/i,
       /insert.*into/i,
@@ -423,18 +420,10 @@ export class EnhancedSecurityService {
     const now = Date.now();
     const last24Hours = now - 24 * 60 * 60 * 1000;
 
-    const recentEvents = this.securityEvents.filter(
-      event => event.timestamp > last24Hours,
-    );
-    const criticalEvents = recentEvents.filter(
-      event => event.severity === 'critical',
-    );
-    const highSeverityEvents = recentEvents.filter(
-      event => event.severity === 'high',
-    );
-    const failedLogins = recentEvents.filter(
-      event => event.type === 'failed_login',
-    );
+    const recentEvents = this.securityEvents.filter(event => event.timestamp > last24Hours);
+    const criticalEvents = recentEvents.filter(event => event.severity === 'critical');
+    const highSeverityEvents = recentEvents.filter(event => event.severity === 'high');
+    const failedLogins = recentEvents.filter(event => event.type === 'failed_login');
 
     return {
       session: {
@@ -451,7 +440,7 @@ export class EnhancedSecurityService {
         failedLogins: failedLogins.length,
       },
       lockouts: {
-        activeUsers: Array.from(this.loginAttempts.entries())
+        activeUsers: [...this.loginAttempts.entries()]
           .filter(([_, attempts]) => attempts >= this.config.maxLoginAttempts!)
           .map(([userId]) => userId),
       },
@@ -477,10 +466,7 @@ export class EnhancedSecurityService {
 
     // Log to console in development
     if (__DEV__) {
-      const logLevel =
-        event.severity === 'critical' || event.severity === 'high'
-          ? 'warn'
-          : 'info';
+      const logLevel = event.severity === 'critical' || event.severity === 'high' ? 'warn' : 'info';
       this.logger[logLevel](`Security event: ${event.type}`, event);
     }
 
@@ -536,9 +522,12 @@ export class EnhancedSecurityService {
    */
   private setupSecurityMonitoring(): void {
     // Monitor for suspicious activity patterns
-    setInterval(() => {
-      this.analyzeSecurityPatterns();
-    }, 5 * 60 * 1000); // Every 5 minutes
+    setInterval(
+      () => {
+        this.analyzeSecurityPatterns();
+      },
+      5 * 60 * 1000,
+    ); // Every 5 minutes
   }
 
   /**
@@ -548,12 +537,8 @@ export class EnhancedSecurityService {
     const now = Date.now();
     const last10Minutes = now - 10 * 60 * 1000;
 
-    const recentEvents = this.securityEvents.filter(
-      event => event.timestamp > last10Minutes,
-    );
-    const failedLogins = recentEvents.filter(
-      event => event.type === 'failed_login',
-    );
+    const recentEvents = this.securityEvents.filter(event => event.timestamp > last10Minutes);
+    const failedLogins = recentEvents.filter(event => event.type === 'failed_login');
 
     // Check for brute force attacks
     if (failedLogins.length > 10) {
@@ -598,11 +583,8 @@ export class EnhancedSecurityService {
    * Cleanup old data
    */
   private cleanupOldData(): void {
-    const cutoffTime =
-      Date.now() - this.config.dataRetentionDays! * 24 * 60 * 60 * 1000;
-    this.securityEvents = this.securityEvents.filter(
-      event => event.timestamp > cutoffTime,
-    );
+    const cutoffTime = Date.now() - this.config.dataRetentionDays! * 24 * 60 * 60 * 1000;
+    this.securityEvents = this.securityEvents.filter(event => event.timestamp > cutoffTime);
   }
 
   /**

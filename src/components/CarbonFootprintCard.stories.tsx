@@ -1,8 +1,11 @@
-import { CarbonFootprintCard } from './CarbonFootprintCard';
+import React from 'react';
+
+import { View } from 'react-native';
+
 import { action } from '@storybook/addon-actions';
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import { View } from 'react-native';
+
+import { CarbonFootprintCard } from './CarbonFootprintCard';
 
 const meta: Meta<typeof CarbonFootprintCard> = {
   title: 'Components/CarbonFootprintCard',

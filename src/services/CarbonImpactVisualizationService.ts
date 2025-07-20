@@ -1,6 +1,7 @@
+import { Dimensions } from 'react-native';
+
 import { CarbonAPIService } from './CarbonAPIService';
 import { EnhancedUserAnalyticsService } from './EnhancedUserAnalyticsService';
-import { Dimensions } from 'react-native';
 
 // Chart and visualization types
 export interface ChartData {
@@ -36,15 +37,7 @@ export interface ChartMetadata {
 }
 
 export interface ChartConfig {
-  type:
-    | 'line'
-    | 'bar'
-    | 'pie'
-    | 'doughnut'
-    | 'area'
-    | 'scatter'
-    | 'heatmap'
-    | 'treemap';
+  type: 'line' | 'bar' | 'pie' | 'doughnut' | 'area' | 'scatter' | 'heatmap' | 'treemap';
   responsive: boolean;
   maintainAspectRatio: boolean;
   plugins: {
@@ -110,18 +103,7 @@ export interface SubtitleConfig {
 export interface FontConfig {
   family: string;
   size: number;
-  weight:
-    | 'normal'
-    | 'bold'
-    | '100'
-    | '200'
-    | '300'
-    | '400'
-    | '500'
-    | '600'
-    | '700'
-    | '800'
-    | '900';
+  weight: 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
   style: 'normal' | 'italic';
 }
 
@@ -558,10 +540,7 @@ class CarbonImpactVisualizationService {
         subtitle: `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`,
         unit: 'kg CO₂',
         period,
-        totalValue: Object.values(emissionsData).reduce(
-          (sum, val) => sum + val,
-          0,
-        ),
+        totalValue: Object.values(emissionsData).reduce((sum, val) => sum + val, 0),
         averageValue:
           Object.values(emissionsData).reduce((sum, val) => sum + val, 0) /
           Object.values(emissionsData).length,
@@ -628,7 +607,7 @@ class CarbonImpactVisualizationService {
         {
           label: this.getMetricLabel(metric),
           data: trendData.values,
-          backgroundColor: this.getColorScheme('default')!.primary[0] + '20',
+          backgroundColor: `${this.getColorScheme('default')!.primary[0]}20`,
           borderColor: this.getColorScheme('default')!.primary[0],
           borderWidth: 3,
           fill: true,
@@ -642,16 +621,10 @@ class CarbonImpactVisualizationService {
         title: `${this.getMetricLabel(metric)} Trend - ${period}`,
         subtitle: `${granularity} breakdown`,
         unit:
-          metric === 'emissions'
-            ? 'kg CO₂'
-            : metric === 'reductions'
-            ? 'kg CO₂ saved'
-            : 'credits',
+          metric === 'emissions' ? 'kg CO₂' : metric === 'reductions' ? 'kg CO₂ saved' : 'credits',
         period,
         totalValue: trendData.values.reduce((sum, val) => sum + val, 0),
-        averageValue:
-          trendData.values.reduce((sum, val) => sum + val, 0) /
-          trendData.values.length,
+        averageValue: trendData.values.reduce((sum, val) => sum + val, 0) / trendData.values.length,
         trend: this.calculateTrend(trendData.values),
         trendPercentage: this.calculateTrendPercentage(trendData.values),
         insights: this.generateTrendInsights(trendData, metric),
@@ -716,19 +689,14 @@ class CarbonImpactVisualizationService {
 
     const progress = (goalData.current / goalData.target) * 100;
     const timeProgress =
-      ((Date.now() - goalData.startDate) /
-        (goalData.deadline - goalData.startDate)) *
-      100;
+      ((Date.now() - goalData.startDate) / (goalData.deadline - goalData.startDate)) * 100;
 
     const chartData: ChartData = {
       labels: ['Achieved', 'Remaining'],
       datasets: [
         {
           label: 'Goal Progress',
-          data: [
-            goalData.current,
-            Math.max(0, goalData.target - goalData.current),
-          ],
+          data: [goalData.current, Math.max(0, goalData.target - goalData.current)],
           backgroundColor: [
             this.getColorScheme('default')!.semantic.success,
             this.getColorScheme('default')!.neutral[3],
@@ -743,23 +711,17 @@ class CarbonImpactVisualizationService {
           goalType === 'total-emissions'
             ? 'kg CO₂'
             : goalType === 'reduction'
-            ? 'kg CO₂ saved'
-            : 'credits',
+              ? 'kg CO₂ saved'
+              : 'credits',
         period: 'goal',
         totalValue: goalData.target,
         averageValue: goalData.current,
         trend: progress > timeProgress ? 'up' : 'down',
         trendPercentage: Math.abs(progress - timeProgress),
         insights: [
-          progress > timeProgress
-            ? "You're ahead of schedule!"
-            : "You're behind schedule",
-          `${Math.ceil(
-            (goalData.deadline - Date.now()) / (24 * 60 * 60 * 1000),
-          )} days remaining`,
-          `Need ${(goalData.target - goalData.current).toFixed(
-            1,
-          )} more to reach goal`,
+          progress > timeProgress ? "You're ahead of schedule!" : "You're behind schedule",
+          `${Math.ceil((goalData.deadline - Date.now()) / (24 * 60 * 60 * 1000))} days remaining`,
+          `Need ${(goalData.target - goalData.current).toFixed(1)} more to reach goal`,
         ],
         recommendations: [
           'Maintain current pace to achieve goal',
@@ -775,11 +737,7 @@ class CarbonImpactVisualizationService {
       responsive: true,
     });
 
-    const insights = this.generateGoalInsights(
-      goalData,
-      progress,
-      timeProgress,
-    );
+    const insights = this.generateGoalInsights(goalData, progress, timeProgress);
     const actions = this.generateGoalActions(goalData, goalType);
 
     return {
@@ -809,10 +767,7 @@ class CarbonImpactVisualizationService {
 
   // Comparison visualization
   async createComparison(
-    comparisonType:
-      | 'user-vs-average'
-      | 'period-vs-period'
-      | 'category-comparison',
+    comparisonType: 'user-vs-average' | 'period-vs-period' | 'category-comparison',
     data: any,
   ): Promise<CarbonVisualization> {
     let chartData: ChartData;
@@ -823,8 +778,7 @@ class CarbonImpactVisualizationService {
       case 'user-vs-average':
         chartData = this.createUserVsAverageChart(data);
         title = 'Your Emissions vs. Average';
-        description =
-          'Compare your carbon footprint with global and regional averages';
+        description = 'Compare your carbon footprint with global and regional averages';
         break;
       case 'period-vs-period':
         chartData = this.createPeriodComparisonChart(data);
@@ -1326,9 +1280,7 @@ class CarbonImpactVisualizationService {
       insights.push({
         type: 'warning',
         title: 'Behind Schedule',
-        description: `You're ${(timeProgress - progress).toFixed(
-          1,
-        )}% behind your target timeline`,
+        description: `You're ${(timeProgress - progress).toFixed(1)}% behind your target timeline`,
         value: timeProgress - progress,
         unit: '%',
         trend: 'down',
@@ -1339,10 +1291,7 @@ class CarbonImpactVisualizationService {
     return insights;
   }
 
-  private generateGoalActions(
-    goalData: any,
-    goalType: string,
-  ): VisualizationAction[] {
+  private generateGoalActions(goalData: any, goalType: string): VisualizationAction[] {
     const actions: VisualizationAction[] = [];
 
     if (goalType === 'reduction') {
@@ -1365,16 +1314,12 @@ class CarbonImpactVisualizationService {
     return [
       `${metric} has been trending ${this.calculateTrend(trendData.values)}`,
       `Average ${metric} per day: ${(
-        trendData.values.reduce((a: number, b: number) => a + b, 0) /
-        trendData.values.length
+        trendData.values.reduce((a: number, b: number) => a + b, 0) / trendData.values.length
       ).toFixed(1)}`,
     ];
   }
 
-  private generateTrendRecommendations(
-    trendData: any,
-    metric: string,
-  ): string[] {
+  private generateTrendRecommendations(trendData: any, metric: string): string[] {
     return [
       'Continue monitoring trends for better insights',
       'Set up alerts for significant changes',
@@ -1382,10 +1327,7 @@ class CarbonImpactVisualizationService {
     ];
   }
 
-  private generateComparisonInsights(
-    data: any,
-    comparisonType: string,
-  ): VisualizationInsight[] {
+  private generateComparisonInsights(data: any, comparisonType: string): VisualizationInsight[] {
     return [
       {
         type: 'neutral',
@@ -1396,10 +1338,7 @@ class CarbonImpactVisualizationService {
     ];
   }
 
-  private generateComparisonActions(
-    data: any,
-    comparisonType: string,
-  ): VisualizationAction[] {
+  private generateComparisonActions(data: any, comparisonType: string): VisualizationAction[] {
     return [
       {
         id: 'comparison-action-1',

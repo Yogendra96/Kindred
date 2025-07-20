@@ -5,16 +5,17 @@
  */
 
 import { Platform } from 'react-native';
+
 import type {
   BundleAnalysisResult,
   BundleOptimizerConfig,
+  DuplicateModule,
+  MobileBundleConstraints,
   ModuleAnalysis,
   OptimizationSuggestion,
-  DuplicateModule,
-  UnusedExport,
   PerformanceImpact,
   ReactNativeBundleMetrics,
-  MobileBundleConstraints
+  UnusedExport,
 } from './AdvancedBundleOptimizer.types';
 
 export class BundleOptimizerCore {
@@ -33,7 +34,7 @@ export class BundleOptimizerCore {
    */
   async analyzeBundleStructure(bundlePath: string): Promise<BundleAnalysisResult> {
     const startTime = performance.now();
-    
+
     try {
       const modules = await this.analyzeModules(bundlePath);
       const duplicates = this.findDuplicateModules(modules);
@@ -54,7 +55,7 @@ export class BundleOptimizerCore {
         duplicates,
         unusedExports,
         optimizationSuggestions: suggestions,
-        performanceImpact
+        performanceImpact,
       };
     } catch (error) {
       console.error('Bundle analysis failed:', error);
@@ -80,9 +81,9 @@ export class BundleOptimizerCore {
           exportUsage: 75,
           isTreeShakeable: true,
           isDynamicallyLoaded: false,
-          loadPriority: 'high'
+          loadPriority: 'high',
         },
-        optimizationPotential: 0.3
+        optimizationPotential: 0.3,
       },
       {
         path: 'src/services/CarbonAPIService',
@@ -96,9 +97,9 @@ export class BundleOptimizerCore {
           exportUsage: 90,
           isTreeShakeable: true,
           isDynamicallyLoaded: false,
-          loadPriority: 'critical'
+          loadPriority: 'critical',
         },
-        optimizationPotential: 0.1
+        optimizationPotential: 0.1,
       },
       {
         path: 'react-native-chart-kit',
@@ -112,10 +113,10 @@ export class BundleOptimizerCore {
           exportUsage: 33, // Only using 1 of 3 exports
           isTreeShakeable: false,
           isDynamicallyLoaded: true,
-          loadPriority: 'medium'
+          loadPriority: 'medium',
         },
-        optimizationPotential: 0.7
-      }
+        optimizationPotential: 0.7,
+      },
     ];
 
     return mockModules;
@@ -149,7 +150,7 @@ export class BundleOptimizerCore {
           moduleName,
           instances,
           wastedBytes,
-          consolidationStrategy: this.getConsolidationStrategy(moduleName, instances)
+          consolidationStrategy: this.getConsolidationStrategy(moduleName, instances),
         });
       }
     });
@@ -167,13 +168,14 @@ export class BundleOptimizerCore {
       if (module.usage.exportUsage < 100) {
         const unusedPercentage = 100 - module.usage.exportUsage;
         const bytesWasted = Math.round(module.size * (unusedPercentage / 100));
-        
-        if (bytesWasted > 1000) { // Only report significant waste
+
+        if (bytesWasted > 1000) {
+          // Only report significant waste
           unusedExports.push({
             module: module.path,
             export: 'unused-portions', // Simplified - real implementation would list specific exports
             bytesWasted,
-            removalRisk: module.isThirdParty ? 'medium' : 'safe'
+            removalRisk: module.isThirdParty ? 'medium' : 'safe',
           });
         }
       }
@@ -188,7 +190,7 @@ export class BundleOptimizerCore {
   private generateOptimizationSuggestions(
     modules: ModuleAnalysis[],
     duplicates: DuplicateModule[],
-    unusedExports: UnusedExport[]
+    unusedExports: UnusedExport[],
   ): OptimizationSuggestion[] {
     const suggestions: OptimizationSuggestion[] = [];
 
@@ -200,7 +202,7 @@ export class BundleOptimizerCore {
           description: `Remove unused exports from ${unused.module}`,
           expectedSavings: unused.bytesWasted,
           effort: unused.removalRisk === 'safe' ? 'low' : 'medium',
-          implementation: `Use named imports instead of wildcard imports for ${unused.module}`
+          implementation: `Use named imports instead of wildcard imports for ${unused.module}`,
         });
       }
     });
@@ -213,7 +215,7 @@ export class BundleOptimizerCore {
         description: `Lazy load ${module.path}`,
         expectedSavings: Math.round(module.size * 0.8), // Assume 80% startup savings
         effort: 'medium',
-        implementation: `Use React.lazy() or dynamic import() for ${module.path}`
+        implementation: `Use React.lazy() or dynamic import() for ${module.path}`,
       });
     });
 
@@ -225,7 +227,7 @@ export class BundleOptimizerCore {
           description: `Consolidate duplicate ${duplicate.moduleName}`,
           expectedSavings: duplicate.wastedBytes,
           effort: 'high',
-          implementation: `Use resolutions in package.json to force single version`
+          implementation: `Use resolutions in package.json to force single version`,
         });
       }
     });
@@ -237,7 +239,7 @@ export class BundleOptimizerCore {
         description: 'Enable Hermes bytecode compilation',
         expectedSavings: Math.round(this.getTotalBundleSize(modules) * 0.25),
         effort: 'low',
-        implementation: 'Set "hermesEnabled": true in react-native.config.js'
+        implementation: 'Set "hermesEnabled": true in react-native.config.js',
       });
     }
 
@@ -254,7 +256,7 @@ export class BundleOptimizerCore {
 
     // Rough estimates for React Native
     const startupTime = Math.round((criticalSize / 1000) * 2); // ~2ms per KB
-    const memoryUsage = Math.round(totalSize / (1024 * 1024) * 1.5); // ~1.5x size in memory
+    const memoryUsage = Math.round((totalSize / (1024 * 1024)) * 1.5); // ~1.5x size in memory
     const networkRequests = modules.filter(m => !m.usage.isDynamicallyLoaded).length;
     const cacheEfficiency = modules.filter(m => m.usage.isTreeShakeable).length / modules.length;
 
@@ -262,7 +264,7 @@ export class BundleOptimizerCore {
       startupTime,
       memoryUsage,
       networkRequests,
-      cacheEfficiency
+      cacheEfficiency,
     };
   }
 
@@ -276,7 +278,7 @@ export class BundleOptimizerCore {
       hermes: !!(global as any).HermesInternal,
       flipper: __DEV__, // Simplified check
       codegenEnabled: false, // Would need to detect this
-      newArchitecture: false // Would need to detect this
+      newArchitecture: false, // Would need to detect this
     };
   }
 
@@ -286,7 +288,7 @@ export class BundleOptimizerCore {
       maxSize: isIOS ? 200 * 1024 * 1024 : 150 * 1024 * 1024, // 200MB iOS, 150MB Android
       memoryLimit: isIOS ? 512 : 256, // MB
       cpuIntensive: !this.metrics.hermes,
-      batteryImpact: 'medium'
+      batteryImpact: 'medium',
     };
   }
 

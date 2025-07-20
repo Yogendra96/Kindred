@@ -1,29 +1,16 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import type {
-  PanGestureHandlerGestureEvent,
-  PanGestureHandlerGestureEvent} from 'react-native';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  PanGestureHandler,
-  State,
-  GestureHandlerRootView,
-} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import { Animated, Dimensions, StyleSheet, View } from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@theme/ThemeProvider';
-import React, { useRef, useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  PanGestureHandler,
-  State,
-  GestureHandlerRootView,
-} from 'react-native';
+import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
+import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -97,9 +84,7 @@ const defaultSwipeActions: SwipeAction[] = [
   },
 ];
 
-export const EnhancedGestureNavigation: React.FC<
-  EnhancedGestureNavigationProps
-> = ({
+export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps> = ({
   children,
   swipeActions = defaultSwipeActions,
   config: userConfig = {},
@@ -108,12 +93,11 @@ export const EnhancedGestureNavigation: React.FC<
   testID,
 }) => {
   const { theme } = useTheme();
-  const _navigation = useNavigation();
   const [config, setConfig] = useState<GestureConfig>({
     ...defaultConfig,
     ...userConfig,
   });
-  const [_isGestureActive, _setIsGestureActive] = useState(false);
+  const [isGestureActive, setIsGestureActive] = useState(false);
   const [activeDirection, setActiveDirection] = useState<string | null>(null);
 
   // Animation values
@@ -133,39 +117,34 @@ export const EnhancedGestureNavigation: React.FC<
   }).current;
 
   useEffect(() => {
-    loadGestureSettings();
+    void loadGestureSettings();
   }, []);
 
-  const loadGestureSettings = async () => {
+  const loadGestureSettings = useCallback(async () => {
     try {
-      const savedConfig = await AsyncStorage.getItem(
-        'gesture_navigation_config',
-      );
+      const savedConfig = await AsyncStorage.getItem('gesture_navigation_config');
       if (savedConfig) {
-        setConfig({ ...config, ...JSON.parse(savedConfig) });
+        setConfig(prevConfig => ({
+          ...prevConfig,
+          ...JSON.parse(savedConfig),
+        }));
       }
     } catch (error) {
       console.error('Error loading gesture settings:', error);
     }
-  };
+  }, []);
 
   const _saveGestureSettings = async (newConfig: Partial<GestureConfig>) => {
     try {
       const updatedConfig = { ...config, ...newConfig };
-      await AsyncStorage.setItem(
-        'gesture_navigation_config',
-        JSON.stringify(updatedConfig),
-      );
+      await AsyncStorage.setItem('gesture_navigation_config', JSON.stringify(updatedConfig));
       setConfig(updatedConfig);
     } catch (error) {
       console.error('Error saving gesture settings:', error);
     }
   };
 
-  const getSwipeDirection = (
-    translationX: number,
-    translationY: number,
-  ): string | null => {
+  const getSwipeDirection = (translationX: number, translationY: number): string | null => {
     const absX = Math.abs(translationX);
     const absY = Math.abs(translationY);
 
@@ -179,9 +158,8 @@ export const EnhancedGestureNavigation: React.FC<
 
   const getActionForDirection = (direction: string): SwipeAction | null => {
     return (
-      swipeActions.find(
-        action => action.direction === direction && action.enabled !== false,
-      ) || null
+      swipeActions.find(action => action.direction === direction && action.enabled !== false) ??
+      null
     );
   };
 
@@ -196,9 +174,7 @@ export const EnhancedGestureNavigation: React.FC<
     );
   };
 
-  const triggerHapticFeedback = (
-    type: 'start' | 'threshold' | 'success' | 'cancel',
-  ) => {
+  const triggerHapticFeedback = (type: 'start' | 'threshold' | 'success' | 'cancel') => {
     if (!config.hapticFeedback) return;
 
     switch (type) {
@@ -269,13 +245,11 @@ export const EnhancedGestureNavigation: React.FC<
       listener: (event: PanGestureHandlerGestureEvent) => {
         const { translationX, translationY } = event.nativeEvent;
         const direction = getSwipeDirection(translationX, translationY);
-        const action = getActionForDirection(direction || '');
+        const action = getActionForDirection(direction ?? '');
 
         if (!action) return;
 
-        const distance = Math.sqrt(
-          translationX * translationX + translationY * translationY,
-        );
+        const distance = Math.sqrt(translationX * translationX + translationY * translationY);
         const progress = Math.min(distance / config.threshold, 1);
 
         // Show visual feedback
@@ -296,8 +270,7 @@ export const EnhancedGestureNavigation: React.FC<
   );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
-    const { state, translationX, translationY, velocityX, velocityY, x, y } =
-      event.nativeEvent;
+    const { state, translationX, translationY, velocityX, velocityY, x, y } = event.nativeEvent;
 
     switch (state) {
       case State.BEGAN:
@@ -324,17 +297,12 @@ export const EnhancedGestureNavigation: React.FC<
       case State.END:
       case State.CANCELLED: {
         const direction = getSwipeDirection(translationX, translationY);
-        const action = getActionForDirection(direction || '');
-        const distance = Math.sqrt(
-          translationX * translationX + translationY * translationY,
-        );
-        const velocity = Math.sqrt(
-          velocityX * velocityX + velocityY * velocityY,
-        );
+        const action = getActionForDirection(direction ?? '');
+        const distance = Math.sqrt(translationX * translationX + translationY * translationY);
+        const velocity = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
 
         const shouldTrigger =
-          action &&
-          (distance >= config.threshold || velocity >= config.velocity);
+          action && (distance >= config.threshold || velocity >= config.velocity);
 
         if (shouldTrigger && gestureState.isEdgeSwipe) {
           triggerHapticFeedback('success');
@@ -370,7 +338,7 @@ export const EnhancedGestureNavigation: React.FC<
         ]).start();
 
         hideVisualFeedback();
-        _setIsGestureActive(false);
+        setIsGestureActive(false);
         onGestureEnd?.();
 
         // Reset gesture state
@@ -384,26 +352,26 @@ export const EnhancedGestureNavigation: React.FC<
   const getIndicatorPosition = () => {
     switch (activeDirection) {
       case 'left':
-        return { right: 50, top: '50%', marginTop: -25 };
+        return styles.indicatorLeft;
       case 'right':
-        return { left: 50, top: '50%', marginTop: -25 };
+        return styles.indicatorRight;
       case 'up':
-        return { bottom: 50, left: '50%', marginLeft: -25 };
+        return styles.indicatorUp;
       case 'down':
-        return { top: 50, left: '50%', marginLeft: -25 };
+        return styles.indicatorDown;
       default:
-        return { left: '50%', top: '50%', marginLeft: -25, marginTop: -25 };
+        return styles.indicatorCenter;
     }
   };
 
   const getIndicatorIcon = () => {
-    const action = getActionForDirection(activeDirection || '');
-    return action?.icon || 'hand-left';
+    const action = getActionForDirection(activeDirection ?? '');
+    return action?.icon ?? 'hand-left';
   };
 
   const getIndicatorColor = () => {
-    const action = getActionForDirection(activeDirection || '');
-    return action?.color || theme.colors.primary;
+    const action = getActionForDirection(activeDirection ?? '');
+    return action?.color ?? theme.colors.primary;
   };
 
   const animatedStyle = {
@@ -524,20 +492,17 @@ export const useGestureNavigation = () => {
     ];
   }, []);
 
-  const createCustomActions = useCallback(
-    (actions: Partial<SwipeAction>[]): SwipeAction[] => {
-      return actions.map(action => ({
-        direction: 'right',
-        action: () => {},
-        icon: 'hand-left',
-        label: 'Custom Action',
-        color: '#9C27B0',
-        enabled: true,
-        ...action,
-      })) as SwipeAction[];
-    },
-    [],
-  );
+  const createCustomActions = useCallback((actions: Partial<SwipeAction>[]): SwipeAction[] => {
+    return actions.map(action => ({
+      direction: 'right',
+      action: () => {},
+      icon: 'hand-left',
+      label: 'Custom Action',
+      color: '#9C27B0',
+      enabled: true,
+      ...action,
+    })) as SwipeAction[];
+  }, []);
 
   return {
     createNavigationActions,
@@ -616,6 +581,32 @@ const styles = StyleSheet.create({
   },
   settingsContainer: {
     padding: 16,
+  },
+  indicatorLeft: {
+    right: 50,
+    top: '50%',
+    marginTop: -25,
+  },
+  indicatorRight: {
+    left: 50,
+    top: '50%',
+    marginTop: -25,
+  },
+  indicatorUp: {
+    bottom: 50,
+    left: '50%',
+    marginLeft: -25,
+  },
+  indicatorDown: {
+    top: 50,
+    left: '50%',
+    marginLeft: -25,
+  },
+  indicatorCenter: {
+    left: '50%',
+    top: '50%',
+    marginLeft: -25,
+    marginTop: -25,
   },
 });
 

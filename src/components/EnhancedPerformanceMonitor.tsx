@@ -1,25 +1,29 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import { AnimatedTouchable } from './MicroInteractions';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@theme/ThemeProvider';
 import React, {
-  useState,
   useEffect,
   useRef,
+  useState,
   // useCallback,
   // useMemo,
 } from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
   Dimensions,
   ScrollView,
+  StyleSheet,
+  Text,
+  View,
   // Alert,
   // Platform,
 } from 'react-native';
-import { LineChart, /* BarChart, PieChart */ } from 'react-native-chart-kit';
+
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@theme/ThemeProvider';
+import { LineChart /* BarChart, PieChart */ } from 'react-native-chart-kit';
+
+import { HapticFeedbackService } from '../services/HapticFeedbackService';
+
+import { AnimatedTouchable } from './MicroInteractions';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -107,8 +111,7 @@ const optimizationSuggestions: OptimizationSuggestion[] = [
   {
     id: 'bundle-splitting',
     title: 'Code Splitting',
-    description:
-      'Split your bundle into smaller chunks to improve initial load time.',
+    description: 'Split your bundle into smaller chunks to improve initial load time.',
     impact: 'high',
     effort: 'high',
     category: 'bundle',
@@ -135,9 +138,7 @@ interface EnhancedPerformanceMonitorProps {
   testID?: string;
 }
 
-export const EnhancedPerformanceMonitor: React.FC<
-  EnhancedPerformanceMonitorProps
-> = ({
+export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProps> = ({
   enabled = true,
   samplingInterval = 1000,
   maxDataPoints = 60,
@@ -149,14 +150,10 @@ export const EnhancedPerformanceMonitor: React.FC<
   const { theme, isDark } = useTheme();
   const [metrics, setMetrics] = useState<PerformanceMetrics[]>([]);
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
-  const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>(
-    optimizationSuggestions,
-  );
+  const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>(optimizationSuggestions);
   const [isMonitoring, setIsMonitoring] = useState(enabled);
-  const [selectedMetric, setSelectedMetric] =
-    useState<keyof PerformanceMetrics>('fps');
-  const [thresholds, setThresholds] =
-    useState<PerformanceThresholds>(defaultThresholds);
+  const [selectedMetric, setSelectedMetric] = useState<keyof PerformanceMetrics>('fps');
+  const [thresholds, setThresholds] = useState<PerformanceThresholds>(defaultThresholds);
   const [_showDetails, _setShowDetails] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -180,12 +177,8 @@ export const EnhancedPerformanceMonitor: React.FC<
 
   const loadSettings = async () => {
     try {
-      const savedThresholds = await AsyncStorage.getItem(
-        'performance_thresholds',
-      );
-      const savedSuggestions = await AsyncStorage.getItem(
-        'optimization_suggestions',
-      );
+      const savedThresholds = await AsyncStorage.getItem('performance_thresholds');
+      const savedSuggestions = await AsyncStorage.getItem('optimization_suggestions');
 
       if (savedThresholds) {
         setThresholds(JSON.parse(savedThresholds));
@@ -201,14 +194,8 @@ export const EnhancedPerformanceMonitor: React.FC<
 
   const saveSettings = async () => {
     try {
-      await AsyncStorage.setItem(
-        'performance_thresholds',
-        JSON.stringify(thresholds),
-      );
-      await AsyncStorage.setItem(
-        'optimization_suggestions',
-        JSON.stringify(suggestions),
-      );
+      await AsyncStorage.setItem('performance_thresholds', JSON.stringify(thresholds));
+      await AsyncStorage.setItem('optimization_suggestions', JSON.stringify(suggestions));
     } catch (error) {
       console.error('Error saving performance settings:', error);
     }
@@ -241,9 +228,7 @@ export const EnhancedPerformanceMonitor: React.FC<
     frameCount.current++;
 
     if (now - lastFrameTime.current >= 1000) {
-      const fps = Math.round(
-        (frameCount.current * 1000) / (now - lastFrameTime.current),
-      );
+      const fps = Math.round((frameCount.current * 1000) / (now - lastFrameTime.current));
       frameCount.current = 0;
       lastFrameTime.current = now;
 
@@ -310,9 +295,7 @@ export const EnhancedPerformanceMonitor: React.FC<
       metric,
       value,
       threshold,
-      message: `${metric} is ${type}: ${value.toFixed(
-        1,
-      )} (threshold: ${threshold})`,
+      message: `${metric} is ${type}: ${value.toFixed(1)} (threshold: ${threshold})`,
       timestamp: Date.now(),
       resolved: false,
     };
@@ -328,9 +311,7 @@ export const EnhancedPerformanceMonitor: React.FC<
 
   const resolveAlert = (alertId: string) => {
     setAlerts(prev =>
-      prev.map(alert =>
-        alert.id === alertId ? { ...alert, resolved: true } : alert,
-      ),
+      prev.map(alert => (alert.id === alertId ? { ...alert, resolved: true } : alert)),
     );
   };
 
@@ -356,8 +337,7 @@ export const EnhancedPerformanceMonitor: React.FC<
       datasets: [
         {
           data,
-          color: (opacity = 1) =>
-            `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+          color: (opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
           strokeWidth: 2,
         },
       ],
@@ -384,13 +364,10 @@ export const EnhancedPerformanceMonitor: React.FC<
     const recent = metrics.slice(-10);
     return {
       fps: recent.reduce((sum, m) => sum + m.fps, 0) / recent.length,
-      memoryUsage:
-        recent.reduce((sum, m) => sum + m.memoryUsage, 0) / recent.length,
+      memoryUsage: recent.reduce((sum, m) => sum + m.memoryUsage, 0) / recent.length,
       cpuUsage: recent.reduce((sum, m) => sum + m.cpuUsage, 0) / recent.length,
-      networkLatency:
-        recent.reduce((sum, m) => sum + m.networkLatency, 0) / recent.length,
-      renderTime:
-        recent.reduce((sum, m) => sum + m.renderTime, 0) / recent.length,
+      networkLatency: recent.reduce((sum, m) => sum + m.networkLatency, 0) / recent.length,
+      renderTime: recent.reduce((sum, m) => sum + m.renderTime, 0) / recent.length,
     };
   };
 
@@ -399,10 +376,8 @@ export const EnhancedPerformanceMonitor: React.FC<
     backgroundGradientFrom: theme.colors.surface,
     backgroundGradientTo: theme.colors.surface,
     decimalPlaces: 1,
-    color: (opacity = 1) =>
-      `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
-    labelColor: (opacity = 1) =>
-      `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+    color: (opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
     style: {
       borderRadius: 16,
     },
@@ -448,29 +423,15 @@ export const EnhancedPerformanceMonitor: React.FC<
           accessibilityState={{ checked: isMonitoring }}
           accessibilityLabel='Toggle performance monitoring'
         >
-          <Ionicons
-            name={isMonitoring ? 'play' : 'pause'}
-            size={16}
-            color='white'
-          />
+          <Ionicons name={isMonitoring ? 'play' : 'pause'} size={16} color='white' />
           <Text style={styles.toggleText}>{isMonitoring ? 'ON' : 'OFF'}</Text>
         </AnimatedTouchable>
       </View>
 
       {/* Active Alerts */}
       {activeAlerts.length > 0 && (
-        <View
-          style={[
-            styles.alertsContainer,
-            { backgroundColor: theme.colors.errorContainer },
-          ]}
-        >
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: theme.colors.onErrorContainer },
-            ]}
-          >
+        <View style={[styles.alertsContainer, { backgroundColor: theme.colors.errorContainer }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onErrorContainer }]}>
             Active Alerts ({activeAlerts.length})
           </Text>
           {activeAlerts.slice(0, 3).map(alert => (
@@ -481,12 +442,7 @@ export const EnhancedPerformanceMonitor: React.FC<
                   size={16}
                   color={alert.type === 'critical' ? '#F44336' : '#FF9800'}
                 />
-                <Text
-                  style={[
-                    styles.alertText,
-                    { color: theme.colors.onErrorContainer },
-                  ]}
-                >
+                <Text style={[styles.alertText, { color: theme.colors.onErrorContainer }]}>
                   {alert.message}
                 </Text>
               </View>
@@ -499,11 +455,7 @@ export const EnhancedPerformanceMonitor: React.FC<
                 accessibilityRole='button'
                 accessibilityLabel='Resolve alert'
               >
-                <Ionicons
-                  name='checkmark'
-                  size={16}
-                  color={theme.colors.onErrorContainer}
-                />
+                <Ionicons name='checkmark' size={16} color={theme.colors.onErrorContainer} />
               </AnimatedTouchable>
             </View>
           ))}
@@ -512,15 +464,8 @@ export const EnhancedPerformanceMonitor: React.FC<
 
       {/* Real-time Metrics */}
       {showRealTimeMetrics && currentMetrics && (
-        <View
-          style={[
-            styles.metricsContainer,
-            { backgroundColor: theme.colors.surface },
-          ]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
-          >
+        <View style={[styles.metricsContainer, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             Real-time Metrics
           </Text>
           <View style={styles.metricsGrid}>
@@ -531,12 +476,7 @@ export const EnhancedPerformanceMonitor: React.FC<
               'Latency ms': currentMetrics.networkLatency,
             }).map(([label, value]) => (
               <View key={label} style={styles.metricItem}>
-                <Text
-                  style={[
-                    styles.metricLabel,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
+                <Text style={[styles.metricLabel, { color: theme.colors.onSurfaceVariant }]}>
                   {label}
                 </Text>
                 <Text
@@ -548,10 +488,10 @@ export const EnhancedPerformanceMonitor: React.FC<
                         label.toLowerCase().includes('fps')
                           ? 'fps'
                           : label.toLowerCase().includes('memory')
-                          ? 'memoryUsage'
-                          : label.toLowerCase().includes('cpu')
-                          ? 'cpuUsage'
-                          : 'networkLatency',
+                            ? 'memoryUsage'
+                            : label.toLowerCase().includes('cpu')
+                              ? 'cpuUsage'
+                              : 'networkLatency',
                       ),
                     },
                   ]}
@@ -566,16 +506,9 @@ export const EnhancedPerformanceMonitor: React.FC<
 
       {/* Chart */}
       {chartData && (
-        <View
-          style={[
-            styles.chartContainer,
-            { backgroundColor: theme.colors.surface },
-          ]}
-        >
+        <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
           <View style={styles.chartHeader}>
-            <Text
-              style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
-            >
+            <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
               Performance Chart
             </Text>
             <View style={styles.metricSelector}>
@@ -587,9 +520,7 @@ export const EnhancedPerformanceMonitor: React.FC<
                     styles.metricButton,
                     {
                       backgroundColor:
-                        selectedMetric === metric
-                          ? theme.colors.primary
-                          : 'transparent',
+                        selectedMetric === metric ? theme.colors.primary : 'transparent',
                       borderColor: theme.colors.outline,
                     },
                   ]}
@@ -635,26 +566,14 @@ export const EnhancedPerformanceMonitor: React.FC<
 
       {/* Optimization Suggestions */}
       {showOptimizationSuggestions && (
-        <View
-          style={[
-            styles.suggestionsContainer,
-            { backgroundColor: theme.colors.surface },
-          ]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
-          >
+        <View style={[styles.suggestionsContainer, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             Optimization Suggestions
           </Text>
           {suggestions.map(suggestion => (
             <View key={suggestion.id} style={styles.suggestionItem}>
               <View style={styles.suggestionHeader}>
-                <Text
-                  style={[
-                    styles.suggestionTitle,
-                    { color: theme.colors.onSurface },
-                  ]}
-                >
+                <Text style={[styles.suggestionTitle, { color: theme.colors.onSurface }]}>
                   {suggestion.title}
                 </Text>
                 <View style={styles.suggestionBadges}>
@@ -666,14 +585,12 @@ export const EnhancedPerformanceMonitor: React.FC<
                           suggestion.impact === 'high'
                             ? '#4CAF50'
                             : suggestion.impact === 'medium'
-                            ? '#FF9800'
-                            : '#9E9E9E',
+                              ? '#FF9800'
+                              : '#9E9E9E',
                       },
                     ]}
                   >
-                    <Text style={styles.badgeText}>
-                      {suggestion.impact} impact
-                    </Text>
+                    <Text style={styles.badgeText}>{suggestion.impact} impact</Text>
                   </View>
                   <View
                     style={[
@@ -683,22 +600,17 @@ export const EnhancedPerformanceMonitor: React.FC<
                           suggestion.effort === 'low'
                             ? '#4CAF50'
                             : suggestion.effort === 'medium'
-                            ? '#FF9800'
-                            : '#F44336',
+                              ? '#FF9800'
+                              : '#F44336',
                       },
                     ]}
                   >
-                    <Text style={styles.badgeText}>
-                      {suggestion.effort} effort
-                    </Text>
+                    <Text style={styles.badgeText}>{suggestion.effort} effort</Text>
                   </View>
                 </View>
               </View>
               <Text
-                style={[
-                  styles.suggestionDescription,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
+                style={[styles.suggestionDescription, { color: theme.colors.onSurfaceVariant }]}
               >
                 {suggestion.description}
               </Text>
@@ -707,9 +619,7 @@ export const EnhancedPerformanceMonitor: React.FC<
                 style={[
                   styles.suggestionButton,
                   {
-                    backgroundColor: suggestion.implemented
-                      ? '#4CAF50'
-                      : theme.colors.primary,
+                    backgroundColor: suggestion.implemented ? '#4CAF50' : theme.colors.primary,
                   },
                 ]}
                 hapticType='medium'
@@ -737,53 +647,30 @@ export const EnhancedPerformanceMonitor: React.FC<
 
       {/* Performance Summary */}
       {averageMetrics && (
-        <View
-          style={[
-            styles.summaryContainer,
-            { backgroundColor: theme.colors.surface },
-          ]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
-          >
+        <View style={[styles.summaryContainer, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             Performance Summary (Last 10 samples)
           </Text>
           <View style={styles.summaryGrid}>
             <View style={styles.summaryItem}>
-              <Text
-                style={[
-                  styles.summaryLabel,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
+              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
                 Average FPS
               </Text>
               <Text
-                style={[
-                  styles.summaryValue,
-                  { color: getMetricColor(averageMetrics.fps, 'fps') },
-                ]}
+                style={[styles.summaryValue, { color: getMetricColor(averageMetrics.fps, 'fps') }]}
               >
                 {averageMetrics.fps.toFixed(1)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text
-                style={[
-                  styles.summaryLabel,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
+              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
                 Memory Usage
               </Text>
               <Text
                 style={[
                   styles.summaryValue,
                   {
-                    color: getMetricColor(
-                      averageMetrics.memoryUsage,
-                      'memoryUsage',
-                    ),
+                    color: getMetricColor(averageMetrics.memoryUsage, 'memoryUsage'),
                   },
                 ]}
               >
@@ -791,12 +678,7 @@ export const EnhancedPerformanceMonitor: React.FC<
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text
-                style={[
-                  styles.summaryLabel,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
+              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
                 CPU Usage
               </Text>
               <Text
@@ -811,22 +693,14 @@ export const EnhancedPerformanceMonitor: React.FC<
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text
-                style={[
-                  styles.summaryLabel,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
+              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
                 Network Latency
               </Text>
               <Text
                 style={[
                   styles.summaryValue,
                   {
-                    color: getMetricColor(
-                      averageMetrics.networkLatency,
-                      'networkLatency',
-                    ),
+                    color: getMetricColor(averageMetrics.networkLatency, 'networkLatency'),
                   },
                 ]}
               >

@@ -1,10 +1,9 @@
-import type { ReactElement } from 'react';
-import React from 'react';
-import type { RenderOptions } from '@testing-library/react-native';
-import { render } from '@testing-library/react-native';
+import React, { type ReactElement } from 'react';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { configureStore } from '@reduxjs/toolkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, type RenderOptions } from '@testing-library/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
@@ -88,14 +87,23 @@ const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
   return render(ui, { wrapper: Wrapper, ...renderOptions });
 };
 
+// Test constants
+const TEST_CONSTANTS = {
+  USER_ID: 'test-user-id',
+  EMAIL: 'test@example.com',
+  USER_NAME: 'Test User',
+  AVATAR_URL: 'https://example.com/avatar.jpg',
+  BADGE_ID: 'test-badge-id',
+} as const;
+
 // Test data factories
 export const TestDataFactory = {
   // User data
   createUser: (overrides = {}) => ({
-    uid: 'test-user-id',
-    email: 'test@example.com',
-    displayName: 'Test User',
-    photoURL: 'https://example.com/avatar.jpg',
+    uid: TEST_CONSTANTS.USER_ID,
+    email: TEST_CONSTANTS.EMAIL,
+    displayName: TEST_CONSTANTS.USER_NAME,
+    photoURL: TEST_CONSTANTS.AVATAR_URL,
     createdAt: new Date().toISOString(),
     stats: {
       level: 1,
@@ -135,7 +143,7 @@ export const TestDataFactory = {
 
   // Badge data
   createBadge: (overrides = {}) => ({
-    id: 'test-badge-id',
+    id: TEST_CONSTANTS.BADGE_ID,
     name: 'Test Badge',
     description: 'A test badge for testing',
     icon: '🏆',
@@ -162,8 +170,8 @@ export const TestDataFactory = {
   // Achievement data
   createAchievement: (overrides = {}) => ({
     id: 'test-achievement-id',
-    userId: 'test-user-id',
-    badgeId: 'test-badge-id',
+    userId: TEST_CONSTANTS.USER_ID,
+    badgeId: TEST_CONSTANTS.BADGE_ID,
     badge: TestDataFactory.createBadge(),
     unlockedDate: new Date().toISOString(),
     progress: {
@@ -406,7 +414,7 @@ export const TestHelpers = {
 
   // Mock camera
   mockCamera: () => {
-    const mockCamera = {
+    return {
       getAvailableCameraDevices: jest.fn(() =>
         Promise.resolve([
           {
@@ -428,8 +436,6 @@ export const TestHelpers = {
       ),
       requestCameraPermission: jest.fn(() => Promise.resolve('authorized')),
     };
-
-    return mockCamera;
   },
 
   // Create test IDs for components
@@ -457,11 +463,19 @@ export const TestHelpers = {
 
   // Memory usage helpers
   measureMemoryUsage: () => {
-    if (performance.memory) {
+    const perfWithMemory = performance as Performance & {
+      memory?: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
+    };
+
+    if (perfWithMemory.memory) {
       return {
-        used: performance.memory.usedJSHeapSize,
-        total: performance.memory.totalJSHeapSize,
-        limit: performance.memory.jsHeapSizeLimit,
+        used: perfWithMemory.memory.usedJSHeapSize,
+        total: perfWithMemory.memory.totalJSHeapSize,
+        limit: perfWithMemory.memory.jsHeapSizeLimit,
       };
     }
     return null;
@@ -502,15 +516,14 @@ export const TestHelpers = {
   },
 
   // Accessibility testing helpers
-  checkAccessibility: (element: unknown) => {
-    const accessibilityChecks = {
-      hasAccessibilityLabel: !!element.props.accessibilityLabel,
-      hasAccessibilityHint: !!element.props.accessibilityHint,
-      hasAccessibilityRole: !!element.props.accessibilityRole,
-      isAccessible: element.props.accessible !== false,
+  checkAccessibility: (element: { props?: Record<string, unknown> }) => {
+    const props = element.props ?? {};
+    return {
+      hasAccessibilityLabel: !!props.accessibilityLabel,
+      hasAccessibilityHint: !!props.accessibilityHint,
+      hasAccessibilityRole: !!props.accessibilityRole,
+      isAccessible: props.accessible !== false,
     };
-
-    return accessibilityChecks;
   },
 };
 
@@ -539,14 +552,12 @@ expect.extend({
 
     if (pass) {
       return {
-        message: () =>
-          `Expected render time ${received}ms to be greater than ${expected}ms`,
+        message: () => `Expected render time ${received}ms to be greater than ${expected}ms`,
         pass: true,
       };
     } else {
       return {
-        message: () =>
-          `Expected render time ${received}ms to be within ${expected}ms`,
+        message: () => `Expected render time ${received}ms to be within ${expected}ms`,
         pass: false,
       };
     }

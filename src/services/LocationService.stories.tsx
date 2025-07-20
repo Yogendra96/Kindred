@@ -1,13 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Alert,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+
+import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 // Type definitions for LocationService demo
 interface LocationData {
@@ -133,8 +126,7 @@ const createMockLocationService = () => {
       };
       currentLocation = mockLocation;
       metrics.totalLocationUpdates++;
-      metrics.averageAccuracy =
-        (metrics.averageAccuracy + mockLocation.accuracy!) / 2;
+      metrics.averageAccuracy = (metrics.averageAccuracy + mockLocation.accuracy!) / 2;
 
       // Notify listeners
       listeners.forEach(listener => listener(mockLocation));
@@ -158,9 +150,7 @@ const createMockLocationService = () => {
       isTracking = false;
     },
 
-    async addGeofenceRegion(
-      region: Omit<GeofenceRegion, 'id'>,
-    ): Promise<string> {
+    async addGeofenceRegion(region: Omit<GeofenceRegion, 'id'>): Promise<string> {
       const id = `geofence_${Date.now()}`;
       geofenceRegions.push({ ...region, id });
       return id;
@@ -170,9 +160,7 @@ const createMockLocationService = () => {
       geofenceRegions = geofenceRegions.filter(r => r.id !== id);
     },
 
-    async addPlaceOfInterest(
-      place: Omit<PlaceOfInterest, 'id' | 'visitCount'>,
-    ): Promise<string> {
+    async addPlaceOfInterest(place: Omit<PlaceOfInterest, 'id' | 'visitCount'>): Promise<string> {
       const id = `place_${Date.now()}`;
       placesOfInterest.push({ ...place, id, visitCount: 0 });
       return id;
@@ -182,10 +170,7 @@ const createMockLocationService = () => {
       placesOfInterest = placesOfInterest.filter(p => p.id !== id);
     },
 
-    addLocationListener(
-      id: string,
-      listener: (location: LocationData) => void,
-    ) {
+    addLocationListener(id: string, listener: (location: LocationData) => void) {
       listeners.set(id, listener);
     },
 
@@ -245,15 +230,11 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
   const [locationService] = useState(() => createMockLocationService());
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(
-    null,
-  );
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [config, setConfig] = useState<LocationConfig | null>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [geofenceRegions, setGeofenceRegions] = useState<GeofenceRegion[]>([]);
-  const [placesOfInterest, setPlacesOfInterest] = useState<PlaceOfInterest[]>(
-    [],
-  );
+  const [placesOfInterest, setPlacesOfInterest] = useState<PlaceOfInterest[]>([]);
   const [status, setStatus] = useState('Not initialized');
 
   useEffect(() => {
@@ -269,9 +250,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           await handleStartTracking();
         }
       } catch (error) {
-        setStatus(
-          `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
+        setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
 
@@ -294,11 +273,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setIsTracking(true);
       setStatus('Tracking active');
     } catch (error) {
-      setStatus(
-        `Tracking error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      setStatus(`Tracking error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -308,11 +283,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setIsTracking(false);
       setStatus('Tracking stopped');
     } catch (error) {
-      setStatus(
-        `Stop error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      setStatus(`Stop error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -323,11 +294,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setMetrics(locationService.getMetrics());
       setStatus('Location retrieved');
     } catch (error) {
-      setStatus(
-        `Location error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      setStatus(`Location error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -345,11 +312,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setGeofenceRegions(locationService.getGeofenceRegions());
       setStatus(`Added geofence: ${regionId}`);
     } catch (error) {
-      setStatus(
-        `Geofence error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      setStatus(`Geofence error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -368,11 +331,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setPlacesOfInterest(locationService.getPlacesOfInterest());
       setStatus(`Added place: ${placeId}`);
     } catch (error) {
-      setStatus(
-        `Place error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      setStatus(`Place error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -382,11 +341,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setConfig(locationService.getConfig());
       setStatus(`Updated ${key}`);
     } catch (error) {
-      setStatus(
-        `Config error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      setStatus(`Config error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -407,9 +362,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
             onPress={isTracking ? handleStopTracking : handleStartTracking}
             disabled={!isInitialized}
           >
-            <Text style={styles.buttonText}>
-              {isTracking ? 'Stop Tracking' : 'Start Tracking'}
-            </Text>
+            <Text style={styles.buttonText}>{isTracking ? 'Stop Tracking' : 'Start Tracking'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -428,13 +381,10 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           <Text style={styles.sectionTitle}>Current Location</Text>
           <View style={styles.locationCard}>
             <Text style={styles.locationText}>
-              📍 {currentLocation.latitude.toFixed(6)},{' '}
-              {currentLocation.longitude.toFixed(6)}
+              📍 {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
             </Text>
             {currentLocation.address && (
-              <Text style={styles.locationText}>
-                🏠 {currentLocation.address}
-              </Text>
+              <Text style={styles.locationText}>🏠 {currentLocation.address}</Text>
             )}
             {currentLocation.city && (
               <Text style={styles.locationText}>
@@ -462,36 +412,28 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
               <Text style={styles.configLabel}>Background Location</Text>
               <Switch
                 value={config.enableBackgroundLocation}
-                onValueChange={value =>
-                  handleConfigChange('enableBackgroundLocation', value)
-                }
+                onValueChange={value => handleConfigChange('enableBackgroundLocation', value)}
               />
             </View>
             <View style={styles.configRow}>
               <Text style={styles.configLabel}>Geofencing</Text>
               <Switch
                 value={config.enableGeofencing}
-                onValueChange={value =>
-                  handleConfigChange('enableGeofencing', value)
-                }
+                onValueChange={value => handleConfigChange('enableGeofencing', value)}
               />
             </View>
             <View style={styles.configRow}>
               <Text style={styles.configLabel}>Location History</Text>
               <Switch
                 value={config.enableLocationHistory}
-                onValueChange={value =>
-                  handleConfigChange('enableLocationHistory', value)
-                }
+                onValueChange={value => handleConfigChange('enableLocationHistory', value)}
               />
             </View>
             <View style={styles.configRow}>
               <Text style={styles.configLabel}>Battery Optimization</Text>
               <Switch
                 value={config.enableBatteryOptimization}
-                onValueChange={value =>
-                  handleConfigChange('enableBatteryOptimization', value)
-                }
+                onValueChange={value => handleConfigChange('enableBatteryOptimization', value)}
               />
             </View>
             <View style={styles.configRow}>
@@ -509,15 +451,11 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           <View style={styles.metricsCard}>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Total Updates</Text>
-              <Text style={styles.metricValue}>
-                {metrics.totalLocationUpdates}
-              </Text>
+              <Text style={styles.metricValue}>{metrics.totalLocationUpdates}</Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Background Updates</Text>
-              <Text style={styles.metricValue}>
-                {metrics.backgroundLocationUpdates}
-              </Text>
+              <Text style={styles.metricValue}>{metrics.backgroundLocationUpdates}</Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Geofence Events</Text>
@@ -525,9 +463,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Average Accuracy</Text>
-              <Text style={styles.metricValue}>
-                {metrics.averageAccuracy.toFixed(1)}m
-              </Text>
+              <Text style={styles.metricValue}>{metrics.averageAccuracy.toFixed(1)}m</Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Error Count</Text>
@@ -550,9 +486,7 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
               <Text style={styles.regionDetails}>
                 📍 {region.latitude.toFixed(4)}, {region.longitude.toFixed(4)}
               </Text>
-              <Text style={styles.regionDetails}>
-                🔄 Radius: {region.radius}m
-              </Text>
+              <Text style={styles.regionDetails}>🔄 Radius: {region.radius}m</Text>
               <Text style={styles.regionDetails}>
                 🔔 Entry: {region.notifyOnEntry ? '✅' : '❌'} | Exit:{' '}
                 {region.notifyOnExit ? '✅' : '❌'}
@@ -572,19 +506,12 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           {placesOfInterest.map(place => (
             <View key={place.id} style={styles.placeCard}>
               <Text style={styles.placeName}>{place.name}</Text>
+              <Text style={styles.placeDetails}>📂 Category: {place.category}</Text>
               <Text style={styles.placeDetails}>
-                📂 Category: {place.category}
+                📍 {place.location.latitude.toFixed(4)}, {place.location.longitude.toFixed(4)}
               </Text>
-              <Text style={styles.placeDetails}>
-                📍 {place.location.latitude.toFixed(4)},{' '}
-                {place.location.longitude.toFixed(4)}
-              </Text>
-              <Text style={styles.placeDetails}>
-                🔄 Radius: {place.radius}m
-              </Text>
-              <Text style={styles.placeDetails}>
-                👥 Visits: {place.visitCount}
-              </Text>
+              <Text style={styles.placeDetails}>🔄 Radius: {place.radius}m</Text>
+              <Text style={styles.placeDetails}>👥 Visits: {place.visitCount}</Text>
             </View>
           ))}
         </View>

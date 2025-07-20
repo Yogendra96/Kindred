@@ -24,7 +24,7 @@ export const ColorPalette = {
     800: '#073282',
     900: '#042763',
   },
-  
+
   // Secondary/Accent Colors
   secondary: {
     50: '#F3E5F5',
@@ -38,7 +38,7 @@ export const ColorPalette = {
     800: '#6A1B9A',
     900: '#4A148C',
   },
-  
+
   // Sustainability Green (Carbon theme)
   sustainability: {
     50: '#E8F5E8',
@@ -52,7 +52,7 @@ export const ColorPalette = {
     800: '#2E7D32',
     900: '#1B5E20',
   },
-  
+
   // Neutral/Gray Scale
   neutral: {
     0: '#FFFFFF',
@@ -68,7 +68,7 @@ export const ColorPalette = {
     900: '#212121',
     1000: '#000000',
   },
-  
+
   // Semantic Colors
   semantic: {
     success: {
@@ -96,14 +96,14 @@ export const ColorPalette = {
       contrast: '#FFFFFF',
     },
   },
-  
+
   // Carbon Footprint Specific Colors
   carbon: {
     excellent: '#00C853', // Very low carbon footprint
-    good: '#4CAF50',      // Low carbon footprint
-    moderate: '#FF9800',   // Moderate carbon footprint
-    poor: '#FF5722',      // High carbon footprint
-    critical: '#D32F2F',  // Very high carbon footprint
+    good: '#4CAF50', // Low carbon footprint
+    moderate: '#FF9800', // Moderate carbon footprint
+    poor: '#FF5722', // High carbon footprint
+    critical: '#D32F2F', // Very high carbon footprint
   },
 } as const;
 
@@ -126,7 +126,7 @@ export const Typography = {
       default: 'monospace',
     }),
   },
-  
+
   fontWeight: {
     light: '300' as const,
     regular: '400' as const,
@@ -135,7 +135,7 @@ export const Typography = {
     bold: '700' as const,
     extrabold: '800' as const,
   },
-  
+
   fontSize: {
     xs: 12,
     sm: 14,
@@ -151,7 +151,7 @@ export const Typography = {
     '8xl': 96,
     '9xl': 128,
   },
-  
+
   lineHeight: {
     xs: 16,
     sm: 20,
@@ -167,7 +167,7 @@ export const Typography = {
     '8xl': 112,
     '9xl': 144,
   },
-  
+
   letterSpacing: {
     tighter: -0.05,
     tight: -0.025,
@@ -303,7 +303,7 @@ export const Motion = {
     slower: 750,
     slowest: 1000,
   },
-  
+
   easing: {
     linear: 'linear',
     easeIn: 'ease-in',
@@ -312,12 +312,12 @@ export const Motion = {
     spring: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
   },
-  
+
   scale: {
     enter: 0.95,
     exit: 1.05,
   },
-  
+
   opacity: {
     enter: 0,
     exit: 1,
@@ -500,7 +500,7 @@ export const ComponentVariants = {
       borderColor: 'error',
     },
   },
-  
+
   input: {
     default: {
       backgroundColor: 'surface',
@@ -527,7 +527,7 @@ export const ComponentVariants = {
       placeholderColor: 'textTertiary',
     },
   },
-  
+
   card: {
     default: {
       backgroundColor: 'surface',
@@ -553,7 +553,7 @@ export const ResponsiveUtils = {
   isMediumDevice: screenWidth >= 375 && screenWidth < 414,
   isLargeDevice: screenWidth >= 414,
   isTablet: screenWidth >= 768,
-  
+
   getResponsiveValue: <T>(values: { sm?: T; md?: T; lg?: T; xl?: T }, defaultValue: T): T => {
     if (screenWidth >= Breakpoints.xl && values.xl !== undefined) return values.xl;
     if (screenWidth >= Breakpoints.lg && values.lg !== undefined) return values.lg;
@@ -561,11 +561,11 @@ export const ResponsiveUtils = {
     if (screenWidth >= Breakpoints.sm && values.sm !== undefined) return values.sm;
     return defaultValue;
   },
-  
+
   getSpacing: (multiplier: number): number => Spacing[2] * multiplier,
-  
+
   getFontSize: (size: keyof typeof Typography.fontSize): number => Typography.fontSize[size],
-  
+
   getColor: (theme: Theme, colorKey: keyof Theme['colors']): string => theme.colors[colorKey],
 };
 
@@ -575,22 +575,22 @@ export const AccessibilityUtils = {
     // Implementation would calculate actual contrast ratio
     return 4.5; // Placeholder
   },
-  
+
   isColorAccessible: (foreground: string, background: string): boolean => {
     return AccessibilityUtils.getContrastRatio(foreground, background) >= 4.5;
   },
-  
+
   getAccessibleTextColor: (theme: Theme, _backgroundColor: string): string => {
     // Return text color that meets accessibility standards
     return theme.isDark ? theme.colors.text : theme.colors.text;
   },
-  
+
   getFocusRingStyle: (theme: Theme) => ({
     borderWidth: 2,
     borderColor: theme.colors.primary,
     borderStyle: 'solid' as const,
   }),
-  
+
   getTouchTargetSize: () => ({
     minWidth: 44,
     minHeight: 44,
@@ -604,31 +604,31 @@ export const AnimationPresets = {
     to: { opacity: 1 },
     duration: Motion.duration.normal,
   },
-  
+
   fadeOut: {
     from: { opacity: 1 },
     to: { opacity: 0 },
     duration: Motion.duration.normal,
   },
-  
+
   slideInFromBottom: {
     from: { translateY: 100, opacity: 0 },
     to: { translateY: 0, opacity: 1 },
     duration: Motion.duration.normal,
   },
-  
+
   slideInFromRight: {
     from: { translateX: 100, opacity: 0 },
     to: { translateX: 0, opacity: 1 },
     duration: Motion.duration.normal,
   },
-  
+
   scaleIn: {
     from: { scale: 0.8, opacity: 0 },
     to: { scale: 1, opacity: 1 },
     duration: Motion.duration.normal,
   },
-  
+
   bounce: {
     from: { scale: 1 },
     to: { scale: 1.1 },
@@ -643,7 +643,7 @@ export const LayoutUtils = {
     width: screenWidth,
     height: screenHeight,
   }),
-  
+
   getSafeAreaInsets: () => {
     // Would integrate with react-native-safe-area-context
     return {
@@ -653,14 +653,18 @@ export const LayoutUtils = {
       right: 0,
     };
   },
-  
-  getFlexLayout: (direction: 'row' | 'column' = 'column', justify = 'flex-start', align = 'stretch') => ({
+
+  getFlexLayout: (
+    direction: 'row' | 'column' = 'column',
+    justify = 'flex-start',
+    align = 'stretch',
+  ) => ({
     display: 'flex' as const,
     flexDirection: direction,
     justifyContent: justify,
     alignItems: align,
   }),
-  
+
   getCenterLayout: () => ({
     display: 'flex' as const,
     justifyContent: 'center' as const,
@@ -677,7 +681,7 @@ export const CarbonDesignTokens = {
     poor: ColorPalette.carbon.poor,
     critical: ColorPalette.carbon.critical,
   },
-  
+
   getCarbonColor: (footprint: number): string => {
     if (footprint <= 2) return CarbonDesignTokens.colors.excellent;
     if (footprint <= 5) return CarbonDesignTokens.colors.good;
@@ -685,7 +689,7 @@ export const CarbonDesignTokens = {
     if (footprint <= 20) return CarbonDesignTokens.colors.poor;
     return CarbonDesignTokens.colors.critical;
   },
-  
+
   getCarbonLabel: (footprint: number): string => {
     if (footprint <= 2) return 'Excellent';
     if (footprint <= 5) return 'Good';
@@ -693,7 +697,7 @@ export const CarbonDesignTokens = {
     if (footprint <= 20) return 'Poor';
     return 'Critical';
   },
-  
+
   getCarbonIcon: (footprint: number): string => {
     if (footprint <= 2) return '🌱';
     if (footprint <= 5) return '🌿';

@@ -2,8 +2,9 @@
  * Accessibility utilities for WCAG 2.1 AA compliance
  * Supports screen readers, high contrast, and keyboard navigation
  */
-import { loggingService } from '../services/LoggingService';
 import { AccessibilityInfo, Platform } from 'react-native';
+
+import { loggingService } from '../services/LoggingService';
 
 export interface AccessibilityConfig {
   readonly announceScreenChanges: boolean;
@@ -39,10 +40,8 @@ class AccessibilityService {
   async initialize(): Promise<void> {
     try {
       // Detect accessibility settings
-      const screenReaderEnabled =
-        await AccessibilityInfo.isScreenReaderEnabled();
-      const reducedMotionEnabled =
-        await AccessibilityInfo.isReduceMotionEnabled();
+      const screenReaderEnabled = await AccessibilityInfo.isScreenReaderEnabled();
+      const reducedMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
 
       this.config = {
         ...this.config,
@@ -51,14 +50,8 @@ class AccessibilityService {
       };
 
       // Set up accessibility event listeners
-      AccessibilityInfo.addEventListener(
-        'screenReaderChanged',
-        this.handleScreenReaderChange,
-      );
-      AccessibilityInfo.addEventListener(
-        'reduceMotionChanged',
-        this.handleReducedMotionChange,
-      );
+      AccessibilityInfo.addEventListener('screenReaderChanged', this.handleScreenReaderChange);
+      AccessibilityInfo.addEventListener('reduceMotionChanged', this.handleReducedMotionChange);
 
       loggingService.info('Accessibility Service initialized', {
         screenReaderEnabled,
@@ -85,19 +78,12 @@ class AccessibilityService {
   /**
    * Announce text to screen readers
    */
-  announceForAccessibility(
-    message: string,
-    priority: 'low' | 'high' = 'high',
-  ): void {
+  announceForAccessibility(message: string, priority: 'low' | 'high' = 'high'): void {
     if (!this.config.screenReaderEnabled) return;
 
     try {
-      if (Platform.OS === 'ios') {
-        AccessibilityInfo.announceForAccessibility(message);
-      } else if (Platform.OS === 'android') {
-        // Android implementation
-        AccessibilityInfo.announceForAccessibility(message);
-      }
+      // Cross-platform accessibility announcement
+      AccessibilityInfo.announceForAccessibility(message);
 
       loggingService.debug('Accessibility announcement', { message, priority });
     } catch (error) {
@@ -212,15 +198,13 @@ class AccessibilityService {
   /**
    * Validate accessibility compliance for a component
    */
-  auditComponent(
-    componentProps: Record<string, unknown>,
-  ): AccessibilityAuditResult[] {
+  auditComponent(componentProps: Record<string, unknown>): AccessibilityAuditResult[] {
     const results: AccessibilityAuditResult[] = [];
 
     // Check for accessible labels
     if (!componentProps.accessibilityLabel && !componentProps.children) {
       results.push({
-        elementId: String(componentProps.testID || 'unknown'),
+        elementId: String(componentProps.testID ?? 'unknown'),
         severity: 'error',
         rule: 'WCAG 1.3.1',
         description: 'Interactive element missing accessibility label',
@@ -235,7 +219,7 @@ class AccessibilityService {
     // Check for accessibility roles
     if (componentProps.onPress && !componentProps.accessibilityRole) {
       results.push({
-        elementId: String(componentProps.testID || 'unknown'),
+        elementId: String(componentProps.testID ?? 'unknown'),
         severity: 'warning',
         rule: 'WCAG 4.1.2',
         description: 'Interactive element missing accessibility role',
@@ -255,7 +239,7 @@ class AccessibilityService {
         (typeof style.height === 'number' && style.height < 44))
     ) {
       results.push({
-        elementId: String(componentProps.testID || 'unknown'),
+        elementId: String(componentProps.testID ?? 'unknown'),
         severity: 'warning',
         rule: 'WCAG 2.5.5',
         description: 'Touch target size below recommended 44x44 points',
@@ -283,22 +267,15 @@ class AccessibilityService {
     issues: AccessibilityAuditResult[];
     recommendations: string[];
   } {
-    const errorCount = this.auditResults.filter(
-      r => r.severity === 'error',
-    ).length;
-    const warningCount = this.auditResults.filter(
-      r => r.severity === 'warning',
-    ).length;
+    const errorCount = this.auditResults.filter(r => r.severity === 'error').length;
+    const warningCount = this.auditResults.filter(r => r.severity === 'warning').length;
     const totalIssues = this.auditResults.length;
 
     // Calculate compliance score (0-100)
     const maxScore = 100;
     const errorPenalty = errorCount * 20;
     const warningPenalty = warningCount * 5;
-    const complianceScore = Math.max(
-      0,
-      maxScore - errorPenalty - warningPenalty,
-    );
+    const complianceScore = Math.max(0, maxScore - errorPenalty - warningPenalty);
 
     const recommendations = [
       'Implement comprehensive screen reader testing',
@@ -358,11 +335,7 @@ export const AccessibilityUtils = {
   /**
    * Create accessibility props for touchable elements
    */
-  createTouchableProps(
-    label: string,
-    hint?: string,
-    role: 'button' | 'link' = 'button',
-  ) {
+  createTouchableProps(label: string, hint?: string, role: 'button' | 'link' = 'button') {
     return {
       accessible: true,
       accessibilityLabel: label,
@@ -375,11 +348,7 @@ export const AccessibilityUtils = {
   /**
    * Create accessibility props for text inputs
    */
-  createTextInputProps(
-    label: string,
-    isRequired = false,
-    errorMessage?: string,
-  ) {
+  createTextInputProps(label: string, isRequired = false, errorMessage?: string) {
     return {
       accessible: true,
       accessibilityLabel: label,

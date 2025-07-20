@@ -1,8 +1,9 @@
-import PerformanceMonitoringService from './PerformanceMonitoringService';
-import SocialFeaturesService from './SocialFeaturesService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+
+import PerformanceMonitoringService from './PerformanceMonitoringService';
+import SocialFeaturesService from './SocialFeaturesService';
 
 // Types for Achievement System
 export interface UserStats {
@@ -21,13 +22,7 @@ export interface Badge {
   name: string;
   description: string;
   icon: string; // SVG string or icon name
-  category:
-    | 'carbon'
-    | 'social'
-    | 'streak'
-    | 'challenge'
-    | 'milestone'
-    | 'special';
+  category: 'carbon' | 'social' | 'streak' | 'challenge' | 'milestone' | 'special';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   requirements: {
     type:
@@ -124,11 +119,7 @@ export interface AchievementProgress {
 export interface AchievementNotification {
   id: string;
   userId: string;
-  type:
-    | 'badge_unlocked'
-    | 'progress_milestone'
-    | 'streak_milestone'
-    | 'level_up';
+  type: 'badge_unlocked' | 'progress_milestone' | 'streak_milestone' | 'level_up';
   title: string;
   message: string;
   badgeId?: string;
@@ -253,9 +244,7 @@ class AchievementSystemService {
         metadata: {
           difficulty: 1,
           estimatedTime: '1 day',
-          tips: [
-            'Start with simple activities like walking instead of driving',
-          ],
+          tips: ['Start with simple activities like walking instead of driving'],
         },
       },
       {
@@ -483,9 +472,7 @@ class AchievementSystemService {
   }
 
   public getInProgressAchievements(): Achievement[] {
-    return this.userAchievements.filter(
-      achievement => !achievement.isCompleted,
-    );
+    return this.userAchievements.filter(achievement => !achievement.isCompleted);
   }
 
   // Progress Tracking
@@ -528,8 +515,7 @@ class AchievementSystemService {
       for (const badge of this.availableBadges) {
         const currentProgress = this.calculateBadgeProgress(badge, userStats);
         const isCompleted = this.userAchievements.some(
-          achievement =>
-            achievement.badgeId === badge.id && achievement.isCompleted,
+          achievement => achievement.badgeId === badge.id && achievement.isCompleted,
         );
 
         const progress: AchievementProgress = {
@@ -537,15 +523,9 @@ class AchievementSystemService {
           badge,
           currentProgress,
           targetProgress: badge.requirements.value,
-          percentage: Math.min(
-            (currentProgress / badge.requirements.value) * 100,
-            100,
-          ),
+          percentage: Math.min((currentProgress / badge.requirements.value) * 100, 100),
           isCompleted,
-          estimatedCompletion: this.calculateEstimatedCompletion(
-            badge,
-            currentProgress,
-          ),
+          estimatedCompletion: this.calculateEstimatedCompletion(badge, currentProgress),
           nextMilestone: this.calculateNextMilestone(badge, currentProgress),
         };
 
@@ -585,19 +565,16 @@ class AchievementSystemService {
     const criteria = badge.requirements.additionalCriteria || {};
 
     if (badge.id === 'planet_guardian') {
-      const levelMet = (userStats.level || 0) >= (criteria.level as number || 0);
+      const levelMet = (userStats.level || 0) >= ((criteria.level as number) || 0);
       const carbonMet =
-        (userStats.totalCarbonSaved || 0) >= (criteria.carbonSaved as number || 0);
+        (userStats.totalCarbonSaved || 0) >= ((criteria.carbonSaved as number) || 0);
       return levelMet && carbonMet ? 1 : 0;
     }
 
     return 0;
   }
 
-  private calculateEstimatedCompletion(
-    badge: Badge,
-    currentProgress: number,
-  ): string | undefined {
+  private calculateEstimatedCompletion(badge: Badge, currentProgress: number): string | undefined {
     if (currentProgress >= badge.requirements.value) return undefined;
 
     const remaining = badge.requirements.value - currentProgress;
@@ -660,36 +637,24 @@ class AchievementSystemService {
   }
 
   // Achievement Unlocking
-  private async checkForNewAchievements(
-    userId: string,
-    userStats: UserStats,
-  ): Promise<void> {
+  private async checkForNewAchievements(userId: string, userStats: UserStats): Promise<void> {
     try {
       const newAchievements: Achievement[] = [];
 
       for (const badge of this.availableBadges) {
         // Skip if already unlocked
         const alreadyUnlocked = this.userAchievements.some(
-          achievement =>
-            achievement.badgeId === badge.id && achievement.isCompleted,
+          achievement => achievement.badgeId === badge.id && achievement.isCompleted,
         );
 
         if (alreadyUnlocked) continue;
 
         // Check if requirements are met
         const currentProgress = this.calculateBadgeProgress(badge, userStats);
-        const requirementsMet = this.checkRequirements(
-          badge,
-          currentProgress,
-          userStats,
-        );
+        const requirementsMet = this.checkRequirements(badge, currentProgress, userStats);
 
         if (requirementsMet) {
-          const achievement = await this.unlockAchievement(
-            userId,
-            badge,
-            currentProgress,
-          );
+          const achievement = await this.unlockAchievement(userId, badge, currentProgress);
           if (achievement) {
             newAchievements.push(achievement);
           }
@@ -704,11 +669,7 @@ class AchievementSystemService {
     }
   }
 
-  private checkRequirements(
-    badge: Badge,
-    currentProgress: number,
-    userStats: UserStats,
-  ): boolean {
+  private checkRequirements(badge: Badge, currentProgress: number, userStats: UserStats): boolean {
     if (badge.requirements.type === 'custom') {
       return this.checkCustomRequirements(badge, userStats);
     }
@@ -720,9 +681,9 @@ class AchievementSystemService {
     const criteria = badge.requirements.additionalCriteria || {};
 
     if (badge.id === 'planet_guardian') {
-      const levelMet = (userStats.level || 0) >= (criteria.level as number || 0);
+      const levelMet = (userStats.level || 0) >= ((criteria.level as number) || 0);
       const carbonMet =
-        (userStats.totalCarbonSaved || 0) >= (criteria.carbonSaved as number || 0);
+        (userStats.totalCarbonSaved || 0) >= ((criteria.carbonSaved as number) || 0);
       return levelMet && carbonMet;
     }
 
@@ -754,9 +715,7 @@ class AchievementSystemService {
       };
 
       // Save to Firestore
-      const docRef = await firestore()
-        .collection('achievements')
-        .add(achievement);
+      const docRef = await firestore().collection('achievements').add(achievement);
 
       const savedAchievement: Achievement = {
         id: docRef.id,
@@ -774,9 +733,7 @@ class AchievementSystemService {
     }
   }
 
-  private async handleNewAchievements(
-    achievements: Achievement[],
-  ): Promise<void> {
+  private async handleNewAchievements(achievements: Achievement[]): Promise<void> {
     try {
       // Update user stats
       await this.updateUserStats();
@@ -798,9 +755,7 @@ class AchievementSystemService {
     }
   }
 
-  private async createAchievementNotification(
-    achievement: Achievement,
-  ): Promise<void> {
+  private async createAchievementNotification(achievement: Achievement): Promise<void> {
     try {
       const notification: Omit<AchievementNotification, 'id'> = {
         userId: achievement.userId,
@@ -815,8 +770,8 @@ class AchievementSystemService {
           achievement.badge.rarity === 'legendary'
             ? 'high'
             : achievement.badge.rarity === 'epic'
-            ? 'medium'
-            : 'low',
+              ? 'medium'
+              : 'low',
         actions: [
           {
             label: 'Share',
@@ -830,9 +785,7 @@ class AchievementSystemService {
         ],
       };
 
-      const docRef = await firestore()
-        .collection('notifications')
-        .add(notification);
+      const docRef = await firestore().collection('notifications').add(notification);
 
       const savedNotification: AchievementNotification = {
         id: docRef.id,
@@ -864,14 +817,9 @@ class AchievementSystemService {
   }
 
   // User Stats Management
-  public async loadUserStats(
-    userId: string,
-  ): Promise<UserAchievementStats | null> {
+  public async loadUserStats(userId: string): Promise<UserAchievementStats | null> {
     try {
-      const statsDoc = await firestore()
-        .collection('userAchievementStats')
-        .doc(userId)
-        .get();
+      const statsDoc = await firestore().collection('userAchievementStats').doc(userId).get();
 
       if (statsDoc.exists) {
         const stats = statsDoc.data() as UserAchievementStats;
@@ -889,9 +837,7 @@ class AchievementSystemService {
     }
   }
 
-  private async createInitialUserStats(
-    userId: string,
-  ): Promise<UserAchievementStats> {
+  private async createInitialUserStats(userId: string): Promise<UserAchievementStats> {
     const initialStats: UserAchievementStats = {
       userId,
       totalBadges: 0,
@@ -930,10 +876,7 @@ class AchievementSystemService {
       },
     };
 
-    await firestore()
-      .collection('userAchievementStats')
-      .doc(userId)
-      .set(initialStats);
+    await firestore().collection('userAchievementStats').doc(userId).set(initialStats);
 
     return initialStats;
   }
@@ -974,37 +917,24 @@ class AchievementSystemService {
 
       // Find milestones
       const sortedAchievements = [...completedAchievements].sort(
-        (a, b) =>
-          new Date(a.unlockedDate).getTime() -
-          new Date(b.unlockedDate).getTime(),
+        (a, b) => new Date(a.unlockedDate).getTime() - new Date(b.unlockedDate).getTime(),
       );
 
       const firstBadge = sortedAchievements[0]?.badge.name || '';
-      const latestBadge =
-        sortedAchievements[sortedAchievements.length - 1]?.badge.name || '';
+      const latestBadge = sortedAchievements[sortedAchievements.length - 1]?.badge.name || '';
 
       // Find rarest badge
-      const rarityOrder: Badge['rarity'][] = [
-        'common',
-        'uncommon',
-        'rare',
-        'epic',
-        'legendary',
-      ];
+      const rarityOrder: Badge['rarity'][] = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
       let rarest: Badge['rarity'] = 'common';
       for (const achievement of completedAchievements) {
-        if (
-          rarityOrder.indexOf(achievement.badge.rarity) >
-          rarityOrder.indexOf(rarest)
-        ) {
+        if (rarityOrder.indexOf(achievement.badge.rarity) > rarityOrder.indexOf(rarest)) {
           rarest = achievement.badge.rarity;
         }
       }
 
       // Find favorite category
       const favoriteCategory = Object.entries(badgesByCategory).reduce((a, b) =>
-        badgesByCategory[a[0] as Badge['category']] >
-        badgesByCategory[b[0] as Badge['category']]
+        badgesByCategory[a[0] as Badge['category']] > badgesByCategory[b[0] as Badge['category']]
           ? a
           : b,
       )[0] as Badge['category'];
@@ -1051,14 +981,9 @@ class AchievementSystemService {
 
   public async markNotificationAsRead(notificationId: string): Promise<void> {
     try {
-      await firestore()
-        .collection('notifications')
-        .doc(notificationId)
-        .update({ isRead: true });
+      await firestore().collection('notifications').doc(notificationId).update({ isRead: true });
 
-      const notification = this.notifications.find(
-        n => n.id === notificationId,
-      );
+      const notification = this.notifications.find(n => n.id === notificationId);
       if (notification) {
         notification.isRead = true;
         await this.saveCachedData();
@@ -1071,9 +996,7 @@ class AchievementSystemService {
   // Sharing
   public async shareAchievement(achievementId: string): Promise<void> {
     try {
-      const achievement = this.userAchievements.find(
-        a => a.id === achievementId,
-      );
+      const achievement = this.userAchievements.find(a => a.id === achievementId);
       if (!achievement) throw new Error('Achievement not found');
 
       await this.socialService.shareActivity({
@@ -1112,17 +1035,15 @@ class AchievementSystemService {
   // Cache Management
   private async loadCachedData(): Promise<void> {
     try {
-      const [badgesData, achievementsData, statsData, notificationsData] =
-        await Promise.all([
-          AsyncStorage.getItem('achievement_badges'),
-          AsyncStorage.getItem('achievement_user_achievements'),
-          AsyncStorage.getItem('achievement_user_stats'),
-          AsyncStorage.getItem('achievement_notifications'),
-        ]);
+      const [badgesData, achievementsData, statsData, notificationsData] = await Promise.all([
+        AsyncStorage.getItem('achievement_badges'),
+        AsyncStorage.getItem('achievement_user_achievements'),
+        AsyncStorage.getItem('achievement_user_stats'),
+        AsyncStorage.getItem('achievement_notifications'),
+      ]);
 
       if (badgesData) this.availableBadges = JSON.parse(badgesData);
-      if (achievementsData)
-        this.userAchievements = JSON.parse(achievementsData);
+      if (achievementsData) this.userAchievements = JSON.parse(achievementsData);
       if (statsData) this.userStats = JSON.parse(statsData);
       if (notificationsData) this.notifications = JSON.parse(notificationsData);
     } catch (error) {
@@ -1133,22 +1054,13 @@ class AchievementSystemService {
   private async saveCachedData(): Promise<void> {
     try {
       await Promise.all([
-        AsyncStorage.setItem(
-          'achievement_badges',
-          JSON.stringify(this.availableBadges),
-        ),
+        AsyncStorage.setItem('achievement_badges', JSON.stringify(this.availableBadges)),
         AsyncStorage.setItem(
           'achievement_user_achievements',
           JSON.stringify(this.userAchievements),
         ),
-        AsyncStorage.setItem(
-          'achievement_user_stats',
-          JSON.stringify(this.userStats),
-        ),
-        AsyncStorage.setItem(
-          'achievement_notifications',
-          JSON.stringify(this.notifications),
-        ),
+        AsyncStorage.setItem('achievement_user_stats', JSON.stringify(this.userStats)),
+        AsyncStorage.setItem('achievement_notifications', JSON.stringify(this.notifications)),
       ]);
     } catch (error) {
       console.error('Error saving cached achievement data:', error);

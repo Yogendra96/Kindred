@@ -1,5 +1,4 @@
 import { store } from '../index';
-import { RootState } from '../index';
 
 describe('Redux Store', () => {
   it('should have the correct initial state', () => {

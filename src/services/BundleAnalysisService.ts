@@ -1,6 +1,8 @@
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { PerformanceMonitoringService } from './PerformanceMonitoringService';
 
 // Bundle analysis types
 export interface BundleAnalysis {
@@ -327,11 +329,7 @@ class BundleAnalysisService {
       const startTime = Date.now();
 
       // Simulate bundle analysis (in real implementation, this would analyze actual bundle)
-      const analysis = await this.performBundleAnalysis(
-        analysisId,
-        buildPath,
-        options,
-      );
+      const analysis = await this.performBundleAnalysis(analysisId, buildPath, options);
 
       // Cache the analysis
       this.analyses.set(analysisId, analysis);
@@ -364,18 +362,12 @@ class BundleAnalysisService {
     const chunks = this.generateMockChunks();
 
     const totalSize =
-      modules.reduce((sum, m) => sum + m.size, 0) +
-      assets.reduce((sum, a) => sum + a.size, 0);
+      modules.reduce((sum, m) => sum + m.size, 0) + assets.reduce((sum, a) => sum + a.size, 0);
     const compressedSize = Math.floor(totalSize * 0.7); // Assume 30% compression
 
     const metrics = this.calculateBundleMetrics(modules, assets, dependencies);
     const treemap = this.generateTreemapData(modules, dependencies);
-    const recommendations = this.generateRecommendations(
-      modules,
-      assets,
-      dependencies,
-      metrics,
-    );
+    const recommendations = this.generateRecommendations(modules, assets, dependencies, metrics);
 
     return {
       id: analysisId,
@@ -622,8 +614,7 @@ class BundleAnalysisService {
     _dependencies: DependencyAnalysis[],
   ): BundleMetrics {
     const totalSize =
-      modules.reduce((sum, m) => sum + m.size, 0) +
-      assets.reduce((sum, a) => sum + a.size, 0);
+      modules.reduce((sum, m) => sum + m.size, 0) + assets.reduce((sum, a) => sum + a.size, 0);
 
     // Estimate load times based on size and network conditions
     const loadTime = {
@@ -638,10 +629,7 @@ class BundleAnalysisService {
     const duplicateSize = duplicates.reduce((sum, d) => sum + d.size, 0);
 
     // Calculate unused code
-    const unusedSize = modules.reduce(
-      (sum, m) => sum + m.unusedExports.length * 1000,
-      0,
-    );
+    const unusedSize = modules.reduce((sum, m) => sum + m.unusedExports.length * 1000, 0);
 
     return {
       loadTime,
@@ -748,11 +736,9 @@ class BundleAnalysisService {
         type: 'size',
         priority: 'high',
         title: `Optimize ${dep.name} usage`,
-        description: `${dep.name} is ${(dep.size / 1000).toFixed(
-          1,
-        )}KB but only ${(dep.usage.utilizationRate * 100).toFixed(
-          1,
-        )}% utilized`,
+        description: `${dep.name} is ${(dep.size / 1000).toFixed(1)}KB but only ${(
+          dep.usage.utilizationRate * 100
+        ).toFixed(1)}% utilized`,
         impact: {
           sizeReduction: dep.size * (1 - dep.usage.utilizationRate),
           performanceGain: 15,
@@ -795,11 +781,9 @@ class BundleAnalysisService {
         type: 'size',
         priority: 'medium',
         title: 'Optimize images and assets',
-        description: `${
-          optimizableAssets.length
-        } assets can be optimized to save ${(totalSavings / 1000).toFixed(
-          1,
-        )}KB`,
+        description: `${optimizableAssets.length} assets can be optimized to save ${(
+          totalSavings / 1000
+        ).toFixed(1)}KB`,
         impact: {
           sizeReduction: totalSavings,
           performanceGain: 10,
@@ -834,9 +818,7 @@ class BundleAnalysisService {
         type: 'size',
         priority: 'medium',
         title: 'Remove duplicate code',
-        description: `${metrics.duplicateCode.percentage.toFixed(
-          1,
-        )}% of bundle is duplicate code`,
+        description: `${metrics.duplicateCode.percentage.toFixed(1)}% of bundle is duplicate code`,
         impact: {
           sizeReduction: metrics.duplicateCode.size,
           performanceGain: 8,
@@ -867,9 +849,7 @@ class BundleAnalysisService {
   }
 
   // Bundle optimization
-  async optimizeBundle(
-    config?: Partial<OptimizationConfig>,
-  ): Promise<OptimizationResult> {
+  async optimizeBundle(config?: Partial<OptimizationConfig>): Promise<OptimizationResult> {
     const optimizationConfig = { ...this.config, ...config };
     const optimizationId = `optimization-${Date.now()}`;
 
@@ -878,9 +858,7 @@ class BundleAnalysisService {
     const beforeMetrics = currentAnalysis.metrics;
 
     // Apply optimizations
-    const appliedOptimizations = await this.applyOptimizations(
-      optimizationConfig,
-    );
+    const appliedOptimizations = await this.applyOptimizations(optimizationConfig);
 
     // Analyze optimized bundle
     const optimizedAnalysis = await this.analyzeBundleSize();
@@ -894,8 +872,7 @@ class BundleAnalysisService {
       after: afterMetrics,
       improvements: {
         sizeReduction: currentAnalysis.totalSize - optimizedAnalysis.totalSize,
-        loadTimeImprovement:
-          beforeMetrics.loadTime.estimated - afterMetrics.loadTime.estimated,
+        loadTimeImprovement: beforeMetrics.loadTime.estimated - afterMetrics.loadTime.estimated,
         performanceScore: this.calculatePerformanceScore(afterMetrics),
       },
       appliedOptimizations,
@@ -909,9 +886,7 @@ class BundleAnalysisService {
     return result;
   }
 
-  private async applyOptimizations(
-    config: OptimizationConfig,
-  ): Promise<AppliedOptimization[]> {
+  private async applyOptimizations(config: OptimizationConfig): Promise<AppliedOptimization[]> {
     const applied: AppliedOptimization[] = [];
 
     if (config.strategies.treeshaking) {
@@ -946,14 +921,8 @@ class BundleAnalysisService {
 
   private calculatePerformanceScore(metrics: BundleMetrics): number {
     // Calculate a performance score based on various metrics
-    const sizeScore = Math.max(
-      0,
-      100 - (metrics.loadTime.estimated / 10) * 100,
-    );
-    const duplicateScore = Math.max(
-      0,
-      100 - metrics.duplicateCode.percentage * 2,
-    );
+    const sizeScore = Math.max(0, 100 - (metrics.loadTime.estimated / 10) * 100);
+    const duplicateScore = Math.max(0, 100 - metrics.duplicateCode.percentage * 2);
     const unusedScore = Math.max(0, 100 - metrics.unusedCode.percentage * 3);
     const compressionScore = metrics.compressionEfficiency * 100;
 
@@ -961,18 +930,13 @@ class BundleAnalysisService {
   }
 
   // Comparison and tracking
-  async compareBundles(
-    baselineId: string,
-    currentId?: string,
-  ): Promise<BundleComparison> {
+  async compareBundles(baselineId: string, currentId?: string): Promise<BundleComparison> {
     const baseline = this.analyses.get(baselineId);
     if (!baseline) {
       throw new Error('Baseline analysis not found');
     }
 
-    const current = currentId
-      ? this.analyses.get(currentId)
-      : await this.analyzeBundleSize();
+    const current = currentId ? this.analyses.get(currentId) : await this.analyzeBundleSize();
 
     if (!current) {
       throw new Error('Current analysis not found');
@@ -991,21 +955,11 @@ class BundleAnalysisService {
       },
       changes: {
         sizeChange: current.totalSize - baseline.totalSize,
-        sizeChangePercentage:
-          ((current.totalSize - baseline.totalSize) / baseline.totalSize) * 100,
+        sizeChangePercentage: ((current.totalSize - baseline.totalSize) / baseline.totalSize) * 100,
         addedModules: this.findAddedModules(baseline.modules, current.modules),
-        removedModules: this.findRemovedModules(
-          baseline.modules,
-          current.modules,
-        ),
-        modifiedModules: this.findModifiedModules(
-          baseline.modules,
-          current.modules,
-        ),
-        addedDependencies: this.findAddedDependencies(
-          baseline.dependencies,
-          current.dependencies,
-        ),
+        removedModules: this.findRemovedModules(baseline.modules, current.modules),
+        modifiedModules: this.findModifiedModules(baseline.modules, current.modules),
+        addedDependencies: this.findAddedDependencies(baseline.dependencies, current.dependencies),
         removedDependencies: this.findRemovedDependencies(
           baseline.dependencies,
           current.dependencies,
@@ -1020,18 +974,12 @@ class BundleAnalysisService {
     return comparison;
   }
 
-  private findAddedModules(
-    baseline: ModuleAnalysis[],
-    current: ModuleAnalysis[],
-  ): string[] {
+  private findAddedModules(baseline: ModuleAnalysis[], current: ModuleAnalysis[]): string[] {
     const baselineNames = new Set(baseline.map(m => m.name));
     return current.filter(m => !baselineNames.has(m.name)).map(m => m.name);
   }
 
-  private findRemovedModules(
-    baseline: ModuleAnalysis[],
-    current: ModuleAnalysis[],
-  ): string[] {
+  private findRemovedModules(baseline: ModuleAnalysis[], current: ModuleAnalysis[]): string[] {
     const currentNames = new Set(current.map(m => m.name));
     return baseline.filter(m => !currentNames.has(m.name)).map(m => m.name);
   }
@@ -1090,10 +1038,7 @@ class BundleAnalysisService {
           oldVersion: baselineDep.version,
           newVersion: currentDep.version,
           sizeChange: currentDep.size - baselineDep.size,
-          breaking: this.isBreakingChange(
-            baselineDep.version,
-            currentDep.version,
-          ),
+          breaking: this.isBreakingChange(baselineDep.version, currentDep.version),
         });
       }
     });
@@ -1145,11 +1090,11 @@ class BundleAnalysisService {
   }
 
   getAllAnalyses(): BundleAnalysis[] {
-    return Array.from(this.analyses.values());
+    return [...this.analyses.values()];
   }
 
   getAllOptimizations(): OptimizationResult[] {
-    return Array.from(this.optimizations.values());
+    return [...this.optimizations.values()];
   }
 
   // Storage
@@ -1161,18 +1106,13 @@ class BundleAnalysisService {
       // Keep only last 10 analyses
       const recentAnalyses = analyses.slice(-10);
 
-      await AsyncStorage.setItem(
-        'bundle_analyses',
-        JSON.stringify(recentAnalyses),
-      );
+      await AsyncStorage.setItem('bundle_analyses', JSON.stringify(recentAnalyses));
     } catch (error) {
       console.error('Failed to cache bundle analysis:', error);
     }
   }
 
-  private async cacheOptimization(
-    optimization: OptimizationResult,
-  ): Promise<void> {
+  private async cacheOptimization(optimization: OptimizationResult): Promise<void> {
     try {
       const optimizations = await this.getCachedOptimizations();
       optimizations.push(optimization);
@@ -1180,10 +1120,7 @@ class BundleAnalysisService {
       // Keep only last 10 optimizations
       const recentOptimizations = optimizations.slice(-10);
 
-      await AsyncStorage.setItem(
-        'bundle_optimizations',
-        JSON.stringify(recentOptimizations),
-      );
+      await AsyncStorage.setItem('bundle_optimizations', JSON.stringify(recentOptimizations));
     } catch (error) {
       console.error('Failed to cache optimization result:', error);
     }

@@ -111,18 +111,18 @@ export interface PerformanceTargets {
 }
 
 // Optimization Strategy Types
-export type OptimizationType = 
+export type OptimizationType =
   | 'tree_shaking'
-  | 'code_splitting' 
+  | 'code_splitting'
   | 'duplicate_removal'
   | 'compression'
   | 'lazy_loading'
   | 'prefetching'
   | 'polyfill_optimization';
 
-export type ConsolidationStrategy = 
+export type ConsolidationStrategy =
   | 'merge_imports'
-  | 'create_shared_chunk' 
+  | 'create_shared_chunk'
   | 'use_external'
   | 'upgrade_version';
 
@@ -138,7 +138,7 @@ export interface ReactNativeBundleMetrics {
 
 export interface MobileBundleConstraints {
   readonly maxSize: number; // MB - mobile app size limits
-  readonly memoryLimit: number; // MB - device memory constraints  
+  readonly memoryLimit: number; // MB - device memory constraints
   readonly cpuIntensive: boolean; // if optimization is CPU intensive
   readonly batteryImpact: 'low' | 'medium' | 'high';
 }

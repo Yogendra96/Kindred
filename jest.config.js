@@ -25,8 +25,7 @@ export default {
   
   // Setup files
   setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js',
-    '<rootDir>/src/tests/testSetup.ts'
+    '<rootDir>/jest.setup.js'
   ],
   
   // Test path ignore patterns

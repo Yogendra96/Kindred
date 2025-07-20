@@ -100,7 +100,7 @@ export interface OptimizationConfig {
 }
 
 // Leak Detection Types
-export type MemoryLeakType = 
+export type MemoryLeakType =
   | 'unreleased_listeners'
   | 'circular_references'
   | 'detached_components'
@@ -109,7 +109,7 @@ export type MemoryLeakType =
   | 'growing_cache'
   | 'repeated_allocations';
 
-export type OptimizationType = 
+export type OptimizationType =
   | 'garbage_collection'
   | 'image_compression'
   | 'component_pooling'

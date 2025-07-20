@@ -4,45 +4,44 @@
  *
  * @format
  */
-import ErrorBoundary from './src/components/common/ErrorBoundary';
-import AppNavigator from './src/navigation/AppNavigator';
-import AuthNavigator from './src/navigation/AuthNavigator';
-import notificationService from './src/services/NotificationService';
-import { loggingService } from './src/services/LoggingService';
-import type { RootState } from './src/store';
-import { store } from './src/store';
-import Config from 'react-native-config';
+import React, { useEffect } from 'react';
+
+import { Alert, LogBox } from 'react-native';
+
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useEffect } from 'react';
-import { LogBox, Alert } from 'react-native';
+import Config from 'react-native-config';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Provider } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
+
+import ErrorBoundary from './src/components/common/ErrorBoundary';
+import AppNavigator from './src/navigation/AppNavigator';
+import AuthNavigator from './src/navigation/AuthNavigator';
+import { loggingService } from './src/services/LoggingService';
+import notificationService from './src/services/NotificationService';
+import { type RootState, store } from './src/store';
 
 // Configure Firebase if not already initialized
 if (!firebase.apps.length) {
   try {
     const firebaseConfig = {
-      apiKey: Config.FIREBASE_API_KEY || '',
-      authDomain: Config.FIREBASE_AUTH_DOMAIN || '',
-      projectId: Config.FIREBASE_PROJECT_ID || '',
-      storageBucket: Config.FIREBASE_STORAGE_BUCKET || '',
-      messagingSenderId: Config.FIREBASE_MESSAGING_SENDER_ID || '',
-      appId: Config.FIREBASE_APP_ID || '',
-      measurementId: Config.FIREBASE_MEASUREMENT_ID || '',
+      apiKey: Config['FIREBASE_API_KEY'] ?? '',
+      authDomain: Config['FIREBASE_AUTH_DOMAIN'] ?? '',
+      projectId: Config['FIREBASE_PROJECT_ID'] ?? '',
+      storageBucket: Config['FIREBASE_STORAGE_BUCKET'] ?? '',
+      messagingSenderId: Config['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
+      appId: Config['FIREBASE_APP_ID'] ?? '',
+      measurementId: Config['FIREBASE_MEASUREMENT_ID'] ?? '',
     };
 
     // Validate Firebase configuration
     if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-      throw new Error(
-        'Firebase configuration is incomplete. Please check your .env file.',
-      );
+      throw new Error('Firebase configuration is incomplete. Please check your .env file.');
     }
 
-    firebase.initializeApp(firebaseConfig);
+    void firebase.initializeApp(firebaseConfig);
   } catch (error) {
     loggingService.error('Firebase initialization failed', {
       error: error instanceof Error ? error.message : String(error),
@@ -64,14 +63,12 @@ LogBox.ignoreLogs([
 // Initialize Google Sign In
 try {
   const googleSignInConfig = {
-    webClientId: Config.GOOGLE_WEB_CLIENT_ID || '',
-    iosClientId: Config.GOOGLE_IOS_CLIENT_ID || '',
+    webClientId: Config['GOOGLE_WEB_CLIENT_ID'] ?? '',
+    iosClientId: Config['GOOGLE_IOS_CLIENT_ID'] ?? '',
   };
 
   if (!googleSignInConfig.webClientId) {
-    throw new Error(
-      'Google Sign-In configuration is incomplete. Please check your .env file.',
-    );
+    throw new Error('Google Sign-In configuration is incomplete. Please check your .env file.');
   }
 
   GoogleSignin.configure(googleSignInConfig);
@@ -86,9 +83,7 @@ try {
 }
 
 const NavigationRoot: React.FC = () => {
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.isAuthenticated,
-  );
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -118,7 +113,7 @@ const NavigationRoot: React.FC = () => {
       }
     };
 
-    initializeApp();
+    void initializeApp();
 
     return () => {
       // Cleanup notification handlers

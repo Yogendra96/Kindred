@@ -1,26 +1,24 @@
-// import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
-import { iotIntegrationService } from '../services/IoTIntegrationService';
-import { mlCarbonPrediction } from '../services/MLCarbonPrediction';
-import { useTheme } from '../theme/ThemeProvider';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  Alert,
   Dimensions,
   RefreshControl,
-  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import {
-  LineChart,
-  BarChart,
-  // PieChart,
-  // AreaChart,
-} from 'react-native-chart-kit';
+
+import { Ionicons } from '@expo/vector-icons';
+import { BarChart, LineChart } from 'react-native-chart-kit';
 import { useSelector } from 'react-redux';
+
+import { iotIntegrationService } from '../services/IoTIntegrationService';
+import { loggingService } from '../services/LoggingService';
+import { mlCarbonPrediction } from '../services/MLCarbonPrediction';
+import { useTheme } from '../theme/ThemeProvider';
 
 interface InsightData {
   predictedCarbon: number[];
@@ -69,208 +67,386 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
   const [insights, setInsights] = useState<InsightData | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<
-    'week' | 'month' | 'year'
-  >('month');
-  const [selectedMetric] = useState<
-    'carbon' | 'energy' | 'transport' | 'waste'
-  >('carbon');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'year'>('month');
+  const [selectedMetric] = useState<'carbon' | 'energy' | 'transport' | 'waste'>('carbon');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadInsightData();
-  }, [selectedTimeframe, selectedMetric]);
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':
+        return '#4CAF50';
+      case 'medium':
+        return '#FF9800';
+      case 'hard':
+        return '#F44336';
+      default:
+        return '#4CAF50';
+    }
+  };
 
-  const loadInsightData = async () => {
+  const loadInsightData = useCallback(async () => {
+    let isCancelled = false;
+
     try {
       setIsLoading(true);
 
-      // Generate predictions using ML service
-      const predictions = await generatePredictions();
+      // Create promises for parallel execution
+      const predictionPromise = generatePredictions();
+      const trendsPromise = analyzeTrends();
+      const comparativePromise = getComparativeData();
+      const recommendationsPromise = generateRecommendations();
+      const achievementsPromise = getAchievementInsights();
+      const heatmapPromise = generateHeatmapData();
 
-      // Analyze trends
-      const trends = await analyzeTrends();
+      // Execute all operations in parallel for better performance
+      const [predictions, trends, comparative, recommendations, achievements, heatmap] =
+        await Promise.all([
+          predictionPromise,
+          trendsPromise,
+          comparativePromise,
+          recommendationsPromise,
+          achievementsPromise,
+          heatmapPromise,
+        ]);
 
-      // Get comparative data
-      const comparative = await getComparativeData();
+      // Check if component is still mounted
+      if (!isCancelled) {
+        setInsights({
+          predictedCarbon: predictions,
+          trendAnalysis: trends,
+          comparativeData: comparative,
+          recommendations,
+          achievements,
+        });
 
-      // Generate recommendations
-      const recommendations = await generateRecommendations();
-
-      // Get achievement data
-      const achievements = await getAchievementInsights();
-
-      // Generate heatmap data
-      const heatmap = await generateHeatmapData();
-
-      setInsights({
-        predictedCarbon: predictions,
-        trendAnalysis: trends,
-        comparativeData: comparative,
-        recommendations,
-        achievements,
-      });
-
-      setHeatmapData(heatmap);
+        setHeatmapData(heatmap);
+      }
     } catch (error) {
-      console.error('Failed to load insight data:', error);
-      Alert.alert('Error', 'Failed to load insights. Please try again.');
+      if (!isCancelled) {
+        loggingService.error('Failed to load insight data:', { error });
+        Alert.alert('Error', 'Failed to load insights. Please try again.');
+      }
     } finally {
-      setIsLoading(false);
+      if (!isCancelled) {
+        setIsLoading(false);
+      }
     }
-  };
+
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    selectedTimeframe,
+    selectedMetric,
+    generatePredictions,
+    analyzeTrends,
+    getComparativeData,
+    generateRecommendations,
+    getAchievementInsights,
+  ]);
+
+  useEffect(() => {
+    void loadInsightData();
+  }, [loadInsightData]);
 
   const generatePredictions = async (): Promise<number[]> => {
     try {
       // Use ML service to predict future carbon footprint
-      const historicalData = carbonData.history || [];
-      const inputData = historicalData.slice(-30).map((entry: { total?: number; timestamp: number }) => ({
-        transport: entry.transport || 0,
-        energy: entry.energy || 0,
-        food: entry.food || 0,
-        waste: entry.waste || 0,
-        date: entry.date,
-      }));
-
-      if (inputData.length === 0) {
-        // Generate mock predictions if no historical data
-        return Array.from(
-          { length: 30 },
-          (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2,
-        );
+      const historicalData = carbonData?.history;
+      if (!Array.isArray(historicalData)) {
+        loggingService.warn('Historical data is not available or invalid');
+        return Array.from({ length: 30 }, (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2);
       }
 
-      const predictions = await mlCarbonPrediction.predictFutureFootprint(
-        inputData,
-        30,
-      );
-      return predictions.map(p => p.totalCarbon);
+      const inputData = historicalData
+        .slice(-30)
+        .map(
+          (entry: {
+            total?: number;
+            timestamp?: number;
+            transport?: number;
+            energy?: number;
+            food?: number;
+            waste?: number;
+            date?: string;
+          }) => {
+            if (!entry || typeof entry !== 'object') {
+              loggingService.warn('Invalid historical data entry:', { entry });
+              return null;
+            }
+
+            return {
+              transport: typeof entry.transport === 'number' ? entry.transport : 0,
+              energy: typeof entry.energy === 'number' ? entry.energy : 0,
+              food: typeof entry.food === 'number' ? entry.food : 0,
+              waste: typeof entry.waste === 'number' ? entry.waste : 0,
+              date: entry.date ?? new Date().toISOString(),
+            };
+          },
+        )
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+      if (inputData.length === 0) {
+        loggingService.info('No valid historical data found, generating mock predictions');
+        return Array.from({ length: 30 }, (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2);
+      }
+
+      const predictions = await mlCarbonPrediction.predictFutureFootprint(inputData, 30);
+
+      if (!Array.isArray(predictions) || predictions.length === 0) {
+        loggingService.warn('ML prediction returned invalid data, using fallback');
+        return Array.from({ length: 30 }, () => Math.random() * 5 + 15);
+      }
+
+      return predictions.map(p => {
+        if (p && typeof p.totalCarbon === 'number' && !isNaN(p.totalCarbon)) {
+          return Math.max(0, p.totalCarbon); // Ensure non-negative values
+        }
+        loggingService.warn('Invalid prediction data point:', { p });
+        return Math.random() * 5 + 15; // Fallback for invalid predictions
+      });
     } catch (error) {
-      console.error('Prediction generation failed:', error);
+      loggingService.error('Prediction generation failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return Array.from({ length: 30 }, () => Math.random() * 5 + 15);
     }
   };
 
   const analyzeTrends = async () => {
-    const recentData = carbonData.history?.slice(-14) || [];
-    const olderData = carbonData.history?.slice(-28, -14) || [];
+    try {
+      const historyData = carbonData?.history;
+      if (!Array.isArray(historyData) || historyData.length < 14) {
+        loggingService.info('Insufficient historical data for trend analysis');
+        return {
+          direction: 'stable' as const,
+          percentage: 0,
+          timeframe: '2 weeks',
+        };
+      }
 
-    if (recentData.length === 0 || olderData.length === 0) {
+      const recentData = historyData.slice(-14);
+      const olderData = historyData.slice(-28, -14);
+
+      if (recentData.length === 0 || olderData.length === 0) {
+        return {
+          direction: 'stable' as const,
+          percentage: 0,
+          timeframe: '2 weeks',
+        };
+      }
+
+      const calculateAverage = (data: unknown[]): number => {
+        const validEntries = data.filter(
+          (entry): entry is { total: number } =>
+            entry &&
+            typeof entry === 'object' &&
+            'total' in entry &&
+            typeof (entry as { total: unknown }).total === 'number' &&
+            !isNaN((entry as { total: number }).total),
+        );
+
+        if (validEntries.length === 0) {
+          loggingService.warn('No valid entries found for trend calculation');
+          return 0;
+        }
+
+        const sum = validEntries.reduce((acc, entry) => acc + entry.total, 0);
+        return sum / validEntries.length;
+      };
+
+      const recentAvg = calculateAverage(recentData);
+      const olderAvg = calculateAverage(olderData);
+
+      if (olderAvg === 0) {
+        loggingService.warn('Division by zero in trend analysis, using stable trend');
+        return {
+          direction: 'stable' as const,
+          percentage: 0,
+          timeframe: '2 weeks',
+        };
+      }
+
+      const percentageChange = ((recentAvg - olderAvg) / olderAvg) * 100;
+
+      // Ensure percentage is valid
+      const validPercentage = isNaN(percentageChange) ? 0 : Math.abs(percentageChange);
+
+      return {
+        direction:
+          percentageChange > 5 ? 'increasing' : percentageChange < -5 ? 'decreasing' : 'stable',
+        percentage: Math.min(validPercentage, 1000), // Cap at 1000% for extreme cases
+        timeframe: '2 weeks',
+      };
+    } catch (error) {
+      loggingService.error('Error in trend analysis:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return {
         direction: 'stable' as const,
         percentage: 0,
         timeframe: '2 weeks',
       };
     }
-
-    const recentAvg =
-      recentData.reduce(
-        (sum: number, entry: { total?: number }) => sum + (entry.total || 0),
-        0,
-      ) / recentData.length;
-    const olderAvg =
-      olderData.reduce(
-        (sum: number, entry: { total?: number }) => sum + (entry.total || 0),
-        0,
-      ) / olderData.length;
-
-    const percentageChange = ((recentAvg - olderAvg) / olderAvg) * 100;
-
-    return {
-      direction:
-        percentageChange > 5
-          ? 'increasing'
-          : percentageChange < -5
-          ? 'decreasing'
-          : 'stable',
-      percentage: Math.abs(percentageChange),
-      timeframe: '2 weeks',
-    };
   };
 
   const getComparativeData = async () => {
-    // Mock comparative data - in real app, this would come from analytics service
-    const userTotal = carbonData.currentFootprint?.total || 20;
+    try {
+      // Mock comparative data - in real app, this would come from analytics service
+      const currentFootprint = carbonData?.currentFootprint;
+      let userTotal = 20; // Default fallback
 
-    return {
-      userVsAverage: userTotal / 25, // 25 is average
-      userVsFriends: userTotal / 22, // 22 is friends average
-      cityAverage: 25,
-      globalAverage: 28,
-    };
+      if (
+        currentFootprint &&
+        typeof currentFootprint.total === 'number' &&
+        !isNaN(currentFootprint.total)
+      ) {
+        userTotal = Math.max(0, currentFootprint.total); // Ensure non-negative
+      } else {
+        loggingService.warn('Invalid current footprint data, using default value');
+      }
+
+      const cityAverage = 25;
+      const friendsAverage = 22;
+      const globalAverage = 28;
+
+      return {
+        userVsAverage: cityAverage > 0 ? userTotal / cityAverage : 1,
+        userVsFriends: friendsAverage > 0 ? userTotal / friendsAverage : 1,
+        cityAverage,
+        globalAverage,
+      };
+    } catch (error) {
+      loggingService.error('Error in comparative data calculation:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return {
+        userVsAverage: 1,
+        userVsFriends: 1,
+        cityAverage: 25,
+        globalAverage: 28,
+      };
+    }
   };
 
   const generateRecommendations = async () => {
-    const connectedDevices = iotIntegrationService.getConnectedDevices();
-    const recommendations = [];
+    try {
+      const recommendations = [];
 
-    // IoT-based recommendations
-    const thermostat = connectedDevices.find(d => d.type === 'thermostat');
-    if (thermostat) {
-      recommendations.push({
-        id: 'thermostat_optimization',
-        title: 'Optimize Thermostat Settings',
-        description: 'Lower your thermostat by 2°F to save energy',
-        potentialSaving: 2.5,
-        difficulty: 'easy' as const,
-        category: 'Energy',
+      // IoT-based recommendations with error handling
+      try {
+        const connectedDevices = iotIntegrationService.getConnectedDevices();
+        if (Array.isArray(connectedDevices)) {
+          const thermostat = connectedDevices.find(
+            d => d && typeof d === 'object' && d.type === 'thermostat',
+          );
+          if (thermostat) {
+            recommendations.push({
+              id: 'thermostat_optimization',
+              title: 'Optimize Thermostat Settings',
+              description: 'Lower your thermostat by 2°F to save energy',
+              potentialSaving: 2.5,
+              difficulty: 'easy' as const,
+              category: 'Energy',
+            });
+          }
+        }
+      } catch (iotError) {
+        loggingService.warn('IoT service error, skipping IoT recommendations:', { iotError });
+      }
+
+      // Transportation recommendations with safe property access
+      const transportValue = carbonData?.transport;
+      const energyValue = carbonData?.energy;
+
+      if (
+        typeof transportValue === 'number' &&
+        typeof energyValue === 'number' &&
+        transportValue > energyValue
+      ) {
+        recommendations.push({
+          id: 'transport_reduction',
+          title: 'Try Public Transportation',
+          description: 'Replace 2 car trips per week with public transport',
+          potentialSaving: 3.8,
+          difficulty: 'medium' as const,
+          category: 'Transport',
+        });
+      }
+
+      // Always include baseline recommendations
+      recommendations.push(
+        {
+          id: 'plant_based_meals',
+          title: 'Add Plant-Based Meals',
+          description: 'Replace 2 meat meals per week with plant-based options',
+          potentialSaving: 4.2,
+          difficulty: 'easy' as const,
+          category: 'Food',
+        },
+        {
+          id: 'recycling_improvement',
+          title: 'Improve Recycling Habits',
+          description: 'Ensure all recyclable materials are properly sorted',
+          potentialSaving: 1.8,
+          difficulty: 'easy' as const,
+          category: 'Waste',
+        },
+      );
+
+      // Validate recommendations
+      const validRecommendations = recommendations.filter(
+        rec =>
+          rec &&
+          typeof rec.id === 'string' &&
+          typeof rec.title === 'string' &&
+          typeof rec.potentialSaving === 'number' &&
+          !isNaN(rec.potentialSaving),
+      );
+
+      return validRecommendations.slice(0, 4); // Top 4 recommendations
+    } catch (error) {
+      loggingService.error('Error generating recommendations:', {
+        error: error instanceof Error ? error.message : String(error),
       });
+      // Return basic fallback recommendations
+      return [
+        {
+          id: 'energy_saving',
+          title: 'Basic Energy Saving',
+          description: 'Turn off lights when not in use',
+          potentialSaving: 1.5,
+          difficulty: 'easy' as const,
+          category: 'Energy',
+        },
+        {
+          id: 'water_conservation',
+          title: 'Water Conservation',
+          description: 'Take shorter showers to save energy',
+          potentialSaving: 2.0,
+          difficulty: 'easy' as const,
+          category: 'Energy',
+        },
+      ];
     }
-
-    // Transportation recommendations
-    if (carbonData.transport > carbonData.energy) {
-      recommendations.push({
-        id: 'transport_reduction',
-        title: 'Try Public Transportation',
-        description: 'Replace 2 car trips per week with public transport',
-        potentialSaving: 3.8,
-        difficulty: 'medium' as const,
-        category: 'Transport',
-      });
-    }
-
-    // Food recommendations
-    recommendations.push({
-      id: 'plant_based_meals',
-      title: 'Add Plant-Based Meals',
-      description: 'Replace 2 meat meals per week with plant-based options',
-      potentialSaving: 4.2,
-      difficulty: 'easy' as const,
-      category: 'Food',
-    });
-
-    // Waste recommendations
-    recommendations.push({
-      id: 'recycling_improvement',
-      title: 'Improve Recycling Habits',
-      description: 'Ensure all recyclable materials are properly sorted',
-      potentialSaving: 1.8,
-      difficulty: 'easy' as const,
-      category: 'Waste',
-    });
-
-    return recommendations.slice(0, 4); // Top 4 recommendations
   };
 
   const getAchievementInsights = async () => {
-    const currentTotal = carbonData.currentFootprint?.total || 20;
+    const currentTotal = carbonData.currentFootprint?.total ?? 20;
     const nextMilestones = [
       { title: 'Carbon Conscious', target: 15, icon: '🌱' },
       { title: 'Eco Warrior', target: 12, icon: '🌿' },
       { title: 'Planet Protector', target: 8, icon: '🌍' },
     ];
 
-    const nextMilestone =
-      nextMilestones.find(m => currentTotal > m.target) || nextMilestones[0];
+    const nextMilestone = nextMilestones.find(m => currentTotal > m.target) ?? nextMilestones[0];
 
     return {
       nextMilestone: {
         ...nextMilestone,
-        progress: Math.max(
-          0,
-          (nextMilestone.target - currentTotal) / nextMilestone.target,
-        ),
+        progress: Math.max(0, (nextMilestone.target - currentTotal) / nextMilestone.target),
       },
       recentUnlocks: [], // Would come from achievement system
     };
@@ -295,14 +471,15 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     setRefreshing(true);
     await loadInsightData();
     setRefreshing(false);
-  }, [selectedTimeframe, selectedMetric]);
+  }, [loadInsightData]);
 
   const renderTimeframeSelector = () => (
     <View
-      style={[
-        styles.selectorContainer,
-        { backgroundColor: theme.colors.surface },
-      ]}
+      style={[styles.selectorContainer, { backgroundColor: theme.colors.surface }]}
+      accessible={true}
+      accessibilityRole='radiogroup'
+      accessibilityLabel='Timeframe selector'
+      accessibilityHint='Choose time period for data analysis'
     >
       {(['week', 'month', 'year'] as const).map(timeframe => (
         <TouchableOpacity
@@ -314,17 +491,21 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             },
           ]}
           onPress={() => setSelectedTimeframe(timeframe)}
+          accessible={true}
+          accessibilityRole='radio'
+          accessibilityState={{ selected: selectedTimeframe === timeframe }}
+          accessibilityLabel={`${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} timeframe`}
+          accessibilityHint={`Select ${timeframe} view for carbon data analysis`}
         >
           <Text
             style={[
               styles.selectorText,
               {
                 color:
-                  selectedTimeframe === timeframe
-                    ? theme.colors.onPrimary
-                    : theme.colors.onSurface,
+                  selectedTimeframe === timeframe ? theme.colors.onPrimary : theme.colors.onSurface,
               },
             ]}
+            accessible={false}
           >
             {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
           </Text>
@@ -337,9 +518,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     const chartData = {
-      labels: insights.predictedCarbon.map((_, i) =>
-        i % 5 === 0 ? `Day ${i + 1}` : '',
-      ),
+      labels: insights.predictedCarbon.map((_, i) => (i % 5 === 0 ? `Day ${i + 1}` : '')),
       datasets: [
         {
           data: insights.predictedCarbon,
@@ -350,12 +529,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View
-        style={[
-          styles.chartContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           30-Day Carbon Prediction
         </Text>
@@ -388,35 +562,26 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       trendAnalysis.direction === 'increasing'
         ? 'trending-up'
         : trendAnalysis.direction === 'decreasing'
-        ? 'trending-down'
-        : 'remove';
+          ? 'trending-down'
+          : 'remove';
     const trendColor =
       trendAnalysis.direction === 'increasing'
         ? '#FF5722'
         : trendAnalysis.direction === 'decreasing'
-        ? '#4CAF50'
-        : '#FF9800';
+          ? '#4CAF50'
+          : '#FF9800';
 
     return (
-      <View
-        style={[
-          styles.trendContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.trendContainer, { backgroundColor: theme.colors.surface }]}>
         <View style={styles.trendHeader}>
           <Ionicons name={trendIcon} size={24} color={trendColor} />
-          <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>
-            Trend Analysis
-          </Text>
+          <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>Trend Analysis</Text>
         </View>
         <Text style={[styles.trendText, { color: theme.colors.onSurface }]}>
           Your carbon footprint is{' '}
-          <Text style={{ color: trendColor, fontWeight: 'bold' }}>
-            {trendAnalysis.direction}
-          </Text>{' '}
-          by {trendAnalysis.percentage.toFixed(1)}% over the last{' '}
-          {trendAnalysis.timeframe}
+          <Text style={[styles.boldText, { color: trendColor }]}>{trendAnalysis.direction}</Text>
+          {' by '}
+          {trendAnalysis.percentage.toFixed(1)}% over the last {trendAnalysis.timeframe}
         </Text>
       </View>
     );
@@ -426,7 +591,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     const { comparativeData } = insights;
-    const userData = carbonData.currentFootprint?.total || 20;
+    const userData = carbonData.currentFootprint?.total ?? 20;
 
     const chartData = {
       labels: ['You', 'Friends\nAvg', 'City\nAvg', 'Global\nAvg'],
@@ -443,12 +608,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View
-        style={[
-          styles.chartContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           Comparative Analysis
         </Text>
@@ -473,9 +633,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   };
 
   const renderCarbonHeatmap = () => (
-    <View
-      style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}
-    >
+    <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
       <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
         Carbon Intensity Heatmap
       </Text>
@@ -484,12 +642,8 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           {Array.from({ length: 52 }, (_, week) => (
             <View key={week} style={styles.heatmapWeek}>
               {Array.from({ length: 7 }, (_, day) => {
-                const dataPoint = heatmapData.find(
-                  d => d.week === week && d.day === day,
-                );
-                const intensity = dataPoint
-                  ? Math.min(1, dataPoint.value / 30)
-                  : 0;
+                const dataPoint = heatmapData.find(d => d.week === week && d.day === day);
+                const intensity = dataPoint ? Math.min(1, dataPoint.value / 30) : 0;
 
                 return (
                   <View
@@ -508,9 +662,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         </View>
       </ScrollView>
       <View style={styles.heatmapLegend}>
-        <Text style={[styles.legendText, { color: theme.colors.outline }]}>
-          Less
-        </Text>
+        <Text style={[styles.legendText, { color: theme.colors.outline }]}>Less</Text>
         <View style={styles.legendScale}>
           {Array.from({ length: 5 }, (_, i) => (
             <View
@@ -522,9 +674,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             />
           ))}
         </View>
-        <Text style={[styles.legendText, { color: theme.colors.outline }]}>
-          More
-        </Text>
+        <Text style={[styles.legendText, { color: theme.colors.outline }]}>More</Text>
       </View>
     </View>
   );
@@ -533,64 +683,36 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     return (
-      <View
-        style={[
-          styles.recommendationsContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.recommendationsContainer, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
           Smart Recommendations
         </Text>
         {insights.recommendations.map(rec => (
           <View key={rec.id} style={styles.recommendationCard}>
             <View style={styles.recommendationHeader}>
-              <Text
-                style={[
-                  styles.recommendationTitle,
-                  { color: theme.colors.onSurface },
-                ]}
-              >
+              <Text style={[styles.recommendationTitle, { color: theme.colors.onSurface }]}>
                 {rec.title}
               </Text>
               <View
                 style={[
                   styles.difficultyBadge,
-                  {
-                    backgroundColor:
-                      rec.difficulty === 'easy'
-                        ? '#4CAF50'
-                        : rec.difficulty === 'medium'
-                        ? '#FF9800'
-                        : '#F44336',
-                  },
+                  { backgroundColor: getDifficultyColor(rec.difficulty) },
                 ]}
               >
-                <Text style={styles.difficultyText}>
-                  {rec.difficulty.toUpperCase()}
-                </Text>
+                <Text style={styles.difficultyText}>{rec.difficulty.toUpperCase()}</Text>
               </View>
             </View>
-            <Text
-              style={[
-                styles.recommendationDescription,
-                { color: theme.colors.outline },
-              ]}
-            >
+            <Text style={[styles.recommendationDescription, { color: theme.colors.outline }]}>
               {rec.description}
             </Text>
             <View style={styles.recommendationFooter}>
               <View style={styles.savingInfo}>
                 <Ionicons name='leaf' size={16} color='#4CAF50' />
-                <Text
-                  style={[styles.savingText, { color: theme.colors.onSurface }]}
-                >
+                <Text style={[styles.savingText, { color: theme.colors.onSurface }]}>
                   Save {rec.potentialSaving} kg CO₂
                 </Text>
               </View>
-              <Text
-                style={[styles.categoryText, { color: theme.colors.primary }]}
-              >
+              <Text style={[styles.categoryText, { color: theme.colors.primary }]}>
                 {rec.category}
               </Text>
             </View>
@@ -606,45 +728,25 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     const { nextMilestone } = insights.achievements;
 
     return (
-      <View
-        style={[
-          styles.achievementContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-          Next Milestone
-        </Text>
+      <View style={[styles.achievementContainer, { backgroundColor: theme.colors.surface }]}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Next Milestone</Text>
         <View style={styles.milestoneCard}>
           <View style={styles.milestoneHeader}>
-            <Text style={styles.milestoneIcon}>🏆</Text>
+            <span role='img' aria-label='trophy emoji'>
+              🏆
+            </span>
             <View style={styles.milestoneInfo}>
-              <Text
-                style={[
-                  styles.milestoneTitle,
-                  { color: theme.colors.onSurface },
-                ]}
-              >
+              <Text style={[styles.milestoneTitle, { color: theme.colors.onSurface }]}>
                 {nextMilestone.title}
               </Text>
-              <Text
-                style={[
-                  styles.milestoneTarget,
-                  { color: theme.colors.outline },
-                ]}
-              >
+              <Text style={[styles.milestoneTarget, { color: theme.colors.outline }]}>
                 Target: {nextMilestone.target} kg CO₂/month
               </Text>
             </View>
           </View>
 
           <View style={styles.progressContainer}>
-            <View
-              style={[
-                styles.progressBar,
-                { backgroundColor: theme.colors.outline },
-              ]}
-            >
+            <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
               <View
                 style={[
                   styles.progressFill,
@@ -655,9 +757,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
                 ]}
               />
             </View>
-            <Text
-              style={[styles.progressText, { color: theme.colors.onSurface }]}
-            >
+            <Text style={[styles.progressText, { color: theme.colors.onSurface }]}>
               {(nextMilestone.progress * 100).toFixed(0)}%
             </Text>
           </View>
@@ -668,12 +768,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
           Generating AI Insights...
         </Text>
@@ -684,9 +779,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {renderTimeframeSelector()}
       {renderTrendAnalysis()}
@@ -815,6 +908,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
+  },
+  boldText: {
+    fontWeight: 'bold',
   },
   recommendationCard: {
     padding: 16,

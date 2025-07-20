@@ -1,16 +1,11 @@
-import type {
-  RootStackParamList,
-  AuthStackParamList,
-  MainStackParamList,
-} from '@navigation/types';
 import analytics from '@react-native-firebase/analytics';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+
+import type { AuthStackParamList, MainStackParamList, RootStackParamList } from '@navigation/types';
 import { performanceService } from '@services/PerformanceService';
 
-type NavigationParams = RootStackParamList &
-  AuthStackParamList &
-  MainStackParamList;
+type NavigationParams = RootStackParamList & AuthStackParamList & MainStackParamList;
 
 export function useAppNavigation() {
   const navigation = useNavigation<NavigationProp<NavigationParams>>();

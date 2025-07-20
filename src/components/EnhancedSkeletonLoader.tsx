@@ -1,12 +1,8 @@
-import { useTheme } from '../theme/ThemeProvider';
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  AccessibilityInfo,
-} from 'react-native';
+
+import { AccessibilityInfo, Animated, Dimensions, StyleSheet, View } from 'react-native';
+
+import { useTheme } from '../theme/ThemeProvider';
 
 interface EnhancedSkeletonLoaderProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'card' | 'list' | 'chart';
@@ -39,8 +35,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
 }) => {
   const { theme, isDark } = useTheme();
   const animatedValue = React.useRef(new Animated.Value(0)).current;
-  const [isScreenReaderEnabled, setIsScreenReaderEnabled] =
-    React.useState(false);
+  const [isScreenReaderEnabled, setIsScreenReaderEnabled] = React.useState(false);
 
   React.useEffect(() => {
     // Check if screen reader is enabled
@@ -143,9 +138,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
         style={[
           StyleSheet.absoluteFillObject,
           {
-            backgroundColor: isDark
-              ? 'rgba(255,255,255,0.1)'
-              : 'rgba(255,255,255,0.8)',
+            backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)',
             transform: [{ translateX }],
           },
         ]}
@@ -162,15 +155,13 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
               getSkeletonStyle(),
               {
                 width: height,
-                height: height,
+                height,
                 borderRadius: height / 2,
               },
               customStyle,
             ]}
             accessible={true}
-            accessibilityLabel={
-              accessibilityLabel || 'Loading circular content'
-            }
+            accessibilityLabel={accessibilityLabel || 'Loading circular content'}
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
             testID={testID}
@@ -191,9 +182,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
               customStyle,
             ]}
             accessible={true}
-            accessibilityLabel={
-              accessibilityLabel || 'Loading rectangular content'
-            }
+            accessibilityLabel={accessibilityLabel || 'Loading rectangular content'}
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
             testID={testID}
@@ -205,11 +194,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
       case 'card':
         return (
           <View
-            style={[
-              styles.cardContainer,
-              { backgroundColor: theme.colors.surface },
-              customStyle,
-            ]}
+            style={[styles.cardContainer, { backgroundColor: theme.colors.surface }, customStyle]}
             accessible={true}
             accessibilityLabel={accessibilityLabel || 'Loading card content'}
             accessibilityHint={accessibilityHint}
@@ -246,10 +231,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
             testID={testID}
           >
             {Array.from({ length: lines }).map((_, index) => (
-              <View
-                key={index}
-                style={[styles.listItem, { marginBottom: spacing }]}
-              >
+              <View key={index} style={[styles.listItem, { marginBottom: spacing }]}>
                 <Animated.View style={[getSkeletonStyle(), styles.listAvatar]}>
                   {renderShimmerOverlay()}
                 </Animated.View>
@@ -257,9 +239,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
                   <Animated.View style={[getSkeletonStyle(), styles.listTitle]}>
                     {renderShimmerOverlay()}
                   </Animated.View>
-                  <Animated.View
-                    style={[getSkeletonStyle(), styles.listSubtitle]}
-                  >
+                  <Animated.View style={[getSkeletonStyle(), styles.listSubtitle]}>
                     {renderShimmerOverlay()}
                   </Animated.View>
                 </View>
@@ -284,14 +264,10 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
             <View style={styles.chartLegend}>
               {Array.from({ length: 4 }).map((_, index) => (
                 <View key={index} style={styles.legendItem}>
-                  <Animated.View
-                    style={[getSkeletonStyle(), styles.legendColor]}
-                  >
+                  <Animated.View style={[getSkeletonStyle(), styles.legendColor]}>
                     {renderShimmerOverlay()}
                   </Animated.View>
-                  <Animated.View
-                    style={[getSkeletonStyle(), styles.legendText]}
-                  >
+                  <Animated.View style={[getSkeletonStyle(), styles.legendText]}>
                     {renderShimmerOverlay()}
                   </Animated.View>
                 </View>

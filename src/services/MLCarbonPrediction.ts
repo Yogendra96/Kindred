@@ -1,6 +1,8 @@
-import { loggingService } from './LoggingService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as tf from '@tensorflow/tfjs';
+
+import { loggingService } from './LoggingService';
+
 import '@tensorflow/tfjs-react-native';
 import { Platform } from 'react-native';
 
@@ -128,7 +130,9 @@ class MLCarbonPredictionService {
       this.logger.info('TensorFlow.js initialized successfully');
       await this.loadOrCreateModel();
     } catch (error) {
-      this.logger.error('Error initializing TensorFlow.js', { error: error.message });
+      this.logger.error('Error initializing TensorFlow.js', {
+        error: error.message,
+      });
     }
   }
 
@@ -294,7 +298,7 @@ class MLCarbonPredictionService {
       prediction.dispose();
 
       // Convert prediction to carbon footprint values
-      const [transportation, energy, food, waste] = Array.from(predictionData);
+      const [transportation, energy, food, waste] = [...predictionData];
       const total = transportation + energy + food + waste;
 
       // Adjust for timeframe
@@ -313,10 +317,7 @@ class MLCarbonPredictionService {
 
       // Generate trends and recommendations
       const trends = await this.analyzeTrends(userData);
-      const recommendations = this.generateRecommendations(
-        predictedFootprint,
-        userData,
-      );
+      const recommendations = this.generateRecommendations(predictedFootprint, userData);
       const seasonalAdjustments = this.calculateSeasonalAdjustments(userData);
 
       this.logger.info('ML carbon prediction completed', {
@@ -383,9 +384,7 @@ class MLCarbonPredictionService {
     return completedFields / requiredFields.length;
   }
 
-  private async analyzeTrends(
-    userData: UserBehaviorData,
-  ): Promise<CarbonPrediction['trends']> {
+  private async analyzeTrends(userData: UserBehaviorData): Promise<CarbonPrediction['trends']> {
     // Analyze historical data to determine trends
     const historicalData = await this.getHistoricalData(userData.userId);
 
@@ -402,17 +401,12 @@ class MLCarbonPredictionService {
     const older = historicalData.slice(-6, -3);
 
     const recentAvg =
-      recent.reduce(
-        (sum, data) => sum + this.calculateTotalFootprint(data),
-        0,
-      ) / recent.length;
+      recent.reduce((sum, data) => sum + this.calculateTotalFootprint(data), 0) / recent.length;
     const olderAvg =
-      older.reduce((sum, data) => sum + this.calculateTotalFootprint(data), 0) /
-      older.length;
+      older.reduce((sum, data) => sum + this.calculateTotalFootprint(data), 0) / older.length;
 
     const rate = ((recentAvg - olderAvg) / olderAvg) * 100;
-    const direction =
-      rate > 5 ? 'increasing' : rate < -5 ? 'decreasing' : 'stable';
+    const direction = rate > 5 ? 'increasing' : rate < -5 ? 'decreasing' : 'stable';
 
     const factors = this.identifyTrendFactors(userData, historicalData);
 
@@ -439,16 +433,10 @@ class MLCarbonPredictionService {
     if (historicalData.length > 0) {
       const latest = historicalData[historicalData.length - 1];
 
-      if (
-        userData.transportation.carMiles >
-        latest.transportation.carMiles * 1.2
-      ) {
+      if (userData.transportation.carMiles > latest.transportation.carMiles * 1.2) {
         factors.push('Increased car usage');
       }
-      if (
-        userData.energy.electricityUsage >
-        latest.energy.electricityUsage * 1.2
-      ) {
+      if (userData.energy.electricityUsage > latest.energy.electricityUsage * 1.2) {
         factors.push('Higher energy consumption');
       }
       if (userData.food.meatConsumption > latest.food.meatConsumption * 1.2) {
@@ -552,10 +540,7 @@ class MLCarbonPredictionService {
       this.trainingData.push(userData);
 
       // Store training data
-      await AsyncStorage.setItem(
-        'ml_training_data',
-        JSON.stringify(this.trainingData),
-      );
+      await AsyncStorage.setItem('ml_training_data', JSON.stringify(this.trainingData));
 
       // Retrain model if we have enough new data
       if (this.trainingData.length % 10 === 0) {
@@ -591,12 +576,8 @@ class MLCarbonPredictionService {
       });
 
       // Prepare training data
-      const features = this.trainingData.map(data =>
-        this.preprocessUserData(data),
-      );
-      const labels = this.trainingData.map(data =>
-        this.calculateActualFootprint(data),
-      );
+      const features = this.trainingData.map(data => this.preprocessUserData(data));
+      const labels = this.trainingData.map(data => this.calculateActualFootprint(data));
 
       const xs = tf.tensor2d(features);
       const ys = tf.tensor2d(labels);
@@ -621,8 +602,7 @@ class MLCarbonPredictionService {
       // Update model metrics
       this.modelMetrics = {
         accuracy: 0.85, // Calculate from validation
-        meanAbsoluteError:
-          history.history.val_mae?.[history.history.val_mae.length - 1] || 0,
+        meanAbsoluteError: history.history.val_mae?.[history.history.val_mae.length - 1] || 0,
         rootMeanSquareError: Math.sqrt(
           history.history.val_loss?.[history.history.val_loss.length - 1] || 0,
         ),
@@ -655,12 +635,9 @@ class MLCarbonPredictionService {
   private calculateActualFootprint(data: UserBehaviorData): number[] {
     // Calculate actual footprint for training (simplified)
     const transportation =
-      data.transportation.carMiles * 0.4 +
-      data.transportation.flightMiles * 0.2;
-    const energy =
-      data.energy.electricityUsage * 0.5 + data.energy.gasUsage * 2.0;
-    const food =
-      data.food.meatConsumption * 2.5 + data.food.dairyConsumption * 1.2;
+      data.transportation.carMiles * 0.4 + data.transportation.flightMiles * 0.2;
+    const energy = data.energy.electricityUsage * 0.5 + data.energy.gasUsage * 2.0;
+    const food = data.food.meatConsumption * 2.5 + data.food.dairyConsumption * 1.2;
     const waste = data.waste.wasteGeneration * 0.3;
 
     return [transportation, energy, food, waste];
@@ -672,10 +649,7 @@ class MLCarbonPredictionService {
     try {
       const _modelData = await this.model.save(
         tf.io.withSaveHandler(async artifacts => {
-          await AsyncStorage.setItem(
-            'carbon_prediction_model',
-            JSON.stringify(artifacts),
-          );
+          await AsyncStorage.setItem('carbon_prediction_model', JSON.stringify(artifacts));
           return { modelArtifactsInfo: { dateSaved: new Date() } };
         }),
       );
@@ -727,6 +701,5 @@ class MLCarbonPredictionService {
 }
 
 // Create and export singleton instance
-export const mlCarbonPredictionService =
-  MLCarbonPredictionService.getInstance();
+export const mlCarbonPredictionService = MLCarbonPredictionService.getInstance();
 export default mlCarbonPredictionService;

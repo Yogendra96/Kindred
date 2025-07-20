@@ -1,28 +1,31 @@
-import { updateFootprint } from '../store/slices/carbonSlice';
-import { useTheme } from '../theme/ThemeProvider';
-import { saveActivityData } from '../utils/carbonCalculator';
-import { loggingService } from '../services/LoggingService';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import DateTimePicker from '@react-native-community/datetimepicker';
 import NetInfo from '@react-native-community/netinfo';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { format, subDays, eachDayOfInterval, isWithinInterval } from 'date-fns';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-  Dimensions,
-  Platform,
-  FlatList,
-} from 'react-native';
-import { LineChart, BarChart } from 'react-native-chart-kit';
+import { eachDayOfInterval, format, isWithinInterval, subDays } from 'date-fns';
+import { BarChart, LineChart } from 'react-native-chart-kit';
 import { useDispatch } from 'react-redux';
+
+import { loggingService } from '../services/LoggingService';
+import { updateFootprint } from '../store/slices/carbonSlice';
+import { useTheme } from '../theme/ThemeProvider';
+import { saveActivityData } from '../utils/carbonCalculator';
 
 interface Activity {
   id: string;
@@ -59,9 +62,7 @@ const ActivityTracker: React.FC = React.memo(() => {
     start: subDays(new Date(), 30),
     end: new Date(),
   });
-  const [selectedCategory] = useState<string | null>(
-    null,
-  );
+  const [selectedCategory] = useState<string | null>(null);
 
   const dispatch = useDispatch();
 
@@ -87,8 +88,7 @@ const ActivityTracker: React.FC = React.memo(() => {
       categoryBreakdown: filteredActivities.reduce(
         (acc, activity) => ({
           ...acc,
-          [activity.type]:
-            (acc[activity.type] || 0) + (activity.completed ? 1 : 0),
+          [activity.type]: (acc[activity.type] ?? 0) + (activity.completed ? 1 : 0),
         }),
         {},
       ),
@@ -101,18 +101,14 @@ const ActivityTracker: React.FC = React.memo(() => {
     const data = dates.map(date => {
       const dayActivities = activities.filter(
         activity =>
-          format(new Date(activity.timestamp), 'yyyy-MM-dd') ===
-            format(date, 'yyyy-MM-dd') &&
+          format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') &&
           activity.completed &&
           (!selectedCategory || activity.type === selectedCategory),
       );
 
       return {
         date: format(date, 'MMM dd'),
-        impact: dayActivities.reduce(
-          (sum, activity) => sum + activity.impact,
-          0,
-        ),
+        impact: dayActivities.reduce((sum, activity) => sum + activity.impact, 0),
       };
     });
 
@@ -137,20 +133,20 @@ const ActivityTracker: React.FC = React.memo(() => {
           setActivities(JSON.parse(cached));
           setLoading(false);
         }
-      } catch (err) {
-        console.error('Error loading cached data:', err);
+      } catch (error_) {
+        console.error('Error loading cached data:', error_);
       }
     };
 
     const unsubscribeNetInfo = NetInfo.addEventListener(state => {
       setIsOnline(!!state.isConnected);
       if (state.isConnected) {
-        syncOfflineActions();
+        void syncOfflineActions();
       }
     });
 
-    loadCachedData();
-    fetchActivities();
+    void loadCachedData();
+    void fetchActivities();
 
     return () => {
       unsubscribeNetInfo();
@@ -167,9 +163,9 @@ const ActivityTracker: React.FC = React.memo(() => {
         }
         await AsyncStorage.removeItem(OFFLINE_ACTIONS_KEY);
       }
-    } catch (err) {
+    } catch (error_) {
       loggingService.error('Error syncing offline actions', {
-        error: err instanceof Error ? err.message : String(err),
+        error: error_ instanceof Error ? error_.message : String(error_),
       });
     }
   }, [handleActivityCompletion]);
@@ -179,21 +175,18 @@ const ActivityTracker: React.FC = React.memo(() => {
     if (!user) return;
 
     try {
-      const snapshot = await firestore()
-        .collection('daily_activities')
-        .doc(user.uid)
-        .get();
+      const snapshot = await firestore().collection('daily_activities').doc(user.uid).get();
 
       if (snapshot.exists) {
-        const data = snapshot.data()?.activities || [];
+        const data = snapshot.data()?.activities ?? [];
         setActivities(data);
         await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
       }
       setError(null);
-    } catch (err) {
+    } catch (error_) {
       setError('Failed to load activities');
       loggingService.error('Error fetching activities', {
-        error: err instanceof Error ? err.message : String(err),
+        error: error_ instanceof Error ? error_.message : String(error_),
       });
     } finally {
       setLoading(false);
@@ -213,20 +206,14 @@ const ActivityTracker: React.FC = React.memo(() => {
         if (!isOnline && !isSync) {
           // Store action for later sync
           const offlineActions = JSON.parse(
-            (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) || '[]',
+            (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) ?? '[]',
           );
           offlineActions.push({ activity, timestamp: Date.now() });
-          await AsyncStorage.setItem(
-            OFFLINE_ACTIONS_KEY,
-            JSON.stringify(offlineActions),
-          );
+          await AsyncStorage.setItem(OFFLINE_ACTIONS_KEY, JSON.stringify(offlineActions));
 
           // Update local state
           setActivities(updatedActivities);
-          await AsyncStorage.setItem(
-            CACHE_KEY,
-            JSON.stringify(updatedActivities),
-          );
+          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
           return;
         }
 
@@ -246,14 +233,11 @@ const ActivityTracker: React.FC = React.memo(() => {
         }
 
         setActivities(updatedActivities);
-        await AsyncStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify(updatedActivities),
-        );
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
         setError(null);
-      } catch (err) {
+      } catch (error_) {
         loggingService.error('Error updating activity', {
-          error: err instanceof Error ? err.message : String(err),
+          error: error_ instanceof Error ? error_.message : String(error_),
         });
         setError('Failed to update activity');
       }
@@ -285,10 +269,7 @@ const ActivityTracker: React.FC = React.memo(() => {
   const renderActivity = useCallback(
     ({ item: activity }: { item: Activity }) => (
       <TouchableOpacity
-        style={[
-          styles.activityCard,
-          activity.completed && styles.completedCard,
-        ]}
+        style={[styles.activityCard, activity.completed && styles.completedCard]}
         onPress={() => handleActivityCompletion(activity)}
         disabled={loading}
         accessible={true}
@@ -303,10 +284,7 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={styles.activityTitle} accessibilityRole='text'>
             {activity.title}
           </Text>
-          <Text
-            style={styles.points}
-            accessibilityLabel={`${activity.points} points`}
-          >
+          <Text style={styles.points} accessibilityLabel={`${activity.points} points`}>
             +{activity.points} pts
           </Text>
         </View>
@@ -320,9 +298,7 @@ const ActivityTracker: React.FC = React.memo(() => {
             disabled={loading}
             accessible={true}
             accessibilityRole='button'
-            accessibilityLabel={`${activity.completed ? 'Uncheck' : 'Check'} ${
-              activity.title
-            }`}
+            accessibilityLabel={`${activity.completed ? 'Uncheck' : 'Check'} ${activity.title}`}
             accessibilityHint={`Mark this activity as ${
               activity.completed ? 'incomplete' : 'complete'
             }`}
@@ -333,11 +309,7 @@ const ActivityTracker: React.FC = React.memo(() => {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
-              name={
-                activity.completed
-                  ? 'checkmark-circle'
-                  : 'checkmark-circle-outline'
-              }
+              name={activity.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
               size={24}
               color={activity.completed ? '#2ecc71' : '#666'}
               accessibilityElementsHidden={true}
@@ -347,7 +319,7 @@ const ActivityTracker: React.FC = React.memo(() => {
         </View>
       </TouchableOpacity>
     ),
-    [loading, handleActivityCompletion, theme.colors],
+    [loading, handleActivityCompletion],
   );
 
   const renderSummaryCard = () => (
@@ -368,12 +340,7 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>
             {summary.totalPoints}
           </Text>
-          <Text
-            style={[
-              styles.summaryLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
             Total Points
           </Text>
         </View>
@@ -381,12 +348,7 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={[styles.summaryValue, { color: theme.colors.success }]}>
             {summary.carbonSaved.toFixed(1)}t
           </Text>
-          <Text
-            style={[
-              styles.summaryLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
             CO₂ Saved
           </Text>
         </View>
@@ -394,12 +356,7 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>
             {summary.streakDays}
           </Text>
-          <Text
-            style={[
-              styles.summaryLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
             Day Streak
           </Text>
         </View>
@@ -409,9 +366,7 @@ const ActivityTracker: React.FC = React.memo(() => {
 
   const renderCharts = () => (
     <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
-        Impact Timeline
-      </Text>
+      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>Impact Timeline</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <LineChart
           data={chartData}
@@ -447,12 +402,10 @@ const ActivityTracker: React.FC = React.memo(() => {
       <View accessible={true} accessibilityRole='image'>
         <Text
           accessibilityLiveRegion='polite'
-          accessibilityLabel={`Activity breakdown chart: ${Object.entries(
-            summary.categoryBreakdown,
-          )
+          accessibilityLabel={`Activity breakdown chart: ${Object.entries(summary.categoryBreakdown)
             .map(([category, count]) => `${category}: ${count} activities`)
             .join(', ')}`}
-          style={{ position: 'absolute', left: -10000 }}
+          style={styles.screenReaderOnly}
         >
           Activity categories:{' '}
           {Object.entries(summary.categoryBreakdown)
@@ -488,10 +441,7 @@ const ActivityTracker: React.FC = React.memo(() => {
   if (loading) {
     return (
       <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
+        style={[styles.loadingContainer, { backgroundColor: theme.colors.surface }]}
         accessible={true}
         accessibilityRole='progressbar'
         accessibilityLabel='Loading activities'
@@ -528,7 +478,11 @@ const ActivityTracker: React.FC = React.memo(() => {
           accessibilityRole='status'
         >
           <Text style={styles.offlineText} accessibilityRole='text'>
-            📱 You're offline - changes will sync when back online
+            <span role='img' aria-label='mobile phone'>
+              📱
+            </span>
+            {'  '}
+            You're offline - changes will sync when back online
           </Text>
         </View>
       )}
@@ -676,6 +630,10 @@ const styles = StyleSheet.create({
     color: '#ef6c00',
     fontSize: 14,
     textAlign: 'center',
+  },
+  screenReaderOnly: {
+    position: 'absolute',
+    left: -10000,
   },
 });
 

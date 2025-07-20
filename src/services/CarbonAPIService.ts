@@ -1,16 +1,56 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { CARBON_API_KEY, CARBON_API_BASE_URL } from '@env';
+/**
+ * @fileoverview Carbon API Service for calculating and tracking carbon emissions
+ *
+ * This service provides comprehensive carbon footprint calculation capabilities
+ * by integrating with external carbon emission factor databases and APIs.
+ * It supports real-time emission calculations, product carbon footprints,
+ * and carbon offset marketplace integration.
+ *
+ * @version 2.0.0
+ * @author Kindred Development Team
+ * @since 1.0.0
+ */
+
+import { CARBON_API_BASE_URL, CARBON_API_KEY } from '@env';
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import axios from 'axios';
+
 import { loggingService } from './LoggingService';
 
-// Types for Carbon API
+/**
+ * Represents a carbon emission factor for a specific activity or product
+ *
+ * @interface CarbonEmissionFactor
+ * @example
+ * ```typescript
+ * const factor: CarbonEmissionFactor = {
+ *   id: 'electricity-us-grid',
+ *   category: 'energy',
+ *   subcategory: 'electricity',
+ *   factor: 0.4537,
+ *   unit: 'kg CO2/kWh',
+ *   region: 'US',
+ *   source: 'EPA eGRID 2021',
+ *   lastUpdated: new Date('2023-01-01')
+ * };
+ * ```
+ */
 export interface CarbonEmissionFactor {
+  /** Unique identifier for the emission factor */
   id: string;
+  /** Primary category (energy, transport, food, etc.) */
   category: string;
+  /** Specific subcategory within the main category */
   subcategory: string;
-  factor: number; // kg CO2 per unit
+  /** Emission factor value in kg CO2 per unit */
+  factor: number;
+  /** Unit of measurement for the emission factor */
   unit: string;
+  /** Geographic region where factor applies */
   region?: string;
+  /** Data source for the emission factor */
   source: string;
+  /** Date when the factor was last updated */
   lastUpdated: Date;
 }
 
@@ -119,10 +159,8 @@ export interface APIError {
 
 class CarbonAPIService {
   private api: AxiosInstance;
-  private cache: Map<string, { data: any; timestamp: number; ttl: number }> =
-    new Map();
-  private rateLimitTracker: Map<string, { count: number; resetTime: number }> =
-    new Map();
+  private cache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
+  private rateLimitTracker: Map<string, { count: number; resetTime: number }> = new Map();
   private logger: typeof loggingService;
 
   constructor() {
@@ -203,13 +241,8 @@ class CarbonAPIService {
   }
 
   // Emission Factors
-  async getEmissionFactors(
-    category?: string,
-    region?: string,
-  ): Promise<CarbonEmissionFactor[]> {
-    const cacheKey = `emission-factors-${category || 'all'}-${
-      region || 'global'
-    }`;
+  async getEmissionFactors(category?: string, region?: string): Promise<CarbonEmissionFactor[]> {
+    const cacheKey = `emission-factors-${category || 'all'}-${region || 'global'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 
@@ -256,9 +289,7 @@ class CarbonAPIService {
   }
 
   // Carbon Calculations
-  async calculateEmissions(
-    request: CarbonCalculationRequest,
-  ): Promise<CarbonCalculationResponse> {
+  async calculateEmissions(request: CarbonCalculationRequest): Promise<CarbonCalculationResponse> {
     const startTime = Date.now();
 
     try {
@@ -320,9 +351,7 @@ class CarbonAPIService {
   }
 
   // Product Carbon Footprint
-  async getProductFootprint(
-    barcode: string,
-  ): Promise<ProductCarbonFootprint | null> {
+  async getProductFootprint(barcode: string): Promise<ProductCarbonFootprint | null> {
     const cacheKey = `product-footprint-${barcode}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -365,9 +394,7 @@ class CarbonAPIService {
     location?: string,
     maxPrice?: number,
   ): Promise<CarbonOffsetProject[]> {
-    const cacheKey = `offset-projects-${type || 'all'}-${location || 'all'}-${
-      maxPrice || 'any'
-    }`;
+    const cacheKey = `offset-projects-${type || 'all'}-${location || 'all'}-${maxPrice || 'any'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 

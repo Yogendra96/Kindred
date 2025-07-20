@@ -4,14 +4,14 @@
  * File size target: 100-200 lines max
  */
 
-import { observabilityService } from './ObservabilityService';
 import { MemoryManagerCore } from './EnhancedMemoryManager.core';
 import type {
   MemoryAnalysisResult,
+  MemoryBreakdown,
   MemoryManagerConfig,
   MemoryOptimization,
-  MemoryBreakdown
 } from './EnhancedMemoryManager.types';
+import { observabilityService } from './ObservabilityService';
 
 /**
  * Enhanced Memory Manager Service
@@ -39,7 +39,7 @@ class EnhancedMemoryManagerService {
 
       await observabilityService.trackMetric('memory_manager_initialized', {
         timestamp: Date.now(),
-        monitoring: true
+        monitoring: true,
       });
 
       console.log('🧠 Enhanced Memory Manager initialized');
@@ -70,7 +70,7 @@ class EnhancedMemoryManagerService {
         totalUsage: analysis.totalUsage,
         available: analysis.available,
         leakCount: analysis.leaks.length,
-        recommendationCount: analysis.recommendations.length
+        recommendationCount: analysis.recommendations.length,
       });
 
       console.log(`🧠 Memory Analysis:
@@ -107,20 +107,20 @@ class EnhancedMemoryManagerService {
         after: result.after,
         savings: result.savings,
         actionCount: result.actions.length,
-        forced: force
+        forced: force,
       });
 
       return {
         success: true,
         savings: result.savings,
-        actions: result.actions
+        actions: result.actions,
       };
     } catch (error) {
       await observabilityService.trackError('memory_cleanup_failed', error as Error);
       return {
         success: false,
         savings: 0,
-        actions: []
+        actions: [],
       };
     }
   }
@@ -133,12 +133,10 @@ class EnhancedMemoryManagerService {
       throw new Error('No memory analysis available. Run getMemoryAnalysis() first.');
     }
 
-    return this.lastAnalysis.recommendations
-      .slice(0, limit)
-      .map(rec => ({
-        ...rec,
-        formattedSavings: this.formatBytes(rec.expectedSavings)
-      }));
+    return this.lastAnalysis.recommendations.slice(0, limit).map(rec => ({
+      ...rec,
+      formattedSavings: this.formatBytes(rec.expectedSavings),
+    }));
   }
 
   /**
@@ -155,7 +153,7 @@ class EnhancedMemoryManagerService {
         status: 'warning',
         usage: 0,
         percentage: 0,
-        message: 'No memory analysis available'
+        message: 'No memory analysis available',
       };
     }
 
@@ -180,7 +178,7 @@ class EnhancedMemoryManagerService {
       status,
       usage: this.lastAnalysis.totalUsage,
       percentage,
-      message
+      message,
     };
   }
 
@@ -204,10 +202,11 @@ class EnhancedMemoryManagerService {
     const trend = this.lastAnalysis.trend;
     return {
       direction: trend.direction,
-      rate: this.formatBytes(Math.abs(trend.rate)) + '/min',
-      prediction: trend.prediction.timeToLimit === Infinity 
-        ? 'Stable' 
-        : `${Math.round(trend.prediction.timeToLimit)} minutes to limit`
+      rate: `${this.formatBytes(Math.abs(trend.rate))}/min`,
+      prediction:
+        trend.prediction.timeToLimit === Infinity
+          ? 'Stable'
+          : `${Math.round(trend.prediction.timeToLimit)} minutes to limit`,
     };
   }
 
@@ -223,7 +222,7 @@ class EnhancedMemoryManagerService {
       this.lastAnalysis = null;
 
       await observabilityService.trackMetric('memory_manager_disposed', {
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       console.log('🧠 Memory Manager disposed');
@@ -241,32 +240,48 @@ class EnhancedMemoryManagerService {
         interval: 30000, // 30 seconds
         sampleRetention: 100,
         leakDetection: true,
-        detailedBreakdown: !__DEV__ // More detailed in production
+        detailedBreakdown: !__DEV__, // More detailed in production
       },
       cleanup: {
         automatic: true,
         aggressiveness: 'balanced',
         triggers: [
-          { type: 'threshold', value: 80, action: { target: 'cache', aggressiveness: 0.5, preserveCritical: true } },
-          { type: 'interval', value: 300000, action: { target: 'images', aggressiveness: 0.3, preserveCritical: true } }
+          {
+            type: 'threshold',
+            value: 80,
+            action: {
+              target: 'cache',
+              aggressiveness: 0.5,
+              preserveCritical: true,
+            },
+          },
+          {
+            type: 'interval',
+            value: 300000,
+            action: {
+              target: 'images',
+              aggressiveness: 0.3,
+              preserveCritical: true,
+            },
+          },
         ],
         preservation: [
           { pattern: 'critical_*', reason: 'Critical app data', priority: 10 },
-          { pattern: 'user_*', reason: 'User data', priority: 8 }
-        ]
+          { pattern: 'user_*', reason: 'User data', priority: 8 },
+        ],
       },
       limits: {
-        warning: 200 * 1024 * 1024,   // 200MB
-        critical: 300 * 1024 * 1024,  // 300MB
+        warning: 200 * 1024 * 1024, // 200MB
+        critical: 300 * 1024 * 1024, // 300MB
         emergency: 400 * 1024 * 1024, // 400MB
-        maxCacheSize: 50 * 1024 * 1024 // 50MB
+        maxCacheSize: 50 * 1024 * 1024, // 50MB
       },
       optimization: {
         enableImageOptimization: true,
         enableComponentPooling: !__DEV__, // Only in production
         enableServiceCaching: true,
-        gcHints: true
-      }
+        gcHints: true,
+      },
     };
   }
 

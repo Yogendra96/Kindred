@@ -1,20 +1,22 @@
+import React, { useCallback, useEffect, useState } from 'react';
+
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
 import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
 // import { loggingService } from '../services/LoggingService';
-import React, { useState, useEffect } from 'react';
-import { useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  TextInput,
-  Switch,
-  Alert,
-} from 'react-native';
+
 // import { Dimensions } from 'react-native';
 
 // Global type declarations
@@ -117,8 +119,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   const filteredLogs = logs.filter(log => {
     const matchesLevel = filterLevel === 'all' || log.level === filterLevel;
     const matchesSearch =
-      !searchQuery ||
-      log.message.toLowerCase().includes(searchQuery.toLowerCase());
+      !searchQuery || log.message.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesLevel && matchesSearch;
   });
 
@@ -146,42 +147,34 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
    * Clear performance data
    */
   const clearPerformanceData = () => {
-    Alert.alert(
-      'Clear Performance Data',
-      'Are you sure you want to clear all performance data?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: () => {
-            performanceService.clearData();
-            refreshData();
-          },
+    Alert.alert('Clear Performance Data', 'Are you sure you want to clear all performance data?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: () => {
+          performanceService.clearData();
+          refreshData();
         },
-      ],
-    );
+      },
+    ]);
   };
 
   /**
    * Clear analytics data
    */
   const clearAnalyticsData = () => {
-    Alert.alert(
-      'Clear Analytics Data',
-      'Are you sure you want to clear all analytics data?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: async () => {
-            await analyticsService.clearAnalyticsData();
-            refreshData();
-          },
+    Alert.alert('Clear Analytics Data', 'Are you sure you want to clear all analytics data?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          await analyticsService.clearAnalyticsData();
+          refreshData();
         },
-      ],
-    );
+      },
+    ]);
   };
 
   /**
@@ -216,17 +209,11 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
         {tabs.map(tab => (
           <TouchableOpacity
             key={tab.key}
-            style={[
-              styles.tabButton,
-              activeTab === tab.key && styles.activeTabButton,
-            ]}
+            style={[styles.tabButton, activeTab === tab.key && styles.activeTabButton]}
             onPress={() => setActiveTab(tab.key)}
           >
             <Text
-              style={[
-                styles.tabButtonText,
-                activeTab === tab.key && styles.activeTabButtonText,
-              ]}
+              style={[styles.tabButtonText, activeTab === tab.key && styles.activeTabButtonText]}
             >
               {tab.label}
             </Text>
@@ -258,9 +245,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color: performanceData.overview.isMonitoring
-                    ? '#4CAF50'
-                    : '#F44336',
+                  color: performanceData.overview.isMonitoring ? '#4CAF50' : '#F44336',
                 },
               ]}
             >
@@ -269,9 +254,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total Metrics:</Text>
-            <Text style={styles.metricValue}>
-              {performanceData.overview.totalMetrics}
-            </Text>
+            <Text style={styles.metricValue}>{performanceData.overview.totalMetrics}</Text>
           </View>
         </View>
 
@@ -280,15 +263,11 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             <Text style={styles.sectionTitle}>Memory</Text>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Used:</Text>
-              <Text style={styles.metricValue}>
-                {performanceData.memory.current.used}
-              </Text>
+              <Text style={styles.metricValue}>{performanceData.memory.current.used}</Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Utilization:</Text>
-              <Text style={styles.metricValue}>
-                {performanceData.memory.current.utilization}
-              </Text>
+              <Text style={styles.metricValue}>{performanceData.memory.current.utilization}</Text>
             </View>
           </View>
         )}
@@ -298,15 +277,11 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             <Text style={styles.sectionTitle}>Rendering</Text>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Total Renders:</Text>
-              <Text style={styles.metricValue}>
-                {performanceData.rendering.totalRenders}
-              </Text>
+              <Text style={styles.metricValue}>{performanceData.rendering.totalRenders}</Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Average Time:</Text>
-              <Text style={styles.metricValue}>
-                {performanceData.rendering.averageRenderTime}
-              </Text>
+              <Text style={styles.metricValue}>{performanceData.rendering.averageRenderTime}</Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Slow Renders:</Text>
@@ -314,10 +289,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
                 style={[
                   styles.metricValue,
                   {
-                    color:
-                      performanceData.rendering.slowRenders > 0
-                        ? '#FF9800'
-                        : '#4CAF50',
+                    color: performanceData.rendering.slowRenders > 0 ? '#FF9800' : '#4CAF50',
                   },
                 ]}
               >
@@ -327,10 +299,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
         )}
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={clearPerformanceData}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={clearPerformanceData}>
           <Text style={styles.actionButtonText}>Clear Performance Data</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -355,15 +324,11 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           <Text style={styles.sectionTitle}>Sessions</Text>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total:</Text>
-            <Text style={styles.metricValue}>
-              {analyticsData.sessions.total}
-            </Text>
+            <Text style={styles.metricValue}>{analyticsData.sessions.total}</Text>
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Active:</Text>
-            <Text style={styles.metricValue}>
-              {analyticsData.sessions.active}
-            </Text>
+            <Text style={styles.metricValue}>{analyticsData.sessions.active}</Text>
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Avg Duration:</Text>
@@ -379,14 +344,12 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             <Text style={styles.metricLabel}>Total:</Text>
             <Text style={styles.metricValue}>{analyticsData.events.total}</Text>
           </View>
-          {Object.entries(analyticsData.events.byCategory).map(
-            ([category, count]) => (
-              <View key={category} style={styles.metricRow}>
-                <Text style={styles.metricLabel}>{category}:</Text>
-                <Text style={styles.metricValue}>{count as number}</Text>
-              </View>
-            ),
-          )}
+          {Object.entries(analyticsData.events.byCategory).map(([category, count]) => (
+            <View key={category} style={styles.metricRow}>
+              <Text style={styles.metricLabel}>{category}:</Text>
+              <Text style={styles.metricValue}>{count as number}</Text>
+            </View>
+          ))}
         </View>
 
         <View style={styles.section}>
@@ -401,10 +364,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={clearAnalyticsData}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={clearAnalyticsData}>
           <Text style={styles.actionButtonText}>Clear Analytics Data</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -443,9 +403,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           {securityData.session.userId && (
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>User ID:</Text>
-              <Text style={styles.metricValue}>
-                {securityData.session.userId}
-              </Text>
+              <Text style={styles.metricValue}>{securityData.session.userId}</Text>
             </View>
           )}
         </View>
@@ -454,9 +412,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           <Text style={styles.sectionTitle}>Security Events (24h)</Text>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total:</Text>
-            <Text style={styles.metricValue}>
-              {securityData.events.last24Hours}
-            </Text>
+            <Text style={styles.metricValue}>{securityData.events.last24Hours}</Text>
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Critical:</Text>
@@ -464,8 +420,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color:
-                    securityData.events.critical > 0 ? '#F44336' : '#4CAF50',
+                  color: securityData.events.critical > 0 ? '#F44336' : '#4CAF50',
                 },
               ]}
             >
@@ -478,10 +433,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color:
-                    securityData.events.failedLogins > 0
-                      ? '#FF9800'
-                      : '#4CAF50',
+                  color: securityData.events.failedLogins > 0 ? '#FF9800' : '#4CAF50',
                 },
               ]}
             >
@@ -500,9 +452,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Max Login Attempts:</Text>
-            <Text style={styles.metricValue}>
-              {securityData.config.maxLoginAttempts}
-            </Text>
+            <Text style={styles.metricValue}>{securityData.config.maxLoginAttempts}</Text>
           </View>
         </View>
       </ScrollView>
@@ -540,10 +490,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           <View style={styles.filterContainer}>
             <Text style={styles.filterLabel}>Level:</Text>
             <TouchableOpacity
-              style={[
-                styles.filterButton,
-                filterLevel === 'all' && styles.activeFilter,
-              ]}
+              style={[styles.filterButton, filterLevel === 'all' && styles.activeFilter]}
               onPress={() => setFilterLevel('all')}
             >
               <Text style={styles.filterButtonText}>All</Text>
@@ -551,10 +498,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             {['error', 'warn', 'info', 'debug'].map(level => (
               <TouchableOpacity
                 key={level}
-                style={[
-                  styles.filterButton,
-                  filterLevel === level && styles.activeFilter,
-                ]}
+                style={[styles.filterButton, filterLevel === level && styles.activeFilter]}
                 onPress={() => setFilterLevel(level)}
               >
                 <Text style={styles.filterButtonText}>{level}</Text>
@@ -567,9 +511,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           {filteredLogs.map((log, index) => (
             <View key={index} style={styles.logEntry}>
               <View style={styles.logHeader}>
-                <Text
-                  style={[styles.logLevel, { color: getLevelColor(log.level) }]}
-                >
+                <Text style={[styles.logLevel, { color: getLevelColor(log.level) }]}>
                   {log.level.toUpperCase()}
                 </Text>
                 <Text style={styles.logTimestamp}>
@@ -577,11 +519,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
                 </Text>
               </View>
               <Text style={styles.logMessage}>{log.message}</Text>
-              {log.data && (
-                <Text style={styles.logData}>
-                  {JSON.stringify(log.data, null, 2)}
-                </Text>
-              )}
+              {log.data && <Text style={styles.logData}>{JSON.stringify(log.data, null, 2)}</Text>}
             </View>
           ))}
         </ScrollView>

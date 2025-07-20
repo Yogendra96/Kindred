@@ -3,6 +3,7 @@
  * Provides environment-specific settings and feature flags
  */
 import { Platform } from 'react-native';
+
 import Config from 'react-native-config';
 
 // Environment types
@@ -109,8 +110,7 @@ const baseConfig = {
     enabled: Config.ENABLE_ANALYTICS !== 'false',
     trackingId: Config.ANALYTICS_TRACKING_ID,
     enableCrashlytics: Config.ENABLE_CRASHLYTICS !== 'false',
-    enablePerformanceMonitoring:
-      Config.ENABLE_PERFORMANCE_MONITORING !== 'false',
+    enablePerformanceMonitoring: Config.ENABLE_PERFORMANCE_MONITORING !== 'false',
     sampleRate: parseFloat(Config.ANALYTICS_SAMPLE_RATE || '1.0'),
   } as AnalyticsConfig,
 
@@ -223,11 +223,7 @@ export const config = {
 
 // Validation functions
 export const validateConfig = (): boolean => {
-  const requiredFields = [
-    config.firebase.apiKey,
-    config.firebase.projectId,
-    config.api.baseURL,
-  ];
+  const requiredFields = [config.firebase.apiKey, config.firebase.projectId, config.api.baseURL];
 
   const missingFields = requiredFields.filter(field => !field);
 

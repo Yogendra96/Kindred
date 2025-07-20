@@ -1,8 +1,10 @@
-import { CrashReportingService } from './CrashReportingService';
-import { loggingService } from './LoggingService';
+import { Platform } from 'react-native';
+
 import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
-import { Platform } from 'react-native';
+
+import { CrashReportingService } from './CrashReportingService';
+import { loggingService } from './LoggingService';
 
 export interface NotificationPayload {
   title: string;
@@ -42,7 +44,9 @@ class NotificationService {
       // Get FCM token
       const token = await this.getFCMToken();
       if (token) {
-        loggingService.info('FCM Token obtained', { tokenLength: token.length });
+        loggingService.info('FCM Token obtained', {
+          tokenLength: token.length,
+        });
       }
 
       // Set up message handlers
@@ -51,9 +55,7 @@ class NotificationService {
       this.isInitialized = true;
     } catch (error) {
       CrashReportingService.logError(
-        error instanceof Error
-          ? error
-          : new Error('Failed to initialize notifications'),
+        error instanceof Error ? error : new Error('Failed to initialize notifications'),
       );
     }
   }
@@ -75,7 +77,9 @@ class NotificationService {
 
       return enabled;
     } catch (error) {
-      loggingService.error('Failed to request notification permissions', { error: error.message });
+      loggingService.error('Failed to request notification permissions', {
+        error: error.message,
+      });
       return false;
     }
   }
@@ -121,7 +125,9 @@ class NotificationService {
     // Handle notification press
     notifee.onForegroundEvent(async ({ type, detail }) => {
       if (type === EventType.PRESS) {
-        loggingService.info('User pressed notification', { notificationId: detail.notification?.id });
+        loggingService.info('User pressed notification', {
+          notificationId: detail.notification?.id,
+        });
         // Handle notification press
       }
     });
@@ -131,7 +137,10 @@ class NotificationService {
     try {
       await messaging().subscribeToTopic(topic);
     } catch (error) {
-      loggingService.error('Failed to subscribe to topic', { topic, error: error.message });
+      loggingService.error('Failed to subscribe to topic', {
+        topic,
+        error: error.message,
+      });
     }
   }
 
@@ -139,16 +148,17 @@ class NotificationService {
     try {
       await messaging().unsubscribeFromTopic(topic);
     } catch (error) {
-      loggingService.error('Failed to unsubscribe from topic', { topic, error: error.message });
+      loggingService.error('Failed to unsubscribe from topic', {
+        topic,
+        error: error.message,
+      });
     }
   }
 
   async displayNotification(payload: NotificationPayload): Promise<void> {
     try {
       const channelId =
-        Platform.OS === 'android'
-          ? payload.channelId || this.defaultChannelId
-          : undefined;
+        Platform.OS === 'android' ? payload.channelId || this.defaultChannelId : undefined;
 
       await notifee.displayNotification({
         title: payload.title,
@@ -172,19 +182,16 @@ class NotificationService {
         data: payload.data,
       });
     } catch (error) {
-      loggingService.error('Failed to display notification', { error: error.message });
+      loggingService.error('Failed to display notification', {
+        error: error.message,
+      });
     }
   }
 
-  async scheduleNotification(
-    payload: NotificationPayload,
-    date: Date,
-  ): Promise<string> {
+  async scheduleNotification(payload: NotificationPayload, date: Date): Promise<string> {
     try {
       const channelId =
-        Platform.OS === 'android'
-          ? payload.channelId || this.defaultChannelId
-          : undefined;
+        Platform.OS === 'android' ? payload.channelId || this.defaultChannelId : undefined;
 
       const trigger = {
         type: Platform.select({
@@ -212,7 +219,9 @@ class NotificationService {
         trigger,
       );
     } catch (error) {
-      loggingService.error('Failed to schedule notification', { error: error.message });
+      loggingService.error('Failed to schedule notification', {
+        error: error.message,
+      });
       return '';
     }
   }
@@ -221,7 +230,10 @@ class NotificationService {
     try {
       await notifee.cancelNotification(notificationId);
     } catch (error) {
-      loggingService.error('Failed to cancel notification', { notificationId, error: error.message });
+      loggingService.error('Failed to cancel notification', {
+        notificationId,
+        error: error.message,
+      });
     }
   }
 
@@ -229,7 +241,9 @@ class NotificationService {
     try {
       await notifee.cancelAllNotifications();
     } catch (error) {
-      loggingService.error('Failed to cancel all notifications', { error: error.message });
+      loggingService.error('Failed to cancel all notifications', {
+        error: error.message,
+      });
     }
   }
 

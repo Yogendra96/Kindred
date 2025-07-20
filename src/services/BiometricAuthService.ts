@@ -1,8 +1,10 @@
+import { Platform } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Keychain from 'react-native-keychain';
+
 import { enhancedSecurityService } from './EnhancedSecurityService';
 import { loggingService } from './LoggingService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-import Keychain from 'react-native-keychain';
 
 // Global type declarations
 declare global {
@@ -113,12 +115,9 @@ class BiometricAuthService {
         isEnabled: this.settings.isEnabled,
       });
     } catch (error) {
-      this.logger.error(
-        'Failed to initialize biometric authentication service',
-        {
-          error: error.message,
-        },
-      );
+      this.logger.error('Failed to initialize biometric authentication service', {
+        error: error.message,
+      });
       throw error;
     }
   }
@@ -149,9 +148,7 @@ class BiometricAuthService {
       }
 
       // Check if biometrics are enrolled
-      const _hasCredentials = await Keychain.hasInternetCredentials(
-        'biometric_test',
-      );
+      const _hasCredentials = await Keychain.hasInternetCredentials('biometric_test');
 
       return {
         isAvailable: true,
@@ -174,9 +171,7 @@ class BiometricAuthService {
   /**
    * Perform biometric authentication
    */
-  async authenticate(
-    config?: BiometricAuthConfig,
-  ): Promise<BiometricAuthResult> {
+  async authenticate(config?: BiometricAuthConfig): Promise<BiometricAuthResult> {
     try {
       // Check if service is initialized
       if (!this.isInitialized) {
@@ -204,9 +199,7 @@ class BiometricAuthService {
         const remainingTime = this.getRemainingLockoutTime();
         return {
           success: false,
-          error: `Account locked. Try again in ${Math.ceil(
-            remainingTime / 1000,
-          )} seconds`,
+          error: `Account locked. Try again in ${Math.ceil(remainingTime / 1000)} seconds`,
         };
       }
 
@@ -216,15 +209,11 @@ class BiometricAuthService {
         promptMessage: config?.promptMessage || this.settings.promptMessage,
         cancelButtonText: config?.cancelButtonText || 'Cancel',
         fallbackPromptMessage: config?.fallbackPromptMessage || 'Use Passcode',
-        showPasscodeOption:
-          config?.showPasscodeOption ?? this.settings.fallbackEnabled,
+        showPasscodeOption: config?.showPasscodeOption ?? this.settings.fallbackEnabled,
       };
 
       // Attempt authentication
-      const credentials = await Keychain.getInternetCredentials(
-        'biometric_auth',
-        options,
-      );
+      const credentials = await Keychain.getInternetCredentials('biometric_auth', options);
 
       if (credentials && credentials.username && credentials.password) {
         // Reset failed attempts on successful authentication
@@ -253,9 +242,7 @@ class BiometricAuthService {
           },
         };
       } else {
-        throw new Error(
-          'No credentials returned from biometric authentication',
-        );
+        throw new Error('No credentials returned from biometric authentication');
       }
     } catch (error) {
       await this.handleAuthenticationFailure(error);
@@ -288,27 +275,18 @@ class BiometricAuthService {
       const options: Keychain.Options = {
         accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
         authenticationType: Keychain.AUTHENTICATION_TYPE.BIOMETRICS,
-        promptMessage:
-          config?.promptMessage || 'Authenticate to save credentials',
+        promptMessage: config?.promptMessage || 'Authenticate to save credentials',
         showPasscodeOption: config?.showPasscodeOption ?? true,
       };
 
-      await Keychain.setInternetCredentials(
-        'biometric_auth',
-        username,
-        password,
-        options,
-      );
+      await Keychain.setInternetCredentials('biometric_auth', username, password, options);
 
       this.logger.info('Credentials stored with biometric protection');
       return true;
     } catch (error) {
-      this.logger.error(
-        'Failed to store credentials with biometric protection',
-        {
-          error: error.message,
-        },
-      );
+      this.logger.error('Failed to store credentials with biometric protection', {
+        error: error.message,
+      });
       return false;
     }
   }
@@ -423,11 +401,7 @@ class BiometricAuthService {
   /**
    * Verify signature using biometric key
    */
-  async verifySignature(
-    signature: string,
-    payload: string,
-    keyAlias: string,
-  ): Promise<boolean> {
+  async verifySignature(signature: string, payload: string, keyAlias: string): Promise<boolean> {
     try {
       const key = this.keys.get(keyAlias);
       if (!key) {
@@ -456,9 +430,7 @@ class BiometricAuthService {
   /**
    * Enable biometric authentication for the app
    */
-  async enableBiometricAuth(
-    config?: Partial<BiometricSettings>,
-  ): Promise<boolean> {
+  async enableBiometricAuth(config?: Partial<BiometricSettings>): Promise<boolean> {
     try {
       if (!this.capabilities?.isAvailable) {
         throw new Error('Biometric authentication not available');
@@ -533,7 +505,7 @@ class BiometricAuthService {
    * Get list of stored biometric keys
    */
   getStoredKeys(): BiometricKey[] {
-    return Array.from(this.keys.values());
+    return [...this.keys.values()];
   }
 
   /**
@@ -614,10 +586,7 @@ class BiometricAuthService {
    */
   private async saveSettings(): Promise<void> {
     try {
-      await AsyncStorage.setItem(
-        'biometric_settings',
-        JSON.stringify(this.settings),
-      );
+      await AsyncStorage.setItem('biometric_settings', JSON.stringify(this.settings));
     } catch (error) {
       this.logger.error('Failed to save biometric settings', {
         error: error.message,
@@ -647,7 +616,7 @@ class BiometricAuthService {
    */
   private async saveKeys(): Promise<void> {
     try {
-      const keysArray = Array.from(this.keys.values());
+      const keysArray = [...this.keys.values()];
       await AsyncStorage.setItem('biometric_keys', JSON.stringify(keysArray));
     } catch (error) {
       this.logger.error('Failed to save biometric keys', {
@@ -663,7 +632,7 @@ class BiometricAuthService {
     return {
       settings: this.settings,
       capabilities: this.capabilities,
-      keys: Array.from(this.keys.values()),
+      keys: [...this.keys.values()],
       metadata: {
         platform: Platform.OS,
         timestamp: new Date().toISOString(),

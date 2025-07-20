@@ -1,21 +1,24 @@
-import { updateFootprint } from '../../store/slices/carbonSlice';
-import { saveActivityData } from '../../utils/carbonCalculator';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import firestore from '@react-native-firebase/firestore';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  Text,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
+
+import { updateFootprint } from '../../store/slices/carbonSlice';
+import { saveActivityData } from '../../utils/carbonCalculator';
 
 interface EcoLocation {
   id: string;
@@ -73,7 +76,7 @@ const MapScreen = () => {
         if (hasPermission) {
           getCurrentLocation();
         }
-      } catch (_err) {
+      } catch (_error) {
         setError('Location permission denied');
       }
     };
@@ -92,8 +95,8 @@ const MapScreen = () => {
     try {
       const granted = await Geolocation.requestAuthorization();
       return granted === 'granted';
-    } catch (err) {
-      console.error('Error requesting location permission:', err);
+    } catch (error_) {
+      console.error('Error requesting location permission:', error_);
       return false;
     }
   };
@@ -215,8 +218,8 @@ const MapScreen = () => {
           2,
         )} miles\nCarbon Impact: ${transportImpact.toFixed(2)} kg CO2`,
       );
-    } catch (err) {
-      console.error('Error saving journey:', err);
+    } catch (error_) {
+      console.error('Error saving journey:', error_);
       setError('Failed to save journey data');
     } finally {
       setIsTracking(false);
@@ -224,21 +227,13 @@ const MapScreen = () => {
     }
   }, [startLocation, userLocation, dispatch]);
 
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ) => {
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // Earth's radius in km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) *
-        Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c; // Distance in km
     return d * 0.621371; // Convert to miles
@@ -279,8 +274,8 @@ const MapScreen = () => {
               location.type === 'recycling'
                 ? 'green'
                 : location.type === 'charging'
-                ? 'blue'
-                : 'red'
+                  ? 'blue'
+                  : 'red'
             }
           />
         ))}
@@ -293,23 +288,15 @@ const MapScreen = () => {
       )}
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.locationButton}
-          onPress={getCurrentLocation}
-        >
+        <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
           <Text style={styles.buttonText}>Get Current Location</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.trackingButton,
-            isTracking ? styles.trackingActiveButton : null,
-          ]}
+          style={[styles.trackingButton, isTracking ? styles.trackingActiveButton : null]}
           onPress={isTracking ? stopTrackingJourney : startTrackingJourney}
         >
-          <Text style={styles.buttonText}>
-            {isTracking ? 'Stop Tracking' : 'Start Tracking'}
-          </Text>
+          <Text style={styles.buttonText}>{isTracking ? 'Stop Tracking' : 'Start Tracking'}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
