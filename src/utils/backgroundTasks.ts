@@ -1,17 +1,23 @@
 import { Platform } from 'react-native';
 
-// Example: Background fetch task registration (requires additional setup for real use)
-export function registerBackgroundTask(_taskName: string, _task: () => Promise<void>) {
-  // Background task registration (pseudo-code)
-  // Use libraries like react-native-background-fetch for real implementation
-  if (Platform.OS === 'android') {
-    // Android-specific background task registration
-    // BackgroundFetch.registerHeadlessTask(taskName, task);
-  } else if (Platform.OS === 'ios') {
-    // iOS-specific background task configuration
-    // BackgroundFetch.configure({ minimumFetchInterval: 15000 }, task);
+export const registerBackgroundTask = (taskName: string, _task: () => void): void => {
+  switch (Platform.OS) {
+    case 'android':
+      // Android-specific background task registration
+      console.log(`Registering Android background task: ${taskName}`);
+      // TODO: Implement with @react-native-async-storage/async-storage or similar
+      break;
+    case 'ios':
+      // iOS-specific background task registration
+      console.log(`Registering iOS background task: ${taskName}`);
+      // TODO: Implement with expo-background-fetch or similar
+      break;
+    default:
+      // Fallback for other platforms
+      console.log(`Background tasks not supported on platform: ${Platform.OS}`);
+      break;
   }
-}
+};
 
 // Example: Background location tracking (pseudo-code)
 export function startBackgroundLocationTracking() {

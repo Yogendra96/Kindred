@@ -5,7 +5,7 @@ describe('Redux Store', () => {
     const state = store.getState();
 
     // Check auth slice
-    expect(state.auth).toEqual({
+    expect(state.auth).toStrictEqual({
       isAuthenticated: false,
       user: {
         id: null,
@@ -17,7 +17,7 @@ describe('Redux Store', () => {
     });
 
     // Check user slice
-    expect(state.user).toEqual({
+    expect(state.user).toStrictEqual({
       profile: {
         id: '',
         name: '',
@@ -35,7 +35,7 @@ describe('Redux Store', () => {
     });
 
     // Check carbon slice
-    expect(state.carbon).toEqual({
+    expect(state.carbon).toStrictEqual({
       footprint: {
         total: 0,
         transportation: 0,

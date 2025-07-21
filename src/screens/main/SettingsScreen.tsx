@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -37,25 +29,21 @@ const SettingsScreen = () => {
   });
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await auth().signOut();
-              dispatch(logout());
-            } catch (error) {
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
-          },
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await auth().signOut();
+            dispatch(logout());
+          } catch (error) {
+            Alert.alert('Error', 'Failed to logout. Please try again.');
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const SettingItem = ({
@@ -89,9 +77,7 @@ const SettingsScreen = () => {
           {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
         </View>
       </View>
-      {rightComponent || (
-        <Icon name='chevron-forward' size={20} color='#8E8E93' />
-      )}
+      {rightComponent || <Icon name='chevron-forward' size={20} color='#8E8E93' />}
     </TouchableOpacity>
   );
 
@@ -99,21 +85,19 @@ const SettingsScreen = () => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Settings</Text>
-        <Text style={styles.subtitle}>
-          Customize your Kindred experience
-        </Text>
+        <Text style={styles.subtitle}>Customize your Kindred experience</Text>
       </View>
 
       {/* Profile Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Profile</Text>
-        
+
         <SettingItem
           icon='person-outline'
           title='Account Information'
           subtitle={user.email || 'Update your profile details'}
         />
-        
+
         <SettingItem
           icon='shield-checkmark-outline'
           title='Privacy & Security'
@@ -124,7 +108,7 @@ const SettingsScreen = () => {
       {/* Preferences Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Preferences</Text>
-        
+
         <SettingItem
           icon='notifications-outline'
           title='Notifications'
@@ -138,7 +122,7 @@ const SettingsScreen = () => {
             />
           }
         />
-        
+
         <SettingItem
           icon='finger-print-outline'
           title='Biometric Login'
@@ -152,7 +136,7 @@ const SettingsScreen = () => {
             />
           }
         />
-        
+
         <SettingItem
           icon='moon-outline'
           title='Dark Mode'
@@ -171,19 +155,19 @@ const SettingsScreen = () => {
       {/* Carbon Tracking Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Carbon Tracking</Text>
-        
+
         <SettingItem
           icon='leaf-outline'
           title='Carbon Goals'
           subtitle='Set your emission reduction targets'
         />
-        
+
         <SettingItem
           icon='analytics-outline'
           title='Data & Analytics'
           subtitle='Manage your carbon data'
         />
-        
+
         <SettingItem
           icon='location-outline'
           title='Location Services'
@@ -194,19 +178,15 @@ const SettingsScreen = () => {
       {/* Support Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Support</Text>
-        
+
         <SettingItem
           icon='help-circle-outline'
           title='Help & FAQ'
           subtitle='Get help and find answers'
         />
-        
-        <SettingItem
-          icon='mail-outline'
-          title='Contact Support'
-          subtitle='Reach out to our team'
-        />
-        
+
+        <SettingItem icon='mail-outline' title='Contact Support' subtitle='Reach out to our team' />
+
         <SettingItem
           icon='document-text-outline'
           title='Terms & Privacy'
@@ -218,7 +198,7 @@ const SettingsScreen = () => {
       {__DEV__ && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Developer</Text>
-          
+
           <SettingItem
             icon='bug-outline'
             title='Logging Dashboard'
@@ -228,7 +208,7 @@ const SettingsScreen = () => {
               setLoggingDashboardVisible(true);
             }}
           />
-          
+
           <SettingItem
             icon='analytics-outline'
             title='Performance Metrics'
@@ -242,28 +222,24 @@ const SettingsScreen = () => {
               );
             }}
           />
-          
+
           <SettingItem
             icon='code-outline'
             title='Clear Logs'
             subtitle='Clear all stored logs'
             onPress={() => {
-              Alert.alert(
-                'Clear Logs',
-                'Are you sure you want to clear all logs?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Clear',
-                    style: 'destructive',
-                    onPress: () => {
-                      log.trackUserAction('clear_logs');
-                      // Clear logs logic would go here
-                      Alert.alert('Success', 'Logs cleared successfully');
-                    },
+              Alert.alert('Clear Logs', 'Are you sure you want to clear all logs?', [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Clear',
+                  style: 'destructive',
+                  onPress: () => {
+                    log.trackUserAction('clear_logs');
+                    // Clear logs logic would go here
+                    Alert.alert('Success', 'Logs cleared successfully');
                   },
-                ],
-              );
+                },
+              ]);
             }}
           />
         </View>
@@ -287,7 +263,7 @@ const SettingsScreen = () => {
         <Text style={styles.versionText}>Version 1.0.0</Text>
         <Text style={styles.copyrightText}>© 2025 Kindred</Text>
       </View>
-      
+
       {/* Logging Dashboard Modal */}
       <LoggingDashboard
         visible={loggingDashboardVisible}

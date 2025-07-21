@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { Logger } from '../../services/AdvancedLoggingService';
 import { useAdvancedLogging } from '../../hooks/useAdvancedLogging';
+import { Logger } from '../../services/AdvancedLoggingService';
 
 const CarbonTrackerScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
+
   // Use the advanced logging hook with automatic lifecycle tracking
   const log = useAdvancedLogging({
     component: 'CarbonTrackerScreen',
@@ -84,9 +78,7 @@ const CarbonTrackerScreen = () => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Track Your Carbon Impact</Text>
-        <Text style={styles.subtitle}>
-          Select a category to log your activities
-        </Text>
+        <Text style={styles.subtitle}>Select a category to log your activities</Text>
       </View>
 
       <View style={styles.categoriesContainer}>
@@ -97,7 +89,7 @@ const CarbonTrackerScreen = () => {
               styles.categoryCard,
               { borderColor: category.color },
               selectedCategory === category.id && {
-                backgroundColor: category.color + '20',
+                backgroundColor: `${category.color}20`,
               },
             ]}
             onPress={() => handleCategoryPress(category.id)}
@@ -107,30 +99,19 @@ const CarbonTrackerScreen = () => {
             accessibilityHint={category.description}
           >
             <View style={styles.categoryHeader}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: category.color },
-                ]}
-              >
-                <Icon
-                  name={category.icon}
-                  size={24}
-                  color='#fff'
-                />
+              <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
+                <Icon name={category.icon} size={24} color='#fff' />
               </View>
               <Text style={styles.categoryName}>{category.name}</Text>
             </View>
-            <Text style={styles.categoryDescription}>
-              {category.description}
-            </Text>
+            <Text style={styles.categoryDescription}>{category.description}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.quickActions}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
-        
+
         <TouchableOpacity
           style={styles.quickActionButton}
           accessible={true}

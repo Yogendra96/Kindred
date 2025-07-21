@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -22,7 +16,7 @@ interface ActivityItem {
 
 const ActivityHistoryScreen = () => {
   const [filter, setFilter] = useState<'all' | 'daily' | 'weekly' | 'monthly'>('all');
-  
+
   // Mock data - in a real app, this would come from Redux store or API
   const activities: ActivityItem[] = [
     {
@@ -111,17 +105,8 @@ const ActivityHistoryScreen = () => {
   const renderActivity = ({ item }: { item: ActivityItem }) => (
     <View style={styles.activityItem}>
       <View style={styles.activityLeft}>
-        <View
-          style={[
-            styles.activityIcon,
-            { backgroundColor: getActivityColor(item.type) },
-          ]}
-        >
-          <Icon
-            name={getActivityIcon(item.type)}
-            size={20}
-            color='#fff'
-          />
+        <View style={[styles.activityIcon, { backgroundColor: getActivityColor(item.type) }]}>
+          <Icon name={getActivityIcon(item.type)} size={20} color='#fff' />
         </View>
         <View style={styles.activityDetails}>
           <Text style={styles.activityTitle}>{item.title}</Text>
@@ -148,22 +133,14 @@ const ActivityHistoryScreen = () => {
     isSelected: boolean;
   }) => (
     <TouchableOpacity
-      style={[
-        styles.filterButton,
-        isSelected && styles.filterButtonActive,
-      ]}
+      style={[styles.filterButton, isSelected && styles.filterButtonActive]}
       onPress={() => setFilter(value)}
       accessible={true}
       accessibilityRole='button'
       accessibilityLabel={`Filter by ${label}`}
       accessibilityState={{ selected: isSelected }}
     >
-      <Text
-        style={[
-          styles.filterButtonText,
-          isSelected && styles.filterButtonTextActive,
-        ]}
-      >
+      <Text style={[styles.filterButtonText, isSelected && styles.filterButtonTextActive]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -175,9 +152,7 @@ const ActivityHistoryScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Activity History</Text>
-        <Text style={styles.subtitle}>
-          Track your carbon footprint over time
-        </Text>
+        <Text style={styles.subtitle}>Track your carbon footprint over time</Text>
       </View>
 
       <View style={styles.summary}>

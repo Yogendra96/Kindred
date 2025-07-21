@@ -138,7 +138,7 @@ describe('AchievementSystemService', () => {
         const firstBadge = allBadges[0];
         const foundBadge = achievementService.getBadgeById(firstBadge.id);
 
-        expect(foundBadge).toEqual(firstBadge);
+        expect(foundBadge).toStrictEqual(firstBadge);
       }
     });
 
@@ -227,7 +227,7 @@ describe('AchievementSystemService', () => {
         // Progress might be null if not tracked yet
         if (progress) {
           expect(progress.badgeId).toBe(firstBadge.id);
-          expect(progress.badge).toEqual(firstBadge);
+          expect(progress.badge).toStrictEqual(firstBadge);
           expect(typeof progress.percentage).toBe('number');
         }
       }
@@ -348,7 +348,7 @@ describe('AchievementSystemService', () => {
 
       const achievements = await achievementService.loadUserAchievements('test-user-id');
 
-      expect(achievements).toEqual([]);
+      expect(achievements).toStrictEqual([]);
     });
 
     it('should handle AsyncStorage errors gracefully', async () => {

@@ -465,7 +465,7 @@ if (typeof global !== 'undefined') {
   if (typeof global.TextEncoder === 'undefined') {
     (global as any).TextEncoder = class TextEncoder {
       encode(str: string) {
-        return new Uint8Array(str.split('').map(char => char.charCodeAt(0)));
+        return new Uint8Array([...str].map(char => char.charCodeAt(0)));
       }
     };
   }
@@ -579,7 +579,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   // Reset AsyncStorage
-  mockAsyncStorage.clear();
+  void mockAsyncStorage.clear();
 
   // Reset global dev utils
   (global as any).devUtils = undefined;
@@ -607,4 +607,4 @@ if (typeof process !== 'undefined') {
 // Test timeout
 jest.setTimeout(30000);
 
-console.log('🧪 Enhanced test setup completed');
+void console.log('🧪 Enhanced test setup completed');

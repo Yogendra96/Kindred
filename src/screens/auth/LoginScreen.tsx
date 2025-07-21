@@ -21,8 +21,8 @@ import { useDispatch } from 'react-redux';
 
 import logoImage from '../../assets/logo.png';
 import type { AuthStackParamList } from '../../navigation/types';
-import { biometricAuthenticationService } from '../../services/BiometricAuthenticationService';
 import { Logger } from '../../services/AdvancedLoggingService';
+import { biometricAuthenticationService } from '../../services/BiometricAuthenticationService';
 import { loginFailure, loginStart, loginSuccess } from '../../store/slices/authSlice';
 
 // Import logo asset
@@ -44,7 +44,7 @@ const LoginScreen = () => {
 
     const initializeBiometrics = async () => {
       Logger.startTimer('biometric_init');
-      
+
       try {
         Logger.info('Initializing biometric authentication', {
           category: 'auth',
@@ -55,7 +55,7 @@ const LoginScreen = () => {
         await biometricAuthenticationService.initialize();
         const capabilities = await biometricAuthenticationService.getBiometricCapabilities();
         setBiometricsAvailable(capabilities.fingerprint || capabilities.faceId);
-        
+
         Logger.endTimer('biometric_init', {
           category: 'auth',
           component: 'LoginScreen',
@@ -64,12 +64,16 @@ const LoginScreen = () => {
           capabilities: JSON.stringify(capabilities),
         });
       } catch (error) {
-        Logger.error('Biometrics initialization failed', {
-          category: 'auth',
-          component: 'LoginScreen',
-          action: 'biometric_init_error',
-        }, error as Error);
-        
+        Logger.error(
+          'Biometrics initialization failed',
+          {
+            category: 'auth',
+            component: 'LoginScreen',
+            action: 'biometric_init_error',
+          },
+          error as Error,
+        );
+
         Logger.endTimer('biometric_init', {
           category: 'auth',
           component: 'LoginScreen',
@@ -106,11 +110,11 @@ const LoginScreen = () => {
         errors,
         errorCount: errors.length,
       });
-      
+
       AccessibilityInfo.announceForAccessibility(
         `Form has ${errors.length} error${errors.length > 1 ? 's' : ''}: ${errors.join(', ')}`,
       );
-      
+
       Logger.endTimer('email_login', {
         category: 'auth',
         component: 'LoginScreen',
@@ -166,14 +170,18 @@ const LoginScreen = () => {
       setFormErrors([errorMessage]);
       dispatch(loginFailure(errorMessage));
 
-      Logger.error('Email login failed', {
-        category: 'auth',
-        component: 'LoginScreen',
-        action: 'login_error',
-        method: 'email',
-        errorCode: (error as any)?.code,
-        errorMessage,
-      }, error as Error);
+      Logger.error(
+        'Email login failed',
+        {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'login_error',
+          method: 'email',
+          errorCode: (error as any)?.code,
+          errorMessage,
+        },
+        error as Error,
+      );
 
       AccessibilityInfo.announceForAccessibility(`Login failed: ${errorMessage}`);
 
@@ -277,12 +285,16 @@ const LoginScreen = () => {
       setFormErrors([errorMessage]);
       dispatch(loginFailure(errorMessage));
 
-      Logger.error('Biometric login error', {
-        category: 'auth',
-        component: 'LoginScreen',
-        action: 'biometric_login_error',
-        errorMessage,
-      }, error as Error);
+      Logger.error(
+        'Biometric login error',
+        {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'biometric_login_error',
+          errorMessage,
+        },
+        error as Error,
+      );
 
       AccessibilityInfo.announceForAccessibility(`Biometric login failed: ${errorMessage}`);
 

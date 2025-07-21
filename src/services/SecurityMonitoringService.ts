@@ -1,5 +1,5 @@
 import type { AppStateStatus } from 'react-native';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 
 import * as Keychain from 'react-native-keychain';
 
@@ -8,7 +8,6 @@ import { deviceAttestationService } from './DeviceAttestationService';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
 import { mfaService } from './MFAService';
-import { networkSecurityService } from './NetworkSecurityService';
 import { runtimeSecurityService } from './RuntimeSecurityService';
 
 export interface SecurityEvent {

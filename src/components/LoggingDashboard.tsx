@@ -3,7 +3,7 @@
  * Real-time log viewer with advanced search capabilities for development and debugging
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   FlatList,
@@ -20,10 +20,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import {
   advancedLoggingService,
+  type LogAnalytics,
   type LogEntry,
   type LogLevel,
   type LogQuery,
-  type LogAnalytics,
 } from '../services/AdvancedLoggingService';
 
 interface LoggingDashboardProps {
@@ -39,19 +39,19 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
   const [activeTab, setActiveTab] = useState<'logs' | 'analytics' | 'search'>('logs');
-  
+
   const levels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
-  
+
   useEffect(() => {
     if (visible) {
       refreshData();
-      
+
       // Auto-refresh every 2 seconds while visible
       const interval = setInterval(refreshData, 2000);
       return () => clearInterval(interval);
     }
   }, [visible]);
-  
+
   const refreshData = () => {
     const query: LogQuery = {
       query: searchQuery || undefined,
@@ -61,28 +61,26 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
       sortBy: 'timestamp',
       sortOrder: 'desc',
     };
-    
+
     const searchResults = advancedLoggingService.search(query);
     setLogs(searchResults);
-    
+
     const analyticsData = advancedLoggingService.getAnalytics();
     setAnalytics(analyticsData);
   };
-  
+
   useEffect(() => {
     if (visible) {
       refreshData();
     }
   }, [searchQuery, selectedLevels, selectedCategory, visible]);
-  
+
   const toggleLevel = (level: LogLevel) => {
     setSelectedLevels(prev =>
-      prev.includes(level)
-        ? prev.filter(l => l !== level)
-        : [...prev, level]
+      prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level],
     );
   };
-  
+
   const getLevelColor = (level: LogLevel): string => {
     switch (level) {
       case 'trace':
@@ -101,11 +99,11 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
         return '#8E8E93';
     }
   };
-  
+
   const formatTimestamp = (timestamp: number): string => {
     return new Date(timestamp).toLocaleTimeString();
   };
-  
+
   const renderLogItem = ({ item }: { item: LogEntry }) => (
     <TouchableOpacity
       style={[styles.logItem, { borderLeftColor: getLevelColor(item.level) }]}
@@ -117,18 +115,20 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
         </Text>
         <Text style={styles.logTime}>{formatTimestamp(item.timestamp)}</Text>
         {item.metadata.category && (
-          <View style={[styles.categoryBadge, { backgroundColor: getLevelColor(item.level) + '20' }]}>
+          <View
+            style={[styles.categoryBadge, { backgroundColor: `${getLevelColor(item.level)}20` }]}
+          >
             <Text style={[styles.categoryText, { color: getLevelColor(item.level) }]}>
               {item.metadata.category}
             </Text>
           </View>
         )}
       </View>
-      
+
       <Text style={styles.logMessage} numberOfLines={2}>
         {item.message}
       </Text>
-      
+
       {item.metadata.component && (
         <Text style={styles.logComponent}>
           {item.metadata.screen || item.metadata.component}
@@ -137,42 +137,41 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
       )}
     </TouchableOpacity>
   );
-  
+
   const renderLogDetails = () => {
     if (!selectedLog) return null;
-    
+
     return (
       <Modal
         visible={!!selectedLog}
-        animationType="slide"
-        presentationStyle="pageSheet"
+        animationType='slide'
+        presentationStyle='pageSheet'
         onRequestClose={() => setSelectedLog(null)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Log Details</Text>
-            <TouchableOpacity
-              onPress={() => setSelectedLog(null)}
-              style={styles.closeButton}
-            >
-              <Icon name="close" size={24} color="#007AFF" />
+            <TouchableOpacity onPress={() => setSelectedLog(null)} style={styles.closeButton}>
+              <Icon name='close' size={24} color='#007AFF' />
             </TouchableOpacity>
           </View>
-          
+
           <ScrollView style={styles.modalContent}>
             <View style={styles.detailSection}>
               <Text style={styles.detailTitle}>Basic Info</Text>
               <Text style={styles.detailText}>Level: {selectedLog.level}</Text>
-              <Text style={styles.detailText}>Time: {new Date(selectedLog.timestamp).toLocaleString()}</Text>
+              <Text style={styles.detailText}>
+                Time: {new Date(selectedLog.timestamp).toLocaleString()}
+              </Text>
               <Text style={styles.detailText}>Platform: {selectedLog.platform}</Text>
               <Text style={styles.detailText}>Environment: {selectedLog.environment}</Text>
             </View>
-            
+
             <View style={styles.detailSection}>
               <Text style={styles.detailTitle}>Message</Text>
               <Text style={styles.detailMessage}>{selectedLog.message}</Text>
             </View>
-            
+
             {selectedLog.error && (
               <View style={styles.detailSection}>
                 <Text style={styles.detailTitle}>Error Details</Text>
@@ -185,7 +184,7 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
                 )}
               </View>
             )}
-            
+
             <View style={styles.detailSection}>
               <Text style={styles.detailTitle}>Metadata</Text>
               <ScrollView style={styles.metadataContainer}>
@@ -199,10 +198,10 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
       </Modal>
     );
   };
-  
+
   const renderAnalytics = () => {
     if (!analytics) return null;
-    
+
     return (
       <ScrollView style={styles.analyticsContainer}>
         <View style={styles.analyticsSection}>
@@ -220,13 +219,13 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
             </View>
           </View>
         </View>
-        
+
         <View style={styles.analyticsSection}>
           <Text style={styles.analyticsTitle}>Logs by Level</Text>
           {levels.map(level => {
             const count = analytics.logsByLevel[level] || 0;
             const percentage = analytics.totalLogs > 0 ? (count / analytics.totalLogs) * 100 : 0;
-            
+
             return (
               <View key={level} style={styles.levelRow}>
                 <Text style={[styles.levelName, { color: getLevelColor(level) }]}>
@@ -248,7 +247,7 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
             );
           })}
         </View>
-        
+
         <View style={styles.analyticsSection}>
           <Text style={styles.analyticsTitle}>Categories</Text>
           {Object.entries(analytics.logsByCategory).map(([category, count]) => (
@@ -258,7 +257,7 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
             </View>
           ))}
         </View>
-        
+
         {analytics.topErrors.length > 0 && (
           <View style={styles.analyticsSection}>
             <Text style={styles.analyticsTitle}>Top Errors</Text>
@@ -275,17 +274,17 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
       </ScrollView>
     );
   };
-  
+
   const renderSearch = () => (
     <View style={styles.searchContainer}>
       <TextInput
         style={styles.searchInput}
-        placeholder="Search logs..."
+        placeholder='Search logs...'
         value={searchQuery}
         onChangeText={setSearchQuery}
-        clearButtonMode="while-editing"
+        clearButtonMode='while-editing'
       />
-      
+
       <View style={styles.filterSection}>
         <Text style={styles.filterTitle}>Levels</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -295,7 +294,11 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
                 key={level}
                 style={[
                   styles.levelFilter,
-                  { backgroundColor: selectedLevels.includes(level) ? getLevelColor(level) : '#F2F2F7' },
+                  {
+                    backgroundColor: selectedLevels.includes(level)
+                      ? getLevelColor(level)
+                      : '#F2F2F7',
+                  },
                 ]}
                 onPress={() => toggleLevel(level)}
               >
@@ -312,20 +315,20 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
           </View>
         </ScrollView>
       </View>
-      
+
       <View style={styles.filterSection}>
         <Text style={styles.filterTitle}>Category</Text>
         <TextInput
           style={styles.categoryInput}
-          placeholder="Filter by category..."
+          placeholder='Filter by category...'
           value={selectedCategory}
           onChangeText={setSelectedCategory}
-          clearButtonMode="while-editing"
+          clearButtonMode='while-editing'
         />
       </View>
     </View>
   );
-  
+
   const exportLogs = async () => {
     try {
       const logsJson = await advancedLoggingService.exportLogs('json');
@@ -335,26 +338,22 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
       console.error('Failed to export logs:', error);
     }
   };
-  
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="fullScreen"
-    >
+    <Modal visible={visible} animationType='slide' presentationStyle='fullScreen'>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Logging Dashboard</Text>
           <View style={styles.headerButtons}>
             <TouchableOpacity onPress={exportLogs} style={styles.exportButton}>
-              <Icon name="download-outline" size={20} color="#007AFF" />
+              <Icon name='download-outline' size={20} color='#007AFF' />
             </TouchableOpacity>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Icon name="close" size={24} color="#007AFF" />
+              <Icon name='close' size={24} color='#007AFF' />
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.tabBar}>
           {[
             { key: 'logs', label: 'Logs', icon: 'list-outline' },
@@ -372,17 +371,14 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
                 color={activeTab === tab.key ? '#007AFF' : '#8E8E93'}
               />
               <Text
-                style={[
-                  styles.tabLabel,
-                  { color: activeTab === tab.key ? '#007AFF' : '#8E8E93' },
-                ]}
+                style={[styles.tabLabel, { color: activeTab === tab.key ? '#007AFF' : '#8E8E93' }]}
               >
                 {tab.label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-        
+
         <View style={styles.content}>
           {activeTab === 'logs' && (
             <FlatList
@@ -407,7 +403,7 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
             </>
           )}
         </View>
-        
+
         {renderLogDetails()}
       </View>
     </Modal>

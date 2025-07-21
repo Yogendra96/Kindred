@@ -4,12 +4,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import ActivityHistoryScreen from '../screens/main/ActivityHistoryScreen';
+import CarbonTrackerScreen from '../screens/main/CarbonTrackerScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import MapScreen from '../screens/main/MapScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
-import CarbonTrackerScreen from '../screens/main/CarbonTrackerScreen';
-import ActivityHistoryScreen from '../screens/main/ActivityHistoryScreen';
+
 import type { MainStackParamList, MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -56,23 +57,19 @@ const MainTabs = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name='HomeTab' 
-        component={HomeStack}
-        options={{ tabBarLabel: 'Home' }}
-      />
-      <Tab.Screen 
-        name='ActivityTab' 
+      <Tab.Screen name='HomeTab' component={HomeStack} options={{ tabBarLabel: 'Home' }} />
+      <Tab.Screen
+        name='ActivityTab'
         component={CarbonTrackerScreen}
         options={{ tabBarLabel: 'Track' }}
       />
-      <Tab.Screen 
-        name='ChallengesTab' 
+      <Tab.Screen
+        name='ChallengesTab'
         component={MapScreen}
         options={{ tabBarLabel: 'Challenges' }}
       />
-      <Tab.Screen 
-        name='ProfileTab' 
+      <Tab.Screen
+        name='ProfileTab'
         component={ProfileScreen}
         options={{ tabBarLabel: 'Profile' }}
       />

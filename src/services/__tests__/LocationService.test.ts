@@ -79,10 +79,10 @@ jest.mock('react-native', () => ({
 
 const mockLocation = Location as any;
 const mockTaskManager = TaskManager as any;
-const mockAsyncStorage = AsyncStorage as any;
+const _mockAsyncStorage = AsyncStorage as any;
 const mockPerformanceMonitoring = PerformanceMonitoringService as any;
 const mockDataEncryption = DataEncryptionService as any;
-const mockNotificationService = notificationService as any;
+const _mockNotificationService = notificationService as any;
 
 const mockLocationObject: Location.LocationObject = {
   coords: {
@@ -658,7 +658,7 @@ describe('LocationService', () => {
 
       const settings = LocationService.getSharingSettings();
       expect(settings.enabled).toBe(true);
-      expect(settings.shareWith).toEqual(['user1', 'user2']);
+      expect(settings.shareWith).toStrictEqual(['user1', 'user2']);
       expect(settings.shareAccuracy).toBe('approximate');
     });
   });

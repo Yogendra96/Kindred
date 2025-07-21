@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ActivityTracker from '../../components/ActivityTracker';
 import CarbonFootprintCard from '../../components/CarbonFootprintCard';
 import EcoTips from '../../components/EcoTips';
+import { Logger } from '../../services/AdvancedLoggingService';
 import type { RootState } from '../../store';
 import {
   setError,
@@ -26,7 +27,6 @@ import {
   setHistoryLoading,
   updateFootprint,
 } from '../../store/slices/carbonSlice';
-import { Logger } from '../../services/AdvancedLoggingService';
 import CacheManager from '../../utils/cacheManager';
 import { calculateCarbonFootprint } from '../../utils/carbonCalculator';
 
@@ -172,7 +172,7 @@ const HomeScreen = () => {
         component: 'HomeScreen',
         action: 'no_user_warning',
       });
-      
+
       return () => {
         isMounted = false;
         unsubscribeNetInfo();

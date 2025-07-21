@@ -260,14 +260,42 @@ export class InputValidator {
     const obj = input as Record<string, unknown>;
 
     // Check for required keys
+    this.validateRequiredKeys(obj, requiredKeys, errors);
+
+    // Validate and sanitize properties
+    const sanitizedObj = this.validateObjectProperties(obj, errors);
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      sanitizedValue: sanitizedObj,
+    };
+  }
+
+  /**
+   * Helper method to validate required keys
+   */
+  private validateRequiredKeys(
+    obj: Record<string, unknown>,
+    requiredKeys: string[],
+    errors: string[],
+  ): void {
     for (const key of requiredKeys) {
       if (!(key in obj)) {
         errors.push(`Missing required property: ${key}`);
       }
     }
+  }
 
-    // Validate each property recursively
+  /**
+   * Helper method to validate object properties
+   */
+  private validateObjectProperties(
+    obj: Record<string, unknown>,
+    errors: string[],
+  ): Record<string, unknown> {
     const sanitizedObj: Record<string, unknown> = {};
+
     for (const [key, value] of Object.entries(obj)) {
       const keyResult = this.validateString(key);
       if (!keyResult.isValid) {
@@ -275,31 +303,54 @@ export class InputValidator {
         continue;
       }
 
-      // Basic value validation (can be extended)
-      if (typeof value === 'string') {
-        const valueResult = this.validateString(value);
-        if (valueResult.isValid) {
-          sanitizedObj[keyResult.sanitizedValue as string] = valueResult.sanitizedValue;
-        } else {
-          errors.push(`Invalid value for key ${key}: ${valueResult.errors.join(', ')}`);
-        }
-      } else if (typeof value === 'number') {
-        const valueResult = this.validateNumber(value);
-        if (valueResult.isValid) {
-          sanitizedObj[keyResult.sanitizedValue as string] = valueResult.sanitizedValue;
-        } else {
-          errors.push(`Invalid value for key ${key}: ${valueResult.errors.join(', ')}`);
-        }
-      } else {
-        sanitizedObj[keyResult.sanitizedValue as string] = value;
+      const sanitizedValue = this.validatePropertyValue(key, value, errors);
+      if (sanitizedValue !== undefined) {
+        sanitizedObj[keyResult.sanitizedValue as string] = sanitizedValue;
       }
     }
 
-    return {
-      isValid: errors.length === 0,
-      errors,
-      sanitizedValue: sanitizedObj,
-    };
+    return sanitizedObj;
+  }
+
+  /**
+   * Helper method to validate individual property values
+   */
+  private validatePropertyValue(key: string, value: unknown, errors: string[]): unknown {
+    if (typeof value === 'string') {
+      return this.validateStringProperty(key, value, errors);
+    }
+
+    if (typeof value === 'number') {
+      return this.validateNumberProperty(key, value, errors);
+    }
+
+    return value;
+  }
+
+  /**
+   * Helper method to validate string properties
+   */
+  private validateStringProperty(key: string, value: string, errors: string[]): string | undefined {
+    const valueResult = this.validateString(value);
+    if (valueResult.isValid) {
+      return valueResult.sanitizedValue as string;
+    }
+
+    errors.push(`Invalid value for key ${key}: ${valueResult.errors.join(', ')}`);
+    return undefined;
+  }
+
+  /**
+   * Helper method to validate number properties
+   */
+  private validateNumberProperty(key: string, value: number, errors: string[]): number | undefined {
+    const valueResult = this.validateNumber(value);
+    if (valueResult.isValid) {
+      return valueResult.sanitizedValue as number;
+    }
+
+    errors.push(`Invalid value for key ${key}: ${valueResult.errors.join(', ')}`);
+    return undefined;
   }
 }
 

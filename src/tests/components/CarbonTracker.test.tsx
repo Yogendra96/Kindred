@@ -125,7 +125,7 @@ describe('CarbonTracker Component', () => {
 
       const activityTypeInput = screen.getByTestId('activity-type-input');
       const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const _addButton = screen.getByTestId('add-activity-button');
 
       // Check if elements have accessibility properties
       expect(activityTypeInput.props.placeholder).toBe('Select activity type');

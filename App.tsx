@@ -142,13 +142,17 @@ const NavigationRoot: React.FC = () => {
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        
-        Logger.error('App initialization failed', {
-          category: 'system',
-          component: 'App',
-          action: 'app_init_error',
-          errorMessage,
-        }, error as Error);
+
+        Logger.error(
+          'App initialization failed',
+          {
+            category: 'system',
+            component: 'App',
+            action: 'app_init_error',
+            errorMessage,
+          },
+          error as Error,
+        );
 
         loggingService.error('App initialization failed', {
           error: errorMessage,
