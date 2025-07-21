@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   AccessibilityInfo,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -16,19 +17,81 @@ import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 
-// Import logo asset
 import logoImage from '../../assets/logo.png';
 import type { AuthStackParamList } from '../../navigation/types';
+import { biometricAuthenticationService } from '../../services/BiometricAuthenticationService';
+import { Logger } from '../../services/AdvancedLoggingService';
+import { loginFailure, loginStart, loginSuccess } from '../../store/slices/authSlice';
+
+// Import logo asset
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [biometricsAvailable, setBiometricsAvailable] = useState(false);
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    Logger.setScreen('LoginScreen', {
+      category: 'auth',
+      component: 'LoginScreen',
+    });
+
+    const initializeBiometrics = async () => {
+      Logger.startTimer('biometric_init');
+      
+      try {
+        Logger.info('Initializing biometric authentication', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'biometric_init',
+        });
+
+        await biometricAuthenticationService.initialize();
+        const capabilities = await biometricAuthenticationService.getBiometricCapabilities();
+        setBiometricsAvailable(capabilities.fingerprint || capabilities.faceId);
+        
+        Logger.endTimer('biometric_init', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'biometric_init_success',
+          biometricsAvailable: capabilities.fingerprint || capabilities.faceId,
+          capabilities: JSON.stringify(capabilities),
+        });
+      } catch (error) {
+        Logger.error('Biometrics initialization failed', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'biometric_init_error',
+        }, error as Error);
+        
+        Logger.endTimer('biometric_init', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'biometric_init_failed',
+        });
+      }
+    };
+
+    initializeBiometrics();
+  }, []);
 
   const handleLogin = async () => {
+    Logger.startTimer('email_login');
+    Logger.info('User initiated email login', {
+      category: 'auth',
+      component: 'LoginScreen',
+      action: 'login_attempt',
+      method: 'email',
+      hasEmail: !!email,
+      hasPassword: !!password,
+    });
+
     const errors: string[] = [];
 
     if (!email) errors.push('Email is required');
@@ -36,9 +99,23 @@ const LoginScreen = () => {
 
     if (errors.length > 0) {
       setFormErrors(errors);
+      Logger.warn('Login form validation failed', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'validation_error',
+        errors,
+        errorCount: errors.length,
+      });
+      
       AccessibilityInfo.announceForAccessibility(
         `Form has ${errors.length} error${errors.length > 1 ? 's' : ''}: ${errors.join(', ')}`,
       );
+      
+      Logger.endTimer('email_login', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'login_validation_failed',
+      });
       return;
     }
 
@@ -46,11 +123,174 @@ const LoginScreen = () => {
 
     try {
       setLoading(true);
-      await auth().signInWithEmailAndPassword(email, password);
+      dispatch(loginStart());
+
+      Logger.info('Attempting Firebase email authentication', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'firebase_auth_attempt',
+        email: email.split('@')[1], // Log domain only for privacy
+      });
+
+      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+
+      Logger.info('Email login successful', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'login_success',
+        method: 'email',
+        userId: userCredential.user.uid,
+        userEmail: userCredential.user.email?.split('@')[1], // Domain only
+        hasDisplayName: !!userCredential.user.displayName,
+        emailVerified: userCredential.user.emailVerified,
+      });
+
+      dispatch(
+        loginSuccess({
+          id: userCredential.user.uid,
+          email: userCredential.user.email || '',
+          name: userCredential.user.displayName || '',
+        }),
+      );
+
+      Logger.setUserId(userCredential.user.uid);
+
+      Logger.endTimer('email_login', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'login_success',
+        userId: userCredential.user.uid,
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       setFormErrors([errorMessage]);
+      dispatch(loginFailure(errorMessage));
+
+      Logger.error('Email login failed', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'login_error',
+        method: 'email',
+        errorCode: (error as any)?.code,
+        errorMessage,
+      }, error as Error);
+
       AccessibilityInfo.announceForAccessibility(`Login failed: ${errorMessage}`);
+
+      Logger.endTimer('email_login', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'login_failed',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    Logger.startTimer('biometric_login');
+    Logger.info('User initiated biometric login', {
+      category: 'auth',
+      component: 'LoginScreen',
+      action: 'biometric_login_attempt',
+      method: 'biometric',
+    });
+
+    try {
+      setLoading(true);
+      dispatch(loginStart());
+
+      Logger.info('Attempting biometric authentication', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'biometric_auth_attempt',
+      });
+
+      const result = await biometricAuthenticationService.authenticateBiometric('fingerprint', {
+        prompt: 'Authenticate to login to Kindred',
+      });
+
+      Logger.info('Biometric authentication result received', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'biometric_auth_result',
+        success: result.success,
+        confidence: result.confidence,
+        livenessConfirmed: result.livenessConfirmed,
+        spoofingDetected: result.spoofingDetected,
+        fallbackRequired: result.fallbackRequired,
+        errorCount: result.errors.length,
+      });
+
+      if (result.success) {
+        // In a real app, you'd verify the biometric result with your backend
+        Logger.info('Biometric login successful', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'login_success',
+          method: 'biometric',
+          confidence: result.confidence,
+          templateId: result.templateId,
+        });
+
+        dispatch(
+          loginSuccess({
+            id: 'biometric_user',
+            email: 'user@example.com',
+            name: 'Biometric User',
+          }),
+        );
+
+        Logger.setUserId('biometric_user');
+
+        Logger.endTimer('biometric_login', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'login_success',
+          userId: 'biometric_user',
+        });
+      } else {
+        const errorMessage = result.errors[0]?.message || 'Biometric authentication failed';
+        setFormErrors([errorMessage]);
+        dispatch(loginFailure(errorMessage));
+
+        Logger.warn('Biometric authentication failed', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'biometric_auth_failed',
+          errors: result.errors.map(e => e.message),
+          confidence: result.confidence,
+          spoofingDetected: result.spoofingDetected,
+          fallbackRequired: result.fallbackRequired,
+        });
+
+        AccessibilityInfo.announceForAccessibility(`Biometric login failed: ${errorMessage}`);
+
+        Logger.endTimer('biometric_login', {
+          category: 'auth',
+          component: 'LoginScreen',
+          action: 'login_failed',
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Biometric login failed';
+      setFormErrors([errorMessage]);
+      dispatch(loginFailure(errorMessage));
+
+      Logger.error('Biometric login error', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'biometric_login_error',
+        errorMessage,
+      }, error as Error);
+
+      AccessibilityInfo.announceForAccessibility(`Biometric login failed: ${errorMessage}`);
+
+      Logger.endTimer('biometric_login', {
+        category: 'auth',
+        component: 'LoginScreen',
+        action: 'login_error',
+      });
     } finally {
       setLoading(false);
     }
@@ -148,6 +388,20 @@ const LoginScreen = () => {
           <Text style={styles.buttonText}>Sign in with Google</Text>
         </TouchableOpacity>
 
+        {biometricsAvailable && (
+          <TouchableOpacity
+            style={styles.biometricButton}
+            onPress={handleBiometricLogin}
+            disabled={loading}
+            accessible={true}
+            accessibilityLabel='Sign in with biometrics'
+            accessibilityHint='Use fingerprint or face ID to sign in'
+            accessibilityRole='button'
+          >
+            <Text style={styles.buttonText}>🔐 Biometric Login</Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
           <TouchableOpacity
@@ -223,6 +477,14 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     backgroundColor: '#4285F4',
+    height: 50,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  biometricButton: {
+    backgroundColor: '#34C759',
     height: 50,
     borderRadius: 8,
     justifyContent: 'center',

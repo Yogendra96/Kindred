@@ -8,7 +8,7 @@ export function registerBackgroundTask(_taskName: string, _task: () => Promise<v
     // Android-specific background task registration
     // BackgroundFetch.registerHeadlessTask(taskName, task);
   } else if (Platform.OS === 'ios') {
-    // iOS-specific background task configuration  
+    // iOS-specific background task configuration
     // BackgroundFetch.configure({ minimumFetchInterval: 15000 }, task);
   }
 }

@@ -26,6 +26,7 @@ import {
   setHistoryLoading,
   updateFootprint,
 } from '../../store/slices/carbonSlice';
+import { Logger } from '../../services/AdvancedLoggingService';
 import CacheManager from '../../utils/cacheManager';
 import { calculateCarbonFootprint } from '../../utils/carbonCalculator';
 
@@ -115,17 +116,50 @@ const HomeScreen = () => {
   );
 
   useEffect(() => {
+    Logger.setScreen('HomeScreen', {
+      category: 'carbon',
+      component: 'HomeScreen',
+    });
+
+    Logger.info('HomeScreen component mounted', {
+      category: 'carbon',
+      component: 'HomeScreen',
+      action: 'component_mount',
+    });
+
     let isMounted = true;
 
     // Only fetch data if component is still mounted
     if (isMounted) {
+      Logger.info('Initiating initial data fetch', {
+        category: 'carbon',
+        component: 'HomeScreen',
+        action: 'initial_data_fetch',
+      });
       void fetchData();
     }
 
     const unsubscribeNetInfo = NetInfo.addEventListener(state => {
       if (isMounted) {
-        setIsOnline(!!state.isConnected);
-        if (state.isConnected) {
+        const wasOnline = isOnline;
+        const isCurrentlyOnline = !!state.isConnected;
+        setIsOnline(isCurrentlyOnline);
+
+        Logger.info('Network state changed', {
+          category: 'carbon',
+          component: 'HomeScreen',
+          action: 'network_state_change',
+          wasOnline,
+          isCurrentlyOnline,
+          connectionType: state.type,
+        });
+
+        if (isCurrentlyOnline && !wasOnline) {
+          Logger.info('Network reconnected, forcing data refresh', {
+            category: 'carbon',
+            component: 'HomeScreen',
+            action: 'network_reconnect_refresh',
+          });
           void fetchData(true); // Force fetch when coming back online
         }
       }
@@ -133,6 +167,12 @@ const HomeScreen = () => {
 
     const user = auth().currentUser;
     if (!user) {
+      Logger.warn('No authenticated user found in HomeScreen', {
+        category: 'carbon',
+        component: 'HomeScreen',
+        action: 'no_user_warning',
+      });
+      
       return () => {
         isMounted = false;
         unsubscribeNetInfo();

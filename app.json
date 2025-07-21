@@ -1,13 +1,17 @@
 {
   "name": "Kindred",
-  "displayName": "Kindred",
+  "displayName": "Kindred - Carbon Tracker",
   "expo": {
     "name": "Kindred",
-    "slug": "kindred",
+    "slug": "kindred-carbon-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icons/icon.png",
     "userInterfaceStyle": "automatic",
+    "description": "Revolutionary AI-powered carbon footprint tracker with Carbon Twin technology",
+    "keywords": ["carbon", "footprint", "sustainability", "climate", "environment", "AI", "tracking"],
+    "privacy": "public",
+    "platforms": ["ios", "android"],
     "splash": {
       "image": "./assets/icons/splash.png",
       "resizeMode": "contain",
@@ -18,17 +22,34 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.kindred.app",
       "buildNumber": "1",
+      "requireFullScreen": false,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to track your eco-friendly activities",
-        "NSLocationAlwaysUsageDescription": "We need your location to track your eco-friendly activities in the background",
-        "NSCameraUsageDescription": "We need camera access to let you take photos for your profile",
-        "NSPhotoLibraryUsageDescription": "We need photo library access to let you choose profile pictures",
-        "UIBackgroundModes": ["location", "fetch"]
+        "NSLocationWhenInUseUsageDescription": "Kindred needs your location to accurately calculate transportation carbon emissions and provide location-based sustainability recommendations.",
+        "NSLocationAlwaysUsageDescription": "Kindred uses background location to automatically track transportation activities and provide accurate carbon footprint calculations.",
+        "NSCameraUsageDescription": "Kindred needs camera access for computer vision carbon tracking - scan products, receipts, and barcodes for zero-friction carbon logging.",
+        "NSPhotoLibraryUsageDescription": "Kindred needs photo library access to analyze receipt images and product photos for automatic carbon footprint calculations.",
+        "NSFaceIDUsageDescription": "Kindred uses Face ID for secure biometric authentication to protect your personal carbon data and account access.",
+        "NSMicrophoneUsageDescription": "Kindred uses voice commands for hands-free carbon activity logging and accessibility features.",
+        "UIBackgroundModes": ["location", "fetch", "background-processing"],
+        "LSRequiresIPhoneOS": true,
+        "UIRequiredDeviceCapabilities": ["armv7"],
+        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      },
+      "entitlements": {
+        "com.apple.developer.networking.networkextension": ["packet-tunnel-provider"]
       }
     },
     "android": {
       "package": "com.kindred.app",
       "versionCode": 1,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "minSdkVersion": 23,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -39,14 +60,51 @@
         "ACCESS_BACKGROUND_LOCATION",
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "VIBRATE",
+        "WAKE_LOCK",
+        "RECEIVE_BOOT_COMPLETED",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE"
+      ],
+      "blockedPermissions": [
+        "SYSTEM_ALERT_WINDOW"
       ]
     },
-    "plugins": ["react-native-background-fetch", "react-native-background-geolocation"],
+    "web": {
+      "favicon": "./assets/icons/favicon.png",
+      "name": "Kindred Carbon Tracker",
+      "shortName": "Kindred",
+      "lang": "en",
+      "scope": "/",
+      "themeColor": "#2ECC71",
+      "backgroundColor": "#ffffff"
+    },
+    "plugins": [
+      "react-native-background-fetch", 
+      "react-native-background-geolocation",
+      "@react-native-firebase/app",
+      "@react-native-firebase/analytics",
+      "@react-native-firebase/crashlytics"
+    ],
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "kindred-carbon-tracker-2024"
       }
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "kindred-org",
+            "project": "kindred-carbon-tracker"
+          }
+        }
+      ]
     }
   }
 }

@@ -1,8 +1,23 @@
 {
-  "name": "Kindred",
-  "version": "0.0.1",
+  "name": "kindred-carbon-tracker",
+  "displayName": "Kindred - Carbon Tracker",
+  "version": "1.0.0",
+  "description": "Revolutionary AI-powered carbon footprint tracker with breakthrough Carbon Twin technology, Computer Vision tracking, and Zero-Trust security",
+  "keywords": ["carbon", "footprint", "sustainability", "climate", "environment", "AI", "tracking", "green", "eco"],
+  "homepage": "https://kindred-carbon.app",
+  "bugs": {
+    "url": "https://github.com/kindred/kindred-carbon-tracker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kindred/kindred-carbon-tracker.git"
+  },
+  "author": {
+    "name": "Kindred Team",
+    "email": "support@kindred-carbon.app"
+  },
+  "license": "UNLICENSED",
   "private": true,
-  "type": "module",
   "scripts": {
     "android": "react-native run-android",
     "android:release": "react-native run-android --variant=release",
@@ -121,7 +136,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-vision-camera": "^3.9.2",
     "react-redux": "^9.2.0",
-    "uuid": "^9.0.1",
+    "uuid": "^11.1.0",
     "victory-native": "^41.17.4"
   },
   "devDependencies": {
@@ -150,7 +165,7 @@
     "@types/react": "^18.3.23",
     "@types/react-native": "^0.73.0",
     "@types/react-test-renderer": "^18.3.1",
-    "@types/uuid": "^9.0.8",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
     "babel-plugin-dynamic-import-node": "^2.3.3",

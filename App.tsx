@@ -19,6 +19,7 @@ import { Provider, useSelector } from 'react-redux';
 import ErrorBoundary from './src/components/common/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 import AuthNavigator from './src/navigation/AuthNavigator';
+import { Logger } from './src/services/AdvancedLoggingService';
 import { loggingService } from './src/services/LoggingService';
 import notificationService from './src/services/NotificationService';
 import { type RootState, store } from './src/store';
@@ -86,13 +87,37 @@ const NavigationRoot: React.FC = () => {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   useEffect(() => {
+    Logger.info('Kindred app starting initialization', {
+      category: 'system',
+      component: 'App',
+      action: 'app_init',
+      isAuthenticated,
+      platform: Platform.OS,
+      appVersion: '1.0.0',
+    });
+
     const initializeApp = async () => {
+      Logger.startTimer('app_initialization');
+
       try {
+        Logger.info('Starting notification service initialization', {
+          category: 'system',
+          component: 'App',
+          action: 'notification_init',
+        });
+
         // Initialize notifications
         const hasPermission = await notificationService.requestPermissions();
         if (hasPermission) {
           const token = await notificationService.getFCMToken();
           if (token) {
+            Logger.info('FCM token received, subscribing to topics', {
+              category: 'system',
+              component: 'App',
+              action: 'fcm_subscription',
+              hasToken: true,
+            });
+
             await Promise.all([
               notificationService.subscribe('carbon_tips'),
               notificationService.subscribe('eco_updates'),
@@ -102,10 +127,39 @@ const NavigationRoot: React.FC = () => {
 
         // Set up notification handlers
         await notificationService.setupMessageHandlers();
-      } catch (error) {
-        loggingService.error('App initialization failed', {
-          error: error instanceof Error ? error.message : String(error),
+
+        Logger.endTimer('app_initialization', {
+          category: 'system',
+          component: 'App',
+          action: 'app_init_success',
         });
+
+        Logger.info('Kindred app initialization completed successfully', {
+          category: 'system',
+          component: 'App',
+          action: 'app_init_complete',
+          hasNotificationPermission: hasPermission,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        Logger.error('App initialization failed', {
+          category: 'system',
+          component: 'App',
+          action: 'app_init_error',
+          errorMessage,
+        }, error as Error);
+
+        loggingService.error('App initialization failed', {
+          error: errorMessage,
+        });
+
+        Logger.endTimer('app_initialization', {
+          category: 'system',
+          component: 'App',
+          action: 'app_init_failed',
+        });
+
         Alert.alert(
           'Initialization Error',
           'Failed to initialize app features. Some functionality may be limited.',
@@ -116,10 +170,16 @@ const NavigationRoot: React.FC = () => {
     void initializeApp();
 
     return () => {
+      Logger.info('App cleanup initiated', {
+        category: 'system',
+        component: 'App',
+        action: 'app_cleanup',
+      });
+
       // Cleanup notification handlers
       notificationService.cleanup();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(user => {
