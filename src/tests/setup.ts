@@ -1,4 +1,5 @@
 // Enhanced test setup for React Native with comprehensive mocking
+
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';
@@ -145,7 +146,8 @@ jest.mock('@tanstack/react-query', () => ({
     getQueryData: jest.fn(),
     prefetchQuery: jest.fn(),
   })),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
   useQuery: jest.fn(() => ({
     data: null,
     isLoading: false,
@@ -183,7 +185,9 @@ jest.mock('expo-haptics', () => ({
 
 jest.mock('expo-barcode-scanner', () => ({
   BarCodeScanner: {
-    requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+    requestPermissionsAsync: jest.fn(() =>
+      Promise.resolve({ status: 'granted' }),
+    ),
     Constants: {
       BarCodeType: {
         qr: 'qr',
@@ -208,7 +212,9 @@ jest.mock('expo-local-authentication', () => ({
 // Mock React Native Keychain
 jest.mock('react-native-keychain', () => ({
   setInternetCredentials: jest.fn(() => Promise.resolve()),
-  getInternetCredentials: jest.fn(() => Promise.resolve({ username: 'test', password: 'test' })),
+  getInternetCredentials: jest.fn(() =>
+    Promise.resolve({ username: 'test', password: 'test' }),
+  ),
   resetInternetCredentials: jest.fn(() => Promise.resolve()),
   canImplyAuthentication: jest.fn(() => Promise.resolve(true)),
   getSupportedBiometryType: jest.fn(() => Promise.resolve('FaceID')),
@@ -300,8 +306,8 @@ jest.mock('../services/EnhancedPerformanceService', () => ({
       startTracking: jest.fn(),
       stopTracking: jest.fn(),
       recordMetric: jest.fn(),
-      measureFunction: jest.fn((name: string, fn: any) => fn()),
-      measureAsync: jest.fn(async (name: string, fn: any) => await fn()),
+      measureFunction: jest.fn((name: string, fn: () => unknown) => fn()),
+  measureAsync: jest.fn(async (name: string, fn: () => Promise<unknown>) => await fn()),
       getPerformanceSummary: jest.fn(() => ({})),
       exportPerformanceData: jest.fn(() => ({})),
       clearData: jest.fn(),
@@ -335,7 +341,7 @@ jest.mock('../services/EnhancedSecurityService', () => ({
       storeSecurely: jest.fn(),
       retrieveSecurely: jest.fn(),
       validateDataIntegrity: jest.fn(() => true),
-      sanitizeInput: jest.fn((input: any) => input),
+      sanitizeInput: jest.fn((input: unknown) => input),
       getSecuritySummary: jest.fn(() => ({})),
       exportSecurityData: jest.fn(() => ({})),
       clearSecurityData: jest.fn(),
@@ -443,7 +449,7 @@ jest.mock('expo-linear-gradient', () => ({
 if (typeof global !== 'undefined') {
   Object.defineProperty(global, 'crypto', {
     value: {
-      getRandomValues: jest.fn((arr: any) => {
+      getRandomValues: jest.fn((arr: Uint8Array | Uint16Array | Uint32Array) => {
         for (let i = 0; i < arr.length; i++) {
           arr[i] = Math.floor(Math.random() * 256);
         }
@@ -463,25 +469,36 @@ if (typeof global !== 'undefined') {
 // Mock TextEncoder/TextDecoder
 if (typeof global !== 'undefined') {
   if (typeof global.TextEncoder === 'undefined') {
-    (global as any).TextEncoder = class TextEncoder {
-      encode(str: string) {
+    (global as typeof globalThis).TextEncoder = class MockTextEncoder {
+      readonly encoding = 'utf-8';
+      encode(str: string): Uint8Array {
         return new Uint8Array([...str].map(char => char.charCodeAt(0)));
       }
-    };
+      encodeInto(): TextEncoderEncodeIntoResult {
+        return { read: 0, written: 0 };
+      }
+    } as typeof TextEncoder;
   }
 
   if (typeof global.TextDecoder === 'undefined') {
-    (global as any).TextDecoder = class TextDecoder {
-      decode(bytes: Uint8Array) {
-        return String.fromCharCode(...[...bytes]);
+    (global as typeof globalThis).TextDecoder = class MockTextDecoder {
+      readonly encoding = 'utf-8';
+      readonly fatal = false;
+      readonly ignoreBOM = false;
+      decode(bytes?: Uint8Array): string {
+        if (!bytes) return '';
+        return String.fromCharCode(...bytes);
       }
-    };
+    } as typeof TextDecoder;
   }
 }
 
 // Mock Performance API
-if (typeof global !== 'undefined' && typeof global.performance === 'undefined') {
-  (global as any).performance = {
+if (
+  typeof global !== 'undefined' &&
+  typeof global.performance === 'undefined'
+) {
+  (global as typeof globalThis).performance = {
     now: jest.fn(() => Date.now()),
     mark: jest.fn(),
     measure: jest.fn(),
@@ -489,21 +506,24 @@ if (typeof global !== 'undefined' && typeof global.performance === 'undefined') 
     getEntriesByType: jest.fn(() => []),
     clearMarks: jest.fn(),
     clearMeasures: jest.fn(),
-  } as any;
+  } as unknown as Performance;
 }
 
 // Mock PerformanceObserver
-if (typeof global !== 'undefined' && typeof global.PerformanceObserver === 'undefined') {
-  (global as any).PerformanceObserver = class PerformanceObserver {
-    constructor(_callback: any) {}
-    observe() {}
-    disconnect() {}
-  } as any;
+if (
+  typeof global !== 'undefined' &&
+  typeof global.PerformanceObserver === 'undefined'
+) {
+  (global as typeof globalThis).PerformanceObserver = class MockPerformanceObserver {
+    constructor(_callback: PerformanceObserverCallback) {}
+    observe(): void {}
+    disconnect(): void {}
+  } as unknown as typeof PerformanceObserver;
 }
 
 // Global test utilities
 if (typeof global !== 'undefined') {
-  (global as any).fetch = jest.fn(() =>
+  (global as typeof globalThis).fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
       status: 200,
@@ -514,7 +534,16 @@ if (typeof global !== 'undefined') {
 }
 
 // Enhanced global test utilities
-(global as any).testUtils = {
+interface TestUtils {
+  waitFor: (ms?: number) => Promise<void>;
+  advanceTimers: (ms: number) => void;
+  mockNetworkResponse: (response: unknown, delay?: number) => Promise<unknown>;
+  createMockUser: (overrides?: Record<string, unknown>) => Record<string, unknown>;
+  createMockNavigation: (overrides?: Record<string, unknown>) => Record<string, unknown>;
+  createMockRoute: (overrides?: Record<string, unknown>) => Record<string, unknown>;
+}
+
+(global as typeof globalThis & { testUtils: TestUtils }).testUtils = {
   // Wait for async operations
   waitFor: (ms: number = 0) => new Promise(resolve => setTimeout(resolve, ms)),
 
@@ -524,14 +553,14 @@ if (typeof global !== 'undefined') {
   },
 
   // Mock network responses
-  mockNetworkResponse: (response: any, delay: number = 0) => {
+  mockNetworkResponse: (response: unknown, delay: number = 0) => {
     return new Promise(resolve => {
       setTimeout(() => resolve(response), delay);
     });
   },
 
   // Create mock user
-  createMockUser: (overrides: any = {}) => ({
+  createMockUser: (overrides: Record<string, unknown> = {}) => ({
     id: 'test-user-id',
     email: 'test@example.com',
     name: 'Test User',
@@ -539,7 +568,7 @@ if (typeof global !== 'undefined') {
   }),
 
   // Create mock navigation
-  createMockNavigation: (overrides: any = {}) => ({
+  createMockNavigation: (overrides: Record<string, unknown> = {}) => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
     dispatch: jest.fn(),
@@ -551,7 +580,7 @@ if (typeof global !== 'undefined') {
   }),
 
   // Create mock route
-  createMockRoute: (overrides: any = {}) => ({
+  createMockRoute: (overrides: Record<string, unknown> = {}) => ({
     key: 'test-route',
     name: 'TestScreen',
     params: {},
@@ -582,8 +611,8 @@ beforeEach(() => {
   void mockAsyncStorage.clear();
 
   // Reset global dev utils
-  (global as any).devUtils = undefined;
-  (global as any).featureFlags = undefined;
+  (global as typeof globalThis & { devUtils?: unknown; featureFlags?: unknown }).devUtils = undefined;
+  (global as typeof globalThis & { devUtils?: unknown; featureFlags?: unknown }).featureFlags = undefined;
 });
 
 // Clean up after each test
@@ -595,11 +624,11 @@ afterEach(() => {
 
 // Enhanced error handling for tests
 if (typeof process !== 'undefined') {
-  process.on('unhandledRejection', (reason: any, promise: any) => {
+  process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   });
 
-  process.on('uncaughtException', (error: any) => {
+  process.on('uncaughtException', (error: Error) => {
     console.error('Uncaught Exception:', error);
   });
 }

@@ -7,7 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@theme/ThemeProvider';
-import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+} from 'react-native-gesture-handler';
 import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
@@ -84,7 +88,9 @@ const defaultSwipeActions: SwipeAction[] = [
   },
 ];
 
-export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps> = ({
+export const EnhancedGestureNavigation: React.FC<
+  EnhancedGestureNavigationProps
+> = ({
   children,
   swipeActions = defaultSwipeActions,
   config: userConfig = {},
@@ -122,7 +128,9 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
 
   const loadGestureSettings = useCallback(async () => {
     try {
-      const savedConfig = await AsyncStorage.getItem('gesture_navigation_config');
+      const savedConfig = await AsyncStorage.getItem(
+        'gesture_navigation_config',
+      );
       if (savedConfig) {
         setConfig(prevConfig => ({
           ...prevConfig,
@@ -137,14 +145,20 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
   const _saveGestureSettings = async (newConfig: Partial<GestureConfig>) => {
     try {
       const updatedConfig = { ...config, ...newConfig };
-      await AsyncStorage.setItem('gesture_navigation_config', JSON.stringify(updatedConfig));
+      await AsyncStorage.setItem(
+        'gesture_navigation_config',
+        JSON.stringify(updatedConfig),
+      );
       setConfig(updatedConfig);
     } catch (error) {
       console.error('Error saving gesture settings:', error);
     }
   };
 
-  const getSwipeDirection = (translationX: number, translationY: number): string | null => {
+  const getSwipeDirection = (
+    translationX: number,
+    translationY: number,
+  ): string | null => {
     const absX = Math.abs(translationX);
     const absY = Math.abs(translationY);
 
@@ -158,8 +172,9 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
 
   const getActionForDirection = (direction: string): SwipeAction | null => {
     return (
-      swipeActions.find(action => action.direction === direction && action.enabled !== false) ??
-      null
+      swipeActions.find(
+        action => action.direction === direction && action.enabled !== false,
+      ) ?? null
     );
   };
 
@@ -174,7 +189,9 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
     );
   };
 
-  const triggerHapticFeedback = (type: 'start' | 'threshold' | 'success' | 'cancel') => {
+  const triggerHapticFeedback = (
+    type: 'start' | 'threshold' | 'success' | 'cancel',
+  ) => {
     if (!config.hapticFeedback) return;
 
     switch (type) {
@@ -249,7 +266,9 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
 
         if (!action) return;
 
-        const distance = Math.sqrt(translationX * translationX + translationY * translationY);
+        const distance = Math.sqrt(
+          translationX * translationX + translationY * translationY,
+        );
         const progress = Math.min(distance / config.threshold, 1);
 
         // Show visual feedback
@@ -270,7 +289,8 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
   );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
-    const { state, translationX, translationY, velocityX, velocityY, x, y } = event.nativeEvent;
+    const { state, translationX, translationY, velocityX, velocityY, x, y } =
+      event.nativeEvent;
 
     switch (state) {
       case State.BEGAN:
@@ -298,11 +318,16 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
       case State.CANCELLED: {
         const direction = getSwipeDirection(translationX, translationY);
         const action = getActionForDirection(direction ?? '');
-        const distance = Math.sqrt(translationX * translationX + translationY * translationY);
-        const velocity = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+        const distance = Math.sqrt(
+          translationX * translationX + translationY * translationY,
+        );
+        const velocity = Math.sqrt(
+          velocityX * velocityX + velocityY * velocityY,
+        );
 
         const shouldTrigger =
-          action && (distance >= config.threshold || velocity >= config.velocity);
+          action &&
+          (distance >= config.threshold || velocity >= config.velocity);
 
         if (shouldTrigger && gestureState.isEdgeSwipe) {
           triggerHapticFeedback('success');
@@ -409,7 +434,7 @@ export const EnhancedGestureNavigation: React.FC<EnhancedGestureNavigationProps>
                 },
                 indicatorStyle,
               ]}
-              accessible={true}
+              accessible
               accessibilityLabel={`Gesture indicator: ${activeDirection}`}
             >
               <Ionicons
@@ -492,17 +517,20 @@ export const useGestureNavigation = () => {
     ];
   }, []);
 
-  const createCustomActions = useCallback((actions: Partial<SwipeAction>[]): SwipeAction[] => {
-    return actions.map(action => ({
-      direction: 'right',
-      action: () => {},
-      icon: 'hand-left',
-      label: 'Custom Action',
-      color: '#9C27B0',
-      enabled: true,
-      ...action,
-    })) as SwipeAction[];
-  }, []);
+  const createCustomActions = useCallback(
+    (actions: Partial<SwipeAction>[]): SwipeAction[] => {
+      return actions.map(action => ({
+        direction: 'right',
+        action: () => {},
+        icon: 'hand-left',
+        label: 'Custom Action',
+        color: '#9C27B0',
+        enabled: true,
+        ...action,
+      })) as SwipeAction[];
+    },
+    [],
+  );
 
   return {
     createNavigationActions,
@@ -527,20 +555,31 @@ export const GestureNavigationSettings: React.FC<{
 };
 
 const styles = StyleSheet.create({
+  bottomEdge: {
+    bottom: 0,
+    height: 2,
+    left: 0,
+    right: 0,
+  },
   container: {
     flex: 1,
+  },
+  edgeIndicator: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    opacity: 0.3,
+    position: 'absolute',
   },
   gestureContainer: {
     flex: 1,
   },
   gestureIndicator: {
-    position: 'absolute',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 25,
     borderWidth: 2,
+    elevation: 5,
+    height: 50,
+    justifyContent: 'center',
+    position: 'absolute',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -548,65 +587,54 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 5,
+    width: 50,
   },
-  edgeIndicator: {
-    position: 'absolute',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    opacity: 0.3,
+  indicatorCenter: {
+    left: '50%',
+    marginLeft: -25,
+    marginTop: -25,
+    top: '50%',
   },
-  leftEdge: {
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 2,
-  },
-  rightEdge: {
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 2,
-  },
-  topEdge: {
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-  },
-  bottomEdge: {
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-  },
-  settingsContainer: {
-    padding: 16,
+  indicatorDown: {
+    left: '50%',
+    marginLeft: -25,
+    top: 50,
   },
   indicatorLeft: {
+    marginTop: -25,
     right: 50,
     top: '50%',
-    marginTop: -25,
   },
   indicatorRight: {
     left: 50,
-    top: '50%',
     marginTop: -25,
+    top: '50%',
   },
   indicatorUp: {
     bottom: 50,
     left: '50%',
     marginLeft: -25,
   },
-  indicatorDown: {
-    top: 50,
-    left: '50%',
-    marginLeft: -25,
+  leftEdge: {
+    bottom: 0,
+    left: 0,
+    top: 0,
+    width: 2,
   },
-  indicatorCenter: {
-    left: '50%',
-    top: '50%',
-    marginLeft: -25,
-    marginTop: -25,
+  rightEdge: {
+    bottom: 0,
+    right: 0,
+    top: 0,
+    width: 2,
+  },
+  settingsContainer: {
+    padding: 16,
+  },
+  topEdge: {
+    height: 2,
+    left: 0,
+    right: 0,
+    top: 0,
   },
 });
 

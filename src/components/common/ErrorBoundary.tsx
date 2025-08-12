@@ -7,6 +7,16 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import analytics from '@react-native-firebase/analytics';
 // import { performanceService } from '@services/PerformanceService';
 
+// Color constants to avoid literals
+const COLORS = {
+  blue: '#007AFF',
+  white: '#fff',
+  gray: '#666',
+  darkGray: '#6c757d',
+  lightGray: '#e9ecef',
+  darkText: '#333',
+} as const;
+
 interface Props {
   children: ReactNode;
 }
@@ -59,7 +69,9 @@ class ErrorBoundary extends Component<Props, State> {
               <Text style={styles.buttonText}>Restart App</Text>
             </TouchableOpacity>
           </View>
-          {__DEV__ && <Text style={styles.stackTrace}>{this.state.error?.stack}</Text>}
+          {__DEV__ && (
+            <Text style={styles.stackTrace}>{this.state.error?.stack}</Text>
+          )}
         </View>
       );
     }
@@ -69,51 +81,51 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  message: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
+  button: {
+    backgroundColor: COLORS.blue,
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     gap: 10,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  restartButton: {
-    backgroundColor: '#6c757d',
+    justifyContent: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },
+  container: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  message: {
+    color: COLORS.gray,
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  restartButton: {
+    backgroundColor: COLORS.darkGray,
+  },
   stackTrace: {
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 4,
+    color: COLORS.gray,
+    fontSize: 12,
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#e9ecef',
-    borderRadius: 4,
-    fontSize: 12,
-    color: '#666',
+  },
+  title: {
+    color: COLORS.darkText,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
 

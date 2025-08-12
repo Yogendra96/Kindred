@@ -6,6 +6,15 @@ import type { Meta, StoryObj } from '@storybook/react';
 
 import SkeletonLoader from './SkeletonLoader';
 
+// Color constants to avoid literals
+const COLORS = {
+  lightBlue: '#E1E9EE',
+  lighterBlue: '#F2F8FC',
+  darkGray: '#2A2A2A',
+  mediumGray: '#3A3A3A',
+  lightGray: '#E0E0E0',
+} as const;
+
 const meta: Meta<typeof SkeletonLoader> = {
   title: 'Components/SkeletonLoader',
   component: SkeletonLoader,
@@ -21,7 +30,16 @@ const meta: Meta<typeof SkeletonLoader> = {
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: ['base', 'text', 'circle', 'image', 'card', 'list', 'grid', 'chart'],
+      options: [
+        'base',
+        'text',
+        'circle',
+        'image',
+        'card',
+        'list',
+        'grid',
+        'chart',
+      ],
       description: 'The type of skeleton loader to display',
     },
     width: {
@@ -102,7 +120,8 @@ export const Circle: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Circular skeleton loader perfect for user avatars and profile pictures.',
+        story:
+          'Circular skeleton loader perfect for user avatars and profile pictures.',
       },
     },
   },
@@ -148,7 +167,8 @@ export const List: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'List skeleton with multiple items, each containing avatar and text lines.',
+        story:
+          'List skeleton with multiple items, each containing avatar and text lines.',
       },
     },
   },
@@ -180,7 +200,8 @@ export const Chart: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Chart skeleton with bars and axis lines to simulate data visualization.',
+        story:
+          'Chart skeleton with bars and axis lines to simulate data visualization.',
       },
     },
   },
@@ -192,7 +213,7 @@ export const CustomColors: Story = {
     variant: 'base',
     width: 200,
     height: 20,
-    shimmerColors: ['#E1E9EE', '#F2F8FC', '#E1E9EE'],
+    shimmerColors: [COLORS.lightBlue, COLORS.lighterBlue, COLORS.lightBlue],
   },
   parameters: {
     docs: {
@@ -268,7 +289,8 @@ export const ProfileCard: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Custom profile card layout combining circle and text skeletons.',
+        story:
+          'Custom profile card layout combining circle and text skeletons.',
       },
     },
   },
@@ -370,7 +392,12 @@ export const ProductGrid: Story = {
           <View style={styles.productInfo}>
             <SkeletonLoader variant='text' lines={1} width={120} />
             <SkeletonLoader variant='text' lines={1} width={80} />
-            <SkeletonLoader variant='base' width={60} height={25} borderRadius={12} />
+            <SkeletonLoader
+              variant='base'
+              width={60}
+              height={25}
+              borderRadius={12}
+            />
           </View>
         </View>
       ))}
@@ -379,7 +406,8 @@ export const ProductGrid: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'E-commerce product grid with image, title, price, and button skeletons.',
+        story:
+          'E-commerce product grid with image, title, price, and button skeletons.',
       },
     },
   },
@@ -390,7 +418,7 @@ export const DarkTheme: Story = {
   args: {
     variant: 'card',
     width: 300,
-    shimmerColors: ['#2A2A2A', '#3A3A3A', '#2A2A2A'],
+    shimmerColors: [COLORS.darkGray, COLORS.mediumGray, COLORS.darkGray],
   },
   parameters: {
     backgrounds: { default: 'dark' },
@@ -418,21 +446,16 @@ export const AccessibilityShowcase: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Skeleton loader with accessibility labels and hints for screen readers.',
+        story:
+          'Skeleton loader with accessibility labels and hints for screen readers.',
       },
     },
   },
 };
 
 const styles = StyleSheet.create({
-  profileCard: {
-    flexDirection: 'row',
+  accessibilityDemo: {
     padding: 16,
-    alignItems: 'center',
-  },
-  profileInfo: {
-    marginLeft: 16,
-    flex: 1,
   },
   article: {
     flex: 1,
@@ -445,38 +468,34 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   dashboardHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerText: {
-    marginLeft: 12,
-  },
-  statsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  socialFeed: {
-    flex: 1,
-  },
-  feedItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  feedHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  feedUserInfo: {
-    marginLeft: 12,
   },
   feedActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 12,
+  },
+  feedHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  feedItem: {
+    borderBottomColor: COLORS.lightGray,
+    borderBottomWidth: 1,
+    padding: 16,
+  },
+  feedUserInfo: {
+    marginLeft: 12,
+  },
+  headerText: {
+    marginLeft: 12,
+  },
+  productCard: {
+    marginBottom: 16,
+    width: '48%',
   },
   productGrid: {
     flexDirection: 'row',
@@ -484,14 +503,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
   },
-  productCard: {
-    width: '48%',
-    marginBottom: 16,
-  },
   productInfo: {
     marginTop: 8,
   },
-  accessibilityDemo: {
+  profileCard: {
+    alignItems: 'center',
+    flexDirection: 'row',
     padding: 16,
+  },
+  profileInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  socialFeed: {
+    flex: 1,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
 });

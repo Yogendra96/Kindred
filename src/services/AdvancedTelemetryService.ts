@@ -30,7 +30,7 @@ export interface TelemetryEvent {
   /** Event category */
   category: 'user_action' | 'system' | 'performance' | 'error' | 'business';
   /** Event properties */
-  properties: Record<string, any>;
+  properties: Record<string, string | number | boolean | null | undefined>;
   /** User identifier (if authenticated) */
   userId?: string;
   /** Session identifier */
@@ -54,19 +54,47 @@ export interface TelemetryEvent {
 }
 
 /**
+ * Configuration for analytics providers
+ */
+export interface AnalyticsConfig {
+  apiKey?: string;
+  endpoint?: string;
+  enableDebug?: boolean;
+  batchSize?: number;
+  flushInterval?: number;
+  [key: string]: unknown;
+}
+
+/**
+ * User properties type
+ */
+export type UserProperties = Record<string, string | number | boolean | null>;
+
+/**
+ * Screen view properties type
+ */
+export type ScreenViewProperties = Record<string, string | number | boolean>;
+
+/**
  * Analytics provider interface
  */
 export interface AnalyticsProvider {
   /** Provider name */
   name: string;
   /** Initialize the provider */
-  initialize(config: any): Promise<void>;
+  initialize(config: AnalyticsConfig): Promise<void>;
   /** Track event */
   trackEvent(event: TelemetryEvent): Promise<void>;
   /** Track user properties */
-  setUserProperties(userId: string, properties: Record<string, any>): Promise<void>;
+  setUserProperties(
+    userId: string,
+    properties: UserProperties,
+  ): Promise<void>;
   /** Track screen view */
-  trackScreenView(screenName: string, properties?: Record<string, any>): Promise<void>;
+  trackScreenView(
+    screenName: string,
+    properties?: ScreenViewProperties,
+  ): Promise<void>;
   /** Flush pending events */
   flush(): Promise<void>;
 }
@@ -175,7 +203,7 @@ class FirebaseAnalyticsProvider implements AnalyticsProvider {
   name = 'firebase';
   private initialized = false;
 
-  async initialize(_config: any): Promise<void> {
+  async initialize(_config: AnalyticsConfig): Promise<void> {
     try {
       // Initialize Firebase Analytics
       // const analytics = await import('@react-native-firebase/analytics').then(m => m.default);
@@ -208,7 +236,10 @@ class FirebaseAnalyticsProvider implements AnalyticsProvider {
     }
   }
 
-  async setUserProperties(_userId: string, _properties: Record<string, any>): Promise<void> {
+  async setUserProperties(
+    _userId: string,
+    _properties: UserProperties,
+  ): Promise<void> {
     if (!this.initialized) return;
 
     try {
@@ -217,16 +248,19 @@ class FirebaseAnalyticsProvider implements AnalyticsProvider {
       // for (const [key, value] of Object.entries(properties)) {
       //   await analytics().setUserProperty(key, String(value));
       // }
-      loggingService.debug('Firebase user properties set', { userId });
+      loggingService.debug('Firebase user properties set', { userId: _userId });
     } catch (error) {
       loggingService.error('Failed to set Firebase user properties', {
         error,
-        userId,
+        userId: _userId,
       });
     }
   }
 
-  async trackScreenView(screenName: string, properties?: Record<string, any>): Promise<void> {
+  async trackScreenView(
+    screenName: string,
+    properties?: Record<string, any>,
+  ): Promise<void> {
     if (!this.initialized) return;
 
     try {
@@ -281,7 +315,10 @@ class CustomAnalyticsProvider implements AnalyticsProvider {
     }
   }
 
-  async setUserProperties(userId: string, properties: Record<string, any>): Promise<void> {
+  async setUserProperties(
+    userId: string,
+    properties: UserProperties,
+  ): Promise<void> {
     await this.trackEvent({
       id: `user_props_${Date.now()}`,
       name: 'user_properties_updated',
@@ -299,7 +336,10 @@ class CustomAnalyticsProvider implements AnalyticsProvider {
     });
   }
 
-  async trackScreenView(screenName: string, properties?: Record<string, any>): Promise<void> {
+  async trackScreenView(
+    screenName: string,
+    properties?: ScreenViewProperties,
+  ): Promise<void> {
     await this.trackEvent({
       id: `screen_${Date.now()}`,
       name: 'screen_view',
@@ -358,18 +398,12 @@ export class AdvancedTelemetryService {
   private performanceMonitor = usePerformanceMonitoring();
   private isInitialized = false;
   private userId: string | null = null;
-  private userProperties: Record<string, any> = {};
+  private userProperties: UserProperties = {};
 
   /**
    * Initialize telemetry service
    */
-  async initialize(config: {
-    providers: Array<{
-      name: string;
-      config: any;
-    }>;
-    userId?: string;
-  }): Promise<void> {
+  async initialize(config: TelemetryInitConfig): Promise<void> {
     try {
       // Initialize providers
       for (const providerConfig of config.providers) {
@@ -380,7 +414,9 @@ export class AdvancedTelemetryService {
             provider = new FirebaseAnalyticsProvider();
             break;
           case 'custom':
-            provider = new CustomAnalyticsProvider(providerConfig.config.endpoint);
+            provider = new CustomAnalyticsProvider(
+              providerConfig.config.endpoint,
+            );
             break;
           default:
             loggingService.warn('Unknown analytics provider', {
@@ -446,7 +482,7 @@ export class AdvancedTelemetryService {
   /**
    * Set user properties
    */
-  async setUserProperties(properties: Record<string, any>): Promise<void> {
+  async setUserProperties(properties: UserProperties): Promise<void> {
     this.userProperties = { ...this.userProperties, ...properties };
 
     if (this.userId) {
@@ -468,7 +504,7 @@ export class AdvancedTelemetryService {
    */
   async trackEvent(
     name: string,
-    properties: Record<string, any> = {},
+    properties: Record<string, string | number | boolean | null> = {},
     category: TelemetryEvent['category'] = 'user_action',
   ): Promise<void> {
     if (!this.isInitialized) {
@@ -524,8 +560,13 @@ export class AdvancedTelemetryService {
   /**
    * Track screen view
    */
-  async trackScreenView(screenName: string, properties?: Record<string, any>): Promise<void> {
-    const sanitizedProperties = properties ? this.sanitizeProperties(properties) : {};
+  async trackScreenView(
+    screenName: string,
+    properties?: Record<string, any>,
+  ): Promise<void> {
+    const sanitizedProperties = properties
+      ? this.sanitizeProperties(properties)
+      : {};
 
     for (const provider of this.providers) {
       try {
@@ -642,7 +683,9 @@ export class AdvancedTelemetryService {
   /**
    * Sanitize properties to ensure they're safe and valid
    */
-  private sanitizeProperties(properties: Record<string, any>): Record<string, any> {
+  private sanitizeProperties(
+    properties: Record<string, any>,
+  ): Record<string, any> {
     const sanitized: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(properties)) {
@@ -688,12 +731,39 @@ export const advancedTelemetryService = new AdvancedTelemetryService();
 // Hook for React components
 export const useTelemetry = () => {
   return {
-    trackEvent: advancedTelemetryService.trackEvent.bind(advancedTelemetryService),
-    trackScreenView: advancedTelemetryService.trackScreenView.bind(advancedTelemetryService),
-    trackCarbonEvent: advancedTelemetryService.trackCarbonEvent.bind(advancedTelemetryService),
-    trackPerformanceEvent:
-      advancedTelemetryService.trackPerformanceEvent.bind(advancedTelemetryService),
-    trackError: advancedTelemetryService.trackError.bind(advancedTelemetryService),
-    setUserProperties: advancedTelemetryService.setUserProperties.bind(advancedTelemetryService),
+    trackEvent: advancedTelemetryService.trackEvent.bind(
+      advancedTelemetryService,
+    ),
+    trackScreenView: advancedTelemetryService.trackScreenView.bind(
+      advancedTelemetryService,
+    ),
+    trackCarbonEvent: advancedTelemetryService.trackCarbonEvent.bind(
+      advancedTelemetryService,
+    ),
+    trackPerformanceEvent: advancedTelemetryService.trackPerformanceEvent.bind(
+      advancedTelemetryService,
+    ),
+    trackError: advancedTelemetryService.trackError.bind(
+      advancedTelemetryService,
+    ),
+    setUserProperties: advancedTelemetryService.setUserProperties.bind(
+      advancedTelemetryService,
+    ),
   };
 };
+
+/**
+ * Provider configuration interface
+ */
+export interface ProviderConfig {
+  name: string;
+  config: AnalyticsConfig;
+}
+
+/**
+ * Telemetry service initialization config
+ */
+export interface TelemetryInitConfig {
+  providers: ProviderConfig[];
+  userId?: string;
+}

@@ -243,7 +243,11 @@ describe('useAsyncPerformance', () => {
     const testOperation = () => Promise.resolve('test-result');
     const onComplete = jest.fn();
 
-    const actualResult = await result.current('test-op', testOperation, onComplete);
+    const actualResult = await result.current(
+      'test-op',
+      testOperation,
+      onComplete,
+    );
 
     expect(actualResult).toBe('test-result');
     expect(onComplete).toHaveBeenCalledWith(250);
@@ -257,7 +261,9 @@ describe('useAsyncPerformance', () => {
 
     const errorOperation = () => Promise.reject(new Error('Test error'));
 
-    await expect(result.current('error-op', errorOperation)).rejects.toThrow('Test error');
+    await expect(result.current('error-op', errorOperation)).rejects.toThrow(
+      'Test error',
+    );
     expect(consoleSpy).toHaveBeenCalledWith(
       'Operation error-op failed after 100ms:',
       expect.any(Error),

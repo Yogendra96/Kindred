@@ -23,6 +23,11 @@ import { aiVisionService } from '../services/AIVisionService';
 import { webSocketService } from '../services/WebSocketService';
 import { useTheme } from '../theme/ThemeProvider';
 
+const COLORS = {
+  whiteTransparent20: 'rgba(255,255,255,0.2)',
+  blackTransparent70: 'rgba(0,0,0,0.7)',
+};
+
 interface SmartCameraCaptureProps {
   mode: 'waste' | 'food' | 'transport' | 'energy';
   onResult: (result: ImageClassificationResult) => void;
@@ -181,10 +186,14 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
   const selectFromGallery = async () => {
     try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionResult.granted === false) {
-        Alert.alert('Permission required', 'Please grant photo library access.');
+        Alert.alert(
+          'Permission required',
+          'Please grant photo library access.',
+        );
         return;
       }
 
@@ -236,7 +245,9 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     }
   };
 
-  const classifyImage = async (uri: string): Promise<ImageClassificationResult> => {
+  const classifyImage = async (
+    uri: string,
+  ): Promise<ImageClassificationResult> => {
     switch (mode) {
       case 'waste':
         return await aiVisionService.classifyWasteImage(uri);
@@ -268,7 +279,9 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     }
   };
 
-  const notifyRealTimeClassification = async (result: ImageClassificationResult) => {
+  const notifyRealTimeClassification = async (
+    result: ImageClassificationResult,
+  ) => {
     try {
       await webSocketService.sendMessage({
         id: `classification_${Date.now()}`,
@@ -289,14 +302,18 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   const toggleFlash = () => {
     setState(prev => ({
       ...prev,
-      flashMode: prev.flashMode === FlashMode.off ? FlashMode.on : FlashMode.off,
+      flashMode:
+        prev.flashMode === FlashMode.off ? FlashMode.on : FlashMode.off,
     }));
   };
 
   const _toggleCamera = () => {
     setState(prev => ({
       ...prev,
-      cameraType: prev.cameraType === CameraType.back ? CameraType.front : CameraType.back,
+      cameraType:
+        prev.cameraType === CameraType.back
+          ? CameraType.front
+          : CameraType.back,
     }));
   };
 
@@ -320,15 +337,24 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     const modeInfoMap = {
       waste: {
         title: 'Smart Waste Detection',
-        description: 'Point camera at waste items to identify recycling category',
+        description:
+          'Point camera at waste items to identify recycling category',
         icon: 'trash-bin',
-        tips: ['Ensure good lighting', 'Center the item in frame', 'Remove any labels if possible'],
+        tips: [
+          'Ensure good lighting',
+          'Center the item in frame',
+          'Remove any labels if possible',
+        ],
       },
       food: {
         title: 'Food Recognition',
         description: 'Identify food items and get carbon footprint data',
         icon: 'restaurant',
-        tips: ['Show the whole food item', 'Use natural lighting', 'Single items work best'],
+        tips: [
+          'Show the whole food item',
+          'Use natural lighting',
+          'Single items work best',
+        ],
       },
       transport: {
         title: 'Transport Detection',
@@ -344,7 +370,11 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
         title: 'Energy Meter Reading',
         description: 'Read utility meters automatically',
         icon: 'speedometer',
-        tips: ['Ensure meter display is clear', 'Remove any glare', 'Frame the entire display'],
+        tips: [
+          'Ensure meter display is clear',
+          'Remove any glare',
+          'Frame the entire display',
+        ],
       },
     };
 
@@ -356,18 +386,27 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
     return (
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
-        <TouchableOpacity style={styles.closeButton} onPress={() => animateOut(() => onClose())}>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => animateOut(() => onClose())}
+        >
           <Ionicons name='close' size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
 
         <View style={styles.headerContent}>
-          <Ionicons name={modeInfo.icon as any} size={24} color={theme.colors.primary} />
+          <Ionicons
+            name={modeInfo.icon as any}
+            size={24}
+            color={theme.colors.primary}
+          />
           <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>
             {modeInfo.title}
           </Text>
         </View>
 
-        <Text style={[styles.headerDescription, { color: theme.colors.outline }]}>
+        <Text
+          style={[styles.headerDescription, { color: theme.colors.outline }]}
+        >
           {modeInfo.description}
         </Text>
       </View>
@@ -379,7 +418,9 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
       return (
         <View style={styles.permissionContainer}>
           <Ionicons name='camera-off' size={64} color={theme.colors.outline} />
-          <Text style={[styles.permissionText, { color: theme.colors.onSurface }]}>
+          <Text
+            style={[styles.permissionText, { color: theme.colors.onSurface }]}
+          >
             Camera permission required
           </Text>
         </View>
@@ -429,12 +470,18 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
   const renderControls = () => (
     <View style={[styles.controls, { backgroundColor: theme.colors.surface }]}>
-      <TouchableOpacity style={styles.controlButton} onPress={selectFromGallery}>
+      <TouchableOpacity
+        style={styles.controlButton}
+        onPress={selectFromGallery}
+      >
         <Ionicons name='images' size={24} color={theme.colors.onSurface} />
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.captureButton, { backgroundColor: theme.colors.primary }]}
+        style={[
+          styles.captureButton,
+          { backgroundColor: theme.colors.primary },
+        ]}
         onPress={capturePhoto}
         disabled={state.isProcessing}
       >
@@ -460,14 +507,20 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
     return (
       <ScrollView style={styles.resultContainer}>
-        <View style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}
+        >
           <View style={styles.resultHeader}>
             <Ionicons
-              name={state.result.confidence > 0.8 ? 'checkmark-circle' : 'warning'}
+              name={
+                state.result.confidence > 0.8 ? 'checkmark-circle' : 'warning'
+              }
               size={24}
               color={state.result.confidence > 0.8 ? '#4CAF50' : '#FF9800'}
             />
-            <Text style={[styles.resultTitle, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.resultTitle, { color: theme.colors.onSurface }]}
+            >
               {state.result.subcategory || state.result.category}
             </Text>
             <Text style={[styles.confidence, { color: theme.colors.outline }]}>
@@ -477,17 +530,27 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
           <View style={styles.carbonImpact}>
             <Ionicons name='leaf' size={20} color='#4CAF50' />
-            <Text style={[styles.carbonText, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.carbonText, { color: theme.colors.onSurface }]}
+            >
               {state.result.carbonImpact.toFixed(2)} kg CO₂
             </Text>
           </View>
 
           <View style={styles.suggestions}>
-            <Text style={[styles.suggestionsTitle, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[
+                styles.suggestionsTitle,
+                { color: theme.colors.onSurface },
+              ]}
+            >
               Suggestions:
             </Text>
             {state.result.suggestions.map((suggestion, index) => (
-              <Text key={index} style={[styles.suggestionItem, { color: theme.colors.outline }]}>
+              <Text
+                key={index}
+                style={[styles.suggestionItem, { color: theme.colors.outline }]}
+              >
                 • {suggestion}
               </Text>
             ))}
@@ -495,19 +558,35 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
           <View style={styles.resultActions}>
             <TouchableOpacity
-              style={[styles.resultButton, { backgroundColor: theme.colors.outline }]}
+              style={[
+                styles.resultButton,
+                { backgroundColor: theme.colors.outline },
+              ]}
               onPress={retryCapture}
             >
-              <Text style={[styles.resultButtonText, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[
+                  styles.resultButtonText,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 Retry
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.resultButton, { backgroundColor: theme.colors.primary }]}
+              style={[
+                styles.resultButton,
+                { backgroundColor: theme.colors.primary },
+              ]}
               onPress={confirmResult}
             >
-              <Text style={[styles.resultButtonText, { color: theme.colors.onPrimary }]}>
+              <Text
+                style={[
+                  styles.resultButtonText,
+                  { color: theme.colors.onPrimary },
+                ]}
+              >
                 Confirm
               </Text>
             </TouchableOpacity>
@@ -521,10 +600,20 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
     const modeInfo = getModeInfo();
 
     return (
-      <View style={[styles.tipsContainer, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.tipsTitle, { color: theme.colors.onSurface }]}>Tips:</Text>
+      <View
+        style={[
+          styles.tipsContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
+        <Text style={[styles.tipsTitle, { color: theme.colors.onSurface }]}>
+          Tips:
+        </Text>
         {modeInfo.tips.map((tip, index) => (
-          <Text key={index} style={[styles.tipItem, { color: theme.colors.outline }]}>
+          <Text
+            key={index}
+            style={[styles.tipItem, { color: theme.colors.outline }]}
+          >
             • {tip}
           </Text>
         ))}
@@ -535,7 +624,11 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} animationType='none' presentationStyle='fullScreen'>
+    <Modal
+      visible={visible}
+      animationType='none'
+      presentationStyle='fullScreen'
+    >
       <Animated.View
         style={[
           styles.container,
@@ -569,25 +662,121 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
+  bottomLeft: {
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    bottom: 0,
+    left: 0,
+  },
+  bottomRight: {
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    bottom: 0,
+    right: 0,
+  },
+  camera: {
     flex: 1,
   },
-  header: {
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    elevation: 2,
+  cameraContainer: {
+    borderRadius: 20,
+    flex: 1,
+    margin: 20,
+    overflow: 'hidden',
+  },
+  cameraOverlay: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  captureButton: {
+    alignItems: 'center',
+    borderRadius: 35,
+    elevation: 4,
+    height: 70,
+    justifyContent: 'center',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
+    width: 70,
+  },
+  carbonImpact: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    padding: 12,
+  },
+  carbonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   closeButton: {
     alignSelf: 'flex-end',
     padding: 8,
   },
-  headerContent: {
-    flexDirection: 'row',
+  confidence: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  container: {
+    flex: 1,
+  },
+  controlButton: {
     alignItems: 'center',
+    backgroundColor: COLORS.whiteTransparent20,
+    borderRadius: 25,
+    height: 50,
+    justifyContent: 'center',
+    width: 50,
+  },
+  controls: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 40,
+    paddingVertical: 20,
+  },
+  corner: {
+    borderColor: 'white',
+    borderWidth: 3,
+    height: 30,
+    position: 'absolute',
+    width: 30,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    borderRadius: 8,
+    bottom: 100,
+    left: 20,
+    padding: 12,
+    position: 'absolute',
+    right: 20,
+  },
+  errorText: {
+    color: 'white',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  header: {
+    elevation: 2,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  headerContent: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  headerDescription: {
+    fontSize: 14,
+    lineHeight: 20,
     marginTop: 8,
   },
   headerTitle: {
@@ -595,14 +784,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 12,
   },
-  headerDescription: {
-    fontSize: 14,
-    marginTop: 8,
-    lineHeight: 20,
-  },
   permissionContainer: {
-    flex: 1,
     alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
   },
   permissionText: {
@@ -610,132 +794,53 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
-  cameraContainer: {
-    flex: 1,
-    margin: 20,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  camera: {
-    flex: 1,
-  },
-  cameraOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  viewfinder: {
-    width: 250,
-    height: 250,
-    position: 'relative',
-  },
-  corner: {
-    position: 'absolute',
-    width: 30,
-    height: 30,
-    borderColor: 'white',
-    borderWidth: 3,
-  },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderLeftWidth: 0,
-    borderBottomWidth: 0,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-  },
-  processingOverlay: {
-    position: 'absolute',
-    bottom: 40,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 8,
-    padding: 12,
-  },
   processingBar: {
-    height: 4,
     backgroundColor: '#4CAF50',
     borderRadius: 2,
+    height: 4,
     marginBottom: 8,
+  },
+  processingOverlay: {
+    backgroundColor: COLORS.blackTransparent70,
+    borderRadius: 8,
+    bottom: 40,
+    left: 20,
+    padding: 12,
+    position: 'absolute',
+    right: 20,
   },
   processingText: {
     color: 'white',
+    fontSize: 14,
     textAlign: 'center',
-    fontSize: 14,
   },
-  controls: {
+  resultActions: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  resultButton: {
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingVertical: 20,
-    paddingHorizontal: 40,
+    borderRadius: 8,
+    flex: 1,
+    marginHorizontal: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
-  controlButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-  captureButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  tipsContainer: {
-    margin: 20,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  tipsTitle: {
-    fontSize: 14,
+  resultButtonText: {
+    fontSize: 16,
     fontWeight: '600',
-    marginBottom: 8,
   },
-  tipItem: {
-    fontSize: 12,
-    lineHeight: 18,
-    marginBottom: 4,
+  resultCard: {
+    borderRadius: 16,
+    elevation: 2,
+    padding: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   resultContainer: {
     flex: 1,
     padding: 20,
-  },
-  resultCard: {
-    padding: 20,
-    borderRadius: 16,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   resultHeader: {
     alignItems: 'center',
@@ -747,23 +852,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textTransform: 'capitalize',
   },
-  confidence: {
+  suggestionItem: {
     fontSize: 14,
-    marginTop: 4,
-  },
-  carbonImpact: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  carbonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    lineHeight: 20,
+    marginBottom: 4,
   },
   suggestions: {
     marginBottom: 20,
@@ -773,40 +865,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  suggestionItem: {
-    fontSize: 14,
-    lineHeight: 20,
+  tipItem: {
+    fontSize: 12,
+    lineHeight: 18,
     marginBottom: 4,
   },
-  resultActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  tipsContainer: {
+    borderRadius: 12,
+    elevation: 1,
+    margin: 20,
+    padding: 16,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  resultButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  resultButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  errorContainer: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  errorText: {
-    color: 'white',
+  tipsTitle: {
     fontSize: 14,
-    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  topLeft: {
+    borderBottomWidth: 0,
+    borderRightWidth: 0,
+    left: 0,
+    top: 0,
+  },
+  topRight: {
+    borderBottomWidth: 0,
+    borderLeftWidth: 0,
+    right: 0,
+    top: 0,
+  },
+  viewfinder: {
+    height: 250,
+    position: 'relative',
+    width: 250,
   },
 });
 

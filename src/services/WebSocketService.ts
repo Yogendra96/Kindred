@@ -81,7 +81,8 @@ class WebSocketService {
       }
 
       // Set auth token from security service
-      const authToken = await enhancedSecurityService.secureRetrieve('auth_token');
+      const authToken =
+        await enhancedSecurityService.secureRetrieve('auth_token');
       if (authToken) {
         this.config.authToken = authToken;
       }
@@ -157,7 +158,8 @@ class WebSocketService {
         // Configure WebSocket options
         if (Platform.OS !== 'web') {
           // React Native specific configurations
-          (this.ws as WebSocket & { binaryType: string }).binaryType = 'arraybuffer';
+          (this.ws as WebSocket & { binaryType: string }).binaryType =
+            'arraybuffer';
         }
 
         this.ws.onopen = event => {
@@ -229,7 +231,8 @@ class WebSocketService {
 
   private handleIncomingMessage(data: string | ArrayBuffer): void {
     try {
-      const messageData = typeof data === 'string' ? data : this.arrayBufferToString(data);
+      const messageData =
+        typeof data === 'string' ? data : this.arrayBufferToString(data);
       const message: WebSocketMessage = JSON.parse(messageData);
 
       // Track latency for ping/pong messages
@@ -273,8 +276,8 @@ class WebSocketService {
   private arrayBufferToString(buffer: ArrayBuffer): string {
     const uint8Array = new Uint8Array(buffer);
     let binaryString = '';
-    for (let i = 0; i < uint8Array.length; i++) {
-      binaryString += String.fromCharCode(uint8Array[i]);
+    for (const element of uint8Array) {
+      binaryString += String.fromCharCode(element);
     }
     return binaryString;
   }
@@ -301,7 +304,9 @@ class WebSocketService {
   }
 
   private scheduleReconnect(): void {
-    if (this.connectionStats.reconnectAttempts >= this.config.reconnectAttempts) {
+    if (
+      this.connectionStats.reconnectAttempts >= this.config.reconnectAttempts
+    ) {
       loggingService.error('Max reconnection attempts reached');
       this.emitEvent('connection_failed', {
         attempts: this.connectionStats.reconnectAttempts,
@@ -313,7 +318,8 @@ class WebSocketService {
     this.isReconnecting = true;
     this.connectionStats.reconnectAttempts++;
 
-    const delay = this.config.reconnectInterval * this.connectionStats.reconnectAttempts;
+    const delay =
+      this.config.reconnectInterval * this.connectionStats.reconnectAttempts;
 
     this.reconnectTimer = setTimeout(async () => {
       try {
@@ -359,7 +365,8 @@ class WebSocketService {
   }
 
   private updateLatencyStats(latency: number): void {
-    const totalLatency = this.connectionStats.averageLatency * this.connectionStats.messagesSent;
+    const totalLatency =
+      this.connectionStats.averageLatency * this.connectionStats.messagesSent;
     this.connectionStats.averageLatency =
       (totalLatency + latency) / (this.connectionStats.messagesSent + 1);
 
@@ -400,7 +407,9 @@ class WebSocketService {
   private queueMessage(message: WebSocketMessage): void {
     // Remove oldest low-priority messages if queue is full
     if (this.messageQueue.length >= this.config.maxMessageQueueSize) {
-      const lowPriorityIndex = this.messageQueue.findIndex(msg => msg.priority === 'low');
+      const lowPriorityIndex = this.messageQueue.findIndex(
+        msg => msg.priority === 'low',
+      );
       if (lowPriorityIndex !== -1) {
         this.messageQueue.splice(lowPriorityIndex, 1);
       } else {
@@ -410,7 +419,9 @@ class WebSocketService {
 
     // Insert message based on priority
     const insertIndex = this.messageQueue.findIndex(
-      msg => this.getPriorityValue(msg.priority) < this.getPriorityValue(message.priority),
+      msg =>
+        this.getPriorityValue(msg.priority) <
+        this.getPriorityValue(message.priority),
     );
 
     if (insertIndex === -1) {
@@ -434,7 +445,10 @@ class WebSocketService {
   }
 
   private async processMessageQueue(): Promise<void> {
-    while (this.messageQueue.length > 0 && this.ws?.readyState === WebSocket.OPEN) {
+    while (
+      this.messageQueue.length > 0 &&
+      this.ws?.readyState === WebSocket.OPEN
+    ) {
       const message = this.messageQueue.shift()!;
       await this.sendMessage(message);
     }
@@ -500,7 +514,9 @@ class WebSocketService {
   }
 
   isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN && this.connectionStats.isConnected;
+    return (
+      this.ws?.readyState === WebSocket.OPEN && this.connectionStats.isConnected
+    );
   }
 
   async updateAuthToken(token: string): Promise<void> {
@@ -529,7 +545,9 @@ class WebSocketService {
     });
   }
 
-  async sendAchievementUnlock(achievement: Record<string, unknown>): Promise<void> {
+  async sendAchievementUnlock(
+    achievement: Record<string, unknown>,
+  ): Promise<void> {
     await this.sendMessage({
       id: this.generateMessageId(),
       type: 'achievement_unlocked',
@@ -539,7 +557,9 @@ class WebSocketService {
     });
   }
 
-  async sendChallengeProgress(progress: Record<string, unknown>): Promise<void> {
+  async sendChallengeProgress(
+    progress: Record<string, unknown>,
+  ): Promise<void> {
     await this.sendMessage({
       id: this.generateMessageId(),
       type: 'challenge_progress',

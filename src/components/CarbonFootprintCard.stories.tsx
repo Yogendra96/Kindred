@@ -256,8 +256,8 @@ export const MultipleCards: Story = {
         progress={90}
         trend='down'
         period='weekly'
-        showDetails={true}
-        interactive={true}
+        showDetails
+        interactive
         theme='eco'
         onPress={action('eco-card-press')}
         onGoalPress={action('eco-goal-press')}
@@ -269,8 +269,8 @@ export const MultipleCards: Story = {
         progress={50}
         trend='stable'
         period='weekly'
-        showDetails={true}
-        interactive={true}
+        showDetails
+        interactive
         theme='light'
         onPress={action('light-card-press')}
         onGoalPress={action('light-goal-press')}
@@ -282,8 +282,8 @@ export const MultipleCards: Story = {
         progress={25}
         trend='up'
         period='weekly'
-        showDetails={true}
-        interactive={true}
+        showDetails
+        interactive
         theme='light'
         onPress={action('warning-card-press')}
         onGoalPress={action('warning-goal-press')}

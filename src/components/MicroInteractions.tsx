@@ -224,16 +224,20 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(1)).current;
 
-  const onGestureEvent = Animated.event([{ nativeEvent: { translationX: translateX } }], {
-    useNativeDriver: true,
-  });
+  const onGestureEvent = Animated.event(
+    [{ nativeEvent: { translationX: translateX } }],
+    {
+      useNativeDriver: true,
+    },
+  );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
     if (disabled) return;
 
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
-      const shouldSwipe = Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > 500;
+      const shouldSwipe =
+        Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > 500;
 
       if (shouldSwipe) {
         const direction = translationX > 0 ? 'right' : 'left';
@@ -496,7 +500,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
           borderRadius: size / 2,
         }}
         testID={testID}
-        accessible={true}
+        accessible
         accessibilityRole='button'
         accessibilityLabel='Floating action button'
       >

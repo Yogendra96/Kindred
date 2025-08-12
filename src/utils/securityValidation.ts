@@ -11,7 +11,7 @@
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
-  sanitizedValue?: any;
+  sanitizedValue?: unknown;
 }
 
 /**
@@ -100,8 +100,13 @@ export class InputValidator {
     let sanitizedValue = input;
 
     // Length validation
-    if (this.config.maxStringLength && input.length > this.config.maxStringLength) {
-      errors.push(`String length exceeds maximum of ${this.config.maxStringLength} characters`);
+    if (
+      this.config.maxStringLength &&
+      input.length > this.config.maxStringLength
+    ) {
+      errors.push(
+        `String length exceeds maximum of ${this.config.maxStringLength} characters`,
+      );
       sanitizedValue = input.substring(0, this.config.maxStringLength);
     }
 
@@ -171,8 +176,13 @@ export class InputValidator {
     }
 
     // Range validation
-    if (this.config.maxNumberValue && Math.abs(numValue) > this.config.maxNumberValue) {
-      errors.push(`Number exceeds maximum absolute value of ${this.config.maxNumberValue}`);
+    if (
+      this.config.maxNumberValue &&
+      Math.abs(numValue) > this.config.maxNumberValue
+    ) {
+      errors.push(
+        `Number exceeds maximum absolute value of ${this.config.maxNumberValue}`,
+      );
     }
 
     return {
@@ -236,7 +246,7 @@ export class InputValidator {
         errors: [],
         sanitizedValue: urlObj.toString(),
       };
-    } catch (_error) {
+    } catch {
       return {
         isValid: false,
         errors: ['Invalid URL format'],
@@ -315,7 +325,11 @@ export class InputValidator {
   /**
    * Helper method to validate individual property values
    */
-  private validatePropertyValue(key: string, value: unknown, errors: string[]): unknown {
+  private validatePropertyValue(
+    key: string,
+    value: unknown,
+    errors: string[],
+  ): unknown {
     if (typeof value === 'string') {
       return this.validateStringProperty(key, value, errors);
     }
@@ -330,26 +344,38 @@ export class InputValidator {
   /**
    * Helper method to validate string properties
    */
-  private validateStringProperty(key: string, value: string, errors: string[]): string | undefined {
+  private validateStringProperty(
+    key: string,
+    value: string,
+    errors: string[],
+  ): string | undefined {
     const valueResult = this.validateString(value);
     if (valueResult.isValid) {
       return valueResult.sanitizedValue as string;
     }
 
-    errors.push(`Invalid value for key ${key}: ${valueResult.errors.join(', ')}`);
+    errors.push(
+      `Invalid value for key ${key}: ${valueResult.errors.join(', ')}`,
+    );
     return undefined;
   }
 
   /**
    * Helper method to validate number properties
    */
-  private validateNumberProperty(key: string, value: number, errors: string[]): number | undefined {
+  private validateNumberProperty(
+    key: string,
+    value: number,
+    errors: string[],
+  ): number | undefined {
     const valueResult = this.validateNumber(value);
     if (valueResult.isValid) {
       return valueResult.sanitizedValue as number;
     }
 
-    errors.push(`Invalid value for key ${key}: ${valueResult.errors.join(', ')}`);
+    errors.push(
+      `Invalid value for key ${key}: ${valueResult.errors.join(', ')}`,
+    );
     return undefined;
   }
 }
@@ -374,11 +400,18 @@ export class SecurityHeaderValidator {
     }
 
     // Check for dangerous directives
-    const dangerousPatterns = [/'unsafe-eval'/i, /'unsafe-inline'/i, /data:/i, /\*/];
+    const dangerousPatterns = [
+      /'unsafe-eval'/i,
+      /'unsafe-inline'/i,
+      /data:/i,
+      /\*/,
+    ];
 
     for (const pattern of dangerousPatterns) {
       if (pattern.test(csp)) {
-        errors.push(`CSP contains potentially unsafe directive: ${pattern.source}`);
+        errors.push(
+          `CSP contains potentially unsafe directive: ${pattern.source}`,
+        );
       }
     }
 
@@ -470,7 +503,10 @@ export class DataSanitizer {
   static sanitizeSql(input: string): string {
     return input
       .replace(/["';\\]/g, '') // Remove dangerous SQL characters
-      .replace(/\b(select|insert|update|delete|drop|create|alter|exec|union)\b/gi, ''); // Remove SQL keywords
+      .replace(
+        /\b(select|insert|update|delete|drop|create|alter|exec|union)\b/gi,
+        '',
+      ); // Remove SQL keywords
   }
 
   /**
@@ -485,7 +521,7 @@ export class DataSanitizer {
   /**
    * Deep sanitize object
    */
-  static deepSanitizeObject(obj: any): any {
+  static deepSanitizeObject(obj: unknown): unknown {
     if (typeof obj === 'string') {
       return this.escapeHtml(this.sanitizeControlChars(obj));
     }
@@ -495,12 +531,13 @@ export class DataSanitizer {
         return obj.map(item => this.deepSanitizeObject(item));
       }
 
-      const sanitized: Record<string, any> = {};
+      const sanitized: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
         const sanitizedKey = this.sanitizeControlChars(key);
         // Use safer property assignment to avoid object injection
+        const sanitizedValue = this.deepSanitizeObject(value);
         Object.defineProperty(sanitized, sanitizedKey, {
-          value: this.deepSanitizeObject(value),
+          value: sanitizedValue,
           writable: true,
           enumerable: true,
           configurable: true,
@@ -534,7 +571,9 @@ export class RateLimiter {
     const attempts = this.attempts.get(identifier) ?? [];
 
     // Remove old attempts outside the window
-    const validAttempts = attempts.filter(timestamp => now - timestamp < this.windowMs);
+    const validAttempts = attempts.filter(
+      timestamp => now - timestamp < this.windowMs,
+    );
 
     if (validAttempts.length >= this.maxAttempts) {
       return false;
@@ -560,7 +599,9 @@ export class RateLimiter {
   getRemainingAttempts(identifier: string): number {
     const attempts = this.attempts.get(identifier) ?? [];
     const now = Date.now();
-    const validAttempts = attempts.filter(timestamp => now - timestamp < this.windowMs);
+    const validAttempts = attempts.filter(
+      timestamp => now - timestamp < this.windowMs,
+    );
 
     return Math.max(0, this.maxAttempts - validAttempts.length);
   }

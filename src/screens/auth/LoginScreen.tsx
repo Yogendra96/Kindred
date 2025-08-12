@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import {
   AccessibilityInfo,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -361,7 +360,7 @@ const LoginScreen = () => {
           keyboardType='email-address'
           accessibilityLabel='Email address'
           accessibilityHint='Enter your email address to log in'
-          accessibilityRequired={true}
+          accessibilityRequired
           accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
@@ -372,7 +371,7 @@ const LoginScreen = () => {
           secureTextEntry
           accessibilityLabel='Password'
           accessibilityHint='Enter your password to log in'
-          accessibilityRequired={true}
+          accessibilityRequired
           accessibilityInvalid={formErrors.some(e => e.includes('Password'))}
         />
 
@@ -380,7 +379,7 @@ const LoginScreen = () => {
           style={styles.loginButton}
           onPress={handleLogin}
           disabled={loading}
-          accessible={true}
+          accessible
           accessibilityLabel='Login'
           accessibilityHint='Log in to your account'
           accessibilityRole='button'
@@ -392,7 +391,7 @@ const LoginScreen = () => {
           style={styles.googleButton}
           onPress={handleGoogleSignIn}
           disabled={loading}
-          accessible={true}
+          accessible
           accessibilityLabel='Sign in with Google'
           accessibilityHint='Sign in using your Google account'
           accessibilityRole='button'
@@ -405,7 +404,7 @@ const LoginScreen = () => {
             style={styles.biometricButton}
             onPress={handleBiometricLogin}
             disabled={loading}
-            accessible={true}
+            accessible
             accessibilityLabel='Sign in with biometrics'
             accessibilityHint='Use fingerprint or face ID to sign in'
             accessibilityRole='button'
@@ -418,7 +417,7 @@ const LoginScreen = () => {
           <Text style={styles.footerText}>Don't have an account? </Text>
           <TouchableOpacity
             onPress={() => navigation.navigate('Register')}
-            accessible={true}
+            accessible
             accessibilityLabel='Go to Register'
             accessibilityHint='Navigate to registration screen'
             accessibilityRole='button'
@@ -432,75 +431,12 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginTop: 50,
-    marginBottom: 30,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  formContainer: {
-    paddingHorizontal: 20,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  inputError: {
-    borderColor: '#ff4444',
-    borderWidth: 2,
-  },
-  errorContainer: {
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#ffebee',
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#ff4444',
-  },
-  errorText: {
-    color: '#c62828',
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  loginButton: {
-    backgroundColor: '#007AFF',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  googleButton: {
-    backgroundColor: '#4285F4',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
   biometricButton: {
-    backgroundColor: '#34C759',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#34C759',
+    borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
     marginBottom: 15,
   },
   buttonText: {
@@ -508,17 +444,80 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  container: {
+    backgroundColor: '#fff',
+    flex: 1,
+  },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    borderLeftColor: '#ff4444',
+    borderLeftWidth: 4,
+    borderRadius: 8,
+    marginBottom: 15,
+    padding: 10,
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
+    marginBottom: 5,
+  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 20,
   },
-  footerText: {
-    color: '#666',
-  },
   footerLink: {
     color: '#007AFF',
     fontWeight: 'bold',
+  },
+  footerText: {
+    color: '#666',
+  },
+  formContainer: {
+    paddingHorizontal: 20,
+  },
+  googleButton: {
+    alignItems: 'center',
+    backgroundColor: '#4285F4',
+    borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  input: {
+    borderColor: '#ddd',
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 16,
+    height: 50,
+    marginBottom: 15,
+    paddingHorizontal: 15,
+  },
+  inputError: {
+    borderColor: '#ff4444',
+    borderWidth: 2,
+  },
+  loginButton: {
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  logo: {
+    height: 120,
+    width: 120,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+    marginTop: 50,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 10,
   },
 });
 

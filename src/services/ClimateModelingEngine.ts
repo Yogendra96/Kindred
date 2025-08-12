@@ -48,7 +48,10 @@ class ClimateModelingEngineService {
       this.validateCoordinates(coordinates);
 
       // Use network optimizer for API calls
-      const result = await this.core.generateClimateProjection(coordinates, timeHorizon);
+      const result = await this.core.generateClimateProjection(
+        coordinates,
+        timeHorizon,
+      );
 
       const processingTime = performance.now() - startTime;
 
@@ -70,7 +73,10 @@ class ClimateModelingEngineService {
 
       return result;
     } catch (error) {
-      await observabilityService.trackError('climate_projection_failed', error as Error);
+      await observabilityService.trackError(
+        'climate_projection_failed',
+        error as Error,
+      );
       throw new Error(`Climate projection failed: ${error.message}`);
     }
   }
@@ -78,7 +84,9 @@ class ClimateModelingEngineService {
   /**
    * Get simplified climate scenarios for quick reference
    */
-  async getClimateScenarios(timeHorizon: number = 30): Promise<ClimateScenario[]> {
+  async getClimateScenarios(
+    timeHorizon: number = 30,
+  ): Promise<ClimateScenario[]> {
     try {
       // Use lightweight prediction for scenarios only
       const dummyCoordinates: GeographicCoordinate = {
@@ -88,7 +96,10 @@ class ClimateModelingEngineService {
         country: 'Global',
       };
 
-      const result = await this.core.generateClimateProjection(dummyCoordinates, timeHorizon);
+      const result = await this.core.generateClimateProjection(
+        dummyCoordinates,
+        timeHorizon,
+      );
       return result.scenarios;
     } catch (error) {
       console.error('Failed to get climate scenarios:', error);
@@ -145,11 +156,13 @@ class ClimateModelingEngineService {
     if (ratio <= 0.5) {
       score = 90 + (0.5 - ratio) * 20; // 90-100
       category = 'excellent';
-      recommendation = "Outstanding! You're leading by example in climate action.";
+      recommendation =
+        "Outstanding! You're leading by example in climate action.";
     } else if (ratio <= 1.0) {
       score = 70 + (1.0 - ratio) * 40; // 70-90
       category = 'good';
-      recommendation = 'Great work! Consider further reductions in transport and energy.';
+      recommendation =
+        'Great work! Consider further reductions in transport and energy.';
     } else if (ratio <= 2.0) {
       score = 50 + (2.0 - ratio) * 20; // 50-70
       category = 'fair';
@@ -157,11 +170,13 @@ class ClimateModelingEngineService {
     } else if (ratio <= 3.0) {
       score = 25 + (3.0 - ratio) * 25; // 25-50
       category = 'poor';
-      recommendation = 'Significant improvements needed. Start with transport and diet.';
+      recommendation =
+        'Significant improvements needed. Start with transport and diet.';
     } else {
       score = Math.max(0, 25 - (ratio - 3.0) * 5); // 0-25
       category = 'critical';
-      recommendation = 'Urgent action required. Consider major lifestyle changes.';
+      recommendation =
+        'Urgent action required. Consider major lifestyle changes.';
     }
 
     return { score: Math.round(score), category, recommendation };
@@ -231,7 +246,8 @@ class ClimateModelingEngineService {
 
       return {
         temperature: data.properties?.parameter?.T2M?.['20231215'] || 15,
-        precipitation: data.properties?.parameter?.PRECTOTCORR?.['20231215'] || 2.5,
+        precipitation:
+          data.properties?.parameter?.PRECTOTCORR?.['20231215'] || 2.5,
         airQuality: 85, // NASA doesn't provide AQI directly
       };
     } catch (error) {
@@ -239,12 +255,16 @@ class ClimateModelingEngineService {
     }
   }
 
-  private async fetchFromNOAA(_coordinates: GeographicCoordinate): Promise<any> {
+  private async fetchFromNOAA(
+    _coordinates: GeographicCoordinate,
+  ): Promise<any> {
     // NOAA API integration would go here
     throw new Error('NOAA API not implemented in demo');
   }
 
-  private async fetchFromOpenWeather(_coordinates: GeographicCoordinate): Promise<any> {
+  private async fetchFromOpenWeather(
+    _coordinates: GeographicCoordinate,
+  ): Promise<any> {
     // OpenWeather API integration - fallback option
     return {
       temperature: 15 + (Math.random() - 0.5) * 10,

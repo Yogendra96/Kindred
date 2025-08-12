@@ -4,12 +4,6 @@
  * Features: Real-time 3D environments, emotional engagement, interactive ecosystems
  */
 
-import { _Dimensions, _Platform } from 'react-native';
-
-import _AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { adaptiveUIEngine as __adaptiveUIEngine } from './AdaptiveUIEngine';
-import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
 import { observabilityService } from './ObservabilityService';
 
 // Core Immersive Visualization Types
@@ -37,7 +31,14 @@ export interface EcosystemVisualizationEngine {
 
 interface LivingEcosystem {
   readonly ecosystemId: string;
-  readonly type: 'forest' | 'ocean' | 'grassland' | 'desert' | 'urban' | 'arctic' | 'wetland';
+  readonly type:
+    | 'forest'
+    | 'ocean'
+    | 'grassland'
+    | 'desert'
+    | 'urban'
+    | 'arctic'
+    | 'wetland';
   readonly health: EcosystemHealth;
   readonly carbonCapacity: CarbonCapacity;
   readonly biodiversity: BiodiversityMetrics;
@@ -56,7 +57,12 @@ interface EcosystemHealth {
 }
 
 interface HealthComponent {
-  readonly component: 'air_quality' | 'water_quality' | 'soil_health' | 'vegetation' | 'wildlife';
+  readonly component:
+    | 'air_quality'
+    | 'water_quality'
+    | 'soil_health'
+    | 'vegetation'
+    | 'wildlife';
   readonly health: number;
   readonly trend: 'improving' | 'stable' | 'declining';
   readonly factors: HealthFactor[];
@@ -1043,7 +1049,11 @@ interface ThreeDLightingSystem {
 }
 
 interface GlobalIllumination {
-  readonly technique: 'raytracing' | 'lightmaps' | 'spherical_harmonics' | 'voxel_gi';
+  readonly technique:
+    | 'raytracing'
+    | 'lightmaps'
+    | 'spherical_harmonics'
+    | 'voxel_gi';
   readonly quality: 'low' | 'medium' | 'high' | 'ultra';
   readonly performance: IlluminationPerformance;
 }
@@ -1424,9 +1434,14 @@ export class ImmersiveCarbonVisualizationEngineService {
       await this.setupPerformanceMonitoring();
 
       this.isInitialized = true;
-      console.log('✅ Immersive Carbon Visualization Engine initialized successfully');
+      console.log(
+        '✅ Immersive Carbon Visualization Engine initialized successfully',
+      );
     } catch (error) {
-      console.error('❌ Failed to initialize Immersive Carbon Visualization Engine:', error);
+      console.error(
+        '❌ Failed to initialize Immersive Carbon Visualization Engine:',
+        error,
+      );
       throw error;
     }
   }
@@ -1439,16 +1454,28 @@ export class ImmersiveCarbonVisualizationEngineService {
 
     try {
       // Analyze carbon impact on ecosystem
-      const ecosystemHealth = await this.analyzeEcosystemHealth(carbonData, ecosystemType);
+      const ecosystemHealth = await this.analyzeEcosystemHealth(
+        carbonData,
+        ecosystemType,
+      );
 
       // Calculate carbon capacity
-      const carbonCapacity = await this.calculateCarbonCapacity(ecosystemType, ecosystemHealth);
+      const carbonCapacity = await this.calculateCarbonCapacity(
+        ecosystemType,
+        ecosystemHealth,
+      );
 
       // Generate biodiversity metrics
-      const biodiversity = await this.generateBiodiversityMetrics(ecosystemType, ecosystemHealth);
+      const biodiversity = await this.generateBiodiversityMetrics(
+        ecosystemType,
+        ecosystemHealth,
+      );
 
       // Create user impact analysis
-      const userImpact = await this.analyzeUserEcosystemImpact(carbonData, ecosystemType);
+      const userImpact = await this.analyzeUserEcosystemImpact(
+        carbonData,
+        ecosystemType,
+      );
 
       // Generate ecosystem visualization
       const visualization = await this.generateEcosystemVisualization(
@@ -1457,10 +1484,16 @@ export class ImmersiveCarbonVisualizationEngineService {
       );
 
       // Create interactivity systems
-      const interactivity = await this.createEcosystemInteractivity(ecosystemType, userImpact);
+      const interactivity = await this.createEcosystemInteractivity(
+        ecosystemType,
+        userImpact,
+      );
 
       // Setup ecosystem evolution
-      const evolution = await this.setupEcosystemEvolution(ecosystemType, carbonData);
+      const evolution = await this.setupEcosystemEvolution(
+        ecosystemType,
+        carbonData,
+      );
 
       const ecosystem: LivingEcosystem = {
         ecosystemId: `ecosystem_${ecosystemType}_${Date.now()}`,
@@ -1489,7 +1522,9 @@ export class ImmersiveCarbonVisualizationEngineService {
         },
       });
 
-      console.log(`✅ ${ecosystemType} ecosystem created: ${ecosystem.ecosystemId}`);
+      console.log(
+        `✅ ${ecosystemType} ecosystem created: ${ecosystem.ecosystemId}`,
+      );
       return ecosystem;
     } catch (error) {
       console.error('Ecosystem visualization creation failed:', error);
@@ -1603,7 +1638,9 @@ export class ImmersiveCarbonVisualizationEngineService {
     };
   }
 
-  private getBaseEcosystemHealth(ecosystemType: LivingEcosystem['type']): number {
+  private getBaseEcosystemHealth(
+    ecosystemType: LivingEcosystem['type'],
+  ): number {
     const baseHealthValues = {
       forest: 0.8,
       ocean: 0.7,
@@ -1693,5 +1730,6 @@ interface QualityConfiguration {
 }
 
 // Export singleton instance
-export const immersiveCarbonVisualizationEngine = new ImmersiveCarbonVisualizationEngineService();
+export const immersiveCarbonVisualizationEngine =
+  new ImmersiveCarbonVisualizationEngineService();
 export default immersiveCarbonVisualizationEngine;

@@ -139,7 +139,9 @@ class QuantumResistantCrypto {
   private readonly keyCache = new Map<string, CryptoKey>();
   private readonly nonceCache = new Map<string, Uint8Array>();
 
-  async generateSecureKey(purpose: 'encryption' | 'signing' | 'derivation'): Promise<string> {
+  async generateSecureKey(
+    purpose: 'encryption' | 'signing' | 'derivation',
+  ): Promise<string> {
     const keyLength = purpose === 'encryption' ? 32 : 64;
     const randomBytes = new Uint8Array(keyLength);
 
@@ -152,7 +154,11 @@ class QuantumResistantCrypto {
     return btoa(String.fromCharCode(...randomBytes));
   }
 
-  async deriveKey(password: string, salt: string, iterations = 100000): Promise<string> {
+  async deriveKey(
+    password: string,
+    salt: string,
+    iterations = 100000,
+  ): Promise<string> {
     // In production, use proper key derivation (Argon2id, scrypt, PBKDF2)
     let derived = password + salt;
 
@@ -192,7 +198,12 @@ class QuantumResistantCrypto {
     }
   }
 
-  async decrypt(ciphertext: string, key: string, nonce: string, tag: string): Promise<string> {
+  async decrypt(
+    ciphertext: string,
+    key: string,
+    nonce: string,
+    tag: string,
+  ): Promise<string> {
     try {
       const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
         mode: CryptoJS.mode.GCM,
@@ -210,7 +221,11 @@ class QuantumResistantCrypto {
     return CryptoJS.HmacSHA512(data, privateKey).toString();
   }
 
-  async verify(data: string, signature: string, publicKey: string): Promise<boolean> {
+  async verify(
+    data: string,
+    signature: string,
+    publicKey: string,
+  ): Promise<boolean> {
     const computedSignature = await this.sign(data, publicKey);
     return this.constantTimeCompare(signature, computedSignature);
   }
@@ -269,7 +284,10 @@ interface BehaviorBaseline {
 
 // Behavioral Analysis Engine
 class BehavioralAnalysisEngine {
-  private readonly userBehaviorPatterns = new Map<string, UserBehaviorPattern>();
+  private readonly userBehaviorPatterns = new Map<
+    string,
+    UserBehaviorPattern
+  >();
   private readonly anomalyThresholds = {
     location: 1000, // 1km
     timing: 3600000, // 1 hour
@@ -295,7 +313,10 @@ class BehavioralAnalysisEngine {
         riskScore: 0.5, // Medium risk for new users
         anomalies: [],
         trustLevel: 'medium',
-        recommendations: ['Complete user verification', 'Establish behavior baseline'],
+        recommendations: [
+          'Complete user verification',
+          'Establish behavior baseline',
+        ],
       };
     }
 
@@ -338,7 +359,10 @@ class BehavioralAnalysisEngine {
     if (timingAnomaly) anomalies.push(timingAnomaly);
 
     // Device anomaly detection
-    const deviceAnomaly = this.detectDeviceAnomaly(pattern.deviceUsage, context.deviceFingerprint);
+    const deviceAnomaly = this.detectDeviceAnomaly(
+      pattern.deviceUsage,
+      context.deviceFingerprint,
+    );
     if (deviceAnomaly) anomalies.push(deviceAnomaly);
 
     return anomalies;
@@ -348,7 +372,9 @@ class BehavioralAnalysisEngine {
     commonLocations: GeolocationData[],
     currentLocation: GeolocationData,
   ): BehaviorAnomaly | null {
-    const distances = commonLocations.map(loc => this.calculateDistance(loc, currentLocation));
+    const distances = commonLocations.map(loc =>
+      this.calculateDistance(loc, currentLocation),
+    );
 
     const minDistance = Math.min(...distances);
 
@@ -365,7 +391,10 @@ class BehavioralAnalysisEngine {
     return null;
   }
 
-  private detectTimingAnomaly(typicalHours: number[], currentHour: number): BehaviorAnomaly | null {
+  private detectTimingAnomaly(
+    typicalHours: number[],
+    currentHour: number,
+  ): BehaviorAnomaly | null {
     const hourFrequency = typicalHours.filter(h => h === currentHour).length;
     const totalSessions = typicalHours.length;
     const normalProbability = hourFrequency / totalSessions;
@@ -417,7 +446,10 @@ class BehavioralAnalysisEngine {
     return null;
   }
 
-  private calculateDistance(loc1: GeolocationData, loc2: GeolocationData): number {
+  private calculateDistance(
+    loc1: GeolocationData,
+    loc2: GeolocationData,
+  ): number {
     const R = 6371000; // Earth's radius in meters
     const lat1Rad = (loc1.latitude * Math.PI) / 180;
     const lat2Rad = (loc2.latitude * Math.PI) / 180;
@@ -426,7 +458,10 @@ class BehavioralAnalysisEngine {
 
     const a =
       Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
-      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(deltaLonRad / 2) * Math.sin(deltaLonRad / 2);
+      Math.cos(lat1Rad) *
+        Math.cos(lat2Rad) *
+        Math.sin(deltaLonRad / 2) *
+        Math.sin(deltaLonRad / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c;
@@ -446,7 +481,10 @@ class BehavioralAnalysisEngine {
     return Math.min(1.0, totalRisk / anomalies.length);
   }
 
-  private determineTrustLevel(riskScore: number, context: SecurityContext): TrustLevel {
+  private determineTrustLevel(
+    riskScore: number,
+    context: SecurityContext,
+  ): TrustLevel {
     if (riskScore >= 0.8) return 'none';
     if (riskScore >= 0.6) return 'low';
     if (riskScore >= 0.4) return 'medium';
@@ -454,7 +492,10 @@ class BehavioralAnalysisEngine {
     return 'verified';
   }
 
-  private generateRecommendations(anomalies: BehaviorAnomaly[], riskScore: number): string[] {
+  private generateRecommendations(
+    anomalies: BehaviorAnomaly[],
+    riskScore: number,
+  ): string[] {
     const recommendations: string[] = [];
 
     if (riskScore >= 0.8) {
@@ -480,7 +521,10 @@ class BehavioralAnalysisEngine {
     return recommendations;
   }
 
-  private async createUserBaseline(userId: string, context: SecurityContext): Promise<void> {
+  private async createUserBaseline(
+    userId: string,
+    context: SecurityContext,
+  ): Promise<void> {
     const pattern: UserBehaviorPattern = {
       userId,
       locations: context.geolocation ? [context.geolocation] : [],
@@ -501,7 +545,10 @@ class BehavioralAnalysisEngine {
     this.userBehaviorPatterns.set(userId, pattern);
   }
 
-  private async updateBehaviorPattern(userId: string, context: SecurityContext): Promise<void> {
+  private async updateBehaviorPattern(
+    userId: string,
+    context: SecurityContext,
+  ): Promise<void> {
     const pattern = this.userBehaviorPatterns.get(userId);
     if (!pattern) return;
 
@@ -521,21 +568,31 @@ class BehavioralAnalysisEngine {
     }
   }
 
-  private async recalculateBaseline(pattern: UserBehaviorPattern): Promise<void> {
+  private async recalculateBaseline(
+    pattern: UserBehaviorPattern,
+  ): Promise<void> {
     // Update baseline calculations with recent data
     pattern.baseline.avgSessionDuration = this.calculateAverageSessionDuration(
       pattern.sessionTimes,
     );
-    pattern.baseline.commonLocations = this.findCommonLocations(pattern.locations);
-    pattern.baseline.typicalHours = this.extractTypicalHours(pattern.sessionTimes);
+    pattern.baseline.commonLocations = this.findCommonLocations(
+      pattern.locations,
+    );
+    pattern.baseline.typicalHours = this.extractTypicalHours(
+      pattern.sessionTimes,
+    );
     pattern.lastUpdated = Date.now();
   }
 
   private calculateAverageSessionDuration(sessionTimes: number[]): number {
     if (sessionTimes.length < 2) return 0;
 
-    const durations = sessionTimes.slice(1).map((time, i) => time - sessionTimes[i]);
-    return durations.reduce((sum, duration) => sum + duration, 0) / durations.length;
+    const durations = sessionTimes
+      .slice(1)
+      .map((time, i) => time - sessionTimes[i]);
+    return (
+      durations.reduce((sum, duration) => sum + duration, 0) / durations.length
+    );
   }
 
   private findCommonLocations(locations: GeolocationData[]): GeolocationData[] {
@@ -670,7 +727,10 @@ export class ZeroTrustSecurityService {
         },
       });
     } catch (error) {
-      console.error('❌ Failed to initialize Zero-Trust Security Service:', error);
+      console.error(
+        '❌ Failed to initialize Zero-Trust Security Service:',
+        error,
+      );
       throw error;
     }
   }
@@ -793,7 +853,10 @@ export class ZeroTrustSecurityService {
       const currentFingerprint = await this.generateDeviceFingerprint();
 
       // Check for device changes
-      if (currentFingerprint.fingerprint !== this.currentContext.deviceFingerprint.fingerprint) {
+      if (
+        currentFingerprint.fingerprint !==
+        this.currentContext.deviceFingerprint.fingerprint
+      ) {
         await this.handleSecurityIncident({
           type: 'device_change',
           severity: 'medium',
@@ -807,7 +870,10 @@ export class ZeroTrustSecurityService {
       }
 
       // Perform behavioral analysis if user is authenticated
-      if (this.currentContext.userId && this.config.monitoring.behavioralAnalysis) {
+      if (
+        this.currentContext.userId &&
+        this.config.monitoring.behavioralAnalysis
+      ) {
         const behaviorAnalysis = await this.behaviorAnalysis.analyzeBehavior(
           this.currentContext.userId,
           this.currentContext,
@@ -875,7 +941,9 @@ export class ZeroTrustSecurityService {
     }
   }
 
-  private async handleSecurityIncident(incidentData: Partial<SecurityIncident>): Promise<void> {
+  private async handleSecurityIncident(
+    incidentData: Partial<SecurityIncident>,
+  ): Promise<void> {
     const incident: SecurityIncident = {
       id: await this.crypto.generateSecureKey('signing'),
       timestamp: Date.now(),
@@ -945,7 +1013,9 @@ export class ZeroTrustSecurityService {
     console.log('🚫 Access blocked due to security incident:', incident.id);
   }
 
-  private async requireAdditionalAuth(incident: SecurityIncident): Promise<void> {
+  private async requireAdditionalAuth(
+    incident: SecurityIncident,
+  ): Promise<void> {
     if (this.currentContext) {
       this.currentContext = {
         ...this.currentContext,
@@ -1022,7 +1092,8 @@ export class ZeroTrustSecurityService {
       );
 
       // Determine authentication requirements
-      const requiresAdditionalAuth = this.shouldRequireAdditionalAuth(behaviorAnalysis);
+      const requiresAdditionalAuth =
+        this.shouldRequireAdditionalAuth(behaviorAnalysis);
 
       if (requiresAdditionalAuth && !additionalFactors) {
         return {
@@ -1073,7 +1144,9 @@ export class ZeroTrustSecurityService {
   }): Promise<boolean> {
     // In production, verify against secure credential store
     // This is a simplified example
-    const storedHash = await AsyncStorage.getItem(`user_${credentials.username}_hash`);
+    const storedHash = await AsyncStorage.getItem(
+      `user_${credentials.username}_hash`,
+    );
     if (!storedHash) return false;
 
     const providedHash = await this.crypto.hash(credentials.password);
@@ -1092,11 +1165,15 @@ export class ZeroTrustSecurityService {
     // Adaptive authentication based on risk
     return (
       behaviorAnalysis.riskScore > 0.3 ||
-      behaviorAnalysis.anomalies.some(a => a.severity === 'high' || a.severity === 'critical')
+      behaviorAnalysis.anomalies.some(
+        a => a.severity === 'high' || a.severity === 'critical',
+      )
     );
   }
 
-  private async getUserPermissions(userId: string): Promise<SecurityPermission[]> {
+  private async getUserPermissions(
+    userId: string,
+  ): Promise<SecurityPermission[]> {
     // In production, load from permission system
     return [
       {
@@ -1112,9 +1189,16 @@ export class ZeroTrustSecurityService {
     ];
   }
 
-  async encryptSensitiveData(data: string, purpose = 'general'): Promise<string> {
+  async encryptSensitiveData(
+    data: string,
+    purpose = 'general',
+  ): Promise<string> {
     const key = await this.crypto.generateSecureKey('encryption');
-    const encrypted = await this.crypto.encrypt(data, key, this.config.encryption.algorithm);
+    const encrypted = await this.crypto.encrypt(
+      data,
+      key,
+      this.config.encryption.algorithm,
+    );
 
     // Store encrypted data with metadata
     const encryptedPackage = {
@@ -1170,7 +1254,10 @@ export class ZeroTrustSecurityService {
       recommendations.push('User authentication required');
     }
 
-    if (this.currentContext?.trustLevel === 'low' || this.currentContext?.trustLevel === 'none') {
+    if (
+      this.currentContext?.trustLevel === 'low' ||
+      this.currentContext?.trustLevel === 'none'
+    ) {
       recommendations.push('Additional verification required');
     }
 

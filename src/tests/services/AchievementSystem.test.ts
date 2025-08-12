@@ -2,7 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import AchievementSystemService, { AchievementUtils } from '../../services/AchievementSystem';
+import AchievementSystemService, {
+  AchievementUtils,
+} from '../../services/AchievementSystem';
 import { TestDataFactory, TestHelpers } from '../utils/testUtils';
 
 // Mock Firebase modules
@@ -54,7 +56,9 @@ describe('AchievementSystemService', () => {
     mockFirestore.mockReturnValue({
       collection: jest.fn(() => ({
         doc: jest.fn(() => ({
-          get: jest.fn(() => Promise.resolve({ exists: true, data: () => ({}) })),
+          get: jest.fn(() =>
+            Promise.resolve({ exists: true, data: () => ({}) }),
+          ),
           set: jest.fn(() => Promise.resolve()),
           update: jest.fn(() => Promise.resolve()),
           onSnapshot: jest.fn(),
@@ -109,7 +113,9 @@ describe('AchievementSystemService', () => {
 
       await TestHelpers.waitFor(100); // Wait for async initialization
 
-      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('achievement_badges');
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith(
+        'achievement_badges',
+      );
     });
 
     it('should setup auth state listener', () => {
@@ -151,7 +157,9 @@ describe('AchievementSystemService', () => {
     it('should filter badges by category', () => {
       const carbonBadges = achievementService.getBadgesByCategory('carbon');
 
-      expect(carbonBadges.every(badge => badge.category === 'carbon')).toBe(true);
+      expect(carbonBadges.every(badge => badge.category === 'carbon')).toBe(
+        true,
+      );
     });
 
     it('should filter badges by rarity', () => {
@@ -189,7 +197,8 @@ describe('AchievementSystemService', () => {
           })),
         });
 
-      const achievements = await achievementService.loadUserAchievements('test-user-id');
+      const achievements =
+        await achievementService.loadUserAchievements('test-user-id');
 
       expect(achievements).toHaveLength(2);
       expect(mockFirestore().collection).toHaveBeenCalledWith('achievements');
@@ -197,17 +206,23 @@ describe('AchievementSystemService', () => {
 
     it('should return completed achievements', () => {
       // This would require the service to have loaded achievements first
-      const completedAchievements = achievementService.getCompletedAchievements();
+      const completedAchievements =
+        achievementService.getCompletedAchievements();
 
       expect(Array.isArray(completedAchievements)).toBe(true);
-      expect(completedAchievements.every(achievement => achievement.isCompleted)).toBe(true);
+      expect(
+        completedAchievements.every(achievement => achievement.isCompleted),
+      ).toBe(true);
     });
 
     it('should return in-progress achievements', () => {
-      const inProgressAchievements = achievementService.getInProgressAchievements();
+      const inProgressAchievements =
+        achievementService.getInProgressAchievements();
 
       expect(Array.isArray(inProgressAchievements)).toBe(true);
-      expect(inProgressAchievements.every(achievement => !achievement.isCompleted)).toBe(true);
+      expect(
+        inProgressAchievements.every(achievement => !achievement.isCompleted),
+      ).toBe(true);
     });
   });
 
@@ -249,7 +264,9 @@ describe('AchievementSystemService', () => {
       const stats = await achievementService.loadUserStats('test-user-id');
 
       expect(stats).toBeTruthy();
-      expect(mockFirestore().collection).toHaveBeenCalledWith('userAchievementStats');
+      expect(mockFirestore().collection).toHaveBeenCalledWith(
+        'userAchievementStats',
+      );
     });
 
     it('should create initial stats if they do not exist', async () => {
@@ -290,7 +307,9 @@ describe('AchievementSystemService', () => {
       const unreadNotifications = achievementService.getUnreadNotifications();
 
       expect(Array.isArray(unreadNotifications)).toBe(true);
-      expect(unreadNotifications.every(notification => !notification.isRead)).toBe(true);
+      expect(
+        unreadNotifications.every(notification => !notification.isRead),
+      ).toBe(true);
     });
 
     it('should mark notification as read', async () => {
@@ -321,9 +340,9 @@ describe('AchievementSystemService', () => {
     });
 
     it('should throw error when sharing non-existent achievement', async () => {
-      await expect(achievementService.shareAchievement('non-existent-id')).rejects.toThrow(
-        'Achievement not found',
-      );
+      await expect(
+        achievementService.shareAchievement('non-existent-id'),
+      ).rejects.toThrow('Achievement not found');
     });
   });
 
@@ -331,10 +350,18 @@ describe('AchievementSystemService', () => {
     it('should clear all cached data', async () => {
       await achievementService.clearCache();
 
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('achievement_badges');
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('achievement_user_achievements');
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('achievement_user_stats');
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('achievement_notifications');
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith(
+        'achievement_badges',
+      );
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith(
+        'achievement_user_achievements',
+      );
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith(
+        'achievement_user_stats',
+      );
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith(
+        'achievement_notifications',
+      );
     });
   });
 
@@ -346,7 +373,8 @@ describe('AchievementSystemService', () => {
         .orderBy()
         .get.mockRejectedValue(new Error('Firestore error'));
 
-      const achievements = await achievementService.loadUserAchievements('test-user-id');
+      const achievements =
+        await achievementService.loadUserAchievements('test-user-id');
 
       expect(achievements).toStrictEqual([]);
     });
@@ -464,7 +492,9 @@ describe('AchievementUtils', () => {
     });
 
     it('should return 0 for no completed achievements', () => {
-      const achievements = [TestDataFactory.createAchievement({ isCompleted: false })];
+      const achievements = [
+        TestDataFactory.createAchievement({ isCompleted: false }),
+      ];
 
       const score = AchievementUtils.calculateAchievementScore(achievements);
 
@@ -486,10 +516,18 @@ describe('AchievementUtils', () => {
     it('should format time correctly', () => {
       const now = new Date();
       const today = now.toISOString();
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
+      const yesterday = new Date(
+        now.getTime() - 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const weekAgo = new Date(
+        now.getTime() - 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const monthAgo = new Date(
+        now.getTime() - 30 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const yearAgo = new Date(
+        now.getTime() - 365 * 24 * 60 * 60 * 1000,
+      ).toISOString();
 
       expect(AchievementUtils.formatTimeSince(today)).toBe('Today');
       expect(AchievementUtils.formatTimeSince(yesterday)).toBe('Yesterday');

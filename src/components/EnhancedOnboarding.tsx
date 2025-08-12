@@ -222,9 +222,12 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
     }
   };
 
-  const onGestureEvent = Animated.event([{ nativeEvent: { translationX: translateX } }], {
-    useNativeDriver: true,
-  });
+  const onGestureEvent = Animated.event(
+    [{ nativeEvent: { translationX: translateX } }],
+    {
+      useNativeDriver: true,
+    },
+  );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
     if (!enableSwipeNavigation) return;
@@ -232,7 +235,8 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
       const threshold = screenWidth * 0.3;
-      const shouldSwipe = Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
+      const shouldSwipe =
+        Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
 
       if (shouldSwipe) {
         if (translationX > 0 && currentStep > 0) {
@@ -258,10 +262,14 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
     const textColor = step.textColor || theme.colors.onBackground;
 
     return (
-      <View key={step.id} style={[styles.stepContainer, { backgroundColor, width: screenWidth }]}>
+      <View
+        key={step.id}
+        style={[styles.stepContainer, { backgroundColor, width: screenWidth }]}
+      >
         <Animated.View
           style={[
             styles.stepContent,
+            isActive ? styles.activeStep : styles.inactiveStep,
             {
               opacity: isActive ? fadeAnim : 0.3,
               transform: [{ scale: isActive ? scaleAnim : 0.95 }],
@@ -275,7 +283,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
                 source={step.image}
                 style={styles.stepImage}
                 resizeMode='contain'
-                accessible={true}
+                accessible
                 accessibilityLabel={`Onboarding step ${index + 1} illustration`}
               />
             )}
@@ -284,7 +292,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
                 source={{ uri: step.imageUrl }}
                 style={styles.stepImage}
                 resizeMode='contain'
-                accessible={true}
+                accessible
                 accessibilityLabel={`Onboarding step ${index + 1} illustration`}
               />
             )}
@@ -294,7 +302,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
                   name={step.icon as string}
                   size={80}
                   color={theme.colors.primary}
-                  accessible={true}
+                  accessible
                   accessibilityLabel={`${step.icon} icon`}
                 />
               </View>
@@ -305,12 +313,15 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
           <View style={styles.textContainer}>
             <Text
               style={[styles.stepTitle, { color: textColor }]}
-              accessible={true}
+              accessible
               accessibilityRole='header'
             >
               {step.title}
             </Text>
-            <Text style={[styles.stepDescription, { color: textColor }]} accessible={true}>
+            <Text
+              style={[styles.stepDescription, { color: textColor }]}
+              accessible
+            >
               {step.description}
             </Text>
           </View>
@@ -318,7 +329,10 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
           {/* Interactive Component */}
           {step.interactive && (
             <View style={styles.interactiveContainer}>
-              <Text style={[styles.interactiveDescription, { color: textColor }]} accessible={true}>
+              <Text
+                style={[styles.interactiveDescription, { color: textColor }]}
+                accessible
+              >
                 {step.interactive.description}
               </Text>
               {step.interactive.component}
@@ -330,14 +344,22 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             <View style={styles.actionContainer}>
               <AnimatedTouchable
                 onPress={step.action.onPress}
-                style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: theme.colors.primary },
+                ]}
                 hapticType='medium'
                 animationType='scale'
-                accessible={true}
+                accessible
                 accessibilityRole='button'
                 accessibilityLabel={step.action.label}
               >
-                <Text style={[styles.actionButtonText, { color: theme.colors.onPrimary }]}>
+                <Text
+                  style={[
+                    styles.actionButtonText,
+                    { color: theme.colors.onPrimary },
+                  ]}
+                >
                   {step.action.label}
                 </Text>
               </AnimatedTouchable>
@@ -366,15 +388,17 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             }}
             style={[
               styles.dot,
+              index === currentStep ? styles.activeDot : styles.inactiveDot,
               {
                 backgroundColor:
-                  index === currentStep ? theme.colors.primary : theme.colors.surfaceVariant,
-                width: index === currentStep ? 24 : 8,
+                  index === currentStep
+                    ? theme.colors.primary
+                    : theme.colors.surfaceVariant,
               },
             ]}
             hapticType='light'
             animationType='scale'
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel={`Go to step ${index + 1}`}
             accessibilityState={{ selected: index === currentStep }}
@@ -389,7 +413,10 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]} testID={testID}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      testID={testID}
+    >
       {/* Custom Header */}
       {customHeader}
 
@@ -401,11 +428,18 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             style={styles.skipButton}
             hapticType='light'
             animationType='scale'
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel='Skip onboarding'
           >
-            <Text style={[styles.skipText, { color: theme.colors.onSurfaceVariant }]}>Skip</Text>
+            <Text
+              style={[
+                styles.skipText,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              Skip
+            </Text>
           </AnimatedTouchable>
         </View>
       )}
@@ -418,7 +452,7 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
             height={4}
             progressColor={theme.colors.primary}
             backgroundColor={theme.colors.surfaceVariant}
-            animated={true}
+            animated
           />
         </View>
       )}
@@ -429,14 +463,14 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
         onHandlerStateChange={onHandlerStateChange}
         enabled={enableSwipeNavigation}
       >
-        <Animated.View style={{ flex: 1 }}>
+        <Animated.View style={styles.flexContainer}>
           <ScrollView
             ref={scrollViewRef}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             scrollEnabled={false}
-            style={{ flex: 1 }}
+            style={styles.flexContainer}
           >
             {steps.map((step, index) => renderStep(step, index))}
           </ScrollView>
@@ -460,35 +494,56 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
               ]}
               hapticType='light'
               animationType='scale'
-              accessible={true}
+              accessible
               accessibilityRole='button'
               accessibilityLabel='Previous step'
             >
-              <Ionicons name='chevron-back' size={20} color={theme.colors.onSurface} />
-              <Text style={[styles.navButtonText, { color: theme.colors.onSurface }]}>
+              <Ionicons
+                name='chevron-back'
+                size={20}
+                color={theme.colors.onSurface}
+              />
+              <Text
+                style={[
+                  styles.navButtonText,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 Previous
               </Text>
             </AnimatedTouchable>
           )}
 
-          <View style={{ flex: 1 }} />
+          <View style={styles.flexSpacer} />
 
           <AnimatedTouchable
             onPress={handleNext}
-            style={[styles.navButton, styles.nextButton, { backgroundColor: theme.colors.primary }]}
+            style={[
+              styles.navButton,
+              styles.nextButton,
+              { backgroundColor: theme.colors.primary },
+            ]}
             hapticType='medium'
             animationType='scale'
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel={
-              currentStep === steps.length - 1 ? 'Complete onboarding' : 'Next step'
+              currentStep === steps.length - 1
+                ? 'Complete onboarding'
+                : 'Next step'
             }
           >
-            <Text style={[styles.navButtonText, { color: theme.colors.onPrimary }]}>
+            <Text
+              style={[styles.navButtonText, { color: theme.colors.onPrimary }]}
+            >
               {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
             </Text>
             <Ionicons
-              name={currentStep === steps.length - 1 ? 'checkmark' : 'chevron-forward'}
+              name={
+                currentStep === steps.length - 1
+                  ? 'checkmark'
+                  : 'chevron-forward'
+              }
               size={20}
               color={theme.colors.onPrimary}
             />
@@ -503,73 +558,61 @@ export const EnhancedOnboarding: React.FC<EnhancedOnboardingProps> = ({
 };
 
 const styles = StyleSheet.create({
+  actionButton: {
+    borderRadius: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+  },
+  activeStep: {
+    // Active step styles handled by animation
+  },
+  inactiveStep: {
+    // Inactive step styles handled by animation
+  },
+  activeDot: {
+    width: 24,
+  },
+  inactiveDot: {
+    width: 8,
+  },
+  flexContainer: {
+    flex: 1,
+  },
+  flexSpacer: {
+    flex: 1,
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  actionContainer: {
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
   container: {
     flex: 1,
   },
-  skipContainer: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 1,
+  dot: {
+    borderRadius: 4,
+    height: 8,
   },
-  skipButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  skipText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  progressContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  stepContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  dotsContainer: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  stepContent: {
-    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
     justifyContent: 'center',
-    alignItems: 'center',
-    maxWidth: 400,
-  },
-  visualContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  stepImage: {
-    width: 250,
-    height: 250,
+    marginBottom: 32,
   },
   iconContainer: {
-    width: 120,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    borderRadius: 60,
     height: 120,
     justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 60,
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-  },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  stepTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 34,
-  },
-  stepDescription: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    opacity: 0.8,
+    width: 120,
   },
   interactiveContainer: {
     alignItems: 'center',
@@ -577,58 +620,88 @@ const styles = StyleSheet.create({
   },
   interactiveDescription: {
     fontSize: 14,
-    textAlign: 'center',
     marginBottom: 16,
     opacity: 0.7,
-  },
-  actionContainer: {
-    marginBottom: 20,
-  },
-  actionButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  navigationContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-    gap: 8,
-  },
-  dot: {
-    height: 8,
-    borderRadius: 4,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    textAlign: 'center',
   },
   navButton: {
-    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 8,
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  previousButton: {
-    borderWidth: 1,
-  },
-  nextButton: {
-    // backgroundColor set dynamically
   },
   navButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  navigationContainer: {
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+  },
+  nextButton: {
+    // backgroundColor set dynamically
+  },
+  previousButton: {
+    borderWidth: 1,
+  },
+  progressContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  skipButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  skipContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 50,
+    zIndex: 1,
+  },
+  skipText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  stepContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  stepContent: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    maxWidth: 400,
+  },
+  stepDescription: {
+    fontSize: 16,
+    lineHeight: 24,
+    opacity: 0.8,
+    textAlign: 'center',
+  },
+  stepImage: {
+    height: 250,
+    width: 250,
+  },
+  stepTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    lineHeight: 34,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  textContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  visualContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    marginBottom: 40,
   },
 });
 

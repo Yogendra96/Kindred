@@ -101,11 +101,15 @@ const HomeScreen = () => {
 
         dispatch(setError(null));
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error occurred';
         dispatch(setError(errorMessage));
 
         if (await checkConnectivity()) {
-          Alert.alert('Error', 'Failed to update data. Please try again later.');
+          Alert.alert(
+            'Error',
+            'Failed to update data. Please try again later.',
+          );
         }
       } finally {
         dispatch(setFootprintLoading(false));
@@ -190,7 +194,10 @@ const HomeScreen = () => {
               const newFootprint = await calculateCarbonFootprint();
               if (isMounted) {
                 dispatch(updateFootprint(newFootprint));
-                await CacheManager.set({ key: FOOTPRINT_CACHE_KEY }, newFootprint);
+                await CacheManager.set(
+                  { key: FOOTPRINT_CACHE_KEY },
+                  newFootprint,
+                );
               }
             } catch (error) {
               if (isMounted) {
@@ -230,15 +237,17 @@ const HomeScreen = () => {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      accessible={true}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      accessible
       accessibilityLabel='Carbon impact dashboard'
       accessibilityHint='Scroll to view your carbon footprint data and recommendations'
     >
-      <View style={styles.header} accessible={true} accessibilityRole='header'>
+      <View style={styles.header} accessible accessibilityRole='header'>
         <Text
           style={styles.title}
-          accessible={true}
+          accessible
           accessibilityRole='text'
           accessibilityLabel='Your Carbon Impact'
         >
@@ -246,7 +255,7 @@ const HomeScreen = () => {
         </Text>
         <Text
           style={styles.subtitle}
-          accessible={true}
+          accessible
           accessibilityRole='text'
           accessibilityLabel='Track and reduce your environmental footprint'
         >
@@ -257,19 +266,21 @@ const HomeScreen = () => {
       {!isOnline && (
         <View
           style={styles.offlineContainer}
-          accessible={true}
+          accessible
           accessibilityRole='alert'
           accessibilityLabel='Offline mode'
           accessibilityHint='You are currently offline and viewing cached data'
         >
-          <Text style={styles.offlineText}>You're offline - viewing cached data</Text>
+          <Text style={styles.offlineText}>
+            You're offline - viewing cached data
+          </Text>
         </View>
       )}
 
       {error && (
         <View
           style={styles.errorContainer}
-          accessible={true}
+          accessible
           accessibilityRole='alert'
           accessibilityLabel='Error message'
           accessibilityHint={`Error occurred: ${error}`}
@@ -294,52 +305,52 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
   },
   errorContainer: {
     backgroundColor: '#ffebee',
-    padding: 15,
+    borderRadius: 8,
     marginHorizontal: 20,
     marginTop: 10,
-    borderRadius: 8,
+    padding: 15,
   },
   errorText: {
     color: '#c62828',
     fontSize: 14,
   },
+  header: {
+    backgroundColor: '#fff',
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    padding: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
   offlineContainer: {
     backgroundColor: '#fff3e0',
-    padding: 15,
+    borderRadius: 8,
     marginHorizontal: 20,
     marginTop: 10,
-    borderRadius: 8,
+    padding: 15,
   },
   offlineText: {
     color: '#ef6c00',
     fontSize: 14,
     textAlign: 'center',
+  },
+  subtitle: {
+    color: '#666',
+    fontSize: 16,
+    marginTop: 5,
+  },
+  title: {
+    color: '#333',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });
 

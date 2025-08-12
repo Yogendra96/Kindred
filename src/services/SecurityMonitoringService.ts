@@ -100,7 +100,8 @@ class SecurityMonitoringService {
   private readonly config: MonitoringConfig;
   private readonly eventQueue: SecurityEvent[] = [];
   private readonly alerts: Map<string, SecurityAlert> = new Map();
-  private readonly threatIntelligence: Map<string, ThreatIntelligence> = new Map();
+  private readonly threatIntelligence: Map<string, ThreatIntelligence> =
+    new Map();
   private readonly behaviorBaseline: Map<string, number> = new Map();
 
   private monitoringInterval?: ReturnType<typeof setTimeout>;
@@ -188,9 +189,12 @@ class SecurityMonitoringService {
         threatIntelligenceCount: this.threatIntelligence.size,
       });
     } catch (error) {
-      loggingService.error('Security Monitoring Service initialization failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      loggingService.error(
+        'Security Monitoring Service initialization failed',
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
       throw error;
     }
   }
@@ -263,7 +267,9 @@ class SecurityMonitoringService {
         events = events.filter(e => e.source === filter.source);
       }
       if (filter.startTime) {
-        events = events.filter(e => e.timestamp >= (filter.startTime as number));
+        events = events.filter(
+          e => e.timestamp >= (filter.startTime as number),
+        );
       }
       if (filter.endTime) {
         events = events.filter(e => e.timestamp <= (filter.endTime as number));
@@ -338,9 +344,12 @@ class SecurityMonitoringService {
   /**
    * Get security metrics for a time period
    */
-  public getSecurityMetrics(startTime?: number, endTime?: number): SecurityMetrics {
-    const start = startTime || Date.now() - 24 * 60 * 60 * 1000; // Last 24 hours
-    const end = endTime || Date.now();
+  public getSecurityMetrics(
+    startTime?: number,
+    endTime?: number,
+  ): SecurityMetrics {
+    const start = startTime ?? Date.now() - 24 * 60 * 60 * 1000; // Last 24 hours
+    const end = endTime ?? Date.now();
 
     const events = this.getSecurityEvents({ startTime: start, endTime: end });
 
@@ -348,8 +357,9 @@ class SecurityMonitoringService {
     const eventsBySeverity: Record<string, number> = {};
 
     for (const event of events) {
-      eventsByType[event.type] = (eventsByType[event.type] || 0) + 1;
-      eventsBySeverity[event.severity] = (eventsBySeverity[event.severity] || 0) + 1;
+      eventsByType[event.type] = (eventsByType[event.type] ?? 0) + 1;
+      eventsBySeverity[event.severity] =
+        (eventsBySeverity[event.severity] ?? 0) + 1;
     }
 
     const alerts = [...this.alerts.values()].filter(
@@ -390,7 +400,8 @@ class SecurityMonitoringService {
 
     try {
       // Check runtime security
-      const runtimeAssessment = await runtimeSecurityService.performSecurityAssessment();
+      const runtimeAssessment =
+        await runtimeSecurityService.performSecurityAssessment();
       if (!runtimeAssessment.isSecure) {
         findings.push({
           id: this.generateEventId(),
@@ -405,7 +416,8 @@ class SecurityMonitoringService {
       }
 
       // Check device attestation
-      const deviceAttestation = await deviceAttestationService.performDeviceAttestation();
+      const deviceAttestation =
+        await deviceAttestationService.performDeviceAttestation();
       if (!deviceAttestation.isValid) {
         findings.push({
           id: this.generateEventId(),
@@ -443,9 +455,13 @@ class SecurityMonitoringService {
         limit: 100,
       });
 
-      const criticalEvents = recentEvents.filter(e => e.severity === 'critical');
+      const criticalEvents = recentEvents.filter(
+        e => e.severity === 'critical',
+      );
       if (criticalEvents.length > 0) {
-        recommendations.push('Investigate and respond to critical security events');
+        recommendations.push(
+          'Investigate and respond to critical security events',
+        );
       }
 
       // Calculate overall risk
@@ -491,7 +507,9 @@ class SecurityMonitoringService {
   /**
    * Export security data for compliance
    */
-  public async exportSecurityData(format: 'json' | 'csv' = 'json'): Promise<string> {
+  public async exportSecurityData(
+    format: 'json' | 'csv' = 'json',
+  ): Promise<string> {
     const events = this.getSecurityEvents();
     const alerts = [...this.alerts.values()];
     const metrics = this.getSecurityMetrics();
@@ -525,16 +543,17 @@ class SecurityMonitoringService {
 
   private updateAnalytics(event: SecurityEvent): void {
     // Update event type counts
-    const typeCount = this.analytics.eventCounts.get(event.type) || 0;
+    const typeCount = this.analytics.eventCounts.get(event.type) ?? 0;
     this.analytics.eventCounts.set(event.type, typeCount + 1);
 
     // Update severity counts
-    const severityCount = this.analytics.severityCounts.get(event.severity) || 0;
+    const severityCount =
+      this.analytics.severityCounts.get(event.severity) ?? 0;
     this.analytics.severityCounts.set(event.severity, severityCount + 1);
 
     // Update threat trends
     if (event.type.includes('attack') || event.type.includes('malware')) {
-      const threatCount = this.analytics.threatTrends.get(event.type) || 0;
+      const threatCount = this.analytics.threatTrends.get(event.type) ?? 0;
       this.analytics.threatTrends.set(event.type, threatCount + 1);
     }
   }
@@ -574,7 +593,7 @@ class SecurityMonitoringService {
       startTime: Date.now() - 60 * 60 * 1000, // Last hour
     });
 
-    const baseline = this.behaviorBaseline.get(event.type) || 5;
+    const baseline = this.behaviorBaseline.get(event.type) ?? 5;
 
     if (recentEvents.length > baseline * 3) {
       await this.logSecurityEvent({
@@ -623,7 +642,10 @@ class SecurityMonitoringService {
     }
   }
 
-  private async autoRespond(alert: SecurityAlert, event: SecurityEvent): Promise<void> {
+  private async autoRespond(
+    alert: SecurityAlert,
+    event: SecurityEvent,
+  ): Promise<void> {
     let action: SecurityResponse['action'] = 'monitor';
 
     // Determine appropriate automatic response
@@ -701,7 +723,9 @@ class SecurityMonitoringService {
     );
   }
 
-  private async handleAppStateChange(nextAppState: AppStateStatus): Promise<void> {
+  private async handleAppStateChange(
+    nextAppState: AppStateStatus,
+  ): Promise<void> {
     await this.logSecurityEvent({
       type: 'configuration_change',
       severity: 'info',
@@ -741,10 +765,13 @@ class SecurityMonitoringService {
   }
 
   private cleanupOldEvents(): void {
-    const cutoffTime = Date.now() - this.config.retentionPeriod * 24 * 60 * 60 * 1000;
+    const cutoffTime =
+      Date.now() - this.config.retentionPeriod * 24 * 60 * 60 * 1000;
 
     const initialCount = this.eventQueue.length;
-    const filteredEvents = this.eventQueue.filter(event => event.timestamp > cutoffTime);
+    const filteredEvents = this.eventQueue.filter(
+      event => event.timestamp > cutoffTime,
+    );
 
     if (filteredEvents.length !== initialCount) {
       this.eventQueue.splice(0, this.eventQueue.length, ...filteredEvents);
@@ -786,7 +813,10 @@ class SecurityMonitoringService {
       });
 
       const dailyAverage = recentEvents.length / 7;
-      this.behaviorBaseline.set(eventType, Math.max(1, Math.ceil(dailyAverage)));
+      this.behaviorBaseline.set(
+        eventType,
+        Math.max(1, Math.ceil(dailyAverage)),
+      );
     }
   }
 
@@ -806,7 +836,11 @@ class SecurityMonitoringService {
       indicators: ['<script>', 'javascript:', 'onerror=', 'onload='],
       severity: 'medium',
       description: 'Cross-site scripting attempt',
-      mitigations: ['Output encoding', 'Content Security Policy', 'Input sanitization'],
+      mitigations: [
+        'Output encoding',
+        'Content Security Policy',
+        'Input sanitization',
+      ],
       lastUpdated: Date.now(),
     });
 
@@ -879,7 +913,8 @@ class SecurityMonitoringService {
         'system',
         JSON.stringify(encrypted),
         {
-          accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+          accessControl:
+            Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
         },
       );
     } catch (error) {

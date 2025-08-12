@@ -137,7 +137,10 @@ const locationSlice = createSlice({
 
       // Keep only the specified number of entries
       if (state.history.length > state.settings.maxHistoryEntries) {
-        state.history = state.history.slice(0, state.settings.maxHistoryEntries);
+        state.history = state.history.slice(
+          0,
+          state.settings.maxHistoryEntries,
+        );
       }
     },
     clearLocationHistory: state => {
@@ -150,7 +153,9 @@ const locationSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; updates: Partial<GeofenceRegion> }>,
     ) => {
-      const index = state.geofenceRegions.findIndex(region => region.id === action.payload.id);
+      const index = state.geofenceRegions.findIndex(
+        region => region.id === action.payload.id,
+      );
       if (index !== -1) {
         state.geofenceRegions[index] = {
           ...state.geofenceRegions[index],
@@ -159,7 +164,9 @@ const locationSlice = createSlice({
       }
     },
     removeGeofenceRegion: (state, action: PayloadAction<string>) => {
-      state.geofenceRegions = state.geofenceRegions.filter(region => region.id !== action.payload);
+      state.geofenceRegions = state.geofenceRegions.filter(
+        region => region.id !== action.payload,
+      );
     },
     addPlaceOfInterest: (state, action: PayloadAction<PlaceOfInterest>) => {
       state.placesOfInterest.push(action.payload);
@@ -168,7 +175,9 @@ const locationSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; updates: Partial<PlaceOfInterest> }>,
     ) => {
-      const index = state.placesOfInterest.findIndex(place => place.id === action.payload.id);
+      const index = state.placesOfInterest.findIndex(
+        place => place.id === action.payload.id,
+      );
       if (index !== -1) {
         state.placesOfInterest[index] = {
           ...state.placesOfInterest[index],
@@ -177,19 +186,32 @@ const locationSlice = createSlice({
       }
     },
     removePlaceOfInterest: (state, action: PayloadAction<string>) => {
-      state.placesOfInterest = state.placesOfInterest.filter(place => place.id !== action.payload);
+      state.placesOfInterest = state.placesOfInterest.filter(
+        place => place.id !== action.payload,
+      );
     },
-    incrementPlaceVisit: (state, action: PayloadAction<{ id: string; timestamp: number }>) => {
-      const place = state.placesOfInterest.find(p => p.id === action.payload.id);
+    incrementPlaceVisit: (
+      state,
+      action: PayloadAction<{ id: string; timestamp: number }>,
+    ) => {
+      const place = state.placesOfInterest.find(
+        p => p.id === action.payload.id,
+      );
       if (place) {
         place.visitCount++;
         place.lastVisit = action.payload.timestamp;
       }
     },
-    updateLocationSettings: (state, action: PayloadAction<Partial<LocationState['settings']>>) => {
+    updateLocationSettings: (
+      state,
+      action: PayloadAction<Partial<LocationState['settings']>>,
+    ) => {
       state.settings = { ...state.settings, ...action.payload };
     },
-    updateSharingSettings: (state, action: PayloadAction<Partial<LocationState['sharing']>>) => {
+    updateSharingSettings: (
+      state,
+      action: PayloadAction<Partial<LocationState['sharing']>>,
+    ) => {
       state.sharing = { ...state.sharing, ...action.payload };
     },
     resetLocationState: state => {

@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -15,7 +21,9 @@ interface ActivityItem {
 }
 
 const ActivityHistoryScreen = () => {
-  const [filter, setFilter] = useState<'all' | 'daily' | 'weekly' | 'monthly'>('all');
+  const [filter, setFilter] = useState<'all' | 'daily' | 'weekly' | 'monthly'>(
+    'all',
+  );
 
   // Mock data - in a real app, this would come from Redux store or API
   const activities: ActivityItem[] = [
@@ -105,7 +113,12 @@ const ActivityHistoryScreen = () => {
   const renderActivity = ({ item }: { item: ActivityItem }) => (
     <View style={styles.activityItem}>
       <View style={styles.activityLeft}>
-        <View style={[styles.activityIcon, { backgroundColor: getActivityColor(item.type) }]}>
+        <View
+          style={[
+            styles.activityIcon,
+            { backgroundColor: getActivityColor(item.type) },
+          ]}
+        >
           <Icon name={getActivityIcon(item.type)} size={20} color='#fff' />
         </View>
         <View style={styles.activityDetails}>
@@ -135,24 +148,34 @@ const ActivityHistoryScreen = () => {
     <TouchableOpacity
       style={[styles.filterButton, isSelected && styles.filterButtonActive]}
       onPress={() => setFilter(value)}
-      accessible={true}
+      accessible
       accessibilityRole='button'
       accessibilityLabel={`Filter by ${label}`}
       accessibilityState={{ selected: isSelected }}
     >
-      <Text style={[styles.filterButtonText, isSelected && styles.filterButtonTextActive]}>
+      <Text
+        style={[
+          styles.filterButtonText,
+          isSelected && styles.filterButtonTextActive,
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
   );
 
-  const totalCarbon = activities.reduce((sum, activity) => sum + activity.carbon, 0);
+  const totalCarbon = activities.reduce(
+    (sum, activity) => sum + activity.carbon,
+    0,
+  );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Activity History</Text>
-        <Text style={styles.subtitle}>Track your carbon footprint over time</Text>
+        <Text style={styles.subtitle}>
+          Track your carbon footprint over time
+        </Text>
       </View>
 
       <View style={styles.summary}>
@@ -168,9 +191,21 @@ const ActivityHistoryScreen = () => {
 
       <View style={styles.filters}>
         <FilterButton label='All' value='all' isSelected={filter === 'all'} />
-        <FilterButton label='Daily' value='daily' isSelected={filter === 'daily'} />
-        <FilterButton label='Weekly' value='weekly' isSelected={filter === 'weekly'} />
-        <FilterButton label='Monthly' value='monthly' isSelected={filter === 'monthly'} />
+        <FilterButton
+          label='Daily'
+          value='daily'
+          isSelected={filter === 'daily'}
+        />
+        <FilterButton
+          label='Weekly'
+          value='weekly'
+          isSelected={filter === 'weekly'}
+        />
+        <FilterButton
+          label='Monthly'
+          value='monthly'
+          isSelected={filter === 'monthly'}
+        />
       </View>
 
       <FlatList
@@ -194,157 +229,157 @@ const ActivityHistoryScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  summary: {
-    flexDirection: 'row',
-    padding: 20,
-    gap: 12,
-  },
-  summaryCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  summaryValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#34C759',
-    marginBottom: 4,
-  },
-  summaryLabel: {
+  activityDateTime: {
+    color: '#8E8E93',
     fontSize: 12,
+  },
+  activityDescription: {
     color: '#6b7280',
-    textAlign: 'center',
-  },
-  filters: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 8,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#E5E5EA',
-  },
-  filterButtonActive: {
-    backgroundColor: '#34C759',
-  },
-  filterButtonText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
-  },
-  filterButtonTextActive: {
-    color: '#fff',
-  },
-  list: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  activityLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    marginBottom: 4,
   },
   activityDetails: {
     flex: 1,
   },
-  activityTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 2,
+  activityIcon: {
+    alignItems: 'center',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 40,
   },
-  activityDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 4,
+  activityItem: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 2,
+    flexDirection: 'row',
+    marginBottom: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  activityDateTime: {
-    fontSize: 12,
-    color: '#8E8E93',
+  activityLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
   },
   activityRight: {
     alignItems: 'flex-end',
   },
-  carbonAmount: {
+  activityTitle: {
+    color: '#1a1a1a',
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 2,
+  },
+  carbonAmount: {
     color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '600',
   },
   carbonLabel: {
-    fontSize: 12,
     color: '#6b7280',
+    fontSize: 12,
+  },
+  container: {
+    backgroundColor: '#f8f9fa',
+    flex: 1,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,
   },
+  emptySubtitle: {
+    color: '#6b7280',
+    fontSize: 14,
+    paddingHorizontal: 32,
+    textAlign: 'center',
+  },
   emptyTitle: {
+    color: '#1a1a1a',
     fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
-    marginTop: 16,
     marginBottom: 8,
+    marginTop: 16,
   },
-  emptySubtitle: {
-    fontSize: 14,
+  filterButton: {
+    backgroundColor: '#E5E5EA',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  filterButtonActive: {
+    backgroundColor: '#34C759',
+  },
+  filterButtonText: {
     color: '#6b7280',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  filterButtonTextActive: {
+    color: '#fff',
+  },
+  filters: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+  },
+  header: {
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  list: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  subtitle: {
+    color: '#6b7280',
+    fontSize: 16,
+  },
+  summary: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+  },
+  summaryCard: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 2,
+    flex: 1,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  summaryLabel: {
+    color: '#6b7280',
+    fontSize: 12,
     textAlign: 'center',
-    paddingHorizontal: 32,
+  },
+  summaryValue: {
+    color: '#34C759',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  title: {
+    color: '#1a1a1a',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
 });
 

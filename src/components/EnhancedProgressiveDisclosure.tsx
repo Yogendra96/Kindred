@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Animated,
@@ -21,7 +27,10 @@ import { AnimatedTouchable } from './MicroInteractions';
 
 // import { LinearGradient } from 'expo-linear-gradient';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -103,14 +112,14 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
 
   useEffect(() => {
     // Initialize animation values for each section
-    sections.forEach(section => {
+    for (const section of sections) {
       if (!animationValues.current.has(section.id)) {
         animationValues.current.set(
           section.id,
           new Animated.Value(state.expandedSections.has(section.id) ? 1 : 0),
         );
       }
-    });
+    }
   }, [sections]);
 
   useEffect(() => {
@@ -131,9 +140,15 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
     if (state.searchQuery) {
       filtered = filtered.filter(
         section =>
-          section.title.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-          section.subtitle?.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-          section.tags?.some(tag => tag.toLowerCase().includes(state.searchQuery.toLowerCase())),
+          section.title
+            .toLowerCase()
+            .includes(state.searchQuery.toLowerCase()) ||
+          section.subtitle
+            ?.toLowerCase()
+            .includes(state.searchQuery.toLowerCase()) ||
+          section.tags?.some(tag =>
+            tag.toLowerCase().includes(state.searchQuery.toLowerCase()),
+          ),
       );
     }
 
@@ -275,9 +290,23 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
     if (!enableSearch) return null;
 
     return (
-      <View style={[styles.searchContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-        <Ionicons name='search' size={20} color={theme.colors.onSurfaceVariant} />
-        <Text style={[styles.searchPlaceholder, { color: theme.colors.onSurfaceVariant }]}>
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: theme.colors.surfaceVariant },
+        ]}
+      >
+        <Ionicons
+          name='search'
+          size={20}
+          color={theme.colors.onSurfaceVariant}
+        />
+        <Text
+          style={[
+            styles.searchPlaceholder,
+            { color: theme.colors.onSurfaceVariant },
+          ]}
+        >
           Search sections...
         </Text>
       </View>
@@ -287,8 +316,12 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
   const renderFilters = () => {
     if (!enableFiltering) return null;
 
-    const categories = [...new Set(sections.map(s => s.category).filter(Boolean))];
-    const complexities = [...new Set(sections.map(s => s.complexity).filter(Boolean))];
+    const categories = [
+      ...new Set(sections.map(s => s.category).filter(Boolean)),
+    ];
+    const complexities = [
+      ...new Set(sections.map(s => s.complexity).filter(Boolean)),
+    ];
     const allTags = [...new Set(sections.flatMap(s => s.tags || []))];
 
     return (
@@ -340,14 +373,33 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
     if (!enableProgress) return null;
 
     return (
-      <View style={[styles.progressContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+      <View
+        style={[
+          styles.progressContainer,
+          { backgroundColor: theme.colors.surfaceVariant },
+        ]}
+      >
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressTitle, { color: theme.colors.onSurface }]}>Progress</Text>
-          <Text style={[styles.progressText, { color: theme.colors.onSurfaceVariant }]}>
+          <Text
+            style={[styles.progressTitle, { color: theme.colors.onSurface }]}
+          >
+            Progress
+          </Text>
+          <Text
+            style={[
+              styles.progressText,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
+          >
             {state.completedSections.size} of {sections.length} completed
           </Text>
         </View>
-        <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: theme.colors.outline },
+          ]}
+        >
           <Animated.View
             style={[
               styles.progressFill,
@@ -366,14 +418,18 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
     if (mode !== 'wizard') return null;
 
     return (
-      <View style={[styles.wizardNav, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[styles.wizardNav, { backgroundColor: theme.colors.surface }]}
+      >
         <AnimatedTouchable
           onPress={() => navigateToStep(Math.max(0, state.currentStep - 1))}
           style={[
             styles.wizardButton,
             {
               backgroundColor:
-                state.currentStep > 0 ? theme.colors.primary : theme.colors.surfaceVariant,
+                state.currentStep > 0
+                  ? theme.colors.primary
+                  : theme.colors.surfaceVariant,
             },
           ]}
           disabled={state.currentStep === 0}
@@ -408,7 +464,8 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                   styles.wizardStepText,
                   {
                     color:
-                      index === state.currentStep || state.completedSections.has(sections[index].id)
+                      index === state.currentStep ||
+                      state.completedSections.has(sections[index].id)
                         ? 'white'
                         : theme.colors.onSurfaceVariant,
                   },
@@ -421,7 +478,9 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
         </View>
 
         <AnimatedTouchable
-          onPress={() => navigateToStep(Math.min(sections.length - 1, state.currentStep + 1))}
+          onPress={() =>
+            navigateToStep(Math.min(sections.length - 1, state.currentStep + 1))
+          }
           style={[
             styles.wizardButton,
             {
@@ -446,7 +505,8 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
     const isExpanded = state.expandedSections.has(section.id);
     const isCompleted = state.completedSections.has(section.id);
     const isBookmarked = state.bookmarkedSections.has(section.id);
-    const animValue = animationValues.current.get(section.id) || new Animated.Value(0);
+    const animValue =
+      animationValues.current.get(section.id) || new Animated.Value(0);
 
     const _contentHeight = animValue.interpolate({
       inputRange: [0, 1],
@@ -469,7 +529,9 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
           styles.sectionContainer,
           {
             backgroundColor: theme.colors.surface,
-            borderColor: isExpanded ? theme.colors.primary : theme.colors.outline,
+            borderColor: isExpanded
+              ? theme.colors.primary
+              : theme.colors.outline,
             opacity: section.disabled ? 0.5 : 1,
           },
         ]}
@@ -480,7 +542,7 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
           animationType='scale'
           hapticType='selection'
           disabled={section.disabled}
-          accessible={true}
+          accessible
           accessibilityRole='button'
           accessibilityLabel={`${section.title}. ${isExpanded ? 'Expanded' : 'Collapsed'}`}
           accessibilityState={{ expanded: isExpanded }}
@@ -493,25 +555,46 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                   { backgroundColor: getPriorityColor(section.priority) },
                 ]}
               >
-                <Ionicons name={section.icon as string} size={20} color='white' />
+                <Ionicons
+                  name={section.icon as string}
+                  size={20}
+                  color='white'
+                />
               </View>
             )}
 
             <View style={styles.sectionTitleContainer}>
               <View style={styles.sectionTitleRow}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: theme.colors.onSurface },
+                  ]}
+                >
                   {section.title}
                 </Text>
 
                 {section.badge && (
-                  <View style={[styles.sectionBadge, { backgroundColor: section.badge.color }]}>
-                    <Text style={styles.sectionBadgeText}>{section.badge.text}</Text>
+                  <View
+                    style={[
+                      styles.sectionBadge,
+                      { backgroundColor: section.badge.color },
+                    ]}
+                  >
+                    <Text style={styles.sectionBadgeText}>
+                      {section.badge.text}
+                    </Text>
                   </View>
                 )}
               </View>
 
               {section.subtitle && (
-                <Text style={[styles.sectionSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+                <Text
+                  style={[
+                    styles.sectionSubtitle,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
                   {section.subtitle}
                 </Text>
               )}
@@ -519,8 +602,17 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
               <View style={styles.sectionMeta}>
                 {section.estimatedReadTime && (
                   <View style={styles.metaItem}>
-                    <Ionicons name='time' size={12} color={theme.colors.onSurfaceVariant} />
-                    <Text style={[styles.metaText, { color: theme.colors.onSurfaceVariant }]}>
+                    <Ionicons
+                      name='time'
+                      size={12}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                    <Text
+                      style={[
+                        styles.metaText,
+                        { color: theme.colors.onSurfaceVariant },
+                      ]}
+                    >
                       {section.estimatedReadTime} min
                     </Text>
                   </View>
@@ -533,7 +625,12 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                       size={12}
                       color={theme.colors.onSurfaceVariant}
                     />
-                    <Text style={[styles.metaText, { color: theme.colors.onSurfaceVariant }]}>
+                    <Text
+                      style={[
+                        styles.metaText,
+                        { color: theme.colors.onSurfaceVariant },
+                      ]}
+                    >
                       {section.complexity}
                     </Text>
                   </View>
@@ -549,24 +646,38 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                 style={styles.bookmarkButton}
                 animationType='scale'
                 hapticType='selection'
-                accessible={true}
+                accessible
                 accessibilityRole='button'
-                accessibilityLabel={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+                accessibilityLabel={
+                  isBookmarked ? 'Remove bookmark' : 'Add bookmark'
+                }
               >
                 <Ionicons
                   name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
                   size={20}
-                  color={isBookmarked ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                  color={
+                    isBookmarked
+                      ? theme.colors.primary
+                      : theme.colors.onSurfaceVariant
+                  }
                 />
               </AnimatedTouchable>
             )}
 
             {isCompleted && (
-              <Ionicons name='checkmark-circle' size={20} color={theme.colors.primary} />
+              <Ionicons
+                name='checkmark-circle'
+                size={20}
+                color={theme.colors.primary}
+              />
             )}
 
             <Animated.View style={{ transform: [{ rotate: iconRotation }] }}>
-              <Ionicons name='chevron-down' size={20} color={theme.colors.onSurfaceVariant} />
+              <Ionicons
+                name='chevron-down'
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
             </Animated.View>
           </View>
         </AnimatedTouchable>
@@ -590,7 +701,9 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
                   style={[
                     styles.completeButton,
                     {
-                      backgroundColor: isCompleted ? theme.colors.secondary : theme.colors.primary,
+                      backgroundColor: isCompleted
+                        ? theme.colors.secondary
+                        : theme.colors.primary,
                     },
                   ]}
                   animationType='scale'
@@ -630,7 +743,9 @@ export const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {filteredSections.map((section, index) => renderSection(section, index))}
+        {filteredSections.map((section, index) =>
+          renderSection(section, index),
+        )}
       </ScrollView>
 
       {renderWizardNavigation()}
@@ -706,11 +821,29 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
         disabled={disabled}
       >
         <View style={styles.expandableHeaderLeft}>
-          {icon && <Ionicons name={icon as string} size={24} color={theme.colors.primary} />}
+          {icon && (
+            <Ionicons
+              name={icon as string}
+              size={24}
+              color={theme.colors.primary}
+            />
+          )}
           <View style={styles.expandableTitleContainer}>
-            <Text style={[styles.expandableTitle, { color: theme.colors.onSurface }]}>{title}</Text>
+            <Text
+              style={[
+                styles.expandableTitle,
+                { color: theme.colors.onSurface },
+              ]}
+            >
+              {title}
+            </Text>
             {subtitle && (
-              <Text style={[styles.expandableSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                style={[
+                  styles.expandableSubtitle,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 {subtitle}
               </Text>
             )}
@@ -718,7 +851,11 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
         </View>
 
         <Animated.View style={{ transform: [{ rotate: iconRotation }] }}>
-          <Ionicons name='chevron-down' size={20} color={theme.colors.onSurfaceVariant} />
+          <Ionicons
+            name='chevron-down'
+            size={20}
+            color={theme.colors.onSurfaceVariant}
+          />
         </Animated.View>
       </AnimatedTouchable>
 
@@ -731,149 +868,158 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
           },
         ]}
       >
-        {expanded && <View style={styles.expandableContentInner}>{children}</View>}
+        {expanded && (
+          <View style={styles.expandableContentInner}>{children}</View>
+        )}
       </Animated.View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  bookmarkButton: {
+    padding: 4,
+  },
+  completeButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  completeButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   container: {
     flex: 1,
   },
-  searchContainer: {
-    flexDirection: 'row',
+  expandableCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    marginVertical: 4,
+    overflow: 'hidden',
+  },
+  expandableContent: {
+    overflow: 'hidden',
+  },
+  expandableContentInner: {
+    padding: 16,
+    paddingTop: 0,
+  },
+  expandableHeader: {
     alignItems: 'center',
-    padding: 12,
-    margin: 16,
-    borderRadius: 8,
-    gap: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
   },
-  searchPlaceholder: {
-    fontSize: 14,
+  expandableHeaderLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+    gap: 12,
   },
-  filtersContainer: {
-    marginHorizontal: 16,
-    marginBottom: 8,
+  expandableSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
   },
-  filtersContent: {
-    paddingHorizontal: 0,
-    gap: 8,
+  expandableTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  expandableTitleContainer: {
+    flex: 1,
   },
   filterChip: {
+    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
   },
   filterText: {
     fontSize: 12,
     fontWeight: '500',
   },
+  filtersContainer: {
+    marginBottom: 8,
+    marginHorizontal: 16,
+  },
+  filtersContent: {
+    gap: 8,
+    paddingHorizontal: 0,
+  },
+  metaItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 10,
+  },
+  progressBar: {
+    borderRadius: 3,
+    height: 6,
+    overflow: 'hidden',
+  },
   progressContainer: {
+    borderRadius: 12,
     margin: 16,
     padding: 16,
-    borderRadius: 12,
+  },
+  progressFill: {
+    borderRadius: 3,
+    height: '100%',
   },
   progressHeader: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 8,
+  },
+  progressText: {
+    fontSize: 12,
   },
   progressTitle: {
     fontSize: 16,
     fontWeight: '600',
   },
-  progressText: {
-    fontSize: 12,
-  },
-  progressBar: {
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
+  scrollContent: {
+    gap: 12,
+    padding: 16,
   },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    padding: 16,
-    gap: 12,
-  },
-  sectionContainer: {
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  sectionHeader: {
+  searchContainer: {
+    alignItems: 'center',
+    borderRadius: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  sectionHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  sectionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sectionTitleContainer: {
-    flex: 1,
-  },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
+    margin: 16,
+    padding: 12,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    flex: 1,
+  searchPlaceholder: {
+    fontSize: 14,
+  },
+  sectionActions: {
+    alignItems: 'flex-start',
+    marginTop: 16,
   },
   sectionBadge: {
+    borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 10,
   },
   sectionBadgeText: {
     color: 'white',
     fontSize: 10,
     fontWeight: '600',
   },
-  sectionSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  sectionMeta: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 4,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 10,
-  },
-  sectionHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  bookmarkButton: {
-    padding: 4,
+  sectionContainer: {
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   sectionContent: {
     overflow: 'hidden',
@@ -882,94 +1028,87 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 0,
   },
-  sectionActions: {
-    marginTop: 16,
-    alignItems: 'flex-start',
-  },
-  completeButton: {
-    flexDirection: 'row',
+  sectionHeader: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 6,
-  },
-  completeButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  wizardNav: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+  },
+  sectionHeaderLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+    gap: 12,
+  },
+  sectionHeaderRight: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  sectionIcon: {
+    alignItems: 'center',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  sectionMeta: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  sectionTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  sectionTitleContainer: {
+    flex: 1,
+  },
+  sectionTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   wizardButton: {
-    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
-    gap: 4,
   },
   wizardButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
-  wizardSteps: {
+  wizardNav: {
+    alignItems: 'center',
+    borderTopColor: '#E0E0E0',
+    borderTopWidth: 1,
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
+    padding: 16,
   },
   wizardStep: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
+    width: 32,
   },
   wizardStepText: {
     fontSize: 12,
     fontWeight: '600',
   },
-  expandableCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-    marginVertical: 4,
-  },
-  expandableHeader: {
+  wizardSteps: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  expandableHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  expandableTitleContainer: {
-    flex: 1,
-  },
-  expandableTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  expandableSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  expandableContent: {
-    overflow: 'hidden',
-  },
-  expandableContentInner: {
-    padding: 16,
-    paddingTop: 0,
+    gap: 8,
   },
 });
 

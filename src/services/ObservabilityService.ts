@@ -8,7 +8,6 @@ import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
-import { enhancedPerformanceService as _enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';
 
 export interface MetricData {
@@ -186,7 +185,9 @@ class ObservabilityService {
   /**
    * Track business events
    */
-  public trackBusinessEvent(data: Omit<BusinessMetric, 'sessionId' | 'timestamp'>): void {
+  public trackBusinessEvent(
+    data: Omit<BusinessMetric, 'sessionId' | 'timestamp'>,
+  ): void {
     if (!this.config.enableBusinessMetrics || !this.shouldSample()) return;
 
     const event: BusinessMetric = {
@@ -238,7 +239,10 @@ class ObservabilityService {
     this.checkBufferSize();
 
     // Log performance issues immediately
-    if (perfMetric.severity === 'critical' || perfMetric.severity === 'warning') {
+    if (
+      perfMetric.severity === 'critical' ||
+      perfMetric.severity === 'warning'
+    ) {
       loggingService.warn('Performance issue detected', {
         metric: perfMetric.name,
         value: perfMetric.value,
@@ -251,7 +255,10 @@ class ObservabilityService {
   /**
    * Track Core Web Vitals
    */
-  public trackCoreVitals(vital: keyof typeof this.coreVitals, value: number): void {
+  public trackCoreVitals(
+    vital: keyof typeof this.coreVitals,
+    value: number,
+  ): void {
     this.coreVitals[vital] = value;
 
     this.trackPerformance({
@@ -267,7 +274,11 @@ class ObservabilityService {
   /**
    * Track screen transitions
    */
-  public trackScreenTransition(fromScreen: string, toScreen: string, duration: number): void {
+  public trackScreenTransition(
+    fromScreen: string,
+    toScreen: string,
+    duration: number,
+  ): void {
     this.trackUserJourney({
       stepName: 'screen_transition',
       screenName: toScreen,
@@ -302,7 +313,8 @@ class ObservabilityService {
       name: 'api_call_duration',
       value: duration,
       threshold: 2000, // 2 seconds
-      severity: duration > 5000 ? 'critical' : duration > 2000 ? 'warning' : 'info',
+      severity:
+        duration > 5000 ? 'critical' : duration > 2000 ? 'warning' : 'info',
       context: { endpoint, method, status, success },
     });
 
@@ -403,7 +415,9 @@ class ObservabilityService {
       m => m.metricType === 'network' && m.name === 'api_call_duration',
     );
 
-    const errors = this.businessMetricsBuffer.filter(e => e.eventName === 'error_occurred');
+    const errors = this.businessMetricsBuffer.filter(
+      e => e.eventName === 'error_occurred',
+    );
 
     const eventCounts = this.businessMetricsBuffer.reduce(
       (acc, event) => {
@@ -424,26 +438,30 @@ class ObservabilityService {
         sessionId: this.sessionId,
         userId: this.userId,
         duration: sessionDuration,
-        screenViews: this.journeyEventsBuffer.filter(e => e.stepName === 'screen_transition')
-          .length,
+        screenViews: this.journeyEventsBuffer.filter(
+          e => e.stepName === 'screen_transition',
+        ).length,
         errors: errors.length,
       },
       performanceOverview: {
         avgResponseTime:
           apiCalls.length > 0
-            ? apiCalls.reduce((sum, call) => sum + call.value, 0) / apiCalls.length
+            ? apiCalls.reduce((sum, call) => sum + call.value, 0) /
+              apiCalls.length
             : 0,
         errorRate: apiCalls.length > 0 ? errors.length / apiCalls.length : 0,
         throughput: apiCalls.length,
         availability:
           apiCalls.length > 0
-            ? apiCalls.filter(call => call.context.success === true).length / apiCalls.length
+            ? apiCalls.filter(call => call.context.success === true).length /
+              apiCalls.length
             : 1,
       },
       businessMetrics: {
         totalEvents: this.businessMetricsBuffer.length,
-        uniqueUsers: new Set(this.businessMetricsBuffer.filter(e => e.userId).map(e => e.userId))
-          .size,
+        uniqueUsers: new Set(
+          this.businessMetricsBuffer.filter(e => e.userId).map(e => e.userId),
+        ).size,
         topEvents,
       },
     };
@@ -498,7 +516,10 @@ class ObservabilityService {
   /**
    * Set user context
    */
-  public setUserContext(userId: string, properties: Record<string, unknown> = {}): void {
+  public setUserContext(
+    userId: string,
+    properties: Record<string, unknown> = {},
+  ): void {
     this.userId = userId;
 
     this.trackBusinessEvent({
@@ -530,7 +551,10 @@ class ObservabilityService {
 
   private async initializeSession(): Promise<void> {
     try {
-      await AsyncStorage.setItem('observability_session_start', Date.now().toString());
+      await AsyncStorage.setItem(
+        'observability_session_start',
+        Date.now().toString(),
+      );
 
       this.trackBusinessEvent({
         eventName: 'session_started',
@@ -546,7 +570,9 @@ class ObservabilityService {
 
   private async getSessionStartTime(): Promise<number | null> {
     try {
-      const startTime = await AsyncStorage.getItem('observability_session_start');
+      const startTime = await AsyncStorage.getItem(
+        'observability_session_start',
+      );
       return startTime ? parseInt(startTime, 10) : null;
     } catch {
       return null;
@@ -571,7 +597,10 @@ class ObservabilityService {
   }
 
   private setupAppStateMonitoring(): void {
-    this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
+    this.appStateSubscription = AppState.addEventListener(
+      'change',
+      this.handleAppStateChange,
+    );
   }
 
   private setupNetworkMonitoring(): void {
@@ -608,7 +637,8 @@ class ObservabilityService {
       name: 'app_startup_time',
       value: duration,
       threshold: 3000, // 3 seconds
-      severity: duration > 5000 ? 'critical' : duration > 3000 ? 'warning' : 'info',
+      severity:
+        duration > 5000 ? 'critical' : duration > 3000 ? 'warning' : 'info',
       context: { platform: Platform.OS },
     });
   }
@@ -644,7 +674,8 @@ class ObservabilityService {
       memory_usage: 80,
     };
 
-    const threshold = criticalThresholds[metric.name as keyof typeof criticalThresholds];
+    const threshold =
+      criticalThresholds[metric.name as keyof typeof criticalThresholds];
     if (threshold && metric.value > threshold) {
       this.triggerAlert({
         id: `alert_${metric.name}`,

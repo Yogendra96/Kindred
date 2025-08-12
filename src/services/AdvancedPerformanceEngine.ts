@@ -4,19 +4,15 @@
  * Features: Predictive optimization, intelligent caching, adaptive performance tuning
  */
 
-import { NativeModules as _NativeModules, DeviceEventEmitter, Platform } from 'react-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type {
-  CoreVitalMetric as _CoreVitalMetric,
-  MemoryMetrics as _MemoryMetrics,
-  NetworkMetrics as _NetworkMetrics,
   OptimizationRecommendation,
   PerformanceMetric,
 } from '../types/performance';
 
-import { enhancedPerformanceService as _enhancedPerformanceService } from './EnhancedPerformanceService';
 import { observabilityService } from './ObservabilityService';
 
 // Advanced Performance Configuration
@@ -77,7 +73,11 @@ interface OptimizationAction {
   readonly priority: 'low' | 'medium' | 'high' | 'critical';
   readonly action: string;
   readonly expectedImprovement: number;
-  readonly implementationComplexity: 'trivial' | 'simple' | 'moderate' | 'complex';
+  readonly implementationComplexity:
+    | 'trivial'
+    | 'simple'
+    | 'moderate'
+    | 'complex';
   readonly autoApplicable: boolean;
 }
 
@@ -95,7 +95,7 @@ class AdvancedMemoryPool<T> {
   }
 
   acquire<K extends T>(type: string, factory: () => K): K {
-    const pool = this.pool.get(type) || [];
+    const pool = this.pool.get(type) ?? [];
     const item = pool.pop();
 
     if (item) {
@@ -106,7 +106,7 @@ class AdvancedMemoryPool<T> {
   }
 
   release<K extends T>(type: string, item: K): void {
-    const pool = this.pool.get(type) || [];
+    const pool = this.pool.get(type) ?? [];
 
     if (pool.length < this.maxPoolSize) {
       // Reset item state if it has a reset method
@@ -148,12 +148,12 @@ class IntelligentCache {
   set(key: string, value: any, ttl?: number): void {
     // Record access pattern
     const now = Date.now();
-    const pattern = this.accessPattern.get(key) || [];
+    const pattern = this.accessPattern.get(key) ?? [];
     pattern.push(now);
     this.accessPattern.set(key, pattern.slice(-10)); // Keep last 10 accesses
 
     // Set cache with intelligent TTL
-    const intelligentTTL = ttl || this.calculateIntelligentTTL(key, pattern);
+    const intelligentTTL = ttl ?? this.calculateIntelligentTTL(key, pattern);
     this.cache.set(key, value);
     this.ttlMap.set(key, now + intelligentTTL);
 
@@ -173,7 +173,7 @@ class IntelligentCache {
     }
 
     // Update access pattern
-    const pattern = this.accessPattern.get(key) || [];
+    const pattern = this.accessPattern.get(key) ?? [];
     pattern.push(now);
     this.accessPattern.set(key, pattern.slice(-10));
 
@@ -185,7 +185,8 @@ class IntelligentCache {
 
     // Calculate access frequency
     const intervals = pattern.slice(1).map((time, i) => time - pattern[i]);
-    const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+    const avgInterval =
+      intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
 
     // Adaptive TTL based on access pattern
     return Math.min(Math.max(avgInterval * 2, 60000), 3600000); // Between 1 minute and 1 hour
@@ -209,12 +210,13 @@ class IntelligentCache {
   }
 
   private calculateValueScore(key: string): number {
-    const pattern = this.accessPattern.get(key) || [];
+    const pattern = this.accessPattern.get(key) ?? [];
     const now = Date.now();
 
     // Score based on frequency and recency
     const frequency = pattern.length;
-    const recency = pattern.length > 0 ? now - pattern[pattern.length - 1] : Infinity;
+    const recency =
+      pattern.length > 0 ? now - pattern[pattern.length - 1] : Infinity;
 
     return frequency / (recency / 1000 + 1); // Higher score = more valuable
   }
@@ -256,7 +258,7 @@ class AIPerformanceOptimizer {
     metric: PerformanceMetric,
     context: Record<string, any>,
   ): Promise<PerformancePrediction> {
-    const historicalData = this.learningData.get(metric.name) || [];
+    const historicalData = this.learningData.get(metric.name) ?? [];
     historicalData.push(metric.value);
     this.learningData.set(metric.name, historicalData.slice(-100)); // Keep last 100 values
 
@@ -289,7 +291,7 @@ class AIPerformanceOptimizer {
   }
 
   private calculateTrend(data: number[]): { slope: number; intercept: number } {
-    if (data.length < 2) return { slope: 0, intercept: data[0] || 0 };
+    if (data.length < 2) return { slope: 0, intercept: data[0] ?? 0 };
 
     const n = data.length;
     const sumX = data.reduce((sum, _, i) => sum + i, 0);
@@ -323,7 +325,8 @@ class AIPerformanceOptimizer {
         weight: 0.3,
         currentValue: context.memoryUsage,
         optimalRange: [0, 150 * 1024 * 1024], // 150MB
-        impact: context.memoryUsage > 200 * 1024 * 1024 ? 'negative' : 'neutral',
+        impact:
+          context.memoryUsage > 200 * 1024 * 1024 ? 'negative' : 'neutral',
       });
     }
 
@@ -364,7 +367,7 @@ class AIPerformanceOptimizer {
     _context: Record<string, any>,
   ): Promise<OptimizationAction[]> {
     const actions: OptimizationAction[] = [];
-    const baseline = this.performanceBaseline.get(metric.name) || metric.value;
+    const baseline = this.performanceBaseline.get(metric.name) ?? metric.value;
 
     // If predicted performance degradation
     if (predictedValue > baseline * 1.2) {
@@ -437,7 +440,9 @@ class AIPerformanceOptimizer {
     }
   }
 
-  private async applyMemoryOptimization(action: OptimizationAction): Promise<void> {
+  private async applyMemoryOptimization(
+    action: OptimizationAction,
+  ): Promise<void> {
     switch (action.id) {
       case 'memory-cleanup':
         // Trigger garbage collection if available
@@ -448,15 +453,21 @@ class AIPerformanceOptimizer {
     }
   }
 
-  private async applyNetworkOptimization(_action: OptimizationAction): Promise<void> {
+  private async applyNetworkOptimization(
+    _action: OptimizationAction,
+  ): Promise<void> {
     // Network optimization implementations would go here
   }
 
-  private async applyRenderOptimization(_action: OptimizationAction): Promise<void> {
+  private async applyRenderOptimization(
+    _action: OptimizationAction,
+  ): Promise<void> {
     // Render optimization implementations would go here
   }
 
-  private async applyBatteryOptimization(_action: OptimizationAction): Promise<void> {
+  private async applyBatteryOptimization(
+    _action: OptimizationAction,
+  ): Promise<void> {
     // Battery optimization implementations would go here
   }
 }
@@ -556,7 +567,10 @@ export class AdvancedPerformanceEngine {
         context: { engineVersion: '2.0.0' },
       });
     } catch (error) {
-      console.error('❌ Failed to initialize Advanced Performance Engine:', error);
+      console.error(
+        '❌ Failed to initialize Advanced Performance Engine:',
+        error,
+      );
       throw error;
     }
   }
@@ -731,7 +745,10 @@ export class AdvancedPerformanceEngine {
   async optimizeForCurrentConditions(): Promise<OptimizationRecommendation[]> {
     const metrics = await this.collectPerformanceMetrics();
     const context = await this.getContextData();
-    const predictions = await this.aiOptimizer.analyzePerformancePattern(metrics, context);
+    const predictions = await this.aiOptimizer.analyzePerformancePattern(
+      metrics,
+      context,
+    );
 
     return predictions.flatMap(p =>
       p.recommendedActions.map(action => ({
@@ -765,11 +782,15 @@ export class AdvancedPerformanceEngine {
   }> {
     const metrics = await this.collectPerformanceMetrics();
     const context = await this.getContextData();
-    const predictions = await this.aiOptimizer.analyzePerformancePattern(metrics, context);
+    const predictions = await this.aiOptimizer.analyzePerformancePattern(
+      metrics,
+      context,
+    );
     const recommendations = await this.optimizeForCurrentConditions();
 
     return {
-      summary: 'Advanced Performance Engine is actively optimizing application performance',
+      summary:
+        'Advanced Performance Engine is actively optimizing application performance',
       metrics,
       predictions,
       recommendations,

@@ -6,7 +6,7 @@
  */
 import React, { useEffect } from 'react';
 
-import { Alert, LogBox } from 'react-native';
+import { Alert, LogBox, Platform } from 'react-native';
 
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
@@ -20,6 +20,7 @@ import ErrorBoundary from './src/components/common/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import { Logger } from './src/services/AdvancedLoggingService';
+import { ErrorMonitoringService } from './src/services/ErrorMonitoringService';
 import { loggingService } from './src/services/LoggingService';
 import notificationService from './src/services/NotificationService';
 import { type RootState, store } from './src/store';
@@ -100,6 +101,11 @@ const NavigationRoot: React.FC = () => {
       Logger.startTimer('app_initialization');
 
       try {
+        // Initialize Error Monitoring Service first
+        ErrorMonitoringService.addBreadcrumb('App initialization started', 'app', 'info', {
+          isAuthenticated,
+          platform: Platform.OS,
+        });
         Logger.info('Starting notification service initialization', {
           category: 'system',
           component: 'App',
@@ -153,6 +159,14 @@ const NavigationRoot: React.FC = () => {
           },
           error as Error,
         );
+
+        // Report to error monitoring service
+        ErrorMonitoringService.reportError(error as Error, {
+          component: 'App',
+          action: 'app_initialization',
+          severity: 'high',
+          extra: { errorMessage, isAuthenticated, platform: Platform.OS },
+        });
 
         loggingService.error('App initialization failed', {
           error: errorMessage,

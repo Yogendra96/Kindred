@@ -39,7 +39,9 @@ describe('InputValidator', () => {
       const result = validator.validateString('This is a very long string');
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('String length exceeds maximum of 10 characters');
+      expect(result.errors).toContain(
+        'String length exceeds maximum of 10 characters',
+      );
       expect(result.sanitizedValue).toBe('This is a ');
     });
 
@@ -47,7 +49,9 @@ describe('InputValidator', () => {
       const result = validator.validateString('<script>alert("xss")</script>');
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('blocked pattern'))).toBe(true);
+      expect(
+        result.errors.some(error => error.includes('blocked pattern')),
+      ).toBe(true);
       expect(result.sanitizedValue).toBe('alert("xss")');
     });
 
@@ -76,7 +80,9 @@ describe('InputValidator', () => {
       const invalidResult = validator.validateString('invalid-ssn');
       expect(invalidResult.isValid).toBe(false);
       expect(
-        invalidResult.errors.some(error => error.includes('does not match required pattern')),
+        invalidResult.errors.some(error =>
+          error.includes('does not match required pattern'),
+        ),
       ).toBe(true);
     });
   });
@@ -116,7 +122,9 @@ describe('InputValidator', () => {
       const result = validator.validateNumber(150);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Number exceeds maximum absolute value of 100');
+      expect(result.errors).toContain(
+        'Number exceeds maximum absolute value of 100',
+      );
     });
 
     it('should reject objects and arrays', () => {
@@ -152,11 +160,11 @@ describe('InputValidator', () => {
         'user..name@example.com',
       ];
 
-      invalidEmails.forEach(email => {
+      for (const email of invalidEmails) {
         const result = validator.validateEmail(email);
         expect(result.isValid).toBe(false);
         expect(result.errors).toContain('Invalid email format');
-      });
+      }
     });
   });
 
@@ -181,10 +189,10 @@ describe('InputValidator', () => {
         'ftp://example.com',
       ];
 
-      dangerousUrls.forEach(url => {
+      for (const url of dangerousUrls) {
         const result = validator.validateUrl(url);
         expect(result.isValid).toBe(false);
-      });
+      }
     });
 
     it('should reject malformed URLs', () => {
@@ -258,11 +266,14 @@ describe('SecurityHeaderValidator', () => {
     });
 
     it('should warn about dangerous directives', () => {
-      const csp = "default-src 'self' 'unsafe-eval'; script-src 'unsafe-inline'";
+      const csp =
+        "default-src 'self' 'unsafe-eval'; script-src 'unsafe-inline'";
       const result = SecurityHeaderValidator.validateCSP(csp);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('unsafe directive'))).toBe(true);
+      expect(
+        result.errors.some(error => error.includes('unsafe directive')),
+      ).toBe(true);
     });
 
     it('should check for required directives', () => {
@@ -270,7 +281,11 @@ describe('SecurityHeaderValidator', () => {
       const result = SecurityHeaderValidator.validateCSP(csp);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('missing required directive'))).toBe(true);
+      expect(
+        result.errors.some(error =>
+          error.includes('missing required directive'),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -287,7 +302,9 @@ describe('SecurityHeaderValidator', () => {
       const result = SecurityHeaderValidator.validateApiToken('short');
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('API token too short (minimum 32 characters)');
+      expect(result.errors).toContain(
+        'API token too short (minimum 32 characters)',
+      );
     });
 
     it('should reject very long tokens', () => {
@@ -295,11 +312,15 @@ describe('SecurityHeaderValidator', () => {
       const result = SecurityHeaderValidator.validateApiToken(longToken);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('API token too long (maximum 512 characters)');
+      expect(result.errors).toContain(
+        'API token too long (maximum 512 characters)',
+      );
     });
 
     it('should reject tokens with invalid characters', () => {
-      const result = SecurityHeaderValidator.validateApiToken('token-with-@-invalid-chars!');
+      const result = SecurityHeaderValidator.validateApiToken(
+        'token-with-@-invalid-chars!',
+      );
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('API token contains invalid characters');
@@ -336,7 +357,9 @@ describe('DataSanitizer', () => {
       const input = '<script>alert("XSS")</script>';
       const result = DataSanitizer.escapeHtml(input);
 
-      expect(result).toBe('&lt;script&gt;alert(&quot;XSS&quot;)&lt;&#x2F;script&gt;');
+      expect(result).toBe(
+        '&lt;script&gt;alert(&quot;XSS&quot;)&lt;&#x2F;script&gt;',
+      );
     });
 
     it('should escape ampersands', () => {
@@ -391,7 +414,9 @@ describe('DataSanitizer', () => {
 
       const result = DataSanitizer.deepSanitizeObject(input);
 
-      expect(result.name).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;');
+      expect(result.name).toBe(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;',
+      );
       expect(result.details.description).toBe('Safe &amp; sound');
       expect(result.details.meta[0]).toBe('&lt;b&gt;bold&lt;&#x2F;b&gt;');
     });

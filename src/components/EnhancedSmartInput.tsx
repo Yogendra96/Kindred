@@ -32,7 +32,16 @@ import { AnimatedTouchable } from './MicroInteractions';
 const { width: _screenWidth } = Dimensions.get('window');
 
 interface ValidationRule {
-  type: 'required' | 'email' | 'phone' | 'url' | 'number' | 'min' | 'max' | 'pattern' | 'custom';
+  type:
+    | 'required'
+    | 'email'
+    | 'phone'
+    | 'url'
+    | 'number'
+    | 'min'
+    | 'max'
+    | 'pattern'
+    | 'custom';
   value?: unknown;
   message: string;
   validator?: (value: string) => boolean;
@@ -180,7 +189,10 @@ export const SmartInput: React.FC<SmartInputProps> = ({
     async (text: string) => {
       if (text.length < 2) return;
 
-      const newHistory = [text, ...inputHistory.filter(item => item !== text)].slice(0, 10);
+      const newHistory = [
+        text,
+        ...inputHistory.filter(item => item !== text),
+      ].slice(0, 10);
       setInputHistory(newHistory);
 
       try {
@@ -308,8 +320,17 @@ export const SmartInput: React.FC<SmartInputProps> = ({
         smartSuggestions.push(...predefinedSuggestions);
 
         // Auto-completion suggestions
-        if (keyboardType === 'email-address' && text.includes('@') && !text.includes('.')) {
-          const emailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+        if (
+          keyboardType === 'email-address' &&
+          text.includes('@') &&
+          !text.includes('.')
+        ) {
+          const emailDomains = [
+            'gmail.com',
+            'yahoo.com',
+            'outlook.com',
+            'hotmail.com',
+          ];
           const completions = emailDomains.map(domain => ({
             text: text + domain.substring(text.split('@')[1]?.length || 0),
             type: 'completion' as const,
@@ -499,7 +520,11 @@ export const SmartInput: React.FC<SmartInputProps> = ({
       <Animated.View style={[styles.inputContainer, borderStyle]}>
         {leftIcon && (
           <View style={styles.leftIconContainer}>
-            <Ionicons name={leftIcon as string} size={20} color={theme.colors.onSurfaceVariant} />
+            <Ionicons
+              name={leftIcon as string}
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
           </View>
         )}
 
@@ -535,7 +560,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
             maxLength={maxLength}
             editable={!disabled}
             selectTextOnFocus={!disabled}
-            accessible={true}
+            accessible
             accessibilityLabel={accessibilityLabel || label}
             accessibilityHint={accessibilityHint}
             accessibilityState={{
@@ -555,9 +580,11 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               style={styles.iconButton}
               animationType='scale'
               hapticType='selection'
-              accessible={true}
+              accessible
               accessibilityRole='button'
-              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              accessibilityLabel={
+                showPassword ? 'Hide password' : 'Show password'
+              }
             >
               <Ionicons
                 name={showPassword ? 'eye-off' : 'eye'}
@@ -576,11 +603,15 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               style={styles.iconButton}
               animationType='scale'
               hapticType='selection'
-              accessible={true}
+              accessible
               accessibilityRole='button'
               accessibilityLabel='Voice input'
             >
-              <Ionicons name='mic' size={20} color={theme.colors.onSurfaceVariant} />
+              <Ionicons
+                name='mic'
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
             </AnimatedTouchable>
           )}
 
@@ -593,11 +624,15 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               style={styles.iconButton}
               animationType='scale'
               hapticType='selection'
-              accessible={true}
+              accessible
               accessibilityRole='button'
               accessibilityLabel='Scan barcode'
             >
-              <Ionicons name='barcode' size={20} color={theme.colors.onSurfaceVariant} />
+              <Ionicons
+                name='barcode'
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
             </AnimatedTouchable>
           )}
 
@@ -608,7 +643,7 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               animationType='scale'
               hapticType='selection'
               disabled={!onRightIconPress}
-              accessible={true}
+              accessible
               accessibilityRole='button'
             >
               <Ionicons
@@ -620,7 +655,11 @@ export const SmartInput: React.FC<SmartInputProps> = ({
           )}
 
           {statusIcon && (
-            <Ionicons name={statusIcon as string} size={20} color={getStatusColor()} />
+            <Ionicons
+              name={statusIcon as string}
+              size={20}
+              color={getStatusColor()}
+            />
           )}
         </View>
       </Animated.View>
@@ -654,10 +693,13 @@ export const SmartInput: React.FC<SmartInputProps> = ({
               <AnimatedTouchable
                 key={index}
                 onPress={() => handleSuggestionPress(suggestion)}
-                style={[styles.suggestionItem, { backgroundColor: theme.colors.surfaceVariant }]}
+                style={[
+                  styles.suggestionItem,
+                  { backgroundColor: theme.colors.surfaceVariant },
+                ]}
                 animationType='scale'
                 hapticType='selection'
-                accessible={true}
+                accessible
                 accessibilityRole='button'
                 accessibilityLabel={`Suggestion: ${suggestion.text}`}
               >
@@ -669,7 +711,10 @@ export const SmartInput: React.FC<SmartInputProps> = ({
                   />
                 )}
                 <Text
-                  style={[styles.suggestionText, { color: theme.colors.onSurfaceVariant }]}
+                  style={[
+                    styles.suggestionText,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
                   numberOfLines={1}
                 >
                   {suggestion.text}
@@ -681,15 +726,25 @@ export const SmartInput: React.FC<SmartInputProps> = ({
       )}
 
       {/* Help Text */}
-      {helpText && !inputState.isFocused && displayErrors.length === 0 && !successText && (
-        <Text style={[styles.helpText, { color: theme.colors.onSurfaceVariant }]}>{helpText}</Text>
-      )}
+      {helpText &&
+        !inputState.isFocused &&
+        displayErrors.length === 0 &&
+        !successText && (
+          <Text
+            style={[styles.helpText, { color: theme.colors.onSurfaceVariant }]}
+          >
+            {helpText}
+          </Text>
+        )}
 
       {/* Error Messages */}
       {displayErrors.length > 0 && (
         <View style={styles.messagesContainer}>
           {displayErrors.map((error, index) => (
-            <Text key={index} style={[styles.errorText, { color: theme.colors.error }]}>
+            <Text
+              key={index}
+              style={[styles.errorText, { color: theme.colors.error }]}
+            >
               {error}
             </Text>
           ))}
@@ -698,7 +753,9 @@ export const SmartInput: React.FC<SmartInputProps> = ({
 
       {/* Success Message */}
       {successText && displayErrors.length === 0 && (
-        <Text style={[styles.successText, { color: theme.colors.primary }]}>{successText}</Text>
+        <Text style={[styles.successText, { color: theme.colors.primary }]}>
+          {successText}
+        </Text>
       )}
 
       {/* Character Count */}
@@ -708,7 +765,9 @@ export const SmartInput: React.FC<SmartInputProps> = ({
             styles.characterCount,
             {
               color:
-                value.length > maxLength * 0.9 ? theme.colors.error : theme.colors.onSurfaceVariant,
+                value.length > maxLength * 0.9
+                  ? theme.colors.error
+                  : theme.colors.onSurfaceVariant,
             },
           ]}
         >
@@ -781,7 +840,9 @@ export const SmartForm: React.FC<SmartFormProps> = ({
 
     try {
       // Validate all fields
-      const hasErrors = Object.keys(formErrors).some(key => formErrors[key].length > 0);
+      const hasErrors = Object.keys(formErrors).some(
+        key => formErrors[key].length > 0,
+      );
 
       if (hasErrors) {
         HapticFeedbackService.triggerError();
@@ -806,98 +867,98 @@ export const SmartForm: React.FC<SmartFormProps> = ({
 };
 
 const styles = StyleSheet.create({
+  characterCount: {
+    fontSize: 12,
+    marginHorizontal: 16,
+    marginTop: 4,
+    textAlign: 'right',
+  },
   container: {
     marginVertical: 8,
   },
+  errorText: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  formContainer: {
+    flex: 1,
+  },
+  helpText: {
+    fontSize: 12,
+    marginHorizontal: 16,
+    marginTop: 4,
+  },
+  iconButton: {
+    padding: 4,
+  },
+  input: {
+    fontSize: 16,
+    paddingBottom: 0,
+    paddingTop: 8,
+    textAlignVertical: 'top',
+  },
   inputContainer: {
-    flexDirection: 'row',
     alignItems: 'flex-start',
     borderRadius: 12,
+    flexDirection: 'row',
+    minHeight: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    minHeight: 56,
-  },
-  leftIconContainer: {
-    marginRight: 12,
-    marginTop: 2,
   },
   inputWrapper: {
     flex: 1,
     position: 'relative',
   },
   label: {
-    position: 'absolute',
-    left: 0,
-    fontWeight: '500',
     backgroundColor: 'transparent',
+    fontWeight: '500',
+    left: 0,
     paddingHorizontal: 4,
+    position: 'absolute',
     zIndex: 1,
   },
-  input: {
-    fontSize: 16,
-    paddingTop: 8,
-    paddingBottom: 0,
-    textAlignVertical: 'top',
+  leftIconContainer: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  messagesContainer: {
+    marginHorizontal: 16,
+    marginTop: 4,
   },
   rightIconContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     gap: 8,
     marginLeft: 8,
     marginTop: 2,
   },
-  iconButton: {
-    padding: 4,
+  successText: {
+    fontSize: 12,
+    marginHorizontal: 16,
+    marginTop: 4,
+  },
+  suggestionItem: {
+    alignItems: 'center',
+    borderRadius: 6,
+    flexDirection: 'row',
+    gap: 6,
+    maxWidth: 200,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  suggestionText: {
+    flex: 1,
+    fontSize: 14,
   },
   suggestionsContainer: {
-    marginTop: 4,
     borderRadius: 8,
     borderWidth: 1,
+    marginTop: 4,
     maxHeight: 120,
   },
   suggestionsContent: {
-    padding: 8,
     gap: 8,
-  },
-  suggestionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    gap: 6,
-    maxWidth: 200,
-  },
-  suggestionText: {
-    fontSize: 14,
-    flex: 1,
-  },
-  helpText: {
-    fontSize: 12,
-    marginTop: 4,
-    marginHorizontal: 16,
-  },
-  messagesContainer: {
-    marginTop: 4,
-    marginHorizontal: 16,
-  },
-  errorText: {
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  successText: {
-    fontSize: 12,
-    marginTop: 4,
-    marginHorizontal: 16,
-  },
-  characterCount: {
-    fontSize: 12,
-    textAlign: 'right',
-    marginTop: 4,
-    marginHorizontal: 16,
-  },
-  formContainer: {
-    flex: 1,
+    padding: 8,
   },
 });
 

@@ -40,8 +40,10 @@ class AccessibilityService {
   async initialize(): Promise<void> {
     try {
       // Detect accessibility settings
-      const screenReaderEnabled = await AccessibilityInfo.isScreenReaderEnabled();
-      const reducedMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
+      const screenReaderEnabled =
+        await AccessibilityInfo.isScreenReaderEnabled();
+      const reducedMotionEnabled =
+        await AccessibilityInfo.isReduceMotionEnabled();
 
       this.config = {
         ...this.config,
@@ -50,8 +52,14 @@ class AccessibilityService {
       };
 
       // Set up accessibility event listeners
-      AccessibilityInfo.addEventListener('screenReaderChanged', this.handleScreenReaderChange);
-      AccessibilityInfo.addEventListener('reduceMotionChanged', this.handleReducedMotionChange);
+      AccessibilityInfo.addEventListener(
+        'screenReaderChanged',
+        this.handleScreenReaderChange,
+      );
+      AccessibilityInfo.addEventListener(
+        'reduceMotionChanged',
+        this.handleReducedMotionChange,
+      );
 
       loggingService.info('Accessibility Service initialized', {
         screenReaderEnabled,
@@ -78,7 +86,10 @@ class AccessibilityService {
   /**
    * Announce text to screen readers
    */
-  announceForAccessibility(message: string, priority: 'low' | 'high' = 'high'): void {
+  announceForAccessibility(
+    message: string,
+    priority: 'low' | 'high' = 'high',
+  ): void {
     if (!this.config.screenReaderEnabled) return;
 
     try {
@@ -198,7 +209,9 @@ class AccessibilityService {
   /**
    * Validate accessibility compliance for a component
    */
-  auditComponent(componentProps: Record<string, unknown>): AccessibilityAuditResult[] {
+  auditComponent(
+    componentProps: Record<string, unknown>,
+  ): AccessibilityAuditResult[] {
     const results: AccessibilityAuditResult[] = [];
 
     // Check for accessible labels
@@ -267,15 +280,22 @@ class AccessibilityService {
     issues: AccessibilityAuditResult[];
     recommendations: string[];
   } {
-    const errorCount = this.auditResults.filter(r => r.severity === 'error').length;
-    const warningCount = this.auditResults.filter(r => r.severity === 'warning').length;
+    const errorCount = this.auditResults.filter(
+      r => r.severity === 'error',
+    ).length;
+    const warningCount = this.auditResults.filter(
+      r => r.severity === 'warning',
+    ).length;
     const totalIssues = this.auditResults.length;
 
     // Calculate compliance score (0-100)
     const maxScore = 100;
     const errorPenalty = errorCount * 20;
     const warningPenalty = warningCount * 5;
-    const complianceScore = Math.max(0, maxScore - errorPenalty - warningPenalty);
+    const complianceScore = Math.max(
+      0,
+      maxScore - errorPenalty - warningPenalty,
+    );
 
     const recommendations = [
       'Implement comprehensive screen reader testing',
@@ -335,7 +355,11 @@ export const AccessibilityUtils = {
   /**
    * Create accessibility props for touchable elements
    */
-  createTouchableProps(label: string, hint?: string, role: 'button' | 'link' = 'button') {
+  createTouchableProps(
+    label: string,
+    hint?: string,
+    role: 'button' | 'link' = 'button',
+  ) {
     return {
       accessible: true,
       accessibilityLabel: label,
@@ -348,7 +372,11 @@ export const AccessibilityUtils = {
   /**
    * Create accessibility props for text inputs
    */
-  createTextInputProps(label: string, isRequired = false, errorMessage?: string) {
+  createTextInputProps(
+    label: string,
+    isRequired = false,
+    errorMessage?: string,
+  ) {
     return {
       accessible: true,
       accessibilityLabel: label,

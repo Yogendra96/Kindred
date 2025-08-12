@@ -61,27 +61,42 @@ interface HeatmapData {
 const { width } = Dimensions.get('window');
 const chartWidth = width - 32;
 
+// Color constants to avoid literals
+const COLORS = {
+  white: 'white',
+  black: '#000',
+  whiteTransparent30: 'rgba(255, 255, 255, 0.3)',
+  whiteTransparent50: 'rgba(255, 255, 255, 0.5)',
+  easy: '#4CAF50',
+  medium: '#FF9800',
+  hard: '#F44336',
+} as const;
+
 export const AdvancedInsightsDashboard: React.FC = () => {
   const theme = useTheme();
   const carbonData = useSelector((state: { carbon: unknown }) => state.carbon);
 
   const [insights, setInsights] = useState<InsightData | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'year'>('month');
-  const [selectedMetric] = useState<'carbon' | 'energy' | 'transport' | 'waste'>('carbon');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<
+    'week' | 'month' | 'year'
+  >('month');
+  const [_selectedMetric] = useState<
+    'carbon' | 'energy' | 'transport' | 'waste'
+  >('carbon');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
-        return '#4CAF50';
+        return COLORS.easy;
       case 'medium':
-        return '#FF9800';
+        return COLORS.medium;
       case 'hard':
-        return '#F44336';
+        return COLORS.hard;
       default:
-        return '#4CAF50';
+        return COLORS.easy;
     }
   };
 
@@ -100,15 +115,21 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       const heatmapPromise = generateHeatmapData();
 
       // Execute all operations in parallel for better performance
-      const [predictions, trends, comparative, recommendations, achievements, heatmap] =
-        await Promise.all([
-          predictionPromise,
-          trendsPromise,
-          comparativePromise,
-          recommendationsPromise,
-          achievementsPromise,
-          heatmapPromise,
-        ]);
+      const [
+        predictions,
+        trends,
+        comparative,
+        recommendations,
+        achievements,
+        heatmap,
+      ] = await Promise.all([
+        predictionPromise,
+        trendsPromise,
+        comparativePromise,
+        recommendationsPromise,
+        achievementsPromise,
+        heatmapPromise,
+      ]);
 
       // Check if component is still mounted
       if (!isCancelled) {
@@ -138,26 +159,28 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       isCancelled = true;
     };
   }, [
-    selectedTimeframe,
-    selectedMetric,
     generatePredictions,
     analyzeTrends,
     getComparativeData,
     generateRecommendations,
     getAchievementInsights,
+    generateHeatmapData,
   ]);
 
   useEffect(() => {
     void loadInsightData();
   }, [loadInsightData]);
 
-  const generatePredictions = async (): Promise<number[]> => {
+  const generatePredictions = useCallback(async (): Promise<number[]> => {
     try {
       // Use ML service to predict future carbon footprint
       const historicalData = carbonData?.history;
       if (!Array.isArray(historicalData)) {
         loggingService.warn('Historical data is not available or invalid');
-        return Array.from({ length: 30 }, (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2);
+        return Array.from(
+          { length: 30 },
+          (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2,
+        );
       }
 
       const inputData = historicalData
@@ -178,7 +201,8 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             }
 
             return {
-              transport: typeof entry.transport === 'number' ? entry.transport : 0,
+              transport:
+                typeof entry.transport === 'number' ? entry.transport : 0,
               energy: typeof entry.energy === 'number' ? entry.energy : 0,
               food: typeof entry.food === 'number' ? entry.food : 0,
               waste: typeof entry.waste === 'number' ? entry.waste : 0,
@@ -189,14 +213,24 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
       if (inputData.length === 0) {
-        loggingService.info('No valid historical data found, generating mock predictions');
-        return Array.from({ length: 30 }, (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2);
+        loggingService.info(
+          'No valid historical data found, generating mock predictions',
+        );
+        return Array.from(
+          { length: 30 },
+          (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2,
+        );
       }
 
-      const predictions = await mlCarbonPrediction.predictFutureFootprint(inputData, 30);
+      const predictions = await mlCarbonPrediction.predictFutureFootprint(
+        inputData,
+        30,
+      );
 
       if (!Array.isArray(predictions) || predictions.length === 0) {
-        loggingService.warn('ML prediction returned invalid data, using fallback');
+        loggingService.warn(
+          'ML prediction returned invalid data, using fallback',
+        );
         return Array.from({ length: 30 }, () => Math.random() * 5 + 15);
       }
 
@@ -213,9 +247,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       });
       return Array.from({ length: 30 }, () => Math.random() * 5 + 15);
     }
-  };
+  }, [carbonData]);
 
-  const analyzeTrends = async () => {
+  const analyzeTrends = useCallback(async () => {
     try {
       const historyData = carbonData?.history;
       if (!Array.isArray(historyData) || historyData.length < 14) {
@@ -261,7 +295,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       const olderAvg = calculateAverage(olderData);
 
       if (olderAvg === 0) {
-        loggingService.warn('Division by zero in trend analysis, using stable trend');
+        loggingService.warn(
+          'Division by zero in trend analysis, using stable trend',
+        );
         return {
           direction: 'stable' as const,
           percentage: 0,
@@ -272,11 +308,17 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       const percentageChange = ((recentAvg - olderAvg) / olderAvg) * 100;
 
       // Ensure percentage is valid
-      const validPercentage = isNaN(percentageChange) ? 0 : Math.abs(percentageChange);
+      const validPercentage = isNaN(percentageChange)
+        ? 0
+        : Math.abs(percentageChange);
 
       return {
         direction:
-          percentageChange > 5 ? 'increasing' : percentageChange < -5 ? 'decreasing' : 'stable',
+          percentageChange > 5
+            ? 'increasing'
+            : percentageChange < -5
+              ? 'decreasing'
+              : 'stable',
         percentage: Math.min(validPercentage, 1000), // Cap at 1000% for extreme cases
         timeframe: '2 weeks',
       };
@@ -290,9 +332,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         timeframe: '2 weeks',
       };
     }
-  };
+  }, [carbonData]);
 
-  const getComparativeData = async () => {
+  const getComparativeData = useCallback(async () => {
     try {
       // Mock comparative data - in real app, this would come from analytics service
       const currentFootprint = carbonData?.currentFootprint;
@@ -305,7 +347,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       ) {
         userTotal = Math.max(0, currentFootprint.total); // Ensure non-negative
       } else {
-        loggingService.warn('Invalid current footprint data, using default value');
+        loggingService.warn(
+          'Invalid current footprint data, using default value',
+        );
       }
 
       const cityAverage = 25;
@@ -329,9 +373,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         globalAverage: 28,
       };
     }
-  };
+  }, [carbonData]);
 
-  const generateRecommendations = async () => {
+  const generateRecommendations = useCallback(async () => {
     try {
       const recommendations = [];
 
@@ -354,7 +398,10 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           }
         }
       } catch (iotError) {
-        loggingService.warn('IoT service error, skipping IoT recommendations:', { iotError });
+        loggingService.warn(
+          'IoT service error, skipping IoT recommendations:',
+          { iotError },
+        );
       }
 
       // Transportation recommendations with safe property access
@@ -431,9 +478,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         },
       ];
     }
-  };
+  }, [carbonData]);
 
-  const getAchievementInsights = async () => {
+  const getAchievementInsights = useCallback(async () => {
     const currentTotal = carbonData.currentFootprint?.total ?? 20;
     const nextMilestones = [
       { title: 'Carbon Conscious', target: 15, icon: '🌱' },
@@ -441,18 +488,22 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       { title: 'Planet Protector', target: 8, icon: '🌍' },
     ];
 
-    const nextMilestone = nextMilestones.find(m => currentTotal > m.target) ?? nextMilestones[0];
+    const nextMilestone =
+      nextMilestones.find(m => currentTotal > m.target) ?? nextMilestones[0];
 
     return {
       nextMilestone: {
         ...nextMilestone,
-        progress: Math.max(0, (nextMilestone.target - currentTotal) / nextMilestone.target),
+        progress: Math.max(
+          0,
+          (nextMilestone.target - currentTotal) / nextMilestone.target,
+        ),
       },
       recentUnlocks: [], // Would come from achievement system
     };
-  };
+  }, [carbonData]);
 
-  const generateHeatmapData = async (): Promise<HeatmapData[]> => {
+  const generateHeatmapData = useCallback(async (): Promise<HeatmapData[]> => {
     // Generate 52 weeks of data for yearly heatmap
     return Array.from({ length: 365 }, (_, i) => {
       const date = new Date();
@@ -465,7 +516,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         week: Math.floor(i / 7),
       };
     }).reverse();
-  };
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -475,8 +526,11 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
   const renderTimeframeSelector = () => (
     <View
-      style={[styles.selectorContainer, { backgroundColor: theme.colors.surface }]}
-      accessible={true}
+      style={[
+        styles.selectorContainer,
+        { backgroundColor: theme.colors.surface },
+      ]}
+      accessible
       accessibilityRole='radiogroup'
       accessibilityLabel='Timeframe selector'
       accessibilityHint='Choose time period for data analysis'
@@ -491,7 +545,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             },
           ]}
           onPress={() => setSelectedTimeframe(timeframe)}
-          accessible={true}
+          accessible
           accessibilityRole='radio'
           accessibilityState={{ selected: selectedTimeframe === timeframe }}
           accessibilityLabel={`${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} timeframe`}
@@ -502,7 +556,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
               styles.selectorText,
               {
                 color:
-                  selectedTimeframe === timeframe ? theme.colors.onPrimary : theme.colors.onSurface,
+                  selectedTimeframe === timeframe
+                    ? theme.colors.onPrimary
+                    : theme.colors.onSurface,
               },
             ]}
             accessible={false}
@@ -518,7 +574,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     const chartData = {
-      labels: insights.predictedCarbon.map((_, i) => (i % 5 === 0 ? `Day ${i + 1}` : '')),
+      labels: insights.predictedCarbon.map((_, i) =>
+        i % 5 === 0 ? `Day ${i + 1}` : '',
+      ),
       datasets: [
         {
           data: insights.predictedCarbon,
@@ -529,7 +587,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.chartContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           30-Day Carbon Prediction
         </Text>
@@ -572,16 +635,26 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           : '#FF9800';
 
     return (
-      <View style={[styles.trendContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.trendContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <View style={styles.trendHeader}>
           <Ionicons name={trendIcon} size={24} color={trendColor} />
-          <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>Trend Analysis</Text>
+          <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>
+            Trend Analysis
+          </Text>
         </View>
         <Text style={[styles.trendText, { color: theme.colors.onSurface }]}>
           Your carbon footprint is{' '}
-          <Text style={[styles.boldText, { color: trendColor }]}>{trendAnalysis.direction}</Text>
+          <Text style={[styles.boldText, { color: trendColor }]}>
+            {trendAnalysis.direction}
+          </Text>
           {' by '}
-          {trendAnalysis.percentage.toFixed(1)}% over the last {trendAnalysis.timeframe}
+          {trendAnalysis.percentage.toFixed(1)}% over the last{' '}
+          {trendAnalysis.timeframe}
         </Text>
       </View>
     );
@@ -608,7 +681,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.chartContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           Comparative Analysis
         </Text>
@@ -633,7 +711,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   };
 
   const renderCarbonHeatmap = () => (
-    <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+    <View
+      style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}
+    >
       <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
         Carbon Intensity Heatmap
       </Text>
@@ -642,8 +722,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           {Array.from({ length: 52 }, (_, week) => (
             <View key={week} style={styles.heatmapWeek}>
               {Array.from({ length: 7 }, (_, day) => {
-                const dataPoint = heatmapData.find(d => d.week === week && d.day === day);
-                const intensity = dataPoint ? Math.min(1, dataPoint.value / 30) : 0;
+                const dataPoint = heatmapData.find(
+                  d => d.week === week && d.day === day,
+                );
+                const intensity = dataPoint
+                  ? Math.min(1, dataPoint.value / 30)
+                  : 0;
 
                 return (
                   <View
@@ -662,7 +746,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         </View>
       </ScrollView>
       <View style={styles.heatmapLegend}>
-        <Text style={[styles.legendText, { color: theme.colors.outline }]}>Less</Text>
+        <Text style={[styles.legendText, { color: theme.colors.outline }]}>
+          Less
+        </Text>
         <View style={styles.legendScale}>
           {Array.from({ length: 5 }, (_, i) => (
             <View
@@ -674,7 +760,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             />
           ))}
         </View>
-        <Text style={[styles.legendText, { color: theme.colors.outline }]}>More</Text>
+        <Text style={[styles.legendText, { color: theme.colors.outline }]}>
+          More
+        </Text>
       </View>
     </View>
   );
@@ -683,14 +771,24 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     return (
-      <View style={[styles.recommendationsContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.recommendationsContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
           Smart Recommendations
         </Text>
         {insights.recommendations.map(rec => (
           <View key={rec.id} style={styles.recommendationCard}>
             <View style={styles.recommendationHeader}>
-              <Text style={[styles.recommendationTitle, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[
+                  styles.recommendationTitle,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 {rec.title}
               </Text>
               <View
@@ -699,20 +797,31 @@ export const AdvancedInsightsDashboard: React.FC = () => {
                   { backgroundColor: getDifficultyColor(rec.difficulty) },
                 ]}
               >
-                <Text style={styles.difficultyText}>{rec.difficulty.toUpperCase()}</Text>
+                <Text style={styles.difficultyText}>
+                  {rec.difficulty.toUpperCase()}
+                </Text>
               </View>
             </View>
-            <Text style={[styles.recommendationDescription, { color: theme.colors.outline }]}>
+            <Text
+              style={[
+                styles.recommendationDescription,
+                { color: theme.colors.outline },
+              ]}
+            >
               {rec.description}
             </Text>
             <View style={styles.recommendationFooter}>
               <View style={styles.savingInfo}>
                 <Ionicons name='leaf' size={16} color='#4CAF50' />
-                <Text style={[styles.savingText, { color: theme.colors.onSurface }]}>
+                <Text
+                  style={[styles.savingText, { color: theme.colors.onSurface }]}
+                >
                   Save {rec.potentialSaving} kg CO₂
                 </Text>
               </View>
-              <Text style={[styles.categoryText, { color: theme.colors.primary }]}>
+              <Text
+                style={[styles.categoryText, { color: theme.colors.primary }]}
+              >
                 {rec.category}
               </Text>
             </View>
@@ -728,25 +837,47 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     const { nextMilestone } = insights.achievements;
 
     return (
-      <View style={[styles.achievementContainer, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Next Milestone</Text>
+      <View
+        style={[
+          styles.achievementContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+          Next Milestone
+        </Text>
         <View style={styles.milestoneCard}>
           <View style={styles.milestoneHeader}>
             <span role='img' aria-label='trophy emoji'>
               🏆
             </span>
             <View style={styles.milestoneInfo}>
-              <Text style={[styles.milestoneTitle, { color: theme.colors.onSurface }]}>
+              <Text
+                style={[
+                  styles.milestoneTitle,
+                  { color: theme.colors.onSurface },
+                ]}
+              >
                 {nextMilestone.title}
               </Text>
-              <Text style={[styles.milestoneTarget, { color: theme.colors.outline }]}>
+              <Text
+                style={[
+                  styles.milestoneTarget,
+                  { color: theme.colors.outline },
+                ]}
+              >
                 Target: {nextMilestone.target} kg CO₂/month
               </Text>
             </View>
           </View>
 
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
+            <View
+              style={[
+                styles.progressBar,
+                { backgroundColor: theme.colors.outline },
+              ]}
+            >
               <View
                 style={[
                   styles.progressFill,
@@ -757,7 +888,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
                 ]}
               />
             </View>
-            <Text style={[styles.progressText, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.progressText, { color: theme.colors.onSurface }]}
+            >
               {(nextMilestone.progress * 100).toFixed(0)}%
             </Text>
           </View>
@@ -768,7 +901,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
         <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
           Generating AI Insights...
         </Text>
@@ -779,7 +917,9 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
       {renderTimeframeSelector()}
       {renderTrendAnalysis()}
@@ -793,43 +933,27 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  selectorContainer: {
-    flexDirection: 'row',
-    margin: 16,
-    borderRadius: 12,
-    padding: 4,
+  achievementContainer: {
+    borderRadius: 16,
     elevation: 2,
+    margin: 16,
+    padding: 16,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  selectorButton: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8,
+  boldText: {
+    fontWeight: 'bold',
   },
-  selectorText: {
-    fontSize: 14,
+  categoryText: {
+    fontSize: 12,
     fontWeight: '500',
   },
   chartContainer: {
-    margin: 16,
-    padding: 16,
     borderRadius: 16,
     elevation: 2,
+    margin: 16,
+    padding: 16,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -840,104 +964,105 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
-  trendContainer: {
-    margin: 16,
-    padding: 16,
+  container: {
+    flex: 1,
+  },
+  difficultyBadge: {
     borderRadius: 12,
-    elevation: 1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  trendHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  trendTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  trendText: {
-    fontSize: 14,
-    lineHeight: 20,
+  difficultyText: {
+    color: COLORS.white,
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   heatmapContainer: {
     flexDirection: 'row',
     paddingHorizontal: 8,
   },
-  heatmapWeek: {
-    marginRight: 2,
-  },
   heatmapDay: {
-    width: 12,
+    borderRadius: 2,
     height: 12,
     marginBottom: 2,
-    borderRadius: 2,
+    width: 12,
   },
   heatmapLegend: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 16,
   },
-  legendText: {
-    fontSize: 12,
+  heatmapWeek: {
+    marginRight: 2,
   },
   legendScale: {
     flexDirection: 'row',
     marginHorizontal: 8,
   },
   legendSquare: {
-    width: 12,
+    borderRadius: 2,
     height: 12,
     marginHorizontal: 1,
-    borderRadius: 2,
+    width: 12,
   },
-  recommendationsContainer: {
-    margin: 16,
+  legendText: {
+    fontSize: 12,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  milestoneCard: {
+    backgroundColor: COLORS.whiteTransparent50,
+    borderRadius: 12,
     padding: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  milestoneHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 16,
   },
-  boldText: {
-    fontWeight: 'bold',
-  },
-  recommendationCard: {
-    padding: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  recommendationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  recommendationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  milestoneInfo: {
     flex: 1,
   },
-  difficultyBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  milestoneTarget: {
+    fontSize: 12,
+    marginTop: 2,
   },
-  difficultyText: {
-    color: 'white',
-    fontSize: 10,
+  milestoneTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+  progressBar: {
+    borderRadius: 4,
+    flex: 1,
+    height: 8,
+    marginRight: 12,
+  },
+  progressContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  progressFill: {
+    borderRadius: 4,
+    height: '100%',
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: '600',
+    minWidth: 40,
+  },
+  recommendationCard: {
+    backgroundColor: COLORS.whiteTransparent50,
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 16,
   },
   recommendationDescription: {
     fontSize: 14,
@@ -945,75 +1070,86 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   recommendationFooter: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  recommendationHeader: {
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  recommendationTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  recommendationsContainer: {
+    borderRadius: 16,
+    elevation: 2,
+    margin: 16,
+    padding: 16,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   savingInfo: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   savingText: {
     fontSize: 12,
     fontWeight: '500',
     marginLeft: 4,
   },
-  categoryText: {
-    fontSize: 12,
-    fontWeight: '500',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
-  achievementContainer: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 16,
+  selectorButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flex: 1,
+    paddingVertical: 8,
+  },
+  selectorContainer: {
+    borderRadius: 12,
     elevation: 2,
+    flexDirection: 'row',
+    margin: 16,
+    padding: 4,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  milestoneCard: {
-    padding: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 12,
-  },
-  milestoneHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  milestoneIcon: {
-    fontSize: 32,
-    marginRight: 12,
-  },
-  milestoneInfo: {
-    flex: 1,
-  },
-  milestoneTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  milestoneTarget: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  progressBar: {
-    flex: 1,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 12,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  progressText: {
+  selectorText: {
     fontSize: 14,
+    fontWeight: '500',
+  },
+  trendContainer: {
+    borderRadius: 12,
+    elevation: 1,
+    margin: 16,
+    padding: 16,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  trendHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  trendText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  trendTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    minWidth: 40,
+    marginLeft: 8,
   },
 });
 

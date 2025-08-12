@@ -55,7 +55,9 @@ class NotificationService {
       this.isInitialized = true;
     } catch (error) {
       CrashReportingService.logError(
-        error instanceof Error ? error : new Error('Failed to initialize notifications'),
+        error instanceof Error
+          ? error
+          : new Error('Failed to initialize notifications'),
       );
     }
   }
@@ -158,7 +160,9 @@ class NotificationService {
   async displayNotification(payload: NotificationPayload): Promise<void> {
     try {
       const channelId =
-        Platform.OS === 'android' ? payload.channelId || this.defaultChannelId : undefined;
+        Platform.OS === 'android'
+          ? payload.channelId || this.defaultChannelId
+          : undefined;
 
       await notifee.displayNotification({
         title: payload.title,
@@ -188,10 +192,15 @@ class NotificationService {
     }
   }
 
-  async scheduleNotification(payload: NotificationPayload, date: Date): Promise<string> {
+  async scheduleNotification(
+    payload: NotificationPayload,
+    date: Date,
+  ): Promise<string> {
     try {
       const channelId =
-        Platform.OS === 'android' ? payload.channelId || this.defaultChannelId : undefined;
+        Platform.OS === 'android'
+          ? payload.channelId || this.defaultChannelId
+          : undefined;
 
       const trigger = {
         type: Platform.select({

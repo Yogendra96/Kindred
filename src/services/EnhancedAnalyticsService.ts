@@ -14,11 +14,17 @@ declare global {
 
 interface AnalyticsEvent {
   name: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, string | number | boolean>;
   timestamp: number;
   sessionId: string;
   userId?: string;
-  category: 'user_action' | 'performance' | 'error' | 'navigation' | 'feature_usage' | 'custom';
+  category:
+    | 'user_action'
+    | 'performance'
+    | 'error'
+    | 'navigation'
+    | 'feature_usage'
+    | 'custom';
   priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
@@ -33,7 +39,7 @@ interface UserSession {
   errors: number;
   platform: string;
   appVersion: string;
-  deviceInfo?: Record<string, any>;
+  deviceInfo?: Record<string, string | number | boolean>;
 }
 
 interface ScreenView {
@@ -43,7 +49,7 @@ interface ScreenView {
   userId?: string;
   duration?: number;
   previousScreen?: string;
-  parameters?: Record<string, any>;
+  parameters?: Record<string, string | number | boolean>;
 }
 
 interface UserAction {
@@ -53,7 +59,7 @@ interface UserAction {
   sessionId: string;
   userId?: string;
   screenName?: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, string | number | boolean>;
 }
 
 interface AnalyticsConfig {
@@ -65,6 +71,20 @@ interface AnalyticsConfig {
   flushInterval?: number;
   maxQueueSize?: number;
   dataRetentionDays?: number;
+}
+
+interface AnalyticsExportData {
+  summary: AnalyticsSummary;
+  sessions: UserSession[];
+  events: AnalyticsEvent[];
+  screenViews: ScreenView[];
+  userActions: UserAction[];
+  config: AnalyticsConfig;
+  metadata: {
+    platform: string;
+    timestamp: string;
+    version: string;
+  };
 }
 
 interface AnalyticsSummary {
@@ -175,7 +195,7 @@ export class EnhancedAnalyticsService {
    */
   trackEvent(
     name: string,
-    properties?: Record<string, any>,
+    properties?: Record<string, string | number | boolean>,
     category: AnalyticsEvent['category'] = 'custom',
     priority: AnalyticsEvent['priority'] = 'medium',
   ): void {
@@ -191,8 +211,8 @@ export class EnhancedAnalyticsService {
         timestamp_iso: new Date().toISOString(),
       },
       timestamp: Date.now(),
-      sessionId: this.currentSession?.sessionId || 'no-session',
-      userId: this.currentSession?.userId || '',
+      sessionId: this.currentSession?.sessionId ?? 'no-session',
+      userId: this.currentSession?.userId ?? '',
       category,
       priority,
     };
@@ -223,7 +243,10 @@ export class EnhancedAnalyticsService {
   /**
    * Track screen view
    */
-  trackScreenView(screenName: string, parameters?: Record<string, any>): void {
+  trackScreenView(
+    screenName: string,
+    parameters?: Record<string, string | number | boolean>,
+  ): void {
     // End previous screen view
     if (this.currentScreen && this.screenStartTime) {
       const duration = Date.now() - this.screenStartTime;
@@ -233,9 +256,9 @@ export class EnhancedAnalyticsService {
     const screenView: ScreenView = {
       screenName,
       timestamp: Date.now(),
-      sessionId: this.currentSession?.sessionId || 'no-session',
-      userId: this.currentSession?.userId || '',
-      previousScreen: this.currentScreen || undefined,
+      sessionId: this.currentSession?.sessionId ?? 'no-session',
+      userId: this.currentSession?.userId ?? '',
+      previousScreen: this.currentScreen ?? undefined,
       parameters,
     };
 
@@ -269,14 +292,18 @@ export class EnhancedAnalyticsService {
   /**
    * Track user action
    */
-  trackUserAction(action: string, target: string, properties?: Record<string, any>): void {
+  trackUserAction(
+    action: string,
+    target: string,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     const userAction: UserAction = {
       action,
       target,
       timestamp: Date.now(),
-      sessionId: this.currentSession?.sessionId || 'no-session',
-      userId: this.currentSession?.userId || '',
-      screenName: this.currentScreen || undefined,
+      sessionId: this.currentSession?.sessionId ?? 'no-session',
+      userId: this.currentSession?.userId ?? '',
+      screenName: this.currentScreen ?? undefined,
       properties,
     };
 
@@ -304,7 +331,11 @@ export class EnhancedAnalyticsService {
   /**
    * Track error
    */
-  trackError(error: Error | string, context?: Record<string, any>, isFatal: boolean = false): void {
+  trackError(
+    error: Error | string,
+    context?: Record<string, string | number | boolean>,
+    isFatal: boolean = false,
+  ): void {
     const errorMessage = error instanceof Error ? error.message : error;
     const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -334,7 +365,7 @@ export class EnhancedAnalyticsService {
     metric: string,
     value: number,
     unit: string = 'ms',
-    context?: Record<string, any>,
+    context?: Record<string, string | number | boolean>,
   ): void {
     this.trackEvent(
       'performance_metric',
@@ -353,7 +384,11 @@ export class EnhancedAnalyticsService {
   /**
    * Track feature usage
    */
-  trackFeatureUsage(feature: string, action: string, properties?: Record<string, any>): void {
+  trackFeatureUsage(
+    feature: string,
+    action: string,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     this.trackEvent(
       'feature_usage',
       {
@@ -370,7 +405,9 @@ export class EnhancedAnalyticsService {
   /**
    * Set user properties
    */
-  setUserProperties(properties: Record<string, any>): void {
+  setUserProperties(
+    properties: Record<string, string | number | boolean>,
+  ): void {
     this.trackEvent(
       'user_properties_updated',
       {
@@ -396,7 +433,7 @@ export class EnhancedAnalyticsService {
 
       this.currentSession = {
         sessionId,
-        userId: userId || '',
+        userId: userId ?? '',
         startTime: Date.now(),
         screenViews: 0,
         actions: 0,
@@ -473,13 +510,20 @@ export class EnhancedAnalyticsService {
   /**
    * Get analytics summary
    */
-  getAnalyticsSummary(timeRange?: { start: number; end: number }): AnalyticsSummary {
+  getAnalyticsSummary(timeRange?: {
+    start: number;
+    end: number;
+  }): AnalyticsSummary {
     const now = Date.now();
-    const start = timeRange?.start || now - 7 * 24 * 60 * 60 * 1000; // Last 7 days
-    const end = timeRange?.end || now;
+    const start = timeRange?.start ?? now - 7 * 24 * 60 * 60 * 1000; // Last 7 days
+    const end = timeRange?.end ?? now;
 
-    const filteredEvents = this.events.filter(e => e.timestamp >= start && e.timestamp <= end);
-    const filteredSessions = this.sessions.filter(s => s.startTime >= start && s.startTime <= end);
+    const filteredEvents = this.events.filter(
+      e => e.timestamp >= start && e.timestamp <= end,
+    );
+    const filteredSessions = this.sessions.filter(
+      s => s.startTime >= start && s.startTime <= end,
+    );
     const filteredScreenViews = this.screenViews.filter(
       s => s.timestamp >= start && s.timestamp <= end,
     );
@@ -490,15 +534,18 @@ export class EnhancedAnalyticsService {
     const completedSessions = filteredSessions.filter(s => s.duration);
     const averageDuration =
       completedSessions.length > 0
-        ? completedSessions.reduce((sum, s) => sum + (s.duration || 0), 0) /
+        ? completedSessions.reduce((sum, s) => sum + (s.duration ?? 0), 0) /
           completedSessions.length
         : 0;
-    const totalDuration = completedSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const totalDuration = completedSessions.reduce(
+      (sum, s) => sum + (s.duration ?? 0),
+      0,
+    );
 
     // Calculate event metrics
     const eventsByCategory = filteredEvents.reduce(
       (acc, event) => {
-        acc[event.category] = (acc[event.category] || 0) + 1;
+        acc[event.category] = (acc[event.category] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>,
@@ -506,7 +553,7 @@ export class EnhancedAnalyticsService {
 
     const eventsByPriority = filteredEvents.reduce(
       (acc, event) => {
-        acc[event.priority] = (acc[event.priority] || 0) + 1;
+        acc[event.priority] = (acc[event.priority] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>,
@@ -515,7 +562,7 @@ export class EnhancedAnalyticsService {
     // Calculate screen metrics
     const screenCounts = filteredScreenViews.reduce(
       (acc, view) => {
-        acc[view.screenName] = (acc[view.screenName] || 0) + 1;
+        acc[view.screenName] = (acc[view.screenName] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>,
@@ -527,30 +574,43 @@ export class EnhancedAnalyticsService {
       .map(([screen, views]) => ({ screen, views }));
 
     // Calculate user metrics
-    const uniqueUsers = new Set(filteredSessions.map(s => s.userId).filter(Boolean)).size;
+    const uniqueUsers = new Set(
+      filteredSessions.map(s => s.userId).filter(Boolean),
+    ).size;
     const returningUsers = filteredSessions.filter(s => {
-      const userSessions = this.sessions.filter(session => session.userId === s.userId);
+      const userSessions = this.sessions.filter(
+        session => session.userId === s.userId,
+      );
       return userSessions.length > 1;
     }).length;
 
     // Calculate performance metrics
-    const performanceEvents = filteredEvents.filter(e => e.category === 'performance');
+    const performanceEvents = filteredEvents.filter(
+      e => e.category === 'performance',
+    );
     const errorEvents = filteredEvents.filter(e => e.category === 'error');
     const loadTimeEvents = performanceEvents.filter(
-      e => e.name === 'performance_metric' && e.properties?.metric === 'load_time',
+      e =>
+        e.name === 'performance_metric' && e.properties?.metric === 'load_time',
     );
 
     const averageLoadTime =
       loadTimeEvents.length > 0
-        ? loadTimeEvents.reduce((sum, e) => sum + (e.properties?.value || 0), 0) /
-          loadTimeEvents.length
+        ? loadTimeEvents.reduce(
+            (sum, e) => sum + (e.properties?.value ?? 0),
+            0,
+          ) / loadTimeEvents.length
         : 0;
 
     const errorRate =
-      filteredEvents.length > 0 ? (errorEvents.length / filteredEvents.length) * 100 : 0;
+      filteredEvents.length > 0
+        ? (errorEvents.length / filteredEvents.length) * 100
+        : 0;
     const crashEvents = errorEvents.filter(e => e.properties?.is_fatal);
     const crashRate =
-      filteredSessions.length > 0 ? (crashEvents.length / filteredSessions.length) * 100 : 0;
+      filteredSessions.length > 0
+        ? (crashEvents.length / filteredSessions.length) * 100
+        : 0;
 
     return {
       sessions: {
@@ -585,8 +645,13 @@ export class EnhancedAnalyticsService {
   /**
    * Get events by category
    */
-  getEventsByCategory(category: AnalyticsEvent['category'], limit: number = 100): AnalyticsEvent[] {
-    return this.events.filter(event => event.category === category).slice(-limit);
+  getEventsByCategory(
+    category: AnalyticsEvent['category'],
+    limit: number = 100,
+  ): AnalyticsEvent[] {
+    return this.events
+      .filter(event => event.category === category)
+      .slice(-limit);
   }
 
   /**
@@ -599,7 +664,7 @@ export class EnhancedAnalyticsService {
     events: AnalyticsEvent[];
   } {
     return {
-      session: this.sessions.find(s => s.sessionId === sessionId) || null,
+      session: this.sessions.find(s => s.sessionId === sessionId) ?? null,
       screenViews: this.screenViews.filter(s => s.sessionId === sessionId),
       actions: this.userActions.filter(a => a.sessionId === sessionId),
       events: this.events.filter(e => e.sessionId === sessionId),
@@ -631,7 +696,7 @@ export class EnhancedAnalyticsService {
   /**
    * Export analytics data
    */
-  exportAnalyticsData(): any {
+  exportAnalyticsData(): AnalyticsExportData {
     return {
       summary: this.getAnalyticsSummary(),
       sessions: this.sessions,
@@ -694,7 +759,9 @@ export class EnhancedAnalyticsService {
   /**
    * Get device information
    */
-  private async getDeviceInfo(): Promise<Record<string, any>> {
+  private async getDeviceInfo(): Promise<
+    Record<string, string | number | boolean>
+  > {
     return {
       platform: Platform.OS,
       version: Platform.Version,
@@ -772,12 +839,13 @@ export class EnhancedAnalyticsService {
    */
   private async loadStoredData(): Promise<void> {
     try {
-      const [events, sessions, screenViews, userActions] = await AsyncStorage.multiGet([
-        'analytics_events',
-        'analytics_sessions',
-        'analytics_screen_views',
-        'analytics_user_actions',
-      ]);
+      const [events, sessions, screenViews, userActions] =
+        await AsyncStorage.multiGet([
+          'analytics_events',
+          'analytics_sessions',
+          'analytics_screen_views',
+          'analytics_user_actions',
+        ]);
 
       if (events[1]) this.events = JSON.parse(events[1]);
       if (sessions[1]) this.sessions = JSON.parse(sessions[1]);
@@ -796,8 +864,14 @@ export class EnhancedAnalyticsService {
       await AsyncStorage.multiSet([
         ['analytics_events', JSON.stringify(this.events.slice(-1000))], // Keep last 1000
         ['analytics_sessions', JSON.stringify(this.sessions.slice(-100))], // Keep last 100
-        ['analytics_screen_views', JSON.stringify(this.screenViews.slice(-500))], // Keep last 500
-        ['analytics_user_actions', JSON.stringify(this.userActions.slice(-1000))], // Keep last 1000
+        [
+          'analytics_screen_views',
+          JSON.stringify(this.screenViews.slice(-500)),
+        ], // Keep last 500
+        [
+          'analytics_user_actions',
+          JSON.stringify(this.userActions.slice(-1000)),
+        ], // Keep last 1000
       ]);
     } catch (error) {
       this.logger.error('Failed to save analytics data:', error);
@@ -808,12 +882,19 @@ export class EnhancedAnalyticsService {
    * Cleanup old data
    */
   private cleanupOldData(): void {
-    const cutoffTime = Date.now() - this.config.dataRetentionDays! * 24 * 60 * 60 * 1000;
+    const cutoffTime =
+      Date.now() - this.config.dataRetentionDays! * 24 * 60 * 60 * 1000;
 
     this.events = this.events.filter(event => event.timestamp > cutoffTime);
-    this.sessions = this.sessions.filter(session => session.startTime > cutoffTime);
-    this.screenViews = this.screenViews.filter(view => view.timestamp > cutoffTime);
-    this.userActions = this.userActions.filter(action => action.timestamp > cutoffTime);
+    this.sessions = this.sessions.filter(
+      session => session.startTime > cutoffTime,
+    );
+    this.screenViews = this.screenViews.filter(
+      view => view.timestamp > cutoffTime,
+    );
+    this.userActions = this.userActions.filter(
+      action => action.timestamp > cutoffTime,
+    );
   }
 }
 

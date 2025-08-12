@@ -1,6 +1,12 @@
 import React from 'react';
 
-import { AccessibilityInfo, Animated, Dimensions, StyleSheet, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  Dimensions,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { useTheme } from '../theme/ThemeProvider';
 
@@ -35,7 +41,8 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
 }) => {
   const { theme, isDark } = useTheme();
   const animatedValue = React.useRef(new Animated.Value(0)).current;
-  const [isScreenReaderEnabled, setIsScreenReaderEnabled] = React.useState(false);
+  const [isScreenReaderEnabled, setIsScreenReaderEnabled] =
+    React.useState(false);
 
   React.useEffect(() => {
     // Check if screen reader is enabled
@@ -138,7 +145,9 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
         style={[
           StyleSheet.absoluteFillObject,
           {
-            backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)',
+            backgroundColor: isDark
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(255,255,255,0.8)',
             transform: [{ translateX }],
           },
         ]}
@@ -160,8 +169,10 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
               },
               customStyle,
             ]}
-            accessible={true}
-            accessibilityLabel={accessibilityLabel || 'Loading circular content'}
+            accessible
+            accessibilityLabel={
+              accessibilityLabel || 'Loading circular content'
+            }
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
             testID={testID}
@@ -181,8 +192,10 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
               },
               customStyle,
             ]}
-            accessible={true}
-            accessibilityLabel={accessibilityLabel || 'Loading rectangular content'}
+            accessible
+            accessibilityLabel={
+              accessibilityLabel || 'Loading rectangular content'
+            }
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
             testID={testID}
@@ -194,8 +207,12 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
       case 'card':
         return (
           <View
-            style={[styles.cardContainer, { backgroundColor: theme.colors.surface }, customStyle]}
-            accessible={true}
+            style={[
+              styles.cardContainer,
+              { backgroundColor: theme.colors.surface },
+              customStyle,
+            ]}
+            accessible
             accessibilityLabel={accessibilityLabel || 'Loading card content'}
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
@@ -224,14 +241,17 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
       case 'list':
         return (
           <View
-            accessible={true}
+            accessible
             accessibilityLabel={accessibilityLabel || 'Loading list content'}
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
             testID={testID}
           >
             {Array.from({ length: lines }).map((_, index) => (
-              <View key={index} style={[styles.listItem, { marginBottom: spacing }]}>
+              <View
+                key={index}
+                style={[styles.listItem, { marginBottom: spacing }]}
+              >
                 <Animated.View style={[getSkeletonStyle(), styles.listAvatar]}>
                   {renderShimmerOverlay()}
                 </Animated.View>
@@ -239,7 +259,9 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
                   <Animated.View style={[getSkeletonStyle(), styles.listTitle]}>
                     {renderShimmerOverlay()}
                   </Animated.View>
-                  <Animated.View style={[getSkeletonStyle(), styles.listSubtitle]}>
+                  <Animated.View
+                    style={[getSkeletonStyle(), styles.listSubtitle]}
+                  >
                     {renderShimmerOverlay()}
                   </Animated.View>
                 </View>
@@ -252,7 +274,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
         return (
           <View
             style={[styles.chartContainer, customStyle]}
-            accessible={true}
+            accessible
             accessibilityLabel={accessibilityLabel || 'Loading chart content'}
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
@@ -264,10 +286,14 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
             <View style={styles.chartLegend}>
               {Array.from({ length: 4 }).map((_, index) => (
                 <View key={index} style={styles.legendItem}>
-                  <Animated.View style={[getSkeletonStyle(), styles.legendColor]}>
+                  <Animated.View
+                    style={[getSkeletonStyle(), styles.legendColor]}
+                  >
                     {renderShimmerOverlay()}
                   </Animated.View>
-                  <Animated.View style={[getSkeletonStyle(), styles.legendText]}>
+                  <Animated.View
+                    style={[getSkeletonStyle(), styles.legendText]}
+                  >
                     {renderShimmerOverlay()}
                   </Animated.View>
                 </View>
@@ -280,7 +306,7 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
       default:
         return (
           <View
-            accessible={true}
+            accessible
             accessibilityLabel={accessibilityLabel || 'Loading text content'}
             accessibilityHint={accessibilityHint}
             accessibilityRole='progressbar'
@@ -315,76 +341,76 @@ const EnhancedSkeletonLoader: React.FC<EnhancedSkeletonLoaderProps> = ({
 };
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  cardHeader: {
-    height: 120,
-    marginBottom: 12,
-    borderRadius: 8,
-  },
   cardBody: {
     gap: 8,
   },
+  cardContainer: {
+    borderRadius: 8,
+    marginBottom: 16,
+    padding: 16,
+  },
+  cardHeader: {
+    borderRadius: 8,
+    height: 120,
+    marginBottom: 12,
+  },
   cardLine: {
+    borderRadius: 4,
     height: 16,
-    borderRadius: 4,
   },
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  listAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  listContent: {
-    flex: 1,
-    gap: 6,
-  },
-  listTitle: {
-    height: 16,
-    width: '80%',
-    borderRadius: 4,
-  },
-  listSubtitle: {
-    height: 12,
-    width: '60%',
-    borderRadius: 4,
+  chartCircle: {
+    borderRadius: 60,
+    height: 120,
+    marginBottom: 16,
+    width: 120,
   },
   chartContainer: {
     alignItems: 'center',
     padding: 16,
   },
-  chartCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 16,
-  },
   chartLegend: {
+    gap: 8,
     width: '100%',
-    gap: 8,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   legendColor: {
-    width: 12,
-    height: 12,
     borderRadius: 2,
+    height: 12,
+    width: 12,
+  },
+  legendItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   legendText: {
+    borderRadius: 4,
     height: 14,
     width: 80,
+  },
+  listAvatar: {
+    borderRadius: 20,
+    height: 40,
+    marginRight: 12,
+    width: 40,
+  },
+  listContent: {
+    flex: 1,
+    gap: 6,
+  },
+  listItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingVertical: 8,
+  },
+  listSubtitle: {
     borderRadius: 4,
+    height: 12,
+    width: '60%',
+  },
+  listTitle: {
+    borderRadius: 4,
+    height: 16,
+    width: '80%',
   },
 });
 

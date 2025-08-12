@@ -6,7 +6,6 @@
 
 import { BundleOptimizerCore } from './AdvancedBundleOptimizer.core';
 import type {
-  PerformanceTargets as _PerformanceTargets,
   BundleAnalysisResult,
   BundleOptimizerConfig,
   OptimizationSuggestion,
@@ -68,7 +67,10 @@ class AdvancedBundleOptimizerService {
 
       return result;
     } catch (error) {
-      await observabilityService.trackError('bundle_analysis_failed', error as Error);
+      await observabilityService.trackError(
+        'bundle_analysis_failed',
+        error as Error,
+      );
       throw error;
     } finally {
       this.isAnalyzing = false;
@@ -80,14 +82,18 @@ class AdvancedBundleOptimizerService {
    */
   getTopOptimizations(limit = 5): OptimizationSuggestion[] {
     if (!this.lastAnalysis) {
-      throw new Error('No bundle analysis available. Run analyzeAppBundle() first.');
+      throw new Error(
+        'No bundle analysis available. Run analyzeAppBundle() first.',
+      );
     }
 
-    return this.lastAnalysis.optimizationSuggestions.slice(0, limit).map(suggestion => ({
-      ...suggestion,
-      expectedSavings: suggestion.expectedSavings,
-      priority: this.calculatePriority(suggestion),
-    }));
+    return this.lastAnalysis.optimizationSuggestions
+      .slice(0, limit)
+      .map(suggestion => ({
+        ...suggestion,
+        expectedSavings: suggestion.expectedSavings,
+        priority: this.calculatePriority(suggestion),
+      }));
   }
 
   /**
@@ -99,7 +105,9 @@ class AdvancedBundleOptimizerService {
     score: number;
   } {
     if (!this.lastAnalysis) {
-      throw new Error('No bundle analysis available. Run analyzeAppBundle() first.');
+      throw new Error(
+        'No bundle analysis available. Run analyzeAppBundle() first.',
+      );
     }
 
     const targets = this.getDefaultConfig().performance;
@@ -146,7 +154,9 @@ class AdvancedBundleOptimizerService {
     lazy: number;
   } {
     if (!this.lastAnalysis) {
-      throw new Error('No bundle analysis available. Run analyzeAppBundle() first.');
+      throw new Error(
+        'No bundle analysis available. Run analyzeAppBundle() first.',
+      );
     }
 
     const breakdown = {
@@ -156,7 +166,7 @@ class AdvancedBundleOptimizerService {
       lazy: 0,
     };
 
-    this.lastAnalysis.modules.forEach(module => {
+    for (const module of this.lastAnalysis.modules) {
       if (module.isThirdParty) {
         breakdown.thirdParty += module.size;
       } else {
@@ -168,7 +178,7 @@ class AdvancedBundleOptimizerService {
       } else if (module.usage.isDynamicallyLoaded) {
         breakdown.lazy += module.size;
       }
-    });
+    }
 
     return breakdown;
   }
@@ -182,7 +192,9 @@ class AdvancedBundleOptimizerService {
     memoryReduction: number;
   } {
     if (!this.lastAnalysis) {
-      throw new Error('No bundle analysis available. Run analyzeAppBundle() first.');
+      throw new Error(
+        'No bundle analysis available. Run analyzeAppBundle() first.',
+      );
     }
 
     const totalSavings = this.lastAnalysis.optimizationSuggestions.reduce(
@@ -246,7 +258,9 @@ class AdvancedBundleOptimizerService {
     return __DEV__ ? 'index.bundle' : 'main.jsbundle';
   }
 
-  private calculatePriority(suggestion: OptimizationSuggestion): 'high' | 'medium' | 'low' {
+  private calculatePriority(
+    suggestion: OptimizationSuggestion,
+  ): 'high' | 'medium' | 'low' {
     const impact = suggestion.expectedSavings;
     if (impact > 50000 && suggestion.effort === 'low') return 'high';
     if (impact > 20000) return 'medium';

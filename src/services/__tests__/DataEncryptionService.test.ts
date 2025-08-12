@@ -108,7 +108,9 @@ describe('DataEncryptionService', () => {
       mockAsyncStorage.getItem.mockResolvedValue('existing-master-key');
 
       await expect(service.initialize()).resolves.not.toThrow();
-      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('master_encryption_key');
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith(
+        'master_encryption_key',
+      );
     });
 
     it('should initialize with master password', async () => {
@@ -186,7 +188,9 @@ describe('DataEncryptionService', () => {
         throw new Error('Encryption failed');
       });
 
-      await expect(service.encrypt('test')).rejects.toThrow('Data encryption failed');
+      await expect(service.encrypt('test')).rejects.toThrow(
+        'Data encryption failed',
+      );
     });
 
     it('should handle decryption errors', async () => {
@@ -202,7 +206,9 @@ describe('DataEncryptionService', () => {
         algorithm: 'AES-256',
       };
 
-      await expect(service.decrypt(encryptedData)).rejects.toThrow('Data decryption failed');
+      await expect(service.decrypt(encryptedData)).rejects.toThrow(
+        'Data decryption failed',
+      );
     });
 
     it('should handle empty decryption result', async () => {
@@ -236,7 +242,10 @@ describe('DataEncryptionService', () => {
 
       await service.secureStore(key, data);
 
-      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(key, expect.any(String));
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        key,
+        expect.any(String),
+      );
     });
 
     it('should store data without encryption when disabled', async () => {
@@ -389,7 +398,10 @@ describe('DataEncryptionService', () => {
       const result = await service.rotateKey(keyAlias);
 
       expect(result).toBe('mock-random-string');
-      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(`key_${keyAlias}`, expect.any(String));
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        `key_${keyAlias}`,
+        expect.any(String),
+      );
     });
   });
 
@@ -433,7 +445,9 @@ describe('DataEncryptionService', () => {
         },
       };
 
-      const secureFields = [{ fieldName: 'sensitiveField', encryptionLevel: 'high' as const }];
+      const secureFields = [
+        { fieldName: 'sensitiveField', encryptionLevel: 'high' as const },
+      ];
 
       const result = await service.decryptFields(encryptedData, secureFields);
 
@@ -538,7 +552,10 @@ describe('DataEncryptionService', () => {
 
       await service.secureDelete(key);
 
-      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(key, expect.any(String));
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        key,
+        expect.any(String),
+      );
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith(key);
     });
   });
@@ -573,7 +590,9 @@ describe('DataEncryptionService', () => {
         throw new Error('HMAC error');
       });
 
-      expect(() => service.hmac('data', 'key')).toThrow('HMAC generation failed');
+      expect(() => service.hmac('data', 'key')).toThrow(
+        'HMAC generation failed',
+      );
     });
   });
 });

@@ -72,7 +72,7 @@ export interface FeatureFlags {
 
 // Get current environment
 const getEnvironment = (): Environment => {
-  const env = Config.ENVIRONMENT || process.env.NODE_ENV || 'development';
+  const env = Config.ENVIRONMENT ?? process.env.NODE_ENV ?? 'development';
   return env as Environment;
 };
 
@@ -80,29 +80,29 @@ const getEnvironment = (): Environment => {
 const baseConfig = {
   app: {
     environment: getEnvironment(),
-    version: Config.APP_VERSION || '1.0.0',
-    buildNumber: Config.BUILD_NUMBER || '1',
+    version: Config.APP_VERSION ?? '1.0.0',
+    buildNumber: Config.BUILD_NUMBER ?? '1',
     bundleId: Platform.select({
-      ios: Config.IOS_BUNDLE_ID || 'com.kindred.app',
-      android: Config.ANDROID_PACKAGE_NAME || 'com.kindred.app',
+      ios: Config.IOS_BUNDLE_ID ?? 'com.kindred.app',
+      android: Config.ANDROID_PACKAGE_NAME ?? 'com.kindred.app',
     }) as string,
-    displayName: Config.APP_DISPLAY_NAME || 'Kindred',
+    displayName: Config.APP_DISPLAY_NAME ?? 'Kindred',
   } as AppConfig,
 
   api: {
-    baseURL: Config.API_BASE_URL || 'https://api.kindred.com',
-    timeout: parseInt(Config.API_TIMEOUT || '30000', 10),
-    retryAttempts: parseInt(Config.API_RETRY_ATTEMPTS || '3', 10),
+    baseURL: Config.API_BASE_URL ?? 'https://api.kindred.com',
+    timeout: parseInt(Config.API_TIMEOUT ?? '30000', 10),
+    retryAttempts: parseInt(Config.API_RETRY_ATTEMPTS ?? '3', 10),
     enableMocking: Config.ENABLE_API_MOCKING === 'true',
   } as APIConfig,
 
   firebase: {
-    apiKey: Config.FIREBASE_API_KEY || '',
-    authDomain: Config.FIREBASE_AUTH_DOMAIN || '',
-    projectId: Config.FIREBASE_PROJECT_ID || '',
-    storageBucket: Config.FIREBASE_STORAGE_BUCKET || '',
-    messagingSenderId: Config.FIREBASE_MESSAGING_SENDER_ID || '',
-    appId: Config.FIREBASE_APP_ID || '',
+    apiKey: Config.FIREBASE_API_KEY ?? '',
+    authDomain: Config.FIREBASE_AUTH_DOMAIN ?? '',
+    projectId: Config.FIREBASE_PROJECT_ID ?? '',
+    storageBucket: Config.FIREBASE_STORAGE_BUCKET ?? '',
+    messagingSenderId: Config.FIREBASE_MESSAGING_SENDER_ID ?? '',
+    appId: Config.FIREBASE_APP_ID ?? '',
     measurementId: Config.FIREBASE_MEASUREMENT_ID,
   } as FirebaseConfig,
 
@@ -110,14 +110,15 @@ const baseConfig = {
     enabled: Config.ENABLE_ANALYTICS !== 'false',
     trackingId: Config.ANALYTICS_TRACKING_ID,
     enableCrashlytics: Config.ENABLE_CRASHLYTICS !== 'false',
-    enablePerformanceMonitoring: Config.ENABLE_PERFORMANCE_MONITORING !== 'false',
-    sampleRate: parseFloat(Config.ANALYTICS_SAMPLE_RATE || '1.0'),
+    enablePerformanceMonitoring:
+      Config.ENABLE_PERFORMANCE_MONITORING !== 'false',
+    sampleRate: parseFloat(Config.ANALYTICS_SAMPLE_RATE ?? '1.0'),
   } as AnalyticsConfig,
 
   security: {
     enableBiometrics: Config.ENABLE_BIOMETRICS !== 'false',
-    sessionTimeout: parseInt(Config.SESSION_TIMEOUT || '1800000', 10), // 30 minutes
-    maxLoginAttempts: parseInt(Config.MAX_LOGIN_ATTEMPTS || '5', 10),
+    sessionTimeout: parseInt(Config.SESSION_TIMEOUT ?? '1800000', 10), // 30 minutes
+    maxLoginAttempts: parseInt(Config.MAX_LOGIN_ATTEMPTS ?? '5', 10),
     enableEncryption: Config.ENABLE_ENCRYPTION !== 'false',
     certificatePinning: Config.ENABLE_CERT_PINNING === 'true',
   } as SecurityConfig,
@@ -146,7 +147,7 @@ const environmentConfigs = {
   development: {
     api: {
       ...baseConfig.api,
-      baseURL: Config.DEV_API_BASE_URL || 'http://localhost:3000',
+      baseURL: Config.DEV_API_BASE_URL ?? 'http://localhost:3000',
       enableMocking: true,
     },
     analytics: {
@@ -167,7 +168,7 @@ const environmentConfigs = {
   staging: {
     api: {
       ...baseConfig.api,
-      baseURL: Config.STAGING_API_BASE_URL || 'https://staging-api.kindred.com',
+      baseURL: Config.STAGING_API_BASE_URL ?? 'https://staging-api.kindred.com',
     },
     analytics: {
       ...baseConfig.analytics,
@@ -204,7 +205,7 @@ const environmentConfigs = {
 
 // Merge base config with environment-specific config
 const currentEnvironment = getEnvironment();
-const environmentConfig = environmentConfigs[currentEnvironment] || {};
+const environmentConfig = environmentConfigs[currentEnvironment] ?? {};
 
 export const config = {
   ...baseConfig,
@@ -223,7 +224,11 @@ export const config = {
 
 // Validation functions
 export const validateConfig = (): boolean => {
-  const requiredFields = [config.firebase.apiKey, config.firebase.projectId, config.api.baseURL];
+  const requiredFields = [
+    config.firebase.apiKey,
+    config.firebase.projectId,
+    config.api.baseURL,
+  ];
 
   const missingFields = requiredFields.filter(field => !field);
 
@@ -238,7 +243,7 @@ export const validateConfig = (): boolean => {
 // Debug helper
 export const logConfig = (): void => {
   if (__DEV__) {
-    console.log('🔧 Current Configuration:', {
+    console.warn('🔧 Current Configuration:', {
       environment: config.app.environment,
       version: config.app.version,
       apiBaseURL: config.api.baseURL,

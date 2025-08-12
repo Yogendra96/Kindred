@@ -6,7 +6,12 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { AccessibilityRole, AccessibilityState, TextStyle, ViewStyle } from 'react-native';
+import type {
+  AccessibilityRole,
+  AccessibilityState,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 import {
   ActivityIndicator,
   Animated,
@@ -39,7 +44,14 @@ export interface ModernButtonProps {
   loadingText?: string;
 
   // Styling
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'success' | 'warning';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'tertiary'
+    | 'ghost'
+    | 'danger'
+    | 'success'
+    | 'warning';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
   rounded?: boolean;
@@ -85,9 +97,13 @@ const getVariantStyles = (
 ) => {
   const variants = {
     primary: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.primary,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.primary,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.primary,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.primary,
     },
     secondary: {
@@ -97,7 +113,9 @@ const getVariantStyles = (
       shadowColor: theme.colors.primary,
     },
     tertiary: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.backgroundSecondary,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.backgroundSecondary,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.border,
       textColor: disabled ? theme.colors.textTertiary : theme.colors.text,
       shadowColor: theme.colors.text,
@@ -111,19 +129,29 @@ const getVariantStyles = (
     danger: {
       backgroundColor: disabled ? theme.colors.borderLight : theme.colors.error,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.error,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.error,
     },
     success: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.success,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.success,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.success,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.success,
     },
     warning: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.warning,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.warning,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.warning,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.warning,
     },
   };
@@ -132,7 +160,10 @@ const getVariantStyles = (
 };
 
 // Size Configuration
-const getSizeStyles = (size: NonNullable<ModernButtonProps['size']>, theme: Theme) => {
+const getSizeStyles = (
+  size: NonNullable<ModernButtonProps['size']>,
+  theme: Theme,
+) => {
   const sizes = {
     xs: {
       paddingVertical: theme.spacing[1],
@@ -226,10 +257,11 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const rippleAnim = useRef(new Animated.Value(0)).current;
 
   // Responsive size calculation
-  const responsiveActualSize = ModernDesignSystem.ResponsiveUtils.getResponsiveValue(
-    responsiveSize || {},
-    size,
-  );
+  const responsiveActualSize =
+    ModernDesignSystem.ResponsiveUtils.getResponsiveValue(
+      responsiveSize || {},
+      size,
+    );
 
   // Style calculations
   const variantStyles = getVariantStyles(variant, theme, disabled || isLoading);
@@ -408,7 +440,9 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     accessible: true,
     accessibilityRole,
     accessibilityLabel:
-      accessibilityLabel || title || (typeof children === 'string' ? children : 'Button'),
+      accessibilityLabel ||
+      title ||
+      (typeof children === 'string' ? children : 'Button'),
     accessibilityHint,
     accessibilityState: {
       disabled: disabled || isLoading,
@@ -429,7 +463,8 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     minHeight: sizeStyles.minHeight,
     opacity: disabled ? 0.6 : 1,
     width: fullWidth ? '100%' : 'auto',
-    flexDirection: iconPosition === 'top' || iconPosition === 'bottom' ? 'column' : 'row',
+    flexDirection:
+      iconPosition === 'top' || iconPosition === 'bottom' ? 'column' : 'row',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -477,7 +512,11 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
             marginRight: iconPosition === 'right' ? 0 : theme.spacing[2],
             marginLeft: iconPosition === 'right' ? theme.spacing[2] : 0,
             marginBottom:
-              iconPosition === 'bottom' ? 0 : iconPosition === 'top' ? theme.spacing[1] : 0,
+              iconPosition === 'bottom'
+                ? 0
+                : iconPosition === 'top'
+                  ? theme.spacing[1]
+                  : 0,
             marginTop: iconPosition === 'bottom' ? theme.spacing[1] : 0,
           },
           iconStyle,
@@ -601,7 +640,9 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
           StyleSheet.absoluteFillObject,
           {
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: rounded ? theme.borderRadius.full : sizeStyles.borderRadius,
+            borderRadius: rounded
+              ? theme.borderRadius.full
+              : sizeStyles.borderRadius,
             transform: [
               {
                 scale: rippleAnim.interpolate({

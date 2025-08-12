@@ -309,7 +309,10 @@ export interface APMConfig {
 }
 
 // Export default configuration
-export const DEFAULT_CORE_VITAL_THRESHOLDS: Record<CoreVitalType, CoreVitalThreshold> = {
+export const DEFAULT_CORE_VITAL_THRESHOLDS: Record<
+  CoreVitalType,
+  CoreVitalThreshold
+> = {
   FCP: { good: 1800, needsImprovement: 3000, poor: 3000 }, // milliseconds
   LCP: { good: 2500, needsImprovement: 4000, poor: 4000 },
   FID: { good: 100, needsImprovement: 300, poor: 300 },

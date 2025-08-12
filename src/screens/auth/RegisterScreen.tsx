@@ -18,6 +18,17 @@ import { useNavigation } from '@react-navigation/native';
 // Import logo asset
 import logoImage from '../../assets/logo.png';
 
+// Color constants to avoid literals
+const COLORS = {
+  white: '#fff',
+  blue: '#007AFF',
+  gray: '#666',
+  lightGray: '#ddd',
+  red: '#ff4444',
+  darkRed: '#c62828',
+  lightRed: '#ffebee',
+} as const;
+
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -97,7 +108,7 @@ const RegisterScreen = () => {
           onChangeText={setName}
           accessibilityLabel='Full name'
           accessibilityHint='Enter your full name for account registration'
-          accessibilityRequired={true}
+          accessibilityRequired
           accessibilityInvalid={formErrors.some(e => e.includes('name'))}
         />
         <TextInput
@@ -109,7 +120,7 @@ const RegisterScreen = () => {
           keyboardType='email-address'
           accessibilityLabel='Email address'
           accessibilityHint='Enter your email address for account registration'
-          accessibilityRequired={true}
+          accessibilityRequired
           accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
@@ -120,7 +131,7 @@ const RegisterScreen = () => {
           secureTextEntry
           accessibilityLabel='Password'
           accessibilityHint='Enter a secure password for your account'
-          accessibilityRequired={true}
+          accessibilityRequired
           accessibilityInvalid={formErrors.some(e => e.includes('Password'))}
         />
         <TextInput
@@ -134,7 +145,7 @@ const RegisterScreen = () => {
           secureTextEntry
           accessibilityLabel='Confirm password'
           accessibilityHint='Re-enter your password to confirm'
-          accessibilityRequired={true}
+          accessibilityRequired
           accessibilityInvalid={formErrors.some(e => e.includes('confirmation'))}
         />
 
@@ -142,7 +153,7 @@ const RegisterScreen = () => {
           style={styles.registerButton}
           onPress={handleRegister}
           disabled={loading}
-          accessible={true}
+          accessible
           accessibilityLabel='Register'
           accessibilityHint='Creates a new account'
           accessibilityRole='button'
@@ -154,7 +165,7 @@ const RegisterScreen = () => {
           <Text style={styles.footerText}>Already have an account? </Text>
           <TouchableOpacity
             onPress={() => navigation.navigate('Login')}
-            accessible={true}
+            accessible
             accessibilityLabel='Go to Login'
             accessibilityHint='Navigate to login screen'
             accessibilityRole='button'
@@ -168,77 +179,77 @@ const RegisterScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginTop: 50,
-    marginBottom: 30,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  formContainer: {
-    paddingHorizontal: 20,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+  buttonText: {
+    color: COLORS.white,
     fontSize: 16,
+    fontWeight: 'bold',
   },
-  inputError: {
-    borderColor: '#ff4444',
-    borderWidth: 2,
+  container: {
+    backgroundColor: COLORS.white,
+    flex: 1,
   },
   errorContainer: {
+    backgroundColor: COLORS.lightRed,
+    borderLeftColor: COLORS.red,
+    borderLeftWidth: 4,
+    borderRadius: 8,
     marginBottom: 15,
     padding: 10,
-    backgroundColor: '#ffebee',
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#ff4444',
   },
   errorText: {
-    color: '#c62828',
+    color: COLORS.darkRed,
     fontSize: 14,
     marginBottom: 5,
-  },
-  registerButton: {
-    backgroundColor: '#007AFF',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 20,
   },
-  footerText: {
-    color: '#666',
-  },
   footerLink: {
-    color: '#007AFF',
+    color: COLORS.blue,
     fontWeight: 'bold',
+  },
+  footerText: {
+    color: COLORS.gray,
+  },
+  formContainer: {
+    paddingHorizontal: 20,
+  },
+  input: {
+    borderColor: COLORS.lightGray,
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 16,
+    height: 50,
+    marginBottom: 15,
+    paddingHorizontal: 15,
+  },
+  inputError: {
+    borderColor: COLORS.red,
+    borderWidth: 2,
+  },
+  logo: {
+    height: 120,
+    width: 120,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+    marginTop: 50,
+  },
+  registerButton: {
+    alignItems: 'center',
+    backgroundColor: COLORS.blue,
+    borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 10,
   },
 });
 

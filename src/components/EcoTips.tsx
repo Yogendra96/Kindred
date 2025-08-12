@@ -89,17 +89,17 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       .doc(tip.id);
 
     try {
-      if (!tip.completed) {
-        await tipRef.set({
-          completedAt: firestore.FieldValue.serverTimestamp(),
-          impact: tip.impact,
-        });
-      } else {
-        await tipRef.delete();
-      }
+      await (!tip.completed
+        ? tipRef.set({
+            completedAt: firestore.FieldValue.serverTimestamp(),
+            impact: tip.impact,
+          })
+        : tipRef.delete());
 
       _setTips(currentTips =>
-        currentTips.map(t => (t.id === tip.id ? { ...t, completed: !t.completed } : t)),
+        currentTips.map(t =>
+          t.id === tip.id ? { ...t, completed: !t.completed } : t,
+        ),
       );
     } catch (error) {
       console.error('Error updating tip completion:', error);
@@ -179,7 +179,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'f2',
         title: 'Buy Local Produce',
-        description: 'Local food requires less transportation and often uses fewer preservatives.',
+        description:
+          'Local food requires less transportation and often uses fewer preservatives.',
         impact: 'medium',
         category: 'food',
         icon: '@assets/icons/local-market.png',
@@ -189,7 +190,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w1',
         title: 'Start Composting',
-        description: 'Composting organic waste reduces methane emissions from landfills.',
+        description:
+          'Composting organic waste reduces methane emissions from landfills.',
         impact: 'medium',
         category: 'waste',
         icon: '@assets/icons/compost.png',
@@ -198,7 +200,8 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w2',
         title: 'Improve Recycling',
-        description: 'Proper recycling can reduce waste-related emissions by up to 30%.',
+        description:
+          'Proper recycling can reduce waste-related emissions by up to 30%.',
         impact: 'medium',
         category: 'waste',
         icon: '@assets/icons/recycle.png',
@@ -254,25 +257,43 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
         {personalizedTips.map(tip => (
           <TouchableOpacity
             key={tip.id}
-            style={[styles.tipCard, { backgroundColor: theme.colors.background }]}
+            style={[
+              styles.tipCard,
+              { backgroundColor: theme.colors.background },
+            ]}
             onPress={() => onTipPress?.(tip)}
           >
             <Image source={tip.icon} style={styles.icon} />
             <View style={styles.tipContent}>
-              <Text style={[styles.tipTitle, { color: theme.colors.text.primary }]}>
+              <Text
+                style={[styles.tipTitle, { color: theme.colors.text.primary }]}
+              >
                 {tip.title}
               </Text>
               <Text
-                style={[styles.tipDescription, { color: theme.colors.text.secondary }]}
+                style={[
+                  styles.tipDescription,
+                  { color: theme.colors.text.secondary },
+                ]}
                 numberOfLines={2}
               >
                 {tip.description}
               </Text>
               <View style={styles.impactContainer}>
-                <Text style={[styles.impactLabel, { color: theme.colors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.impactLabel,
+                    { color: theme.colors.text.secondary },
+                  ]}
+                >
                   Impact:
                 </Text>
-                <Text style={[styles.impactValue, { color: getImpactColor(tip.impact) }]}>
+                <Text
+                  style={[
+                    styles.impactValue,
+                    { color: getImpactColor(tip.impact) },
+                  ]}
+                >
                   {tip.impact.toUpperCase()}
                 </Text>
               </View>
@@ -289,29 +310,46 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
     borderRadius: 16,
     marginHorizontal: 16,
     marginVertical: 8,
+    padding: 16,
+  },
+  icon: {
+    height: 48,
+    marginBottom: 12,
+    width: 48,
+  },
+  impactContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  impactLabel: {
+    fontSize: 14,
+    marginRight: 8,
+  },
+  impactValue: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   loadingContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     minHeight: 200,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
+  savings: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   scrollContent: {
     paddingRight: 16,
   },
   tipCard: {
-    width: 280,
     borderRadius: 12,
     marginRight: 16,
     padding: 16,
+    width: 280,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -324,39 +362,22 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  icon: {
-    width: 48,
-    height: 48,
-    marginBottom: 12,
-  },
   tipContent: {
     flex: 1,
+  },
+  tipDescription: {
+    fontSize: 14,
+    marginBottom: 12,
   },
   tipTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
   },
-  tipDescription: {
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  impactContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  impactLabel: {
-    fontSize: 14,
-    marginRight: 8,
-  },
-  impactValue: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  savings: {
-    fontSize: 12,
-    fontWeight: '500',
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
 });
 

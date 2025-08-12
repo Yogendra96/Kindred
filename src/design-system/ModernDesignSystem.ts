@@ -554,19 +554,28 @@ export const ResponsiveUtils = {
   isLargeDevice: screenWidth >= 414,
   isTablet: screenWidth >= 768,
 
-  getResponsiveValue: <T>(values: { sm?: T; md?: T; lg?: T; xl?: T }, defaultValue: T): T => {
-    if (screenWidth >= Breakpoints.xl && values.xl !== undefined) return values.xl;
-    if (screenWidth >= Breakpoints.lg && values.lg !== undefined) return values.lg;
-    if (screenWidth >= Breakpoints.md && values.md !== undefined) return values.md;
-    if (screenWidth >= Breakpoints.sm && values.sm !== undefined) return values.sm;
+  getResponsiveValue: <T>(
+    values: { sm?: T; md?: T; lg?: T; xl?: T },
+    defaultValue: T,
+  ): T => {
+    if (screenWidth >= Breakpoints.xl && values.xl !== undefined)
+      return values.xl;
+    if (screenWidth >= Breakpoints.lg && values.lg !== undefined)
+      return values.lg;
+    if (screenWidth >= Breakpoints.md && values.md !== undefined)
+      return values.md;
+    if (screenWidth >= Breakpoints.sm && values.sm !== undefined)
+      return values.sm;
     return defaultValue;
   },
 
   getSpacing: (multiplier: number): number => Spacing[2] * multiplier,
 
-  getFontSize: (size: keyof typeof Typography.fontSize): number => Typography.fontSize[size],
+  getFontSize: (size: keyof typeof Typography.fontSize): number =>
+    Typography.fontSize[size],
 
-  getColor: (theme: Theme, colorKey: keyof Theme['colors']): string => theme.colors[colorKey],
+  getColor: (theme: Theme, colorKey: keyof Theme['colors']): string =>
+    theme.colors[colorKey],
 };
 
 // Accessibility Utilities

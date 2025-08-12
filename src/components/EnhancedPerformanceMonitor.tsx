@@ -25,6 +25,10 @@ import { HapticFeedbackService } from '../services/HapticFeedbackService';
 
 import { AnimatedTouchable } from './MicroInteractions';
 
+const COLORS = {
+  blackTransparent10: 'rgba(0,0,0,0.1)',
+};
+
 const { width: screenWidth } = Dimensions.get('window');
 
 interface PerformanceMetrics {
@@ -111,7 +115,8 @@ const optimizationSuggestions: OptimizationSuggestion[] = [
   {
     id: 'bundle-splitting',
     title: 'Code Splitting',
-    description: 'Split your bundle into smaller chunks to improve initial load time.',
+    description:
+      'Split your bundle into smaller chunks to improve initial load time.',
     impact: 'high',
     effort: 'high',
     category: 'bundle',
@@ -138,7 +143,9 @@ interface EnhancedPerformanceMonitorProps {
   testID?: string;
 }
 
-export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProps> = ({
+export const EnhancedPerformanceMonitor: React.FC<
+  EnhancedPerformanceMonitorProps
+> = ({
   enabled = true,
   samplingInterval = 1000,
   maxDataPoints = 60,
@@ -150,10 +157,14 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
   const { theme, isDark } = useTheme();
   const [metrics, setMetrics] = useState<PerformanceMetrics[]>([]);
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
-  const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>(optimizationSuggestions);
+  const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>(
+    optimizationSuggestions,
+  );
   const [isMonitoring, setIsMonitoring] = useState(enabled);
-  const [selectedMetric, setSelectedMetric] = useState<keyof PerformanceMetrics>('fps');
-  const [thresholds, setThresholds] = useState<PerformanceThresholds>(defaultThresholds);
+  const [selectedMetric, setSelectedMetric] =
+    useState<keyof PerformanceMetrics>('fps');
+  const [thresholds, setThresholds] =
+    useState<PerformanceThresholds>(defaultThresholds);
   const [_showDetails, _setShowDetails] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -177,8 +188,12 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 
   const loadSettings = async () => {
     try {
-      const savedThresholds = await AsyncStorage.getItem('performance_thresholds');
-      const savedSuggestions = await AsyncStorage.getItem('optimization_suggestions');
+      const savedThresholds = await AsyncStorage.getItem(
+        'performance_thresholds',
+      );
+      const savedSuggestions = await AsyncStorage.getItem(
+        'optimization_suggestions',
+      );
 
       if (savedThresholds) {
         setThresholds(JSON.parse(savedThresholds));
@@ -194,8 +209,14 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 
   const saveSettings = async () => {
     try {
-      await AsyncStorage.setItem('performance_thresholds', JSON.stringify(thresholds));
-      await AsyncStorage.setItem('optimization_suggestions', JSON.stringify(suggestions));
+      await AsyncStorage.setItem(
+        'performance_thresholds',
+        JSON.stringify(thresholds),
+      );
+      await AsyncStorage.setItem(
+        'optimization_suggestions',
+        JSON.stringify(suggestions),
+      );
     } catch (error) {
       console.error('Error saving performance settings:', error);
     }
@@ -228,7 +249,9 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
     frameCount.current++;
 
     if (now - lastFrameTime.current >= 1000) {
-      const fps = Math.round((frameCount.current * 1000) / (now - lastFrameTime.current));
+      const fps = Math.round(
+        (frameCount.current * 1000) / (now - lastFrameTime.current),
+      );
       frameCount.current = 0;
       lastFrameTime.current = now;
 
@@ -270,7 +293,7 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
   };
 
   const checkThresholds = (metrics: PerformanceMetrics) => {
-    Object.entries(thresholds).forEach(([key, threshold]) => {
+    for (const [key, threshold] of Object.entries(thresholds)) {
       const metricKey = key as keyof PerformanceThresholds;
       const value = metrics[metricKey] as number;
 
@@ -279,7 +302,7 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
       } else if (value >= threshold.warning) {
         createAlert(metricKey, value, threshold.warning, 'warning');
       }
-    });
+    }
   };
 
   const createAlert = (
@@ -311,7 +334,9 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 
   const resolveAlert = (alertId: string) => {
     setAlerts(prev =>
-      prev.map(alert => (alert.id === alertId ? { ...alert, resolved: true } : alert)),
+      prev.map(alert =>
+        alert.id === alertId ? { ...alert, resolved: true } : alert,
+      ),
     );
   };
 
@@ -337,7 +362,8 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
       datasets: [
         {
           data,
-          color: (opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+          color: (opacity = 1) =>
+            `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
           strokeWidth: 2,
         },
       ],
@@ -364,10 +390,13 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
     const recent = metrics.slice(-10);
     return {
       fps: recent.reduce((sum, m) => sum + m.fps, 0) / recent.length,
-      memoryUsage: recent.reduce((sum, m) => sum + m.memoryUsage, 0) / recent.length,
+      memoryUsage:
+        recent.reduce((sum, m) => sum + m.memoryUsage, 0) / recent.length,
       cpuUsage: recent.reduce((sum, m) => sum + m.cpuUsage, 0) / recent.length,
-      networkLatency: recent.reduce((sum, m) => sum + m.networkLatency, 0) / recent.length,
-      renderTime: recent.reduce((sum, m) => sum + m.renderTime, 0) / recent.length,
+      networkLatency:
+        recent.reduce((sum, m) => sum + m.networkLatency, 0) / recent.length,
+      renderTime:
+        recent.reduce((sum, m) => sum + m.renderTime, 0) / recent.length,
     };
   };
 
@@ -376,8 +405,10 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
     backgroundGradientFrom: theme.colors.surface,
     backgroundGradientTo: theme.colors.surface,
     decimalPlaces: 1,
-    color: (opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+    color: (opacity = 1) =>
+      `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+    labelColor: (opacity = 1) =>
+      `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
     style: {
       borderRadius: 16,
     },
@@ -412,26 +443,38 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
           onPress={() => setIsMonitoring(!isMonitoring)}
           style={[
             styles.toggleButton,
-            {
-              backgroundColor: isMonitoring ? '#4CAF50' : '#F44336',
-            },
+            isMonitoring ? styles.toggleButtonActive : styles.toggleButtonInactive,
           ]}
           hapticType='medium'
           animationType='scale'
-          accessible={true}
+          accessible
           accessibilityRole='switch'
           accessibilityState={{ checked: isMonitoring }}
           accessibilityLabel='Toggle performance monitoring'
         >
-          <Ionicons name={isMonitoring ? 'play' : 'pause'} size={16} color='white' />
+          <Ionicons
+            name={isMonitoring ? 'play' : 'pause'}
+            size={16}
+            color='white'
+          />
           <Text style={styles.toggleText}>{isMonitoring ? 'ON' : 'OFF'}</Text>
         </AnimatedTouchable>
       </View>
 
       {/* Active Alerts */}
       {activeAlerts.length > 0 && (
-        <View style={[styles.alertsContainer, { backgroundColor: theme.colors.errorContainer }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onErrorContainer }]}>
+        <View
+          style={[
+            styles.alertsContainer,
+            { backgroundColor: theme.colors.errorContainer },
+          ]}
+        >
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: theme.colors.onErrorContainer },
+            ]}
+          >
             Active Alerts ({activeAlerts.length})
           </Text>
           {activeAlerts.slice(0, 3).map(alert => (
@@ -442,7 +485,12 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
                   size={16}
                   color={alert.type === 'critical' ? '#F44336' : '#FF9800'}
                 />
-                <Text style={[styles.alertText, { color: theme.colors.onErrorContainer }]}>
+                <Text
+                  style={[
+                    styles.alertText,
+                    { color: theme.colors.onErrorContainer },
+                  ]}
+                >
                   {alert.message}
                 </Text>
               </View>
@@ -451,11 +499,15 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
                 style={styles.resolveButton}
                 hapticType='light'
                 animationType='scale'
-                accessible={true}
+                accessible
                 accessibilityRole='button'
                 accessibilityLabel='Resolve alert'
               >
-                <Ionicons name='checkmark' size={16} color={theme.colors.onErrorContainer} />
+                <Ionicons
+                  name='checkmark'
+                  size={16}
+                  color={theme.colors.onErrorContainer}
+                />
               </AnimatedTouchable>
             </View>
           ))}
@@ -464,8 +516,15 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 
       {/* Real-time Metrics */}
       {showRealTimeMetrics && currentMetrics && (
-        <View style={[styles.metricsContainer, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+        <View
+          style={[
+            styles.metricsContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
+          >
             Real-time Metrics
           </Text>
           <View style={styles.metricsGrid}>
@@ -476,7 +535,12 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
               'Latency ms': currentMetrics.networkLatency,
             }).map(([label, value]) => (
               <View key={label} style={styles.metricItem}>
-                <Text style={[styles.metricLabel, { color: theme.colors.onSurfaceVariant }]}>
+                <Text
+                  style={[
+                    styles.metricLabel,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
                   {label}
                 </Text>
                 <Text
@@ -506,9 +570,16 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 
       {/* Chart */}
       {chartData && (
-        <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[
+            styles.chartContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
           <View style={styles.chartHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+            <Text
+              style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
+            >
               Performance Chart
             </Text>
             <View style={styles.metricSelector}>
@@ -518,15 +589,15 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
                   onPress={() => setSelectedMetric(metric)}
                   style={[
                     styles.metricButton,
-                    {
-                      backgroundColor:
-                        selectedMetric === metric ? theme.colors.primary : 'transparent',
-                      borderColor: theme.colors.outline,
-                    },
+                    selectedMetric === metric ? [
+                      styles.selectedMetricButton,
+                      { backgroundColor: theme.colors.primary }
+                    ] : styles.unselectedMetricButton,
+                    { borderColor: theme.colors.outline },
                   ]}
                   hapticType='selection'
                   animationType='scale'
-                  accessible={true}
+                  accessible
                   accessibilityRole='button'
                   accessibilityState={{ selected: selectedMetric === metric }}
                   accessibilityLabel={`Select ${metric} metric`}
@@ -556,24 +627,36 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
             chartConfig={chartConfig}
             bezier
             style={styles.chart}
-            withDots={true}
+            withDots
             withShadow={false}
-            withVerticalLabels={true}
-            withHorizontalLabels={true}
+            withVerticalLabels
+            withHorizontalLabels
           />
         </View>
       )}
 
       {/* Optimization Suggestions */}
       {showOptimizationSuggestions && (
-        <View style={[styles.suggestionsContainer, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+        <View
+          style={[
+            styles.suggestionsContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
+          >
             Optimization Suggestions
           </Text>
           {suggestions.map(suggestion => (
             <View key={suggestion.id} style={styles.suggestionItem}>
               <View style={styles.suggestionHeader}>
-                <Text style={[styles.suggestionTitle, { color: theme.colors.onSurface }]}>
+                <Text
+                  style={[
+                    styles.suggestionTitle,
+                    { color: theme.colors.onSurface },
+                  ]}
+                >
                   {suggestion.title}
                 </Text>
                 <View style={styles.suggestionBadges}>
@@ -590,7 +673,9 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
                       },
                     ]}
                   >
-                    <Text style={styles.badgeText}>{suggestion.impact} impact</Text>
+                    <Text style={styles.badgeText}>
+                      {suggestion.impact} impact
+                    </Text>
                   </View>
                   <View
                     style={[
@@ -605,12 +690,17 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
                       },
                     ]}
                   >
-                    <Text style={styles.badgeText}>{suggestion.effort} effort</Text>
+                    <Text style={styles.badgeText}>
+                      {suggestion.effort} effort
+                    </Text>
                   </View>
                 </View>
               </View>
               <Text
-                style={[styles.suggestionDescription, { color: theme.colors.onSurfaceVariant }]}
+                style={[
+                  styles.suggestionDescription,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
               >
                 {suggestion.description}
               </Text>
@@ -619,12 +709,14 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
                 style={[
                   styles.suggestionButton,
                   {
-                    backgroundColor: suggestion.implemented ? '#4CAF50' : theme.colors.primary,
+                    backgroundColor: suggestion.implemented
+                      ? '#4CAF50'
+                      : theme.colors.primary,
                   },
                 ]}
                 hapticType='medium'
                 animationType='scale'
-                accessible={true}
+                accessible
                 accessibilityRole='button'
                 accessibilityState={{ selected: suggestion.implemented }}
                 accessibilityLabel={`Mark ${suggestion.title} as ${
@@ -647,30 +739,53 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 
       {/* Performance Summary */}
       {averageMetrics && (
-        <View style={[styles.summaryContainer, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+        <View
+          style={[
+            styles.summaryContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
+          >
             Performance Summary (Last 10 samples)
           </Text>
           <View style={styles.summaryGrid}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 Average FPS
               </Text>
               <Text
-                style={[styles.summaryValue, { color: getMetricColor(averageMetrics.fps, 'fps') }]}
+                style={[
+                  styles.summaryValue,
+                  { color: getMetricColor(averageMetrics.fps, 'fps') },
+                ]}
               >
                 {averageMetrics.fps.toFixed(1)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 Memory Usage
               </Text>
               <Text
                 style={[
                   styles.summaryValue,
                   {
-                    color: getMetricColor(averageMetrics.memoryUsage, 'memoryUsage'),
+                    color: getMetricColor(
+                      averageMetrics.memoryUsage,
+                      'memoryUsage',
+                    ),
                   },
                 ]}
               >
@@ -678,7 +793,12 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 CPU Usage
               </Text>
               <Text
@@ -693,14 +813,22 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 Network Latency
               </Text>
               <Text
                 style={[
                   styles.summaryValue,
                   {
-                    color: getMetricColor(averageMetrics.networkLatency, 'networkLatency'),
+                    color: getMetricColor(
+                      averageMetrics.networkLatency,
+                      'networkLatency',
+                    ),
                   },
                 ]}
               >
@@ -715,173 +843,156 @@ export const EnhancedPerformanceMonitor: React.FC<EnhancedPerformanceMonitorProp
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  toggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  toggleText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  alertsContainer: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  alertItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
   alertContent: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     flex: 1,
     gap: 8,
   },
+  alertItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
   alertText: {
+    flex: 1,
     fontSize: 14,
-    flex: 1,
   },
-  resolveButton: {
-    padding: 4,
-  },
-  metricsContainer: {
+  alertsContainer: {
+    borderRadius: 12,
+    marginBottom: 16,
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  metricItem: {
-    flex: 1,
-    minWidth: '45%',
-    alignItems: 'center',
-  },
-  metricLabel: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  metricValue: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  chartContainer: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  metricSelector: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  metricButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  metricButtonText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
-  suggestionsContainer: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  suggestionItem: {
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-  },
-  suggestionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  suggestionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    flex: 1,
-    marginRight: 8,
-  },
-  suggestionBadges: {
-    gap: 4,
   },
   badge: {
+    borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 8,
   },
   badgeText: {
     color: 'white',
     fontSize: 10,
     fontWeight: '500',
   },
-  suggestionDescription: {
-    fontSize: 14,
-    lineHeight: 20,
+  chart: {
+    borderRadius: 16,
+    marginVertical: 8,
+  },
+  chartContainer: {
+    borderRadius: 12,
+    marginBottom: 16,
+    padding: 16,
+  },
+  chartHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
-  suggestionButton: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  header: {
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  metricButton: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  metricButtonText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  metricItem: {
+    alignItems: 'center',
+    flex: 1,
+    minWidth: '45%',
+  },
+  metricLabel: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  metricSelector: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  metricValue: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  metricsContainer: {
+    borderRadius: 12,
+    marginBottom: 16,
+    padding: 16,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  resolveButton: {
+    padding: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  suggestionBadges: {
+    gap: 4,
+  },
+  suggestionButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    gap: 4,
   },
   suggestionButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
   },
-  summaryContainer: {
-    padding: 16,
+  suggestionDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  suggestionHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  suggestionItem: {
+    borderBottomColor: COLORS.blackTransparent10,
+    borderBottomWidth: 1,
+    marginBottom: 16,
+    paddingBottom: 16,
+  },
+  suggestionTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  suggestionsContainer: {
     borderRadius: 12,
     marginBottom: 16,
+    padding: 16,
+  },
+  summaryContainer: {
+    borderRadius: 12,
+    marginBottom: 16,
+    padding: 16,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -889,9 +1000,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   summaryItem: {
+    alignItems: 'center',
     flex: 1,
     minWidth: '45%',
-    alignItems: 'center',
   },
   summaryLabel: {
     fontSize: 12,
@@ -901,6 +1012,35 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  toggleButton: {
+    alignItems: 'center',
+    borderRadius: 16,
+    flexDirection: 'row',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  toggleText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  toggleButtonActive: {
+    backgroundColor: '#4CAF50',
+  },
+  toggleButtonInactive: {
+    backgroundColor: '#F44336',
+  },
+  selectedMetricButton: {
+    // backgroundColor handled dynamically with theme
+  },
+  unselectedMetricButton: {
+    backgroundColor: 'transparent',
   },
 });
 

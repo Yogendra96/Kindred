@@ -46,7 +46,8 @@ export interface LogMetadata {
     | 'performance'
     | 'security'
     | 'payment'
-    | 'sync';
+    | 'sync'
+    | 'system';
   tags?: string[];
 
   // Request/Response Context
@@ -55,7 +56,7 @@ export interface LogMetadata {
   traceId?: string;
 
   // Custom Context
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface LogEntry {
@@ -83,7 +84,7 @@ export interface LogEntry {
     message: string;
     stack?: string;
     code?: string;
-    cause?: any;
+    cause?: unknown;
   };
 
   // Search & Analytics
@@ -153,7 +154,7 @@ class PerformanceTracker {
     if (!start) return null;
 
     const end = endMark ? this.marks.get(endMark) : null;
-    const endTime = end?.timestamp || performance.now();
+    const endTime = end?.timestamp ?? performance.now();
 
     return {
       name: `${startMark}-duration`,
@@ -166,7 +167,14 @@ class PerformanceTracker {
   private getMemoryUsage(): number {
     // In React Native, we can estimate memory usage
     try {
-      return (global as any).performance?.memory?.usedJSHeapSize || 0;
+      const globalWithPerformance = global as unknown as {
+        performance?: {
+          memory?: {
+            usedJSHeapSize?: number;
+          };
+        };
+      };
+      return globalWithPerformance.performance?.memory?.usedJSHeapSize ?? 0;
     } catch {
       return 0;
     }
@@ -260,7 +268,11 @@ export class AdvancedLoggingService {
     }, this.config.autoFlushInterval);
   }
 
-  private createLogEntry(level: LogLevel, message: string, metadata: LogMetadata = {}): LogEntry {
+  private createLogEntry(
+    level: LogLevel,
+    message: string,
+    metadata: LogMetadata = {},
+  ): LogEntry {
     const timestamp = Date.now();
     const id = uuidv4();
 
@@ -273,7 +285,7 @@ export class AdvancedLoggingService {
       metadata.feature,
       metadata.category,
       metadata.userId,
-      ...(metadata.tags || []),
+      ...(metadata.tags ?? []),
       JSON.stringify(metadata),
     ]
       .filter(Boolean)
@@ -302,7 +314,11 @@ export class AdvancedLoggingService {
     };
   }
 
-  private generateFingerprint(level: LogLevel, message: string, metadata: LogMetadata): string {
+  private generateFingerprint(
+    level: LogLevel,
+    message: string,
+    metadata: LogMetadata,
+  ): string {
     // Create a hash-like fingerprint for deduplication
     const key = `${level}-${message}-${metadata.component}-${metadata.action}`;
     return btoa(key)
@@ -337,7 +353,9 @@ export class AdvancedLoggingService {
 
   private outputToConsole(entry: LogEntry): void {
     const prefix = `[${entry.level.toUpperCase()}] ${new Date(entry.timestamp).toISOString()}`;
-    const context = entry.metadata.component ? ` [${entry.metadata.component}]` : '';
+    const context = entry.metadata.component
+      ? ` [${entry.metadata.component}]`
+      : '';
     const logLine = `${prefix}${context} ${entry.message}`;
 
     const logMethod = {
@@ -370,7 +388,10 @@ export class AdvancedLoggingService {
 
       // Track performance metrics
       if (entry.metadata.duration) {
-        observabilityService.trackPerformanceMetric('log_performance', entry.metadata.duration);
+        observabilityService.trackPerformanceMetric(
+          'log_performance',
+          entry.metadata.duration,
+        );
       }
     } catch (error) {
       // Fail silently to avoid logging loops
@@ -405,8 +426,8 @@ export class AdvancedLoggingService {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        code: (error as any).code,
-        cause: (error as any).cause,
+        code: (error as unknown as { code?: string }).code,
+        cause: (error as unknown as { cause?: unknown }).cause,
       };
     }
 
@@ -421,8 +442,8 @@ export class AdvancedLoggingService {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        code: (error as any).code,
-        cause: (error as any).cause,
+        code: (error as unknown as { code?: string }).code,
+        cause: (error as unknown as { cause?: unknown }).cause,
       };
     }
 
@@ -488,12 +509,16 @@ export class AdvancedLoggingService {
 
     // Category filter
     if (query.categories?.length) {
-      results = results.filter(log => query.categories!.includes(log.metadata.category || ''));
+      results = results.filter(log =>
+        query.categories!.includes(log.metadata.category ?? ''),
+      );
     }
 
     // Tags filter
     if (query.tags?.length) {
-      results = results.filter(log => query.tags!.some(tag => log.metadata.tags?.includes(tag)));
+      results = results.filter(log =>
+        query.tags!.some(tag => log.metadata.tags?.includes(tag)),
+      );
     }
 
     // User filter
@@ -508,7 +533,9 @@ export class AdvancedLoggingService {
 
     // Component filter
     if (query.component) {
-      results = results.filter(log => log.metadata.component === query.component);
+      results = results.filter(
+        log => log.metadata.component === query.component,
+      );
     }
 
     // Time range filter
@@ -520,8 +547,8 @@ export class AdvancedLoggingService {
     }
 
     // Sorting
-    const sortBy = query.sortBy || 'timestamp';
-    const sortOrder = query.sortOrder || 'desc';
+    const sortBy = query.sortBy ?? 'timestamp';
+    const sortOrder = query.sortOrder ?? 'desc';
 
     results.sort((a, b) => {
       let compareValue = 0;
@@ -532,15 +559,17 @@ export class AdvancedLoggingService {
         const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
         compareValue = levels.indexOf(a.level) - levels.indexOf(b.level);
       } else if (sortBy === 'category') {
-        compareValue = (a.metadata.category || '').localeCompare(b.metadata.category || '');
+        compareValue = (a.metadata.category ?? '').localeCompare(
+          b.metadata.category ?? '',
+        );
       }
 
       return sortOrder === 'desc' ? -compareValue : compareValue;
     });
 
     // Pagination
-    const start = query.offset || 0;
-    const end = start + (query.limit || this.config.maxSearchResults);
+    const start = query.offset ?? 0;
+    const end = start + (query.limit ?? this.config.maxSearchResults);
 
     return results.slice(start, end);
   }
@@ -550,12 +579,14 @@ export class AdvancedLoggingService {
     let logs = this.logs;
 
     if (timeRange) {
-      logs = logs.filter(log => log.timestamp >= timeRange.from && log.timestamp <= timeRange.to);
+      logs = logs.filter(
+        log => log.timestamp >= timeRange.from && log.timestamp <= timeRange.to,
+      );
     }
 
     const logsByLevel = logs.reduce(
       (acc, log) => {
-        acc[log.level] = (acc[log.level] || 0) + 1;
+        acc[log.level] = (acc[log.level] ?? 0) + 1;
         return acc;
       },
       {} as Record<LogLevel, number>,
@@ -563,17 +594,19 @@ export class AdvancedLoggingService {
 
     const logsByCategory = logs.reduce(
       (acc, log) => {
-        const category = log.metadata.category || 'uncategorized';
-        acc[category] = (acc[category] || 0) + 1;
+        const category = log.metadata.category ?? 'uncategorized';
+        acc[category] = (acc[category] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>,
     );
 
-    const errorLogs = logs.filter(log => ['error', 'fatal'].includes(log.level));
+    const errorLogs = logs.filter(log =>
+      ['error', 'fatal'].includes(log.level),
+    );
     const errorGroups = errorLogs.reduce(
       (acc, log) => {
-        const key = log.fingerprint || log.message;
+        const key = log.fingerprint ?? log.message;
         if (!acc[key]) {
           acc[key] = { message: log.message, count: 0, lastSeen: 0 };
         }
@@ -581,7 +614,10 @@ export class AdvancedLoggingService {
         acc[key].lastSeen = Math.max(acc[key].lastSeen, log.timestamp);
         return acc;
       },
-      {} as Record<string, { message: string; count: number; lastSeen: number }>,
+      {} as Record<
+        string,
+        { message: string; count: number; lastSeen: number }
+      >,
     );
 
     const topErrors = Object.values(errorGroups)
@@ -591,15 +627,19 @@ export class AdvancedLoggingService {
     const performanceLogs = logs.filter(log => log.metadata.duration);
     const averageRenderTime =
       performanceLogs.length > 0
-        ? performanceLogs.reduce((sum, log) => sum + (log.metadata.duration || 0), 0) /
-          performanceLogs.length
+        ? performanceLogs.reduce(
+            (sum, log) => sum + (log.metadata.duration ?? 0),
+            0,
+          ) / performanceLogs.length
         : 0;
 
     const memoryUsageLogs = logs.filter(log => log.metadata.memoryUsage);
     const averageMemoryUsage =
       memoryUsageLogs.length > 0
-        ? memoryUsageLogs.reduce((sum, log) => sum + (log.metadata.memoryUsage || 0), 0) /
-          memoryUsageLogs.length
+        ? memoryUsageLogs.reduce(
+            (sum, log) => sum + (log.metadata.memoryUsage ?? 0),
+            0,
+          ) / memoryUsageLogs.length
         : 0;
 
     const errorRate = logs.length > 0 ? errorLogs.length / logs.length : 0;
@@ -624,7 +664,8 @@ export class AdvancedLoggingService {
     // Group logs by hour for time series
     const hourlyData = logs.reduce(
       (acc, log) => {
-        const hour = Math.floor(log.timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60);
+        const hour =
+          Math.floor(log.timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60);
         const key = `${hour}-${log.level}`;
 
         if (!acc[key]) {
@@ -634,7 +675,10 @@ export class AdvancedLoggingService {
 
         return acc;
       },
-      {} as Record<string, { timestamp: number; count: number; level: LogLevel }>,
+      {} as Record<
+        string,
+        { timestamp: number; count: number; level: LogLevel }
+      >,
     );
 
     return Object.values(hourlyData).sort((a, b) => a.timestamp - b.timestamp);
@@ -674,10 +718,10 @@ export class AdvancedLoggingService {
             new Date(log.timestamp).toISOString(),
             log.level,
             `"${log.message.replace(/"/g, '""')}"`,
-            log.metadata.category || '',
-            log.metadata.screen || '',
-            log.metadata.component || '',
-            log.metadata.userId || '',
+            log.metadata.category ?? '',
+            log.metadata.screen ?? '',
+            log.metadata.component ?? '',
+            log.metadata.userId ?? '',
           ].join(','),
         ),
       ];
@@ -708,15 +752,18 @@ export const Logger = {
     advancedLoggingService.trace(message, metadata),
   debug: (message: string, metadata?: LogMetadata) =>
     advancedLoggingService.debug(message, metadata),
-  info: (message: string, metadata?: LogMetadata) => advancedLoggingService.info(message, metadata),
-  warn: (message: string, metadata?: LogMetadata) => advancedLoggingService.warn(message, metadata),
+  info: (message: string, metadata?: LogMetadata) =>
+    advancedLoggingService.info(message, metadata),
+  warn: (message: string, metadata?: LogMetadata) =>
+    advancedLoggingService.warn(message, metadata),
   error: (message: string, metadata?: LogMetadata, error?: Error) =>
     advancedLoggingService.error(message, metadata, error),
   fatal: (message: string, metadata?: LogMetadata, error?: Error) =>
     advancedLoggingService.fatal(message, metadata, error),
 
   // Performance tracking
-  startTimer: (name: string) => advancedLoggingService.startPerformanceTracking(name),
+  startTimer: (name: string) =>
+    advancedLoggingService.startPerformanceTracking(name),
   endTimer: (name: string, metadata?: LogMetadata) =>
     advancedLoggingService.endPerformanceTracking(name, metadata),
 

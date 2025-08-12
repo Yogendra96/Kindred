@@ -4,8 +4,6 @@
  * Features: Smart chunking, lazy loading, performance prediction, size monitoring
  */
 
-import { _Platform } from 'react-native';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { observabilityService } from './ObservabilityService';
@@ -50,7 +48,11 @@ interface AlternativeDependency {
   readonly name: string;
   readonly size: number;
   readonly features: string[];
-  readonly recommendation: 'strongly-recommended' | 'recommended' | 'consider' | 'avoid';
+  readonly recommendation:
+    | 'strongly-recommended'
+    | 'recommended'
+    | 'consider'
+    | 'avoid';
 }
 
 interface DuplicateAnalysis {
@@ -203,7 +205,8 @@ class DynamicImportManager {
       const regularity = this.calculateRegularity(pattern);
 
       // Scoring algorithm
-      const score = frequency * 0.4 + (1 / (recency + 1)) * 0.3 + regularity * 0.3;
+      const score =
+        frequency * 0.4 + (1 / (recency + 1)) * 0.3 + regularity * 0.3;
       predictions.push({ moduleId, score });
     }
 
@@ -217,10 +220,13 @@ class DynamicImportManager {
     if (pattern.length < 3) return 0;
 
     const intervals = pattern.slice(1).map((time, i) => time - pattern[i]);
-    const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+    const avgInterval =
+      intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
     const variance =
-      intervals.reduce((sum, interval) => sum + (interval - avgInterval) ** 2, 0) /
-      intervals.length;
+      intervals.reduce(
+        (sum, interval) => sum + (interval - avgInterval) ** 2,
+        0,
+      ) / intervals.length;
 
     // Lower variance = higher regularity
     return 1 / (variance + 1);
@@ -247,13 +253,15 @@ class DynamicImportManager {
   } {
     const totalImports = this.loadTimes.size;
     const loadTimes = [...this.loadTimes.values()];
-    const averageLoadTime = loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length || 0;
+    const averageLoadTime =
+      loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length || 0;
 
     const cacheAccesses = [...this.accessPatterns.values()].reduce(
       (sum, pattern) => sum + pattern.length,
       0,
     );
-    const cacheHitRate = totalImports > 0 ? (cacheAccesses - totalImports) / cacheAccesses : 0;
+    const cacheHitRate =
+      totalImports > 0 ? (cacheAccesses - totalImports) / cacheAccesses : 0;
 
     const slowestImports = [...this.loadTimes.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -310,7 +318,10 @@ class TreeShakingAnalyzer {
 
   private isSafeToRemove(moduleId: string, unusedExports: string[]): boolean {
     // Conservative approach: only safe if we have high confidence
-    return this.analyzeUsageConfidence(moduleId, unusedExports) === 'definitely-unused';
+    return (
+      this.analyzeUsageConfidence(moduleId, unusedExports) ===
+      'definitely-unused'
+    );
   }
 
   private analyzeUsageConfidence(
@@ -465,7 +476,10 @@ export class IntelligentBundleOptimizer {
       this.isInitialized = true;
       console.log('✅ Intelligent Bundle Optimizer initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize Intelligent Bundle Optimizer:', error);
+      console.error(
+        '❌ Failed to initialize Intelligent Bundle Optimizer:',
+        error,
+      );
       throw error;
     }
   }
@@ -476,7 +490,11 @@ export class IntelligentBundleOptimizer {
       if (history) {
         const data = JSON.parse(history);
         // Restore optimization patterns and insights
-        console.log('📚 Loaded optimization history:', data.optimizations?.length || 0, 'records');
+        console.log(
+          '📚 Loaded optimization history:',
+          data.optimizations?.length || 0,
+          'records',
+        );
       }
     } catch (error) {
       console.warn('Failed to load optimization history:', error);
@@ -574,7 +592,10 @@ export class IntelligentBundleOptimizer {
     if (analysis.unusedExports.length > 0) {
       recommendations.immediate.push(
         `Remove ${analysis.unusedExports.length} unused exports (saves ~${
-          analysis.unusedExports.reduce((sum, exp) => sum + exp.potentialSavings, 0) / 1024
+          analysis.unusedExports.reduce(
+            (sum, exp) => sum + exp.potentialSavings,
+            0,
+          ) / 1024
         }KB)`,
       );
     }
@@ -603,11 +624,16 @@ export class IntelligentBundleOptimizer {
       recommendations.longTerm.push('Implement more granular code splitting');
     }
 
-    recommendations.longTerm.push('Consider migrating to ES modules for better tree-shaking');
+    recommendations.longTerm.push(
+      'Consider migrating to ES modules for better tree-shaking',
+    );
 
     // Calculate estimated savings
     recommendations.estimatedSavings =
-      analysis.unusedExports.reduce((sum, exp) => sum + exp.potentialSavings, 0) * 0.8; // Conservative estimate
+      analysis.unusedExports.reduce(
+        (sum, exp) => sum + exp.potentialSavings,
+        0,
+      ) * 0.8; // Conservative estimate
 
     return recommendations;
   }
@@ -623,7 +649,10 @@ export class IntelligentBundleOptimizer {
       const recommendations = await this.generateOptimizationRecommendations();
 
       if (recommendations.immediate.length > 0) {
-        console.log('🚨 Immediate optimizations available:', recommendations.immediate);
+        console.log(
+          '🚨 Immediate optimizations available:',
+          recommendations.immediate,
+        );
       }
     } catch (error) {
       console.error('Bundle analysis failed:', error);
@@ -641,7 +670,9 @@ export class IntelligentBundleOptimizer {
 
   async getOptimizationReport(): Promise<{
     currentAnalysis: BundleAnalysis;
-    recommendations: Awaited<ReturnType<typeof this.generateOptimizationRecommendations>>;
+    recommendations: Awaited<
+      ReturnType<typeof this.generateOptimizationRecommendations>
+    >;
     statistics: ReturnType<DynamicImportManager['getImportStatistics']>;
     sizeGrowth: ReturnType<BundleSizeMonitor['getSizeGrowthTrend']>;
   }> {

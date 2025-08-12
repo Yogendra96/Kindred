@@ -30,23 +30,41 @@ export interface UseModernAPMOptions {
 export interface ModernAPMHookReturn {
   // Core Web Vitals tracking
   startScreenRender: (screenName?: string) => void;
-  endScreenRender: (screenName?: string, context?: Record<string, unknown>) => void;
-  recordCoreVital: (type: CoreVitalType, value: number, context?: Record<string, unknown>) => void;
+  endScreenRender: (
+    screenName?: string,
+    context?: Record<string, unknown>,
+  ) => void;
+  recordCoreVital: (
+    type: CoreVitalType,
+    value: number,
+    context?: Record<string, unknown>,
+  ) => void;
   recordTouchInteraction: (actionName: string, delay: number) => void;
-  recordLayoutShift: (shiftScore: number, context?: Record<string, unknown>) => void;
+  recordLayoutShift: (
+    shiftScore: number,
+    context?: Record<string, unknown>,
+  ) => void;
 
   // Performance metrics
   recordMetric: (
-    metric: Omit<EnhancedPerformanceMetric, 'id' | 'timestamp' | 'sessionId' | 'screenName'>,
+    metric: Omit<
+      EnhancedPerformanceMetric,
+      'id' | 'timestamp' | 'sessionId' | 'screenName'
+    >,
   ) => void;
 
   // Memory tracking
   trackMemory: () => Promise<NativeMemoryMetrics>;
-  trackComponentLifecycle: (componentName: string, event: 'mount' | 'unmount' | 'update') => void;
+  trackComponentLifecycle: (
+    componentName: string,
+    event: 'mount' | 'unmount' | 'update',
+  ) => void;
 
   // Real-time data
   sessionSummary: ReturnType<typeof modernAPMService.getSessionSummary> | null;
-  realTimeMetrics: ReturnType<typeof modernAPMService.getRealTimeMetrics> | null;
+  realTimeMetrics: ReturnType<
+    typeof modernAPMService.getRealTimeMetrics
+  > | null;
   activeAlerts: PerformanceAlert[];
 
   // Status
@@ -58,7 +76,9 @@ export interface ModernAPMHookReturn {
   refreshMetrics: () => void;
 }
 
-export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookReturn => {
+export const useModernAPM = (
+  options: UseModernAPMOptions = {},
+): ModernAPMHookReturn => {
   const {
     screenName = 'unknown',
     autoTrackRender = true,
@@ -106,7 +126,8 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
           refreshMetrics();
         }, 5000); // Refresh every 5 seconds
       } catch (error_) {
-        const errorMessage = error_ instanceof Error ? error_.message : 'Failed to initialize APM';
+        const errorMessage =
+          error_ instanceof Error ? error_.message : 'Failed to initialize APM';
         setError(errorMessage);
         console.error('Failed to initialize Modern APM:', errorMessage);
       }
@@ -161,7 +182,10 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
 
     return () => {
       subscription?.remove();
@@ -173,7 +197,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
     (customScreenName?: string) => {
       if (!isInitialized) return;
 
-      const screen = customScreenName || screenName;
+      const screen = customScreenName ?? screenName;
       renderStartTime.current = performance.now();
       modernAPMService.startScreenRender(screen);
     },
@@ -184,7 +208,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
     (customScreenName?: string, context?: Record<string, unknown>) => {
       if (!isInitialized || renderStartTime.current === 0) return;
 
-      const screen = customScreenName || screenName;
+      const screen = customScreenName ?? screenName;
       modernAPMService.endScreenRender(screen, context);
       renderStartTime.current = 0;
     },
@@ -220,7 +244,12 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): ModernAPMHookRe
 
   // Performance metrics
   const recordMetric = useCallback(
-    (metric: Omit<EnhancedPerformanceMetric, 'id' | 'timestamp' | 'sessionId' | 'screenName'>) => {
+    (
+      metric: Omit<
+        EnhancedPerformanceMetric,
+        'id' | 'timestamp' | 'sessionId' | 'screenName'
+      >,
+    ) => {
       if (!isInitialized) return;
 
       modernAPMService.recordEnhancedMetric(metric);
@@ -313,7 +342,8 @@ export const useComponentPerformance = (
   options: { trackMemory?: boolean; trackRender?: boolean } = {},
 ) => {
   const { trackMemory: _trackMemory = true, trackRender = true } = options;
-  const { trackComponentLifecycle, recordMetric, isInitialized } = useModernAPM();
+  const { trackComponentLifecycle, recordMetric, isInitialized } =
+    useModernAPM();
 
   const renderStartTime = useRef<number>(0);
   const mountTime = useRef<number>(0);
@@ -394,7 +424,13 @@ export const useComponentPerformance = (
         },
       });
     },
-    [isInitialized, componentName, trackComponentLifecycle, recordMetric, trackRender],
+    [
+      isInitialized,
+      componentName,
+      trackComponentLifecycle,
+      recordMetric,
+      trackRender,
+    ],
   );
 
   return {
@@ -435,7 +471,8 @@ export const useInteractionTracking = (screenName: string) => {
             name: 'user_interaction',
             value: duration,
             unit: 'ms',
-            severity: duration > 300 ? 'high' : duration > 100 ? 'medium' : 'low',
+            severity:
+              duration > 300 ? 'high' : duration > 100 ? 'medium' : 'low',
             context: {
               actionName,
               interactionType,
@@ -460,7 +497,8 @@ export const useInteractionTracking = (screenName: string) => {
  * Hook for tracking navigation performance
  */
 export const useNavigationPerformance = () => {
-  const { startScreenRender, endScreenRender, recordMetric, isInitialized } = useModernAPM();
+  const { startScreenRender, endScreenRender, recordMetric, isInitialized } =
+    useModernAPM();
 
   const trackNavigation = useCallback(
     (
@@ -506,7 +544,11 @@ export const useNavigationPerformance = () => {
             value: navigationDuration,
             unit: 'ms',
             severity:
-              navigationDuration > 1000 ? 'high' : navigationDuration > 500 ? 'medium' : 'low',
+              navigationDuration > 1000
+                ? 'high'
+                : navigationDuration > 500
+                  ? 'medium'
+                  : 'low',
             context: {
               fromScreen,
               toScreen,

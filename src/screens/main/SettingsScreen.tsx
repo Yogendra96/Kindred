@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 
-import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -63,7 +71,7 @@ const SettingsScreen = () => {
       style={styles.settingItem}
       onPress={onPress}
       disabled={!onPress}
-      accessible={true}
+      accessible
       accessibilityRole='button'
       accessibilityLabel={title}
       accessibilityHint={subtitle}
@@ -77,7 +85,9 @@ const SettingsScreen = () => {
           {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
         </View>
       </View>
-      {rightComponent || <Icon name='chevron-forward' size={20} color='#8E8E93' />}
+      {rightComponent || (
+        <Icon name='chevron-forward' size={20} color='#8E8E93' />
+      )}
     </TouchableOpacity>
   );
 
@@ -185,7 +195,11 @@ const SettingsScreen = () => {
           subtitle='Get help and find answers'
         />
 
-        <SettingItem icon='mail-outline' title='Contact Support' subtitle='Reach out to our team' />
+        <SettingItem
+          icon='mail-outline'
+          title='Contact Support'
+          subtitle='Reach out to our team'
+        />
 
         <SettingItem
           icon='document-text-outline'
@@ -228,18 +242,22 @@ const SettingsScreen = () => {
             title='Clear Logs'
             subtitle='Clear all stored logs'
             onPress={() => {
-              Alert.alert('Clear Logs', 'Are you sure you want to clear all logs?', [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Clear',
-                  style: 'destructive',
-                  onPress: () => {
-                    log.trackUserAction('clear_logs');
-                    // Clear logs logic would go here
-                    Alert.alert('Success', 'Logs cleared successfully');
+              Alert.alert(
+                'Clear Logs',
+                'Are you sure you want to clear all logs?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Clear',
+                    style: 'destructive',
+                    onPress: () => {
+                      log.trackUserAction('clear_logs');
+                      // Clear logs logic would go here
+                      Alert.alert('Success', 'Logs cleared successfully');
+                    },
                   },
-                },
-              ]);
+                ],
+              );
             }}
           />
         </View>
@@ -250,7 +268,7 @@ const SettingsScreen = () => {
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
-          accessible={true}
+          accessible
           accessibilityRole='button'
           accessibilityLabel='Logout from account'
         >
@@ -278,96 +296,96 @@ const SettingsScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#f8f9fa',
+    flex: 1,
+  },
+  copyrightText: {
+    color: '#8E8E93',
+    fontSize: 12,
+  },
+  footer: {
+    alignItems: 'center',
+    padding: 20,
   },
   header: {
+    backgroundColor: '#fff',
     padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  section: {
-    marginTop: 20,
-    backgroundColor: '#fff',
-    paddingVertical: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#f8f9fa',
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5EA',
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#34C75920',
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#34C75920',
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
     marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1a1a1a',
-  },
-  settingSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 2,
+    width: 32,
   },
   logoutButton: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   logoutText: {
+    color: '#FF3B30',
     fontSize: 16,
     fontWeight: '500',
-    color: '#FF3B30',
     marginLeft: 12,
   },
-  footer: {
-    padding: 20,
+  section: {
+    backgroundColor: '#fff',
+    marginTop: 20,
+    paddingVertical: 8,
+  },
+  sectionTitle: {
+    backgroundColor: '#f8f9fa',
+    color: '#1a1a1a',
+    fontSize: 18,
+    fontWeight: '600',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  settingItem: {
     alignItems: 'center',
+    borderBottomColor: '#E5E5EA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  settingLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  settingSubtitle: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  settingTitle: {
+    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  subtitle: {
+    color: '#6b7280',
+    fontSize: 16,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  title: {
+    color: '#1a1a1a',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
   versionText: {
+    color: '#8E8E93',
     fontSize: 14,
-    color: '#8E8E93',
     marginBottom: 4,
-  },
-  copyrightText: {
-    fontSize: 12,
-    color: '#8E8E93',
   },
 });
 

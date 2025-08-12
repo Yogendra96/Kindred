@@ -1,4 +1,9 @@
-import React, { type ComponentType, lazy, type ReactNode, Suspense } from 'react';
+import React, {
+  type ComponentType,
+  lazy,
+  type ReactNode,
+  Suspense,
+} from 'react';
 
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
@@ -26,7 +31,10 @@ interface LoadingProps {
   size?: 'small' | 'large';
 }
 
-const LoadingComponent: React.FC<LoadingProps> = ({ message = 'Loading...', size = 'large' }) => (
+const LoadingComponent: React.FC<LoadingProps> = ({
+  message = 'Loading...',
+  size = 'large',
+}) => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size={size} color='#4CAF50' />
     <Text style={styles.loadingText}>{message}</Text>
@@ -39,7 +47,10 @@ interface ErrorFallbackProps {
   resetErrorBoundary: () => void;
 }
 
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => (
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
+  resetErrorBoundary,
+}) => (
   <View style={styles.errorContainer}>
     <Text style={styles.errorTitle}>Something went wrong</Text>
     <Text style={styles.errorMessage}>{error.message}</Text>
@@ -115,7 +126,10 @@ export const createLazyComponent = <T extends ComponentType<unknown>>(
 export class ComponentPreloader {
   private static preloadedComponents = new Set<string>();
 
-  static preload(componentName: string, importFn: () => Promise<unknown>): void {
+  static preload(
+    componentName: string,
+    importFn: () => Promise<unknown>,
+  ): void {
     if (!this.preloadedComponents.has(componentName)) {
       this.preloadedComponents.add(componentName);
       importFn().catch(error => {
@@ -128,9 +142,9 @@ export class ComponentPreloader {
   static preloadMultiple(
     components: Array<{ name: string; importFn: () => Promise<unknown> }>,
   ): void {
-    components.forEach(({ name, importFn }) => {
+    for (const { name, importFn } of components) {
       this.preload(name, importFn);
-    });
+    }
   }
 
   static isPreloaded(componentName: string): boolean {
@@ -157,7 +171,9 @@ export const createLazyRoute = (
 };
 
 // Conditional loading based on feature flags
-export const createConditionalLazyComponent = <T extends ComponentType<unknown>>(
+export const createConditionalLazyComponent = <
+  T extends ComponentType<unknown>,
+>(
   importFn: () => Promise<{ default: T }>,
   condition: () => boolean | Promise<boolean>,
   fallbackComponent?: ComponentType<unknown>,
@@ -169,15 +185,19 @@ export const createConditionalLazyComponent = <T extends ComponentType<unknown>>
     } else if (fallbackComponent) {
       return { default: fallbackComponent };
     } else {
-      throw new Error('Component loading condition not met and no fallback provided');
+      throw new Error(
+        'Component loading condition not met and no fallback provided',
+      );
     }
   });
 
-  return (props: Record<string, unknown>) => (
+  const ConditionalLazyComponent = (props: Record<string, unknown>) => (
     <LazyWrapper errorFallback={ErrorFallback}>
       <LazyComponent {...(props as Record<string, unknown>)} />
     </LazyWrapper>
   );
+  ConditionalLazyComponent.displayName = 'ConditionalLazyComponent';
+  return ConditionalLazyComponent;
 };
 
 // Bundle splitting utilities
@@ -199,7 +219,10 @@ export const BundleSplitter = {
     return {
       load: () => import(`../screens/${category}/index.ts`),
       preload: () =>
-        ComponentPreloader.preload(category, () => import(`../screens/${category}/index.ts`)),
+        ComponentPreloader.preload(
+          category,
+          () => import(`../screens/${category}/index.ts`),
+        ),
     };
   },
 
@@ -208,7 +231,10 @@ export const BundleSplitter = {
     return {
       load: () => import(`../utils/${utilityName}.ts`),
       preload: () =>
-        ComponentPreloader.preload(utilityName, () => import(`../utils/${utilityName}.ts`)),
+        ComponentPreloader.preload(
+          utilityName,
+          () => import(`../utils/${utilityName}.ts`),
+        ),
     };
   },
 };
@@ -218,7 +244,7 @@ export const withLazyLoadingMetrics = <T extends ComponentType<unknown>>(
   LazyComponent: T,
   _componentName: string,
 ) => {
-  return (props: Record<string, unknown>) => {
+  const LazyComponentWithMetrics = (props: Record<string, unknown>) => {
     const startTime = performance.now();
 
     React.useEffect(() => {
@@ -237,6 +263,8 @@ export const withLazyLoadingMetrics = <T extends ComponentType<unknown>>(
 
     return <LazyComponent {...(props as Record<string, unknown>)} />;
   };
+  LazyComponentWithMetrics.displayName = `LazyComponentWithMetrics(${_componentName})`;
+  return LazyComponentWithMetrics;
 };
 
 // Skeleton loading states for different component types
@@ -273,52 +301,72 @@ export const SkeletonLoaders = {
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
   errorContainer: {
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#d32f2f',
-    marginBottom: 8,
   },
   errorMessage: {
-    fontSize: 14,
     color: '#666',
-    textAlign: 'center',
+    fontSize: 14,
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  errorTitle: {
+    color: '#d32f2f',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#666',
+    fontSize: 16,
+    marginTop: 16,
   },
   retryButton: {
-    fontSize: 16,
     color: '#4CAF50',
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  skeletonContainer: {
-    flex: 1,
-    padding: 16,
+  skeletonAvatar: {
+    borderRadius: 20,
+    height: 40,
+    marginRight: 12,
+    width: 40,
   },
   skeletonBox: {
     backgroundColor: '#e0e0e0',
     borderRadius: 4,
   },
-  skeletonHeader: {
-    height: 60,
+  skeletonCard: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 2,
     marginBottom: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  skeletonCardContent: {
+    height: 60,
+  },
+  skeletonCardHeader: {
+    height: 20,
+    marginBottom: 12,
+  },
+  skeletonContainer: {
+    flex: 1,
+    padding: 16,
   },
   skeletonContent: {
     height: 100,
@@ -327,51 +375,31 @@ const styles = StyleSheet.create({
   skeletonFooter: {
     height: 40,
   },
-  skeletonCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  skeletonCardHeader: {
-    height: 20,
-    marginBottom: 12,
-  },
-  skeletonCardContent: {
+  skeletonHeader: {
     height: 60,
+    marginBottom: 16,
   },
   skeletonList: {
     flex: 1,
   },
-  skeletonListItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  skeletonAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
   skeletonListContent: {
     flex: 1,
+  },
+  skeletonListItem: {
+    alignItems: 'center',
+    borderBottomColor: '#e0e0e0',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    padding: 16,
+  },
+  skeletonSubtitle: {
+    height: 12,
+    width: '50%',
   },
   skeletonTitle: {
     height: 16,
     marginBottom: 8,
     width: '70%',
-  },
-  skeletonSubtitle: {
-    height: 12,
-    width: '50%',
   },
 });
 

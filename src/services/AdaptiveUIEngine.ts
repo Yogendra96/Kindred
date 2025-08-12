@@ -4,15 +4,8 @@
  * Features: Dynamic theming, adaptive layouts, emotional design, accessibility intelligence
  */
 
-import {
-  Dimensions as _Dimensions,
-  PixelRatio as _PixelRatio,
-  Platform as _Platform,
-} from 'react-native';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { carbonTwinEngine as _carbonTwinEngine } from './CarbonTwinEngine';
 import { observabilityService } from './ObservabilityService';
 
 // Core Adaptive UI Types
@@ -459,7 +452,7 @@ interface ThemeAdaptation {
 
 interface ThemeChange {
   readonly type: 'color' | 'typography' | 'spacing' | 'animation' | 'layout';
-  readonly value: any;
+  readonly value: string | number | Record<string, unknown>;
   readonly intensity: number; // 0-1
   readonly blend?: 'replace' | 'overlay' | 'multiply';
 }
@@ -479,7 +472,7 @@ interface RevertCondition {
 interface AdaptationCondition {
   readonly type: string;
   readonly operator: '==' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'not_in';
-  readonly value: any;
+  readonly value: string | number | boolean | string[];
   readonly weight: number;
 }
 
@@ -583,14 +576,23 @@ interface EngagementDesignElements {
 }
 
 interface MotivationalDesign {
-  readonly framework: 'self_determination' | 'flow' | 'gamification' | 'behavioral_economics';
+  readonly framework:
+    | 'self_determination'
+    | 'flow'
+    | 'gamification'
+    | 'behavioral_economics';
   readonly elements: MotivationalElement[];
   readonly triggers: MotivationalTrigger[];
   readonly rewards: MotivationalReward[];
 }
 
 interface MotivationalElement {
-  readonly type: 'progress' | 'mastery' | 'purpose' | 'autonomy' | 'relatedness';
+  readonly type:
+    | 'progress'
+    | 'mastery'
+    | 'purpose'
+    | 'autonomy'
+    | 'relatedness';
   readonly implementation: string;
   readonly strength: number;
   readonly context: string[];
@@ -911,7 +913,12 @@ interface AccessibilityPreferences {
 }
 
 interface ColorBlindnessSupport {
-  readonly type: 'none' | 'protanomaly' | 'deuteranomaly' | 'tritanomaly' | 'monochromacy';
+  readonly type:
+    | 'none'
+    | 'protanomaly'
+    | 'deuteranomaly'
+    | 'tritanomaly'
+    | 'monochromacy';
   readonly severity: 'mild' | 'moderate' | 'severe';
   readonly compensation: ColorCompensationStrategy;
 }
@@ -1121,14 +1128,21 @@ export interface ContextualThemingEngine {
 
 interface ContextSensor {
   readonly sensorId: string;
-  readonly type: 'time' | 'location' | 'weather' | 'activity' | 'carbon' | 'mood' | 'social';
+  readonly type:
+    | 'time'
+    | 'location'
+    | 'weather'
+    | 'activity'
+    | 'carbon'
+    | 'mood'
+    | 'social';
   readonly data: ContextData;
   readonly reliability: number;
   readonly updateFrequency: number;
 }
 
 interface ContextData {
-  readonly value: any;
+  readonly value: string | number | boolean | Record<string, unknown>;
   readonly timestamp: number;
   readonly confidence: number;
   readonly source: string;
@@ -1151,7 +1165,7 @@ interface ContextCondition {
 interface ContextThreshold {
   readonly sensor: string;
   readonly operator: string;
-  readonly value: any;
+  readonly value: string | number | boolean;
   readonly weight: number;
 }
 
@@ -1169,7 +1183,7 @@ interface LearningModel {
 }
 
 interface ModelParameters {
-  readonly [key: string]: any;
+  readonly [key: string]: string | number | boolean | string[] | number[];
 }
 
 interface ContextTrainingData {
@@ -3036,8 +3050,8 @@ export interface ThemePersonalization {
 interface ThemeCustomization {
   readonly customizationId: string;
   readonly element: string;
-  readonly originalValue: any;
-  readonly customValue: any;
+  readonly originalValue: string | number | Record<string, unknown>;
+  readonly customValue: string | number | Record<string, unknown>;
   readonly reason: string;
   readonly timestamp: number;
   readonly satisfaction: number;
@@ -3109,7 +3123,7 @@ interface UserCreatedTheme {
 
 interface ThemeModification {
   readonly element: string;
-  readonly change: any;
+  readonly change: Record<string, string | number | boolean>;
   readonly rationale: string;
 }
 
@@ -3274,25 +3288,35 @@ export class AdaptiveUIEngineService {
     }
   }
 
-  async adaptTheme(userId: string, context: ContextSnapshot): Promise<AdaptiveTheme> {
+  async adaptTheme(
+    userId: string,
+    context: ContextSnapshot,
+  ): Promise<AdaptiveTheme> {
     console.log(`🎨 Adapting theme for user: ${userId}`);
 
     try {
       // Get user preferences
       const preferences =
-        this.userPreferences.get(userId) || (await this.createDefaultPreferences(userId));
+        this.userPreferences.get(userId) ||
+        (await this.createDefaultPreferences(userId));
 
       // Analyze current context
       const contextAnalysis = await this.analyzeContext(context);
 
       // Generate theme recommendations
-      const recommendations = await this.generateThemeRecommendations(preferences, contextAnalysis);
+      const recommendations = await this.generateThemeRecommendations(
+        preferences,
+        contextAnalysis,
+      );
 
       // Select optimal theme
       const selectedTheme = await this.selectOptimalTheme(recommendations);
 
       // Apply contextual adaptations
-      const adaptedTheme = await this.applyContextualAdaptations(selectedTheme, context);
+      const adaptedTheme = await this.applyContextualAdaptations(
+        selectedTheme,
+        context,
+      );
 
       // Learn from adaptation
       await this.learnFromAdaptation(userId, context, adaptedTheme);
@@ -3304,7 +3328,9 @@ export class AdaptiveUIEngineService {
           userId,
           themeId: adaptedTheme.id,
           context: contextAnalysis.type,
-          carbonLevel: context.sensors.find(s => s.sensorId === 'carbon')?.data.value || 'unknown',
+          carbonLevel:
+            context.sensors.find(s => s.sensorId === 'carbon')?.data.value ||
+            'unknown',
         },
       });
 
@@ -3332,7 +3358,8 @@ export class AdaptiveUIEngineService {
       const visualizations = await this.createImmersiveVisualizations(analysis);
 
       // Generate emotional resonance
-      const emotionalResonance = await this.generateEmotionalResonance(analysis);
+      const emotionalResonance =
+        await this.generateEmotionalResonance(analysis);
 
       const theme: CarbonVisualizationTheme = {
         themeId: `carbon_viz_${Date.now()}`,
@@ -3342,7 +3369,8 @@ export class AdaptiveUIEngineService {
         emotionalResonance,
         adaptiveElements: await this.generateAdaptiveElements(analysis),
         interactionPatterns: await this.generateInteractionPatterns(analysis),
-        performance: await this.optimizeVisualizationPerformance(visualizations),
+        performance:
+          await this.optimizeVisualizationPerformance(visualizations),
       };
 
       // Track visualization creation
@@ -3389,12 +3417,16 @@ export class AdaptiveUIEngineService {
     preferences: Partial<UserThemePreferences>,
   ): Promise<UserThemePreferences> {
     const currentPreferences =
-      this.userPreferences.get(userId) || (await this.createDefaultPreferences(userId));
+      this.userPreferences.get(userId) ||
+      (await this.createDefaultPreferences(userId));
 
     const updatedPreferences = {
       ...currentPreferences,
       ...preferences,
-      preferences: [...currentPreferences.preferences, ...(preferences.preferences || [])],
+      preferences: [
+        ...currentPreferences.preferences,
+        ...(preferences.preferences || []),
+      ],
     };
 
     this.userPreferences.set(userId, updatedPreferences);
@@ -3451,7 +3483,9 @@ export class AdaptiveUIEngineService {
   }
 
   // Placeholder implementations for complex theme generation
-  private async generateBaseThemeConfig(themeType: string): Promise<BaseThemeConfig> {
+  private async generateBaseThemeConfig(
+    themeType: string,
+  ): Promise<BaseThemeConfig> {
     // Complex theme configuration generation would go here
     return {
       colors: await this.generateColorScheme(themeType),
@@ -3503,7 +3537,7 @@ interface CarbonAnalysis {
 interface ImmersiveVisualization {
   readonly id: string;
   readonly type: string;
-  readonly data: any;
+  readonly data: Record<string, unknown>;
   readonly style: VisualizationStyle;
   readonly interactivity: VisualizationInteractivity;
 }
@@ -3528,7 +3562,7 @@ interface AdaptiveElement {
 
 interface ElementAdaptation {
   readonly property: string;
-  readonly value: any;
+  readonly value: string | number | boolean | Record<string, unknown>;
   readonly condition: string;
 }
 

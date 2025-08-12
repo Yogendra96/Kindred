@@ -4,11 +4,6 @@
  * Features: Gesture recognition, voice commands, adaptive interfaces, neural interfaces
  */
 
-import { _Dimensions, _PanResponder, _Platform } from 'react-native';
-
-import _AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { adaptiveUIEngine as _adaptiveUIEngine } from './AdaptiveUIEngine';
 import { observabilityService } from './ObservabilityService';
 
 // Core Interaction Engine Types
@@ -357,7 +352,11 @@ interface CarbonGestureContext {
 }
 
 interface CarbonGestureAction {
-  readonly action: 'log_activity' | 'view_impact' | 'set_goal' | 'compare_alternatives';
+  readonly action:
+    | 'log_activity'
+    | 'view_impact'
+    | 'set_goal'
+    | 'compare_alternatives';
   readonly gesture: string;
   readonly efficiency: number;
   readonly learning_curve: number;
@@ -371,7 +370,11 @@ interface ImpactGesture {
 }
 
 interface AchievementGesture {
-  readonly achievement_type: 'milestone' | 'streak' | 'improvement' | 'community';
+  readonly achievement_type:
+    | 'milestone'
+    | 'streak'
+    | 'improvement'
+    | 'community';
   readonly gesture: string;
   readonly celebration: CelebrationConfig;
 }
@@ -1528,9 +1531,14 @@ export class NextGenInteractionEngineService {
       await this.initializeLearningSystem();
 
       this.isInitialized = true;
-      console.log('✅ Next-Generation Interaction Engine initialized successfully');
+      console.log(
+        '✅ Next-Generation Interaction Engine initialized successfully',
+      );
     } catch (error) {
-      console.error('❌ Failed to initialize Next-Generation Interaction Engine:', error);
+      console.error(
+        '❌ Failed to initialize Next-Generation Interaction Engine:',
+        error,
+      );
       throw error;
     }
   }
@@ -1549,10 +1557,16 @@ export class NextGenInteractionEngineService {
       const features = await this.extractGestureFeatures(processedData);
 
       // Run recognition algorithms
-      const recognitionResults = await this.runGestureRecognition(features, context);
+      const recognitionResults = await this.runGestureRecognition(
+        features,
+        context,
+      );
 
       // Post-process and validate
-      const result = await this.postProcessRecognition(recognitionResults, context);
+      const result = await this.postProcessRecognition(
+        recognitionResults,
+        context,
+      );
 
       // Learn from recognition
       await this.learnFromGestureRecognition(gestureData, result, context);
@@ -1599,7 +1613,10 @@ export class NextGenInteractionEngineService {
         description: `Custom gesture created by user ${userId}`,
         pattern,
         training_data: validatedData,
-        performance: await this.evaluateGesturePerformance(model, validatedData),
+        performance: await this.evaluateGesturePerformance(
+          model,
+          validatedData,
+        ),
       };
 
       // Store gesture
@@ -1633,7 +1650,8 @@ export class NextGenInteractionEngineService {
 
     try {
       // Analyze user behavior
-      const behaviorAnalysis = await this.analyzeUserBehavior(interactionHistory);
+      const behaviorAnalysis =
+        await this.analyzeUserBehavior(interactionHistory);
 
       // Assess current context
       const contextAnalysis = await this.analyzeCurrentContext(currentContext);

@@ -51,7 +51,9 @@ A comprehensive analytics dashboard component that displays various metrics, cha
       const theme = context.globals.theme === 'dark' ? darkTheme : lightTheme;
       return (
         <ThemeProvider initialTheme={theme}>
-          <View style={[{ flex: 1 }, { backgroundColor: theme.colors.background }]}>
+          <View
+            style={[{ flex: 1 }, { backgroundColor: theme.colors.background }]}
+          >
             <Story />
           </View>
         </ThemeProvider>
@@ -530,10 +532,14 @@ export const LargeDataset: Story = {
       change: Math.random() * 40 - 20,
       changeType: Math.random() > 0.5 ? 'increase' : 'decrease',
       icon: ['📊', '📈', '📉', '💹', '🎯'][Math.floor(Math.random() * 5)],
-      color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][Math.floor(Math.random() * 5)],
+      color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][
+        Math.floor(Math.random() * 5)
+      ],
     })) as MetricCard[],
     timeSeriesData: Array.from({ length: 30 }, (_, i) => ({
-      timestamp: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
+      timestamp: new Date(
+        Date.now() - (29 - i) * 24 * 60 * 60 * 1000,
+      ).toISOString(),
       value: Math.floor(Math.random() * 1000),
     })),
     showComparison: true,

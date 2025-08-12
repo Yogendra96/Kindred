@@ -15,6 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';
 import * as Haptics from 'expo-haptics';
 
+import { ErrorMonitoringService } from '../services/ErrorMonitoringService';
+
 interface Props {
   children: ReactNode;
   fallback?: (error: Error, errorInfo: ErrorInfo) => ReactNode;
@@ -69,8 +71,25 @@ class ErrorBoundary extends Component<Props, State> {
     // Log error details
     this.logError(error, errorInfo, errorId);
 
-    // Report to external services
+    // Report to enhanced error monitoring service
     if (this.props.enableReporting !== false) {
+      const sentryEventId = ErrorMonitoringService.reportError(error, {
+        component: 'ErrorBoundary',
+        action: 'component_error_caught',
+        severity: 'high',
+        extra: {
+          errorId,
+          componentStack: errorInfo.componentStack,
+          errorBoundary: true,
+        },
+      });
+
+      // Update error ID with Sentry event ID if available
+      if (sentryEventId) {
+        this.setState({ errorId: sentryEventId });
+      }
+
+      // Legacy Sentry reporting for backward compatibility
       this.reportError(error, errorInfo, errorId);
     }
 
@@ -117,7 +136,11 @@ class ErrorBoundary extends Component<Props, State> {
     return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  private logError = async (error: Error, errorInfo: ErrorInfo, errorId: string) => {
+  private logError = async (
+    error: Error,
+    errorInfo: ErrorInfo,
+    errorId: string,
+  ) => {
     const errorLog = {
       id: errorId,
       timestamp: new Date().toISOString(),
@@ -152,7 +175,11 @@ class ErrorBoundary extends Component<Props, State> {
     // console.groupEnd();
   };
 
-  private reportError = async (error: Error, errorInfo: ErrorInfo, errorId: string) => {
+  private reportError = async (
+    error: Error,
+    errorInfo: ErrorInfo,
+    errorId: string,
+  ) => {
     try {
       // Report to Sentry
       captureException(error, {
@@ -208,17 +235,21 @@ class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo?.componentStack,
     };
 
-    Alert.alert('Report Issue', 'Would you like to report this issue to help us improve the app?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Report',
-        onPress: () => {
-          // Here you could integrate with your issue reporting system
-          console.warn('Reporting issue:', errorDetails);
-          Alert.alert('Thank you', 'Your report has been submitted.');
+    Alert.alert(
+      'Report Issue',
+      'Would you like to report this issue to help us improve the app?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Report',
+          onPress: () => {
+            // Here you could integrate with your issue reporting system
+            console.warn('Reporting issue:', errorDetails);
+            Alert.alert('Thank you', 'Your report has been submitted.');
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   private renderErrorDetails = () => {
@@ -240,7 +271,10 @@ class ErrorBoundary extends Component<Props, State> {
           <Text style={{ color: '#666', fontSize: 16 }}>▼</Text>
         </TouchableOpacity>
 
-        <ScrollView style={styles.detailsContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.detailsContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.detailSection}>
             <Text style={styles.detailLabel}>Error ID:</Text>
             <Text style={styles.detailValue}>{errorId}</Text>
@@ -294,8 +328,8 @@ class ErrorBoundary extends Component<Props, State> {
               <Text style={styles.title}>Oops! Something went wrong</Text>
 
               <Text style={styles.message}>
-                We're sorry, but something unexpected happened. The error has been logged and we'll
-                look into it.
+                We're sorry, but something unexpected happened. The error has
+                been logged and we'll look into it.
               </Text>
 
               <View style={styles.buttonContainer}>
@@ -339,58 +373,19 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  errorContainer: {
+  button: {
     alignItems: 'center',
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
-  iconContainer: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  message: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   buttonContainer: {
-    width: '100%',
     gap: 12,
-  },
-  button: {
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#007AFF',
+    width: '100%',
   },
   buttonContent: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     gap: 8,
   },
   buttonText: {
@@ -398,51 +393,90 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  secondaryButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
+  container: {
+    backgroundColor: '#f8f9fa',
+    flex: 1,
+  },
+  detailLabel: {
+    color: '#495057',
+    fontSize: 14,
     fontWeight: '600',
+    marginBottom: 4,
+  },
+  detailSection: {
+    marginBottom: 16,
+  },
+  detailValue: {
+    color: '#6c757d',
+    fontFamily: 'monospace',
+    fontSize: 12,
+    lineHeight: 16,
   },
   detailsContainer: {
-    width: '100%',
-    marginTop: 32,
     backgroundColor: 'white',
     borderRadius: 12,
+    marginTop: 32,
     overflow: 'hidden',
-  },
-  detailsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f8f9fa',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-  },
-  detailsHeaderText: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#495057',
+    width: '100%',
   },
   detailsContent: {
     maxHeight: 200,
     padding: 16,
   },
-  detailSection: {
-    marginBottom: 16,
+  detailsHeader: {
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderBottomColor: '#e9ecef',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    padding: 16,
   },
-  detailLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+  detailsHeaderText: {
     color: '#495057',
-    marginBottom: 4,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
-  detailValue: {
-    fontSize: 12,
-    color: '#6c757d',
-    fontFamily: 'monospace',
-    lineHeight: 16,
+  errorContainer: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    maxWidth: 400,
+  },
+  iconContainer: {
+    marginBottom: 24,
+  },
+  message: {
+    color: '#666',
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#007AFF',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderColor: '#007AFF',
+    borderWidth: 1,
+  },
+  secondaryButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  title: {
+    color: '#1a1a1a',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
   },
 });
 
@@ -466,21 +500,44 @@ export const withErrorBoundary = <P extends object>(
 
 // Hook for manual error reporting
 export const useErrorHandler = () => {
-  const reportError = React.useCallback((error: Error, errorInfo?: Record<string, unknown>) => {
-    const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    console.error('Manual error report:', { error, errorInfo, errorId });
-
-    if (captureException) {
-      captureException(error, {
-        tags: {
-          manual: true,
-          errorId,
-        },
+  const reportError = React.useCallback(
+    (error: Error, errorInfo?: Record<string, unknown>) => {
+      // Use enhanced error monitoring service
+      const eventId = ErrorMonitoringService.reportError(error, {
+        component: 'manual_report',
+        action: 'hook_error_report',
+        severity: 'medium',
         extra: errorInfo,
       });
-    }
-  }, []);
 
-  return { reportError };
+      console.error('Manual error report:', { error, errorInfo, eventId });
+    },
+    [],
+  );
+
+  const reportPerformanceIssue = React.useCallback(
+    (operation: string, duration: number, threshold?: number) => {
+      ErrorMonitoringService.reportPerformanceIssue(
+        {
+          operation,
+          duration,
+        },
+        threshold,
+      );
+    },
+    [],
+  );
+
+  const addBreadcrumb = React.useCallback(
+    (message: string, category?: string, data?: any) => {
+      ErrorMonitoringService.addBreadcrumb(message, category, 'info', data);
+    },
+    [],
+  );
+
+  return {
+    reportError,
+    reportPerformanceIssue,
+    addBreadcrumb,
+  };
 };

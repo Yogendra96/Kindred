@@ -52,6 +52,22 @@ const CACHE_KEY = 'activities_cache';
 const OFFLINE_ACTIONS_KEY = 'offline_actions';
 const screenWidth = Dimensions.get('window').width;
 
+// Color constants to avoid literals
+const COLORS = {
+  lightGray: '#f8f8f8',
+  mediumGray: '#666',
+  darkGray: '#333',
+  lightGreen: '#e8f5e9',
+  veryLightGray: '#f5f5f5',
+  white: '#fff',
+  black: '#000',
+  green: '#2ecc71',
+  red: '#c62828',
+  lightRed: '#ffebee',
+  orange: '#ef6c00',
+  lightOrange: '#fff3e0',
+} as const;
+
 const ActivityTracker: React.FC = React.memo(() => {
   const { theme } = useTheme();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -88,7 +104,8 @@ const ActivityTracker: React.FC = React.memo(() => {
       categoryBreakdown: filteredActivities.reduce(
         (acc, activity) => ({
           ...acc,
-          [activity.type]: (acc[activity.type] ?? 0) + (activity.completed ? 1 : 0),
+          [activity.type]:
+            (acc[activity.type] ?? 0) + (activity.completed ? 1 : 0),
         }),
         {},
       ),
@@ -101,14 +118,18 @@ const ActivityTracker: React.FC = React.memo(() => {
     const data = dates.map(date => {
       const dayActivities = activities.filter(
         activity =>
-          format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') &&
+          format(new Date(activity.timestamp), 'yyyy-MM-dd') ===
+            format(date, 'yyyy-MM-dd') &&
           activity.completed &&
           (!selectedCategory || activity.type === selectedCategory),
       );
 
       return {
         date: format(date, 'MMM dd'),
-        impact: dayActivities.reduce((sum, activity) => sum + activity.impact, 0),
+        impact: dayActivities.reduce(
+          (sum, activity) => sum + activity.impact,
+          0,
+        ),
       };
     });
 
@@ -175,7 +196,10 @@ const ActivityTracker: React.FC = React.memo(() => {
     if (!user) return;
 
     try {
-      const snapshot = await firestore().collection('daily_activities').doc(user.uid).get();
+      const snapshot = await firestore()
+        .collection('daily_activities')
+        .doc(user.uid)
+        .get();
 
       if (snapshot.exists) {
         const data = snapshot.data()?.activities ?? [];
@@ -209,11 +233,17 @@ const ActivityTracker: React.FC = React.memo(() => {
             (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) ?? '[]',
           );
           offlineActions.push({ activity, timestamp: Date.now() });
-          await AsyncStorage.setItem(OFFLINE_ACTIONS_KEY, JSON.stringify(offlineActions));
+          await AsyncStorage.setItem(
+            OFFLINE_ACTIONS_KEY,
+            JSON.stringify(offlineActions),
+          );
 
           // Update local state
           setActivities(updatedActivities);
-          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
+          await AsyncStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify(updatedActivities),
+          );
           return;
         }
 
@@ -233,7 +263,10 @@ const ActivityTracker: React.FC = React.memo(() => {
         }
 
         setActivities(updatedActivities);
-        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
+        await AsyncStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(updatedActivities),
+        );
         setError(null);
       } catch (error_) {
         loggingService.error('Error updating activity', {
@@ -269,10 +302,13 @@ const ActivityTracker: React.FC = React.memo(() => {
   const renderActivity = useCallback(
     ({ item: activity }: { item: Activity }) => (
       <TouchableOpacity
-        style={[styles.activityCard, activity.completed && styles.completedCard]}
+        style={[
+          styles.activityCard,
+          activity.completed && styles.completedCard,
+        ]}
         onPress={() => handleActivityCompletion(activity)}
         disabled={loading}
-        accessible={true}
+        accessible
         accessibilityRole='button'
         accessibilityLabel={`${activity.title} activity`}
         accessibilityHint={`${
@@ -284,7 +320,10 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={styles.activityTitle} accessibilityRole='text'>
             {activity.title}
           </Text>
-          <Text style={styles.points} accessibilityLabel={`${activity.points} points`}>
+          <Text
+            style={styles.points}
+            accessibilityLabel={`${activity.points} points`}
+          >
             +{activity.points} pts
           </Text>
         </View>
@@ -296,7 +335,7 @@ const ActivityTracker: React.FC = React.memo(() => {
             style={styles.checkButton}
             onPress={() => handleActivityCompletion(activity)}
             disabled={loading}
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel={`${activity.completed ? 'Uncheck' : 'Check'} ${activity.title}`}
             accessibilityHint={`Mark this activity as ${
@@ -309,10 +348,14 @@ const ActivityTracker: React.FC = React.memo(() => {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
-              name={activity.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
+              name={
+                activity.completed
+                  ? 'checkmark-circle'
+                  : 'checkmark-circle-outline'
+              }
               size={24}
               color={activity.completed ? '#2ecc71' : '#666'}
-              accessibilityElementsHidden={true}
+              accessibilityElementsHidden
               importantForAccessibility='no-hide-descendants'
             />
           </TouchableOpacity>
@@ -325,7 +368,7 @@ const ActivityTracker: React.FC = React.memo(() => {
   const renderSummaryCard = () => (
     <View
       style={[styles.card, { backgroundColor: theme.colors.surface }]}
-      accessible={true}
+      accessible
       accessibilityRole='summary'
     >
       <Text
@@ -340,7 +383,12 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>
             {summary.totalPoints}
           </Text>
-          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: theme.colors.text.secondary },
+            ]}
+          >
             Total Points
           </Text>
         </View>
@@ -348,7 +396,12 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={[styles.summaryValue, { color: theme.colors.success }]}>
             {summary.carbonSaved.toFixed(1)}t
           </Text>
-          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: theme.colors.text.secondary },
+            ]}
+          >
             CO₂ Saved
           </Text>
         </View>
@@ -356,7 +409,12 @@ const ActivityTracker: React.FC = React.memo(() => {
           <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>
             {summary.streakDays}
           </Text>
-          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: theme.colors.text.secondary },
+            ]}
+          >
             Day Streak
           </Text>
         </View>
@@ -366,7 +424,9 @@ const ActivityTracker: React.FC = React.memo(() => {
 
   const renderCharts = () => (
     <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>Impact Timeline</Text>
+      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
+        Impact Timeline
+      </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <LineChart
           data={chartData}
@@ -399,10 +459,12 @@ const ActivityTracker: React.FC = React.memo(() => {
       <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
         Category Breakdown
       </Text>
-      <View accessible={true} accessibilityRole='image'>
+      <View accessible accessibilityRole='image'>
         <Text
           accessibilityLiveRegion='polite'
-          accessibilityLabel={`Activity breakdown chart: ${Object.entries(summary.categoryBreakdown)
+          accessibilityLabel={`Activity breakdown chart: ${Object.entries(
+            summary.categoryBreakdown,
+          )
             .map(([category, count]) => `${category}: ${count} activities`)
             .join(', ')}`}
           style={styles.screenReaderOnly}
@@ -441,8 +503,11 @@ const ActivityTracker: React.FC = React.memo(() => {
   if (loading) {
     return (
       <View
-        style={[styles.loadingContainer, { backgroundColor: theme.colors.surface }]}
-        accessible={true}
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+        accessible
         accessibilityRole='progressbar'
         accessibilityLabel='Loading activities'
         accessibilityLiveRegion='polite'
@@ -510,17 +575,42 @@ const ActivityTracker: React.FC = React.memo(() => {
 ActivityTracker.displayName = 'ActivityTracker';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+  activitiesContainer: {
+    gap: 15,
+  },
+  activityCard: {
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 10,
+    marginBottom: 10,
+    padding: 15,
+  },
+  activityDescription: {
+    color: COLORS.mediumGray,
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  activityFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  activityHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  activityTitle: {
+    color: COLORS.darkGray,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   card: {
     borderRadius: 15,
-    padding: 20,
     margin: 10,
+    padding: 20,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: COLORS.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -535,6 +625,64 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
   },
+  chart: {
+    borderRadius: 16,
+    marginVertical: 8,
+  },
+  checkButton: {
+    padding: 5,
+  },
+  completedCard: {
+    backgroundColor: COLORS.lightGreen,
+  },
+  container: {
+    backgroundColor: COLORS.veryLightGray,
+    flex: 1,
+  },
+  errorContainer: {
+    backgroundColor: COLORS.lightRed,
+    borderRadius: 8,
+    marginBottom: 15,
+    padding: 10,
+  },
+  errorText: {
+    color: COLORS.red,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 15,
+    flex: 1,
+    justifyContent: 'center',
+    margin: 20,
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    marginTop: 10,
+  },
+  offlineContainer: {
+    backgroundColor: COLORS.lightOrange,
+    borderRadius: 8,
+    marginBottom: 15,
+    padding: 10,
+  },
+  offlineText: {
+    color: COLORS.orange,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  points: {
+    color: COLORS.green,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  screenReaderOnly: {
+    left: -10000,
+    position: 'absolute',
+  },
   summaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -544,96 +692,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  summaryLabel: {
+    fontSize: 12,
+  },
   summaryValue: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 5,
-  },
-  summaryLabel: {
-    fontSize: 12,
-  },
-  chart: {
-    borderRadius: 16,
-    marginVertical: 8,
-  },
-  activitiesContainer: {
-    gap: 15,
-  },
-  activityCard: {
-    backgroundColor: '#f8f8f8',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-  },
-  completedCard: {
-    backgroundColor: '#e8f5e9',
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  activityTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  points: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2ecc71',
-  },
-  activityDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-  },
-  activityFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  checkButton: {
-    padding: 5,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    margin: 20,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
-  errorContainer: {
-    backgroundColor: '#ffebee',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
-  },
-  errorText: {
-    color: '#c62828',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  offlineContainer: {
-    backgroundColor: '#fff3e0',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
-  },
-  offlineText: {
-    color: '#ef6c00',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  screenReaderOnly: {
-    position: 'absolute',
-    left: -10000,
   },
 });
 

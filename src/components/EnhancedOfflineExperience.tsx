@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Alert,
@@ -14,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NetInfoState, NetInfoState } from '@react-native-netinfo/netinfo';
 import NetInfo from '@react-native-netinfo/netinfo';
 import { useTheme } from '@theme/ThemeProvider';
+import { Ionicons } from '@expo/vector-icons';
 
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
 
@@ -114,9 +122,11 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   maxQueueSize = 100,
   defaultCacheTTL = 3600000, // 1 hour
 }) => {
-  const [networkStatus, setNetworkStatus] = useState<NetworkStatus>(defaultNetworkStatus);
+  const [networkStatus, setNetworkStatus] =
+    useState<NetworkStatus>(defaultNetworkStatus);
   const [offlineQueue, setOfflineQueue] = useState<OfflineData[]>([]);
-  const [syncProgress, setSyncProgress] = useState<SyncProgress>(defaultSyncProgress);
+  const [syncProgress, setSyncProgress] =
+    useState<SyncProgress>(defaultSyncProgress);
   const [cache, setCache] = useState<Map<string, CacheItem>>(new Map());
 
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -180,24 +190,39 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     });
   };
 
-  const getConnectionStrength = (state: NetInfoState): NetworkStatus['strength'] => {
+  // Helper functions to reduce cognitive complexity
+  const getWifiStrength = (strength: number): NetworkStatus['strength'] => {
+    if (strength > 75) return 'excellent';
+    if (strength > 50) return 'good';
+    if (strength > 25) return 'fair';
+    return 'poor';
+  };
+
+  const getCellularStrength = (generation: string): NetworkStatus['strength'] => {
+    switch (generation) {
+      case '5g': return 'excellent';
+      case '4g': return 'good';
+      case '3g': return 'fair';
+      default: return 'poor';
+    }
+  };
+
+  const getConnectionStrength = (
+    state: NetInfoState,
+  ): NetworkStatus['strength'] => {
     if (!state.isConnected) return null;
 
     if (state.type === 'wifi') {
       const details = state.details as Record<string, unknown>;
       if (details?.strength !== undefined) {
-        if (details.strength > 75) return 'excellent';
-        if (details.strength > 50) return 'good';
-        if (details.strength > 25) return 'fair';
-        return 'poor';
+        return getWifiStrength(details.strength as number);
       }
-    } else if (state.type === 'cellular') {
+    }
+    
+    if (state.type === 'cellular') {
       const details = state.details as Record<string, unknown>;
       if (details?.cellularGeneration) {
-        if (details.cellularGeneration === '5g') return 'excellent';
-        if (details.cellularGeneration === '4g') return 'good';
-        if (details.cellularGeneration === '3g') return 'fair';
-        return 'poor';
+        return getCellularStrength(details.cellularGeneration as string);
       }
     }
 
@@ -266,9 +291,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
       if (stored) {
         const cacheData = JSON.parse(stored);
         const cacheMap = new Map<string, CacheItem>();
-        Object.entries(cacheData).forEach(([key, value]) => {
+        for (const [key, value] of Object.entries(cacheData)) {
           cacheMap.set(key, value as CacheItem);
-        });
+        }
         setCache(cacheMap);
       }
     } catch (error) {
@@ -348,7 +373,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
         // Mark as synced
         setOfflineQueue(prev =>
           prev.map(queueItem =>
-            queueItem.id === item.id ? { ...queueItem, synced: true } : queueItem,
+            queueItem.id === item.id
+              ? { ...queueItem, synced: true }
+              : queueItem,
           ),
         );
 
@@ -377,7 +404,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
 
     // Clean up synced items
     setOfflineQueue(prev => {
-      const updated = prev.filter(item => !item.synced || item.retryCount < item.maxRetries);
+      const updated = prev.filter(
+        item => !item.synced || item.retryCount < item.maxRetries,
+      );
       saveOfflineQueue(updated);
       return updated;
     });
@@ -403,7 +432,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
 
   const simulateSync = async (_item: OfflineData): Promise<void> => {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+    await new Promise(resolve =>
+      setTimeout(resolve, 500 + Math.random() * 1000),
+    );
 
     // Simulate occasional failures
     if (Math.random() < 0.1) {
@@ -427,7 +458,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   const isDataAvailableOffline = useCallback(
     (type: string, id?: string) => {
       if (id) {
-        return offlineQueue.some(item => item.type === type && item.data.id === id);
+        return offlineQueue.some(
+          item => item.type === type && item.data.id === id,
+        );
       }
       return offlineQueue.some(item => item.type === type);
     },
@@ -452,7 +485,11 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
   );
 
   const setCachedData = useCallback(
-    async (key: string, data: unknown, ttl: number = defaultCacheTTL): Promise<void> => {
+    async (
+      key: string,
+      data: unknown,
+      ttl: number = defaultCacheTTL,
+    ): Promise<void> => {
       const item: CacheItem = {
         data,
         timestamp: Date.now(),
@@ -471,11 +508,11 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     const now = Date.now();
     const newCache = new Map<string, CacheItem>();
 
-    cache.forEach((item, key) => {
+    for (const [key, item] of cache.entries()) {
       if (now <= item.timestamp + item.ttl) {
         newCache.set(key, item);
       }
-    });
+    }
 
     setCache(newCache);
     await saveCache(newCache);
@@ -497,7 +534,11 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     clearExpiredCache,
   };
 
-  return <OfflineContext.Provider value={contextValue}>{children}</OfflineContext.Provider>;
+  return (
+    <OfflineContext.Provider value={contextValue}>
+      {children}
+    </OfflineContext.Provider>
+  );
 };
 
 // Network Status Indicator Component
@@ -517,7 +558,9 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
   const { theme: _theme } = useTheme();
   const { networkStatus, isOnline } = useOffline();
   const [visible, setVisible] = useState(!isOnline);
-  const slideAnim = useRef(new Animated.Value(position === 'top' ? -100 : 100)).current;
+  const slideAnim = useRef(
+    new Animated.Value(position === 'top' ? -100 : 100),
+  ).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -617,7 +660,9 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
       <Ionicons name={getStatusIcon() as string} size={16} color='white' />
       <Text style={styles.statusText}>{getStatusText()}</Text>
       {showDetails && networkStatus.speed && (
-        <Text style={styles.speedText}>{networkStatus.speed.toFixed(0)} Mbps</Text>
+        <Text style={styles.speedText}>
+          {networkStatus.speed.toFixed(0)} Mbps
+        </Text>
       )}
     </Animated.View>
   );
@@ -636,10 +681,18 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
   testID,
 }) => {
   const { theme } = useTheme();
-  const { offlineQueue, syncProgress, syncOfflineData, clearOfflineData, isOnline } = useOffline();
+  const {
+    offlineQueue,
+    syncProgress,
+    syncOfflineData,
+    clearOfflineData,
+    isOnline,
+  } = useOffline();
 
   const pendingItems = offlineQueue.filter(item => !item.synced);
-  const failedItems = offlineQueue.filter(item => item.retryCount >= item.maxRetries);
+  const failedItems = offlineQueue.filter(
+    item => item.retryCount >= item.maxRetries,
+  );
 
   if (pendingItems.length === 0 && !syncProgress.inProgress) {
     return null;
@@ -658,19 +711,28 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
     >
       <View style={styles.queueHeader}>
         <View style={styles.queueInfo}>
-          <Ionicons name='cloud-upload' size={20} color={theme.colors.primary} />
-          <Text style={[styles.queueTitle, { color: theme.colors.onSurface }]}>Offline Queue</Text>
+          <Ionicons
+            name='cloud-upload'
+            size={20}
+            color={theme.colors.primary}
+          />
+          <Text style={[styles.queueTitle, { color: theme.colors.onSurface }]}>
+            Offline Queue
+          </Text>
         </View>
 
         <View style={styles.queueActions}>
           {showSyncButton && isOnline && (
             <AnimatedTouchable
               onPress={syncOfflineData}
-              style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: theme.colors.primary },
+              ]}
               disabled={syncProgress.inProgress}
               hapticType='medium'
               animationType='scale'
-              accessible={true}
+              accessible
               accessibilityRole='button'
               accessibilityLabel='Sync offline data'
             >
@@ -701,10 +763,13 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
                   ],
                 );
               }}
-              style={[styles.actionButton, { backgroundColor: theme.colors.error }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: theme.colors.error },
+              ]}
               hapticType='medium'
               animationType='scale'
-              accessible={true}
+              accessible
               accessibilityRole='button'
               accessibilityLabel='Clear offline data'
             >
@@ -720,7 +785,11 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
           <Text style={[styles.statValue, { color: theme.colors.primary }]}>
             {pendingItems.length}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>Pending</Text>
+          <Text
+            style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}
+          >
+            Pending
+          </Text>
         </View>
 
         {failedItems.length > 0 && (
@@ -728,7 +797,14 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
             <Text style={[styles.statValue, { color: theme.colors.error }]}>
               {failedItems.length}
             </Text>
-            <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>Failed</Text>
+            <Text
+              style={[
+                styles.statLabel,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              Failed
+            </Text>
           </View>
         )}
 
@@ -737,14 +813,26 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
             <Text style={[styles.statValue, { color: theme.colors.secondary }]}>
               {syncProgress.completed}/{syncProgress.total}
             </Text>
-            <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>Synced</Text>
+            <Text
+              style={[
+                styles.statLabel,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              Synced
+            </Text>
           </View>
         )}
       </View>
 
       {syncProgress.inProgress && (
         <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { backgroundColor: theme.colors.surfaceVariant }]}>
+          <View
+            style={[
+              styles.progressBar,
+              { backgroundColor: theme.colors.surfaceVariant },
+            ]}
+          >
             <View
               style={[
                 styles.progressFill,
@@ -756,7 +844,12 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
             />
           </View>
           {syncProgress.currentItem && (
-            <Text style={[styles.currentItem, { color: theme.colors.onSurfaceVariant }]}>
+            <Text
+              style={[
+                styles.currentItem,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
               {syncProgress.currentItem}
             </Text>
           )}
@@ -768,7 +861,8 @@ export const OfflineQueueStatus: React.FC<OfflineQueueStatusProps> = ({
 
 // Hook for offline-first data operations
 export const useOfflineData = () => {
-  const { addToOfflineQueue, getCachedData, setCachedData, isOnline } = useOffline();
+  const { addToOfflineQueue, getCachedData, setCachedData, isOnline } =
+    useOffline();
 
   const createOffline = useCallback(
     async (type: string, data: unknown, endpoint?: string) => {
@@ -842,97 +936,97 @@ export const useOfflineData = () => {
 };
 
 const styles = StyleSheet.create({
-  statusIndicator: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    gap: 8,
-    zIndex: 1000,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  speedText: {
-    color: 'white',
-    fontSize: 12,
-    opacity: 0.8,
-  },
-  queueStatus: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  queueHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  queueInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  queueTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  queueActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
   actionButton: {
-    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
-    gap: 4,
   },
   actionButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
   },
+  currentItem: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  progressBar: {
+    borderRadius: 2,
+    height: 4,
+    overflow: 'hidden',
+  },
+  progressContainer: {
+    gap: 8,
+  },
+  progressFill: {
+    borderRadius: 2,
+    height: '100%',
+  },
+  queueActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  queueHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  queueInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
   queueStats: {
     flexDirection: 'row',
     gap: 16,
     marginBottom: 12,
   },
+  queueStatus: {
+    borderRadius: 12,
+    borderWidth: 1,
+    margin: 16,
+    padding: 16,
+  },
+  queueTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  speedText: {
+    color: 'white',
+    fontSize: 12,
+    opacity: 0.8,
+  },
   statItem: {
     alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '600',
   },
   statLabel: {
     fontSize: 12,
     marginTop: 2,
   },
-  progressContainer: {
+  statValue: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  statusIndicator: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: 8,
+    justifyContent: 'center',
+    left: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    position: 'absolute',
+    right: 0,
+    zIndex: 1000,
   },
-  progressBar: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  currentItem: {
-    fontSize: 12,
-    textAlign: 'center',
+  statusText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

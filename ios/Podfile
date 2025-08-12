@@ -1,7 +1,7 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 
-platform :ios, '13.4'
+platform :ios, '15.0'
 prepare_react_native_project!
 
 target 'Kindred' do

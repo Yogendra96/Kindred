@@ -110,7 +110,8 @@ class BarcodeScannerService {
 
   private constructor() {
     this.apiClient = axios.create({
-      baseURL: process.env.PRODUCT_API_URL || 'https://api.openfoodfacts.org/api/v0',
+      baseURL:
+        process.env.PRODUCT_API_URL ?? 'https://api.openfoodfacts.org/api/v0',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -133,8 +134,8 @@ class BarcodeScannerService {
     this.apiClient.interceptors.request.use(
       async config => {
         const trace = await this.performanceService.trackNetworkRequest(
-          config.url || '',
-          config.method?.toUpperCase() || 'GET',
+          config.url ?? '',
+          config.method?.toUpperCase() ?? 'GET',
         );
         config.metadata = { trace, startTime: performance.now() };
         return config;
@@ -144,16 +145,16 @@ class BarcodeScannerService {
 
     this.apiClient.interceptors.response.use(
       response => {
-        const { trace } = response.config.metadata || {};
+        const { trace } = response.config.metadata ?? {};
         if (trace) {
           trace.stop(response.status, JSON.stringify(response.data).length);
         }
         return response;
       },
       error => {
-        const { trace } = error.config?.metadata || {};
+        const { trace } = error.config?.metadata ?? {};
         if (trace) {
-          trace.stop(error.response?.status || 0);
+          trace.stop(error.response?.status ?? 0);
         }
         return Promise.reject(error);
       },
@@ -225,7 +226,10 @@ class BarcodeScannerService {
         scanResult.productInfo = productInfo;
 
         // Get carbon footprint data
-        const carbonFootprint = await this.getCarbonFootprint(barcode, productInfo);
+        const carbonFootprint = await this.getCarbonFootprint(
+          barcode,
+          productInfo,
+        );
         if (carbonFootprint) {
           scanResult.carbonFootprint = carbonFootprint;
         }
@@ -282,7 +286,9 @@ class BarcodeScannerService {
     }
   }
 
-  private async getProductFromOpenFoodFacts(barcode: string): Promise<ProductInfo | null> {
+  private async getProductFromOpenFoodFacts(
+    barcode: string,
+  ): Promise<ProductInfo | null> {
     try {
       const response = await this.apiClient.get(`/product/${barcode}.json`);
       const product = response.data.product;
@@ -293,36 +299,37 @@ class BarcodeScannerService {
 
       return {
         barcode,
-        name: product.product_name || 'Unknown Product',
-        brand: product.brands || 'Unknown Brand',
-        category: product.categories || 'Unknown Category',
+        name: product.product_name ?? 'Unknown Product',
+        brand: product.brands ?? 'Unknown Brand',
+        category: product.categories ?? 'Unknown Category',
         description: product.generic_name,
         image: product.image_url,
         weight: product.quantity ? parseFloat(product.quantity) : undefined,
         packaging: {
-          materials: product.packaging_tags || [],
-          recyclable: product.packaging_tags?.includes('recyclable') || false,
-          biodegradable: product.packaging_tags?.includes('biodegradable') || false,
+          materials: product.packaging_tags ?? [],
+          recyclable: product.packaging_tags?.includes('recyclable') ?? false,
+          biodegradable:
+            product.packaging_tags?.includes('biodegradable') ?? false,
           packagingWeight: 0, // Not available in OpenFoodFacts
         },
         nutritionalInfo: product.nutriments
           ? {
-              calories: product.nutriments.energy_kcal_100g || 0,
-              protein: product.nutriments.proteins_100g || 0,
-              carbs: product.nutriments.carbohydrates_100g || 0,
-              fat: product.nutriments.fat_100g || 0,
-              fiber: product.nutriments.fiber_100g || 0,
+              calories: product.nutriments.energy_kcal_100g ?? 0,
+              protein: product.nutriments.proteins_100g ?? 0,
+              carbs: product.nutriments.carbohydrates_100g ?? 0,
+              fat: product.nutriments.fat_100g ?? 0,
+              fiber: product.nutriments.fiber_100g ?? 0,
             }
           : undefined,
-        ingredients: product.ingredients_text_en?.split(', ') || [],
-        certifications: product.labels_tags || [],
+        ingredients: product.ingredients_text_en?.split(', ') ?? [],
+        certifications: product.labels_tags ?? [],
         origin: {
-          country: product.countries || 'Unknown',
+          country: product.countries ?? 'Unknown',
           region: product.origins,
         },
         manufacturer: {
-          name: product.manufacturing_places || product.brands || 'Unknown',
-          certifications: product.labels_tags || [],
+          name: product.manufacturing_places ?? product.brands ?? 'Unknown',
+          certifications: product.labels_tags ?? [],
         },
       };
     } catch (error) {
@@ -331,7 +338,9 @@ class BarcodeScannerService {
     }
   }
 
-  private async getProductFromUPCDatabase(_barcode: string): Promise<ProductInfo | null> {
+  private async getProductFromUPCDatabase(
+    _barcode: string,
+  ): Promise<ProductInfo | null> {
     try {
       // This would use a UPC database API
       // Implementation depends on the specific API chosen
@@ -342,7 +351,9 @@ class BarcodeScannerService {
     }
   }
 
-  private async getProductFromBarcodeLookup(_barcode: string): Promise<ProductInfo | null> {
+  private async getProductFromBarcodeLookup(
+    _barcode: string,
+  ): Promise<ProductInfo | null> {
     try {
       // This would use a barcode lookup API
       // Implementation depends on the specific API chosen
@@ -368,7 +379,10 @@ class BarcodeScannerService {
       let carbonData = await this.getCarbonFromHowGoodAPI(barcode, productInfo);
 
       if (!carbonData) {
-        carbonData = await this.getCarbonFromCarbonTrustAPI(barcode, productInfo);
+        carbonData = await this.getCarbonFromCarbonTrustAPI(
+          barcode,
+          productInfo,
+        );
       }
 
       if (!carbonData) {
@@ -421,11 +435,17 @@ class BarcodeScannerService {
     productInfo: ProductInfo,
   ): Promise<CarbonFootprintData> {
     // Calculate estimated carbon footprint based on product category and origin
-    const categoryEmissions = this.getCategoryEmissionFactor(productInfo.category);
-    const transportEmissions = this.calculateTransportEmissions(productInfo.origin.country);
-    const packagingEmissions = this.calculatePackagingEmissions(productInfo.packaging);
+    const categoryEmissions = this.getCategoryEmissionFactor(
+      productInfo.category,
+    );
+    const transportEmissions = this.calculateTransportEmissions(
+      productInfo.origin.country,
+    );
+    const packagingEmissions = this.calculatePackagingEmissions(
+      productInfo.packaging,
+    );
 
-    const production = categoryEmissions * (productInfo.weight || 1);
+    const production = categoryEmissions * (productInfo.weight ?? 1);
     const transportation = transportEmissions;
     const packaging = packagingEmissions;
     const disposal = production * 0.1; // Estimate 10% of production emissions
@@ -507,10 +527,12 @@ class BarcodeScannerService {
     return 1.0; // Default transport emission
   }
 
-  private calculatePackagingEmissions(packaging: ProductInfo['packaging']): number {
+  private calculatePackagingEmissions(
+    packaging: ProductInfo['packaging'],
+  ): number {
     let emissions = 0;
 
-    packaging.materials.forEach(material => {
+    for (const material of packaging.materials) {
       switch (material.toLowerCase()) {
         case 'plastic':
           emissions += 0.5;
@@ -528,7 +550,7 @@ class BarcodeScannerService {
         default:
           emissions += 0.3;
       }
-    });
+    }
 
     return emissions;
   }
@@ -633,7 +655,10 @@ class BarcodeScannerService {
         this.scanHistory = this.scanHistory.slice(0, 100);
       }
 
-      await AsyncStorage.setItem('barcode_scan_history', JSON.stringify(this.scanHistory));
+      await AsyncStorage.setItem(
+        'barcode_scan_history',
+        JSON.stringify(this.scanHistory),
+      );
     } catch (error) {
       console.error('Error saving scan to history:', error);
     }
@@ -647,13 +672,21 @@ class BarcodeScannerService {
   // Update scan history item
   public async updateScanHistory(
     scanId: string,
-    updates: Partial<Pick<ScanHistory, 'userRating' | 'userNotes' | 'purchased' | 'alternatives'>>,
+    updates: Partial<
+      Pick<
+        ScanHistory,
+        'userRating' | 'userNotes' | 'purchased' | 'alternatives'
+      >
+    >,
   ): Promise<void> {
     try {
       const index = this.scanHistory.findIndex(item => item.id === scanId);
       if (index !== -1) {
         this.scanHistory[index] = { ...this.scanHistory[index], ...updates };
-        await AsyncStorage.setItem('barcode_scan_history', JSON.stringify(this.scanHistory));
+        await AsyncStorage.setItem(
+          'barcode_scan_history',
+          JSON.stringify(this.scanHistory),
+        );
       }
     } catch (error) {
       console.error('Error updating scan history:', error);
@@ -663,11 +696,12 @@ class BarcodeScannerService {
   // Load cached data
   private async loadCachedData(): Promise<void> {
     try {
-      const [historyData, productCacheData, carbonCacheData] = await Promise.all([
-        AsyncStorage.getItem('barcode_scan_history'),
-        AsyncStorage.getItem('product_cache'),
-        AsyncStorage.getItem('carbon_cache'),
-      ]);
+      const [historyData, productCacheData, carbonCacheData] =
+        await Promise.all([
+          AsyncStorage.getItem('barcode_scan_history'),
+          AsyncStorage.getItem('product_cache'),
+          AsyncStorage.getItem('carbon_cache'),
+        ]);
 
       if (historyData) {
         this.scanHistory = JSON.parse(historyData);
@@ -691,8 +725,14 @@ class BarcodeScannerService {
   private async saveCachedData(): Promise<void> {
     try {
       await Promise.all([
-        AsyncStorage.setItem('product_cache', JSON.stringify([...this.productCache.entries()])),
-        AsyncStorage.setItem('carbon_cache', JSON.stringify([...this.carbonCache.entries()])),
+        AsyncStorage.setItem(
+          'product_cache',
+          JSON.stringify([...this.productCache.entries()]),
+        ),
+        AsyncStorage.setItem(
+          'carbon_cache',
+          JSON.stringify([...this.carbonCache.entries()]),
+        ),
       ]);
     } catch (error) {
       console.error('Error saving cached data:', error);

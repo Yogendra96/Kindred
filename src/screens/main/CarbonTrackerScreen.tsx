@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { useAdvancedLogging } from '../../hooks/useAdvancedLogging';
-import { Logger } from '../../services/AdvancedLoggingService';
+import type { CarbonActivityType } from '../../components/forms/CarbonActivityForm';
 
 const CarbonTrackerScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const navigation = useNavigation();
 
   // Use the advanced logging hook with automatic lifecycle tracking
   const log = useAdvancedLogging({
@@ -60,16 +68,38 @@ const CarbonTrackerScreen = () => {
     log.trackStateChange('selectedCategory', selectedCategory, categoryId);
     setSelectedCategory(categoryId);
 
-    // TODO: Navigate to specific activity input form
-    log.info('TODO: Navigate to activity input form', {
-      action: 'navigation_todo',
-      targetCategory: categoryId,
-      tags: ['todo', 'navigation'],
-    });
+    // Navigate to specific activity input form
+    const activityTypeMap: Record<string, CarbonActivityType> = {
+      transport: 'transport',
+      energy: 'energy',
+      food: 'food',
+      consumption: 'food', // Map consumption to food for now
+    };
+
+    const activityType = activityTypeMap[categoryId];
+    
+    if (activityType) {
+      log.info('Navigating to activity input form', {
+        action: 'navigation',
+        targetCategory: categoryId,
+        activityType,
+        tags: ['navigation', 'carbon_form'],
+      });
+
+      navigation.navigate('CarbonActivity' as never, {
+        activityType,
+      } as never);
+    } else {
+      log.warn('Unknown category selected', {
+        categoryId,
+        availableTypes: Object.keys(activityTypeMap),
+      });
+    }
 
     // Track business event
     log.trackBusinessEvent('category_selection', {
       categoryId,
+      activityType,
       selectionCount: selectedCategory ? 2 : 1, // Track if it's a re-selection
     });
   };
@@ -78,7 +108,9 @@ const CarbonTrackerScreen = () => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Track Your Carbon Impact</Text>
-        <Text style={styles.subtitle}>Select a category to log your activities</Text>
+        <Text style={styles.subtitle}>
+          Select a category to log your activities
+        </Text>
       </View>
 
       <View style={styles.categoriesContainer}>
@@ -93,18 +125,25 @@ const CarbonTrackerScreen = () => {
               },
             ]}
             onPress={() => handleCategoryPress(category.id)}
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel={`Track ${category.name}`}
             accessibilityHint={category.description}
           >
             <View style={styles.categoryHeader}>
-              <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: category.color },
+                ]}
+              >
                 <Icon name={category.icon} size={24} color='#fff' />
               </View>
               <Text style={styles.categoryName}>{category.name}</Text>
             </View>
-            <Text style={styles.categoryDescription}>{category.description}</Text>
+            <Text style={styles.categoryDescription}>
+              {category.description}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -114,9 +153,19 @@ const CarbonTrackerScreen = () => {
 
         <TouchableOpacity
           style={styles.quickActionButton}
-          accessible={true}
+          accessible
           accessibilityRole='button'
           accessibilityLabel='Add a commute trip'
+          onPress={() => {
+            log.trackButtonPress('quick_action_commute');
+            navigation.navigate('CarbonActivity' as never, {
+              activityType: 'transport',
+              initialData: {
+                mode: 'car',
+                description: 'Daily commute',
+              },
+            } as never);
+          }}
         >
           <Icon name='car-outline' size={20} color='#34C759' />
           <Text style={styles.quickActionText}>Add Commute</Text>
@@ -124,9 +173,19 @@ const CarbonTrackerScreen = () => {
 
         <TouchableOpacity
           style={styles.quickActionButton}
-          accessible={true}
+          accessible
           accessibilityRole='button'
           accessibilityLabel='Log a meal'
+          onPress={() => {
+            log.trackButtonPress('quick_action_meal');
+            navigation.navigate('CarbonActivity' as never, {
+              activityType: 'food',
+              initialData: {
+                mealType: 'lunch',
+                servings: 1,
+              },
+            } as never);
+          }}
         >
           <Icon name='restaurant-outline' size={20} color='#34C759' />
           <Text style={styles.quickActionText}>Log Meal</Text>
@@ -137,33 +196,16 @@ const CarbonTrackerScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
   categoriesContainer: {
     padding: 20,
   },
   categoryCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
     borderWidth: 2,
+    elevation: 4,
+    marginBottom: 16,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -171,48 +213,47 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
-  },
-  categoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  categoryName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    flex: 1,
   },
   categoryDescription: {
-    fontSize: 14,
     color: '#6b7280',
+    fontSize: 14,
     lineHeight: 20,
   },
-  quickActions: {
-    padding: 20,
+  categoryHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
   },
-  sectionTitle: {
+  categoryName: {
+    color: '#1a1a1a',
+    flex: 1,
     fontSize: 20,
     fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 16,
+  },
+  container: {
+    backgroundColor: '#f8f9fa',
+    flex: 1,
+  },
+  header: {
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 24,
+    height: 48,
+    justifyContent: 'center',
+    marginRight: 16,
+    width: 48,
   },
   quickActionButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 16,
     borderRadius: 12,
+    elevation: 2,
+    flexDirection: 'row',
     marginBottom: 12,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -220,13 +261,31 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
   },
   quickActionText: {
+    color: '#1a1a1a',
     fontSize: 16,
     fontWeight: '500',
-    color: '#1a1a1a',
     marginLeft: 12,
+  },
+  quickActions: {
+    padding: 20,
+  },
+  sectionTitle: {
+    color: '#1a1a1a',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  subtitle: {
+    color: '#6b7280',
+    fontSize: 16,
+  },
+  title: {
+    color: '#1a1a1a',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
 });
 

@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import ActivityHistoryScreen from '../screens/main/ActivityHistoryScreen';
 import CarbonTrackerScreen from '../screens/main/CarbonTrackerScreen';
+import CarbonActivityScreen from '../screens/main/CarbonActivityScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import MapScreen from '../screens/main/MapScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
@@ -21,6 +22,15 @@ const HomeStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name='Home' component={HomeScreen} />
       <Stack.Screen name='CarbonTracker' component={CarbonTrackerScreen} />
+      <Stack.Screen 
+        name='CarbonActivity' 
+        component={CarbonActivityScreen}
+        options={{
+          headerShown: true,
+          title: 'Track Activity',
+          headerBackTitle: 'Back',
+        }}
+      />
       <Stack.Screen name='ActivityHistory' component={ActivityHistoryScreen} />
       <Stack.Screen name='Settings' component={SettingsScreen} />
       <Stack.Screen name='Profile' component={ProfileScreen} />
@@ -57,7 +67,11 @@ const MainTabs = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name='HomeTab' component={HomeStack} options={{ tabBarLabel: 'Home' }} />
+      <Tab.Screen
+        name='HomeTab'
+        component={HomeStack}
+        options={{ tabBarLabel: 'Home' }}
+      />
       <Tab.Screen
         name='ActivityTab'
         component={CarbonTrackerScreen}

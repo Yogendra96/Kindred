@@ -2,6 +2,13 @@ import React from 'react';
 
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+// Color constants to avoid literals
+const COLORS = {
+  blue: '#007AFF',
+  whiteTransparent: 'rgba(255, 255, 255, 0.8)',
+  darkText: '#333',
+} as const;
+
 interface LoadingSpinnerProps {
   message?: string;
   size?: 'small' | 'large';
@@ -11,7 +18,7 @@ interface LoadingSpinnerProps {
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   message = 'Loading...',
   size = 'large',
-  color = '#007AFF',
+  color = COLORS.blue,
 }) => {
   return (
     <View style={styles.container}>
@@ -23,15 +30,15 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
+    backgroundColor: COLORS.whiteTransparent,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   message: {
-    marginTop: 10,
+    color: COLORS.darkText,
     fontSize: 16,
-    color: '#333',
+    marginTop: 10,
   },
 });
 

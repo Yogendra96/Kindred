@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 // Type definitions for LocationService demo
 interface LocationData {
@@ -126,10 +133,11 @@ const createMockLocationService = () => {
       };
       currentLocation = mockLocation;
       metrics.totalLocationUpdates++;
-      metrics.averageAccuracy = (metrics.averageAccuracy + mockLocation.accuracy!) / 2;
+      metrics.averageAccuracy =
+        (metrics.averageAccuracy + mockLocation.accuracy!) / 2;
 
       // Notify listeners
-      listeners.forEach(listener => listener(mockLocation));
+      for (const listener of listeners) listener(mockLocation);
 
       return mockLocation;
     },
@@ -150,7 +158,9 @@ const createMockLocationService = () => {
       isTracking = false;
     },
 
-    async addGeofenceRegion(region: Omit<GeofenceRegion, 'id'>): Promise<string> {
+    async addGeofenceRegion(
+      region: Omit<GeofenceRegion, 'id'>,
+    ): Promise<string> {
       const id = `geofence_${Date.now()}`;
       geofenceRegions.push({ ...region, id });
       return id;
@@ -160,7 +170,9 @@ const createMockLocationService = () => {
       geofenceRegions = geofenceRegions.filter(r => r.id !== id);
     },
 
-    async addPlaceOfInterest(place: Omit<PlaceOfInterest, 'id' | 'visitCount'>): Promise<string> {
+    async addPlaceOfInterest(
+      place: Omit<PlaceOfInterest, 'id' | 'visitCount'>,
+    ): Promise<string> {
       const id = `place_${Date.now()}`;
       placesOfInterest.push({ ...place, id, visitCount: 0 });
       return id;
@@ -170,7 +182,10 @@ const createMockLocationService = () => {
       placesOfInterest = placesOfInterest.filter(p => p.id !== id);
     },
 
-    addLocationListener(id: string, listener: (location: LocationData) => void) {
+    addLocationListener(
+      id: string,
+      listener: (location: LocationData) => void,
+    ) {
       listeners.set(id, listener);
     },
 
@@ -230,11 +245,15 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
   const [locationService] = useState(() => createMockLocationService());
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(
+    null,
+  );
   const [config, setConfig] = useState<LocationConfig | null>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [geofenceRegions, setGeofenceRegions] = useState<GeofenceRegion[]>([]);
-  const [placesOfInterest, setPlacesOfInterest] = useState<PlaceOfInterest[]>([]);
+  const [placesOfInterest, setPlacesOfInterest] = useState<PlaceOfInterest[]>(
+    [],
+  );
   const [status, setStatus] = useState('Not initialized');
 
   useEffect(() => {
@@ -250,7 +269,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           await handleStartTracking();
         }
       } catch (error) {
-        setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setStatus(
+          `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
       }
     };
 
@@ -273,7 +294,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setIsTracking(true);
       setStatus('Tracking active');
     } catch (error) {
-      setStatus(`Tracking error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setStatus(
+        `Tracking error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -283,7 +306,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setIsTracking(false);
       setStatus('Tracking stopped');
     } catch (error) {
-      setStatus(`Stop error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setStatus(
+        `Stop error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -294,7 +319,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setMetrics(locationService.getMetrics());
       setStatus('Location retrieved');
     } catch (error) {
-      setStatus(`Location error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setStatus(
+        `Location error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -312,7 +339,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setGeofenceRegions(locationService.getGeofenceRegions());
       setStatus(`Added geofence: ${regionId}`);
     } catch (error) {
-      setStatus(`Geofence error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setStatus(
+        `Geofence error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -331,7 +360,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setPlacesOfInterest(locationService.getPlacesOfInterest());
       setStatus(`Added place: ${placeId}`);
     } catch (error) {
-      setStatus(`Place error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setStatus(
+        `Place error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -341,7 +372,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
       setConfig(locationService.getConfig());
       setStatus(`Updated ${key}`);
     } catch (error) {
-      setStatus(`Config error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setStatus(
+        `Config error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -362,7 +395,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
             onPress={isTracking ? handleStopTracking : handleStartTracking}
             disabled={!isInitialized}
           >
-            <Text style={styles.buttonText}>{isTracking ? 'Stop Tracking' : 'Start Tracking'}</Text>
+            <Text style={styles.buttonText}>
+              {isTracking ? 'Stop Tracking' : 'Start Tracking'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -381,10 +416,13 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           <Text style={styles.sectionTitle}>Current Location</Text>
           <View style={styles.locationCard}>
             <Text style={styles.locationText}>
-              📍 {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
+              📍 {currentLocation.latitude.toFixed(6)},{' '}
+              {currentLocation.longitude.toFixed(6)}
             </Text>
             {currentLocation.address && (
-              <Text style={styles.locationText}>🏠 {currentLocation.address}</Text>
+              <Text style={styles.locationText}>
+                🏠 {currentLocation.address}
+              </Text>
             )}
             {currentLocation.city && (
               <Text style={styles.locationText}>
@@ -412,28 +450,36 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
               <Text style={styles.configLabel}>Background Location</Text>
               <Switch
                 value={config.enableBackgroundLocation}
-                onValueChange={value => handleConfigChange('enableBackgroundLocation', value)}
+                onValueChange={value =>
+                  handleConfigChange('enableBackgroundLocation', value)
+                }
               />
             </View>
             <View style={styles.configRow}>
               <Text style={styles.configLabel}>Geofencing</Text>
               <Switch
                 value={config.enableGeofencing}
-                onValueChange={value => handleConfigChange('enableGeofencing', value)}
+                onValueChange={value =>
+                  handleConfigChange('enableGeofencing', value)
+                }
               />
             </View>
             <View style={styles.configRow}>
               <Text style={styles.configLabel}>Location History</Text>
               <Switch
                 value={config.enableLocationHistory}
-                onValueChange={value => handleConfigChange('enableLocationHistory', value)}
+                onValueChange={value =>
+                  handleConfigChange('enableLocationHistory', value)
+                }
               />
             </View>
             <View style={styles.configRow}>
               <Text style={styles.configLabel}>Battery Optimization</Text>
               <Switch
                 value={config.enableBatteryOptimization}
-                onValueChange={value => handleConfigChange('enableBatteryOptimization', value)}
+                onValueChange={value =>
+                  handleConfigChange('enableBatteryOptimization', value)
+                }
               />
             </View>
             <View style={styles.configRow}>
@@ -451,11 +497,15 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           <View style={styles.metricsCard}>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Total Updates</Text>
-              <Text style={styles.metricValue}>{metrics.totalLocationUpdates}</Text>
+              <Text style={styles.metricValue}>
+                {metrics.totalLocationUpdates}
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Background Updates</Text>
-              <Text style={styles.metricValue}>{metrics.backgroundLocationUpdates}</Text>
+              <Text style={styles.metricValue}>
+                {metrics.backgroundLocationUpdates}
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Geofence Events</Text>
@@ -463,7 +513,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Average Accuracy</Text>
-              <Text style={styles.metricValue}>{metrics.averageAccuracy.toFixed(1)}m</Text>
+              <Text style={styles.metricValue}>
+                {metrics.averageAccuracy.toFixed(1)}m
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Error Count</Text>
@@ -486,7 +538,9 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
               <Text style={styles.regionDetails}>
                 📍 {region.latitude.toFixed(4)}, {region.longitude.toFixed(4)}
               </Text>
-              <Text style={styles.regionDetails}>🔄 Radius: {region.radius}m</Text>
+              <Text style={styles.regionDetails}>
+                🔄 Radius: {region.radius}m
+              </Text>
               <Text style={styles.regionDetails}>
                 🔔 Entry: {region.notifyOnEntry ? '✅' : '❌'} | Exit:{' '}
                 {region.notifyOnExit ? '✅' : '❌'}
@@ -506,12 +560,19 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
           {placesOfInterest.map(place => (
             <View key={place.id} style={styles.placeCard}>
               <Text style={styles.placeName}>{place.name}</Text>
-              <Text style={styles.placeDetails}>📂 Category: {place.category}</Text>
               <Text style={styles.placeDetails}>
-                📍 {place.location.latitude.toFixed(4)}, {place.location.longitude.toFixed(4)}
+                📂 Category: {place.category}
               </Text>
-              <Text style={styles.placeDetails}>🔄 Radius: {place.radius}m</Text>
-              <Text style={styles.placeDetails}>👥 Visits: {place.visitCount}</Text>
+              <Text style={styles.placeDetails}>
+                📍 {place.location.latitude.toFixed(4)},{' '}
+                {place.location.longitude.toFixed(4)}
+              </Text>
+              <Text style={styles.placeDetails}>
+                🔄 Radius: {place.radius}m
+              </Text>
+              <Text style={styles.placeDetails}>
+                👥 Visits: {place.visitCount}
+              </Text>
             </View>
           ))}
         </View>
@@ -521,154 +582,154 @@ const LocationServiceDemo: React.FC<LocationServiceDemoProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  header: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 8,
-  },
-  status: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-  section: {
-    margin: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+  buttonActive: {
+    backgroundColor: '#FF3B30',
   },
   buttonRow: {
     flexDirection: 'row',
     gap: 12,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonActive: {
-    backgroundColor: '#FF3B30',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  locationCard: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 4,
-  },
   configCard: {
     gap: 12,
   },
+  configLabel: {
+    color: '#333',
+    fontSize: 16,
+  },
   configRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: 8,
   },
-  configLabel: {
-    fontSize: 16,
-    color: '#333',
-  },
   configValue: {
-    fontSize: 16,
     color: '#666',
+    fontSize: 16,
     fontWeight: '500',
+  },
+  container: {
+    backgroundColor: '#f5f5f5',
+    flex: 1,
+  },
+  description: {
+    color: '#666',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  header: {
+    backgroundColor: '#fff',
+    borderBottomColor: '#e0e0e0',
+    borderBottomWidth: 1,
+    padding: 16,
+  },
+  locationCard: {
+    backgroundColor: '#f8f9fa',
+    borderLeftColor: '#007AFF',
+    borderLeftWidth: 4,
+    borderRadius: 8,
+    padding: 12,
+  },
+  locationText: {
+    color: '#333',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  metricLabel: {
+    color: '#666',
+    fontSize: 14,
+  },
+  metricRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  metricValue: {
+    color: '#333',
+    fontSize: 14,
+    fontWeight: '600',
   },
   metricsCard: {
     gap: 8,
   },
-  metricRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
+  placeCard: {
+    backgroundColor: '#f0f9ff',
+    borderLeftColor: '#10B981',
+    borderLeftWidth: 4,
+    borderRadius: 8,
+    marginTop: 8,
+    padding: 12,
   },
-  metricLabel: {
-    fontSize: 14,
+  placeDetails: {
     color: '#666',
-  },
-  metricValue: {
     fontSize: 14,
+    marginBottom: 2,
+  },
+  placeName: {
     color: '#333',
+    fontSize: 16,
     fontWeight: '600',
+    marginBottom: 4,
   },
   regionCard: {
     backgroundColor: '#e8f4fd',
-    padding: 12,
+    borderLeftColor: '#007AFF',
+    borderLeftWidth: 4,
     borderRadius: 8,
     marginTop: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  regionName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    padding: 12,
   },
   regionDetails: {
-    fontSize: 14,
     color: '#666',
+    fontSize: 14,
     marginBottom: 2,
   },
-  placeCard: {
-    backgroundColor: '#f0f9ff',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
-  },
-  placeName: {
+  regionName: {
+    color: '#333',
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 4,
   },
-  placeDetails: {
+  section: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 3,
+    margin: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  sectionTitle: {
+    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  status: {
+    color: '#007AFF',
     fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
+    fontWeight: '500',
+  },
+  title: {
+    color: '#333',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
 });
 
@@ -692,8 +753,8 @@ export const HighAccuracyDemo = () => (
       enableLocationSharing: true,
       privacyMode: 'full' as const,
     }}
-    autoStart={true}
-    showMetrics={true}
+    autoStart
+    showMetrics
   />
 );
 
@@ -713,7 +774,7 @@ export const BatteryOptimizedDemo = () => (
       enableLocationSharing: false,
       privacyMode: 'approximate' as const,
     }}
-    showMetrics={true}
+    showMetrics
   />
 );
 
@@ -724,8 +785,8 @@ export const GeofencingDemo = () => (
     initialConfig={{
       enableGeofencing: true,
     }}
-    showGeofencing={true}
-    showMetrics={true}
+    showGeofencing
+    showMetrics
   />
 );
 
@@ -733,8 +794,8 @@ export const PlacesOfInterestDemo = () => (
   <LocationServiceDemo
     title='Places of Interest'
     description='Manage and track favorite places and locations'
-    showPlaces={true}
-    showMetrics={true}
+    showPlaces
+    showMetrics
   />
 );
 
@@ -748,8 +809,8 @@ export const FullFeaturesDemo = () => (
       enableLocationHistory: true,
       enableLocationSharing: true,
     }}
-    showGeofencing={true}
-    showPlaces={true}
-    showMetrics={true}
+    showGeofencing
+    showPlaces
+    showMetrics
   />
 );

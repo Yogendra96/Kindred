@@ -113,7 +113,8 @@ export const usePerformanceMonitoring = (
 
     // Calculate average render time
     const average =
-      renderTimes.current.reduce((sum, time) => sum + time, 0) / renderTimes.current.length;
+      renderTimes.current.reduce((sum, time) => sum + time, 0) /
+      renderTimes.current.length;
     setAverageRenderTime(average);
 
     // Check if render is slow
@@ -243,7 +244,10 @@ export const useAsyncPerformance = () => {
       return result;
     } catch (error) {
       const duration = performance.now() - startTime;
-      console.error(`Operation ${operationName} failed after ${duration}ms:`, error);
+      console.error(
+        `Operation ${operationName} failed after ${duration}ms:`,
+        error,
+      );
       throw error;
     }
   };

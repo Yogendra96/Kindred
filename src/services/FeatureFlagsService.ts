@@ -92,7 +92,8 @@ class FeatureFlagsService {
   private config: FeatureFlagConfig;
   private performanceMonitor: PerformanceMonitoringService;
   private analytics: Map<string, FeatureFlagAnalytics> = new Map();
-  private eventListeners: Map<string, ((event: FeatureFlagEvent) => void)[]> = new Map();
+  private eventListeners: Map<string, ((event: FeatureFlagEvent) => void)[]> =
+    new Map();
   private refreshTimer: Timer | null = null;
   private isInitialized: boolean = false;
   private localOverrides: Map<string, any> = new Map();
@@ -132,11 +133,11 @@ class FeatureFlagsService {
 
       // Load fallback flags
       if (this.config.fallbackFlags) {
-        Object.entries(this.config.fallbackFlags).forEach(([key, flag]) => {
+        for (const [key, flag] of Object.entries(this.config.fallbackFlags)) {
           if (!this.flags.has(key)) {
             this.flags.set(key, flag);
           }
-        });
+        }
       }
 
       // Fetch remote flags
@@ -190,7 +191,10 @@ class FeatureFlagsService {
 
     try {
       // Check local overrides first
-      if (this.config.enableLocalOverrides && this.localOverrides.has(flagKey)) {
+      if (
+        this.config.enableLocalOverrides &&
+        this.localOverrides.has(flagKey)
+      ) {
         const overrideValue = this.localOverrides.get(flagKey);
         this.emitEvent({
           type: 'flag_override',
@@ -247,11 +251,11 @@ class FeatureFlagsService {
   getEnabledFlags(): Record<string, any> {
     const enabledFlags: Record<string, any> = {};
 
-    this.flags.forEach((flag, key) => {
+    for (const [key, flag] of this.flags.entries()) {
       if (this.isEnabled(key)) {
         enabledFlags[key] = this.getValue(key, flag.value);
       }
-    });
+    }
 
     return enabledFlags;
   }
@@ -316,12 +320,12 @@ class FeatureFlagsService {
       const data: RemoteConfigResponse = await response.json();
 
       // Update flags
-      Object.entries(data.flags).forEach(([key, flag]) => {
+      for (const [key, flag] of Object.entries(data.flags)) {
         this.flags.set(key, {
           ...flag,
           lastUpdated: Date.now(),
         });
-      });
+      }
 
       // Cache the flags
       await this.cacheFlags();
@@ -363,13 +367,13 @@ class FeatureFlagsService {
   private emitEvent(event: FeatureFlagEvent): void {
     const listeners = this.eventListeners.get(event.type);
     if (listeners) {
-      listeners.forEach(listener => {
+      for (const listener of listeners) {
         try {
           listener(event);
         } catch (error) {
           console.error('Error in feature flag event listener:', error);
         }
-      });
+      }
     }
   }
 
@@ -377,17 +381,21 @@ class FeatureFlagsService {
   getAnalytics(): Record<string, FeatureFlagAnalytics> {
     const result: Record<string, FeatureFlagAnalytics> = {};
 
-    this.analytics.forEach((analytics, key) => {
+    for (const [key, analytics] of this.analytics.entries()) {
       result[key] = {
         ...analytics,
         uniqueUsers: new Set(analytics.uniqueUsers), // Clone the Set
       };
-    });
+    }
 
     return result;
   }
 
-  private recordEvaluation(flagKey: string, value: any, evaluationTime: number): void {
+  private recordEvaluation(
+    flagKey: string,
+    value: any,
+    evaluationTime: number,
+  ): void {
     if (!this.config.enableAnalytics) {
       return;
     }
@@ -418,7 +426,8 @@ class FeatureFlagsService {
 
     // Update average evaluation time
     analytics.averageEvaluationTime =
-      (analytics.averageEvaluationTime * (analytics.evaluationCount - 1) + evaluationTime) /
+      (analytics.averageEvaluationTime * (analytics.evaluationCount - 1) +
+        evaluationTime) /
       analytics.evaluationCount;
   }
 
@@ -466,7 +475,10 @@ class FeatureFlagsService {
 
     // Check user IDs
     if (targetAudience.userIds && targetAudience.userIds.length > 0) {
-      if (!this.userContext.userId || !targetAudience.userIds.includes(this.userContext.userId)) {
+      if (
+        !this.userContext.userId ||
+        !targetAudience.userIds.includes(this.userContext.userId)
+      ) {
         return false;
       }
     }
@@ -517,7 +529,9 @@ class FeatureFlagsService {
 
     // Check custom attributes
     if (targetAudience.customAttributes) {
-      for (const [key, value] of Object.entries(targetAudience.customAttributes)) {
+      for (const [key, value] of Object.entries(
+        targetAudience.customAttributes,
+      )) {
         if (
           !this.userContext.customAttributes ||
           this.userContext.customAttributes[key] !== value
@@ -573,10 +587,13 @@ class FeatureFlagsService {
         const data = JSON.parse(cached);
 
         // Check if cache is still valid
-        if (data.timestamp && Date.now() - data.timestamp < (this.config.cacheTimeout || 3600000)) {
-          Object.entries(data.flags).forEach(([key, flag]) => {
+        if (
+          data.timestamp &&
+          Date.now() - data.timestamp < (this.config.cacheTimeout || 3600000)
+        ) {
+          for (const [key, flag] of Object.entries(data.flags)) {
             this.flags.set(key, flag as FeatureFlag);
-          });
+          }
         }
       }
     } catch (error) {
@@ -612,7 +629,10 @@ class FeatureFlagsService {
   private async saveLocalOverrides(): Promise<void> {
     try {
       const data = Object.fromEntries(this.localOverrides);
-      await AsyncStorage.setItem('feature_flags_overrides', JSON.stringify(data));
+      await AsyncStorage.setItem(
+        'feature_flags_overrides',
+        JSON.stringify(data),
+      );
     } catch (error) {
       console.error('Failed to save local overrides:', error);
     }
@@ -673,17 +693,27 @@ class FeatureFlagsService {
 export default FeatureFlagsService;
 
 // React Hook for feature flags
-export function useFeatureFlag(flagKey: string, defaultValue: boolean = false): boolean {
+export function useFeatureFlag(
+  flagKey: string,
+  defaultValue: boolean = false,
+): boolean {
   // This would need to be implemented with React context or state management
   // For now, it's a placeholder
-  console.warn('useFeatureFlag hook not implemented - use FeatureFlagsService directly');
+  console.warn(
+    'useFeatureFlag hook not implemented - use FeatureFlagsService directly',
+  );
   return defaultValue;
 }
 
 // React Hook for feature flag values
-export function useFeatureFlagValue<T = any>(flagKey: string, defaultValue: T): T {
+export function useFeatureFlagValue<T = any>(
+  flagKey: string,
+  defaultValue: T,
+): T {
   // This would need to be implemented with React context or state management
   // For now, it's a placeholder
-  console.warn('useFeatureFlagValue hook not implemented - use FeatureFlagsService directly');
+  console.warn(
+    'useFeatureFlagValue hook not implemented - use FeatureFlagsService directly',
+  );
   return defaultValue;
 }

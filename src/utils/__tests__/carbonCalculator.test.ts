@@ -89,7 +89,9 @@ describe('CarbonCalculator', () => {
         distance: -10,
         fuelType: 'petrol',
       };
-      expect(() => calculator.calculateTransportEmissions(input)).toThrow(InputValidationError);
+      expect(() => calculator.calculateTransportEmissions(input)).toThrow(
+        InputValidationError,
+      );
     });
 
     it('should throw error for invalid passengers', () => {
@@ -99,7 +101,9 @@ describe('CarbonCalculator', () => {
         fuelType: 'petrol',
         passengers: 51,
       };
-      expect(() => calculator.calculateTransportEmissions(input)).toThrow(InputValidationError);
+      expect(() => calculator.calculateTransportEmissions(input)).toThrow(
+        InputValidationError,
+      );
     });
   });
 
@@ -128,7 +132,9 @@ describe('CarbonCalculator', () => {
         source: 'coal',
         consumption: -100,
       };
-      expect(() => calculator.calculateEnergyEmissions(input)).toThrow(InputValidationError);
+      expect(() => calculator.calculateEnergyEmissions(input)).toThrow(
+        InputValidationError,
+      );
     });
   });
 
@@ -194,7 +200,12 @@ describe('CarbonCalculator', () => {
         },
       ];
 
-      const result = calculator.calculateTotalEmissions(transport, energy, food, waste);
+      const result = calculator.calculateTotalEmissions(
+        transport,
+        energy,
+        food,
+        waste,
+      );
 
       expect(result.total).toBeGreaterThan(0);
       expect(result.breakdown.transport.total).toBe(19.2);
@@ -220,12 +231,12 @@ describe('CarbonCalculator', () => {
         'waste',
       ];
 
-      categories.forEach(category => {
+      for (const category of categories) {
         const tips = calculator.getEmissionReductionTips(category);
         expect(Array.isArray(tips)).toBe(true);
         expect(tips.length).toBeGreaterThan(0);
         expect(tips.every(tip => typeof tip === 'string')).toBe(true);
-      });
+      }
     });
 
     it('should return empty array for invalid category', () => {

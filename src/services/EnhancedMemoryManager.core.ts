@@ -73,7 +73,9 @@ export class MemoryManagerCore {
       const trend = this.calculateMemoryTrend();
 
       const analysisTime = performance.now() - startTime;
-      console.log(`🧠 Memory analysis completed in ${analysisTime.toFixed(2)}ms`);
+      console.log(
+        `🧠 Memory analysis completed in ${analysisTime.toFixed(2)}ms`,
+      );
 
       return {
         totalUsage: currentUsage.used,
@@ -164,7 +166,9 @@ export class MemoryManagerCore {
 
     // Keep only recent samples
     if (this.samples.length > this.config.monitoring.sampleRetention) {
-      this.samples = this.samples.slice(-this.config.monitoring.sampleRetention);
+      this.samples = this.samples.slice(
+        -this.config.monitoring.sampleRetention,
+      );
     }
 
     // Check for memory warnings
@@ -227,7 +231,8 @@ export class MemoryManagerCore {
       const memory = (performance as any).memory;
       return {
         used: memory.usedJSHeapSize || 50 * 1024 * 1024, // 50MB default
-        available: memory.totalJSHeapSize - memory.usedJSHeapSize || 100 * 1024 * 1024,
+        available:
+          memory.totalJSHeapSize - memory.usedJSHeapSize || 100 * 1024 * 1024,
         total: memory.totalJSHeapSize || 150 * 1024 * 1024,
       };
     }
@@ -260,8 +265,10 @@ export class MemoryManagerCore {
     // Detect growing trend as potential leak
     if (this.samples.length >= 10) {
       const recentSamples = this.samples.slice(-10);
-      const growth = recentSamples[recentSamples.length - 1].usage - recentSamples[0].usage;
-      const growthRate = growth / ((10 * this.config.monitoring.interval) / 1000); // bytes per second
+      const growth =
+        recentSamples[recentSamples.length - 1].usage - recentSamples[0].usage;
+      const growthRate =
+        growth / ((10 * this.config.monitoring.interval) / 1000); // bytes per second
 
       if (growthRate > 1024 * 1024) {
         // Growing > 1MB/s
@@ -294,7 +301,8 @@ export class MemoryManagerCore {
         description: 'Optimize image cache and compression',
         expectedSavings: Math.round(breakdown.images * 0.3),
         effort: 'medium',
-        implementation: 'Enable image compression and implement LRU cache eviction',
+        implementation:
+          'Enable image compression and implement LRU cache eviction',
         priority: 8,
       });
     }
@@ -313,7 +321,7 @@ export class MemoryManagerCore {
     }
 
     // Leak-specific recommendations
-    leaks.forEach(leak => {
+    for (const leak of leaks) {
       if (leak.type === 'growing_cache') {
         recommendations.push({
           type: 'cache_cleanup',
@@ -324,7 +332,7 @@ export class MemoryManagerCore {
           priority: 9,
         });
       }
-    });
+    }
 
     return recommendations.sort((a, b) => b.priority - a.priority);
   }
@@ -343,7 +351,9 @@ export class MemoryManagerCore {
       };
     }
 
-    const recentSamples = this.samples.slice(-Math.min(20, this.samples.length));
+    const recentSamples = this.samples.slice(
+      -Math.min(20, this.samples.length),
+    );
     const firstSample = recentSamples[0];
     const lastSample = recentSamples[recentSamples.length - 1];
     const timeDiff = lastSample.timestamp - firstSample.timestamp;
@@ -378,7 +388,10 @@ export class MemoryManagerCore {
   }
 
   private getPeakUsage(): number {
-    return Math.max(...this.samples.map(s => s.usage), this.getCurrentMemoryUsage().used);
+    return Math.max(
+      ...this.samples.map(s => s.usage),
+      this.getCurrentMemoryUsage().used,
+    );
   }
 
   private checkMemoryThresholds(currentUsage: number): void {
@@ -393,15 +406,21 @@ export class MemoryManagerCore {
   }
 
   private shouldCleanupImages(force: boolean): boolean {
-    return force || this.getCurrentMemoryUsage().used > this.config.limits.warning;
+    return (
+      force || this.getCurrentMemoryUsage().used > this.config.limits.warning
+    );
   }
 
   private shouldCleanupComponents(force: boolean): boolean {
-    return force || this.getCurrentMemoryUsage().used > this.config.limits.warning;
+    return (
+      force || this.getCurrentMemoryUsage().used > this.config.limits.warning
+    );
   }
 
   private shouldCleanupServiceCache(force: boolean): boolean {
-    return force || this.getCurrentMemoryUsage().used > this.config.limits.critical;
+    return (
+      force || this.getCurrentMemoryUsage().used > this.config.limits.critical
+    );
   }
 
   private async cleanupImageCache(): Promise<void> {
@@ -427,9 +446,11 @@ export class MemoryManagerCore {
   private detectReactNativeMemoryMetrics(): ReactNativeMemoryMetrics {
     return {
       platform: Platform.OS as 'ios' | 'android',
-      deviceMemory: Platform.OS === 'ios' ? 6 * 1024 * 1024 * 1024 : 4 * 1024 * 1024 * 1024, // Rough estimates
+      deviceMemory:
+        Platform.OS === 'ios' ? 6 * 1024 * 1024 * 1024 : 4 * 1024 * 1024 * 1024, // Rough estimates
       availableMemory: 512 * 1024 * 1024, // 512MB
-      appMemoryLimit: Platform.OS === 'ios' ? 1024 * 1024 * 1024 : 512 * 1024 * 1024, // 1GB iOS, 512MB Android
+      appMemoryLimit:
+        Platform.OS === 'ios' ? 1024 * 1024 * 1024 : 512 * 1024 * 1024, // 1GB iOS, 512MB Android
       hermes: !!(global as any).HermesInternal,
       bridgeMemory: 20 * 1024 * 1024, // 20MB estimate
     };

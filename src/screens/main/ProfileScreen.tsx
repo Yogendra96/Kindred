@@ -1,6 +1,14 @@
 import React from 'react';
 
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,9 +58,13 @@ const ProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView>
-        <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
+        <View
+          style={[styles.header, { borderBottomColor: theme.colors.border }]}
+        >
           <Image
             source={{
               uri: user?.photoURL || 'https://via.placeholder.com/150',
@@ -62,76 +74,111 @@ const ProfileScreen = () => {
           <Text style={[styles.name, { color: theme.colors.text.primary }]}>
             {user?.displayName || 'User'}
           </Text>
-          <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
+          <Text style={[styles.email, { color: theme.colors.text.secondary }]}>
+            {user?.email}
+          </Text>
         </View>
 
-        <View style={[styles.section, { borderBottomColor: theme.colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+        <View
+          style={[styles.section, { borderBottomColor: theme.colors.border }]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
+          >
             Account Settings
           </Text>
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
             onPress={handleEditProfile}
-            accessible={true}
+            accessible
             accessibilityLabel='Edit Profile'
             accessibilityHint='Edit your profile information'
             accessibilityRole='button'
           >
-            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
               Edit Profile
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
             onPress={handlePrivacySettings}
-            accessible={true}
+            accessible
             accessibilityLabel='Privacy Settings'
             accessibilityHint='Adjust your privacy preferences'
             accessibilityRole='button'
           >
-            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
               Privacy Settings
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
             onPress={handleNotifications}
-            accessible={true}
+            accessible
             accessibilityLabel='Notifications'
             accessibilityHint='Manage notification preferences'
             accessibilityRole='button'
           >
-            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
               Notifications
             </Text>
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.section, { borderBottomColor: theme.colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+        <View
+          style={[styles.section, { borderBottomColor: theme.colors.border }]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
+          >
             Display Settings
           </Text>
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
             onPress={toggleTheme}
-            accessible={true}
+            accessible
             accessibilityLabel='Toggle Theme'
             accessibilityHint='Switch between light and dark theme'
             accessibilityRole='button'
           >
-            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
               Toggle Theme
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
+            style={[
+              styles.settingItem,
+              { borderBottomColor: theme.colors.border },
+            ]}
             onPress={toggleHighContrast}
-            accessible={true}
+            accessible
             accessibilityLabel='High Contrast Mode'
             accessibilityHint='Toggle high contrast mode for better visibility'
             accessibilityRole='button'
           >
-            <Text style={[styles.settingText, { color: theme.colors.text.primary }]}>
+            <Text
+              style={[styles.settingText, { color: theme.colors.text.primary }]}
+            >
               {isHighContrast ? 'Disable' : 'Enable'} High Contrast
             </Text>
           </TouchableOpacity>
@@ -140,7 +187,7 @@ const ProfileScreen = () => {
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
-          accessible={true}
+          accessible
           accessibilityLabel='Logout'
           accessibilityHint='Sign out of your account'
           accessibilityRole='button'
@@ -153,34 +200,46 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 50,
+    height: 100,
+    marginBottom: 10,
+    width: 100,
+  },
   container: {
     flex: 1,
   },
+  email: {
+    color: '#666',
+    fontSize: 16,
+  },
   header: {
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    padding: 20,
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+  logoutButton: {
+    alignItems: 'center',
+    backgroundColor: '#FF3B30',
+    borderRadius: 8,
+    margin: 20,
+    padding: 15,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  email: {
-    fontSize: 16,
-    color: '#666',
-  },
   section: {
-    padding: 20,
-    borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    padding: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -188,24 +247,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   settingItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    paddingVertical: 15,
   },
   settingText: {
     fontSize: 16,
-  },
-  logoutButton: {
-    margin: 20,
-    padding: 15,
-    backgroundColor: '#FF3B30',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 

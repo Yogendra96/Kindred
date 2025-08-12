@@ -19,6 +19,20 @@ import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
 
 // import { Dimensions } from 'react-native';
 
+const COLORS = {
+  green: '#4CAF50',
+  red: '#F44336',
+  orange: '#FF9800',
+  blue: '#2196F3',
+  gray: '#9E9E9E',
+  black: '#000000',
+  white: '#ffffff',
+  lightGray: '#f5f5f5',
+  mediumGray: '#e0e0e0',
+  darkGray: '#666666',
+  darkText: '#333333',
+};
+
 // Global type declarations
 declare global {
   var __DEV__: boolean;
@@ -46,9 +60,18 @@ interface LogEntry {
  */
 export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   const [activeTab, setActiveTab] = useState<TabType>('performance');
-  const [performanceData, setPerformanceData] = useState<Record<string, unknown> | null>(null);
-  const [analyticsData, setAnalyticsData] = useState<Record<string, unknown> | null>(null);
-  const [securityData, setSecurityData] = useState<Record<string, unknown> | null>(null);
+  const [performanceData, setPerformanceData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [securityData, setSecurityData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [refreshInterval, setRefreshInterval] = useState<number>(5000);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
@@ -119,7 +142,8 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   const filteredLogs = logs.filter(log => {
     const matchesLevel = filterLevel === 'all' || log.level === filterLevel;
     const matchesSearch =
-      !searchQuery || log.message.toLowerCase().includes(searchQuery.toLowerCase());
+      !searchQuery ||
+      log.message.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesLevel && matchesSearch;
   });
 
@@ -147,34 +171,42 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
    * Clear performance data
    */
   const clearPerformanceData = () => {
-    Alert.alert('Clear Performance Data', 'Are you sure you want to clear all performance data?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: () => {
-          performanceService.clearData();
-          refreshData();
+    Alert.alert(
+      'Clear Performance Data',
+      'Are you sure you want to clear all performance data?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => {
+            performanceService.clearData();
+            refreshData();
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   /**
    * Clear analytics data
    */
   const clearAnalyticsData = () => {
-    Alert.alert('Clear Analytics Data', 'Are you sure you want to clear all analytics data?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: async () => {
-          await analyticsService.clearAnalyticsData();
-          refreshData();
+    Alert.alert(
+      'Clear Analytics Data',
+      'Are you sure you want to clear all analytics data?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await analyticsService.clearAnalyticsData();
+            refreshData();
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   /**
@@ -209,11 +241,17 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
         {tabs.map(tab => (
           <TouchableOpacity
             key={tab.key}
-            style={[styles.tabButton, activeTab === tab.key && styles.activeTabButton]}
+            style={[
+              styles.tabButton,
+              activeTab === tab.key && styles.activeTabButton,
+            ]}
             onPress={() => setActiveTab(tab.key)}
           >
             <Text
-              style={[styles.tabButtonText, activeTab === tab.key && styles.activeTabButtonText]}
+              style={[
+                styles.tabButtonText,
+                activeTab === tab.key && styles.activeTabButtonText,
+              ]}
             >
               {tab.label}
             </Text>
@@ -245,7 +283,9 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color: performanceData.overview.isMonitoring ? '#4CAF50' : '#F44336',
+                  color: performanceData.overview.isMonitoring
+                    ? COLORS.green
+                    : COLORS.red,
                 },
               ]}
             >
@@ -254,7 +294,9 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total Metrics:</Text>
-            <Text style={styles.metricValue}>{performanceData.overview.totalMetrics}</Text>
+            <Text style={styles.metricValue}>
+              {performanceData.overview.totalMetrics}
+            </Text>
           </View>
         </View>
 
@@ -263,11 +305,15 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             <Text style={styles.sectionTitle}>Memory</Text>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Used:</Text>
-              <Text style={styles.metricValue}>{performanceData.memory.current.used}</Text>
+              <Text style={styles.metricValue}>
+                {performanceData.memory.current.used}
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Utilization:</Text>
-              <Text style={styles.metricValue}>{performanceData.memory.current.utilization}</Text>
+              <Text style={styles.metricValue}>
+                {performanceData.memory.current.utilization}
+              </Text>
             </View>
           </View>
         )}
@@ -277,11 +323,15 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             <Text style={styles.sectionTitle}>Rendering</Text>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Total Renders:</Text>
-              <Text style={styles.metricValue}>{performanceData.rendering.totalRenders}</Text>
+              <Text style={styles.metricValue}>
+                {performanceData.rendering.totalRenders}
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Average Time:</Text>
-              <Text style={styles.metricValue}>{performanceData.rendering.averageRenderTime}</Text>
+              <Text style={styles.metricValue}>
+                {performanceData.rendering.averageRenderTime}
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Slow Renders:</Text>
@@ -289,7 +339,10 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
                 style={[
                   styles.metricValue,
                   {
-                    color: performanceData.rendering.slowRenders > 0 ? '#FF9800' : '#4CAF50',
+                    color:
+                      performanceData.rendering.slowRenders > 0
+                        ? COLORS.orange
+                        : COLORS.green,
                   },
                 ]}
               >
@@ -299,7 +352,10 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
         )}
 
-        <TouchableOpacity style={styles.actionButton} onPress={clearPerformanceData}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={clearPerformanceData}
+        >
           <Text style={styles.actionButtonText}>Clear Performance Data</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -324,11 +380,15 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           <Text style={styles.sectionTitle}>Sessions</Text>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total:</Text>
-            <Text style={styles.metricValue}>{analyticsData.sessions.total}</Text>
+            <Text style={styles.metricValue}>
+              {analyticsData.sessions.total}
+            </Text>
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Active:</Text>
-            <Text style={styles.metricValue}>{analyticsData.sessions.active}</Text>
+            <Text style={styles.metricValue}>
+              {analyticsData.sessions.active}
+            </Text>
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Avg Duration:</Text>
@@ -344,12 +404,14 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             <Text style={styles.metricLabel}>Total:</Text>
             <Text style={styles.metricValue}>{analyticsData.events.total}</Text>
           </View>
-          {Object.entries(analyticsData.events.byCategory).map(([category, count]) => (
-            <View key={category} style={styles.metricRow}>
-              <Text style={styles.metricLabel}>{category}:</Text>
-              <Text style={styles.metricValue}>{count as number}</Text>
-            </View>
-          ))}
+          {Object.entries(analyticsData.events.byCategory).map(
+            ([category, count]) => (
+              <View key={category} style={styles.metricRow}>
+                <Text style={styles.metricLabel}>{category}:</Text>
+                <Text style={styles.metricValue}>{count as number}</Text>
+              </View>
+            ),
+          )}
         </View>
 
         <View style={styles.section}>
@@ -364,7 +426,10 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.actionButton} onPress={clearAnalyticsData}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={clearAnalyticsData}
+        >
           <Text style={styles.actionButtonText}>Clear Analytics Data</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -393,7 +458,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color: securityData.session.isActive ? '#4CAF50' : '#F44336',
+                  color: securityData.session.isActive ? COLORS.green : COLORS.red,
                 },
               ]}
             >
@@ -403,7 +468,9 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           {securityData.session.userId && (
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>User ID:</Text>
-              <Text style={styles.metricValue}>{securityData.session.userId}</Text>
+              <Text style={styles.metricValue}>
+                {securityData.session.userId}
+              </Text>
             </View>
           )}
         </View>
@@ -412,7 +479,9 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           <Text style={styles.sectionTitle}>Security Events (24h)</Text>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total:</Text>
-            <Text style={styles.metricValue}>{securityData.events.last24Hours}</Text>
+            <Text style={styles.metricValue}>
+              {securityData.events.last24Hours}
+            </Text>
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Critical:</Text>
@@ -420,7 +489,8 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color: securityData.events.critical > 0 ? '#F44336' : '#4CAF50',
+                  color:
+                    securityData.events.critical > 0 ? COLORS.red : COLORS.green,
                 },
               ]}
             >
@@ -433,7 +503,10 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
               style={[
                 styles.metricValue,
                 {
-                  color: securityData.events.failedLogins > 0 ? '#FF9800' : '#4CAF50',
+                  color:
+                    securityData.events.failedLogins > 0
+                      ? COLORS.orange
+                      : COLORS.green,
                 },
               ]}
             >
@@ -452,7 +525,9 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           </View>
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Max Login Attempts:</Text>
-            <Text style={styles.metricValue}>{securityData.config.maxLoginAttempts}</Text>
+            <Text style={styles.metricValue}>
+              {securityData.config.maxLoginAttempts}
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -466,15 +541,15 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
     const getLevelColor = (level: string) => {
       switch (level) {
         case 'error':
-          return '#F44336';
+          return COLORS.red;
         case 'warn':
-          return '#FF9800';
+          return COLORS.orange;
         case 'info':
-          return '#2196F3';
+          return COLORS.blue;
         case 'debug':
-          return '#9E9E9E';
+          return COLORS.gray;
         default:
-          return '#000000';
+          return COLORS.black;
       }
     };
 
@@ -490,7 +565,10 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           <View style={styles.filterContainer}>
             <Text style={styles.filterLabel}>Level:</Text>
             <TouchableOpacity
-              style={[styles.filterButton, filterLevel === 'all' && styles.activeFilter]}
+              style={[
+                styles.filterButton,
+                filterLevel === 'all' && styles.activeFilter,
+              ]}
               onPress={() => setFilterLevel('all')}
             >
               <Text style={styles.filterButtonText}>All</Text>
@@ -498,7 +576,10 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
             {['error', 'warn', 'info', 'debug'].map(level => (
               <TouchableOpacity
                 key={level}
-                style={[styles.filterButton, filterLevel === level && styles.activeFilter]}
+                style={[
+                  styles.filterButton,
+                  filterLevel === level && styles.activeFilter,
+                ]}
                 onPress={() => setFilterLevel(level)}
               >
                 <Text style={styles.filterButtonText}>{level}</Text>
@@ -511,7 +592,9 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
           {filteredLogs.map((log, index) => (
             <View key={index} style={styles.logEntry}>
               <View style={styles.logHeader}>
-                <Text style={[styles.logLevel, { color: getLevelColor(log.level) }]}>
+                <Text
+                  style={[styles.logLevel, { color: getLevelColor(log.level) }]}
+                >
                   {log.level.toUpperCase()}
                 </Text>
                 <Text style={styles.logTimestamp}>
@@ -519,7 +602,11 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
                 </Text>
               </View>
               <Text style={styles.logMessage}>{log.message}</Text>
-              {log.data && <Text style={styles.logData}>{JSON.stringify(log.data, null, 2)}</Text>}
+              {log.data && (
+                <Text style={styles.logData}>
+                  {JSON.stringify(log.data, null, 2)}
+                </Text>
+              )}
             </View>
           ))}
         </ScrollView>
@@ -611,194 +698,194 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  actionButton: {
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#2196F3',
-    paddingTop: 50,
+    backgroundColor: COLORS.blue,
+    borderRadius: 8,
+    marginTop: 8,
+    padding: 12,
   },
-  title: {
-    fontSize: 20,
+  actionButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#ffffff',
+  },
+  activeFilter: {
+    backgroundColor: COLORS.blue,
+  },
+  activeTabButton: {
+    borderBottomColor: COLORS.blue,
+    borderBottomWidth: 2,
+  },
+  activeTabButtonText: {
+    color: COLORS.blue,
+    fontWeight: 'bold',
   },
   closeButton: {
     padding: 8,
   },
   closeButtonText: {
-    fontSize: 18,
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  activeTabButton: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#2196F3',
-  },
-  tabButtonText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  activeTabButtonText: {
-    color: '#2196F3',
-    fontWeight: 'bold',
-  },
-  tabContent: {
-    flex: 1,
-    padding: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  section: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  sectionTitle: {
+    color: COLORS.white,
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#333333',
   },
-  metricRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  container: {
+    backgroundColor: COLORS.lightGray,
+    flex: 1,
+  },
+  filterButton: {
+    backgroundColor: COLORS.mediumGray,
+    borderRadius: 4,
+    marginBottom: 4,
+    marginRight: 8,
+    paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  metricLabel: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  metricValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  actionButton: {
-    backgroundColor: '#2196F3',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  logsHeader: {
-    marginBottom: 16,
-  },
-  searchInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+  filterButtonText: {
+    color: COLORS.darkText,
+    fontSize: 12,
   },
   filterContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     flexWrap: 'wrap',
   },
   filterLabel: {
+    color: COLORS.darkGray,
     fontSize: 14,
-    color: '#666666',
     marginRight: 8,
   },
-  filterButton: {
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginRight: 8,
-    marginBottom: 4,
-  },
-  activeFilter: {
-    backgroundColor: '#2196F3',
-  },
-  filterButtonText: {
-    fontSize: 12,
-    color: '#333333',
-  },
-  logsContainer: {
-    flex: 1,
-  },
-  logEntry: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  logHeader: {
+  header: {
+    alignItems: 'center',
+    backgroundColor: COLORS.blue,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    padding: 16,
+    paddingTop: 50,
+  },
+  loadingContainer: {
     alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: COLORS.darkGray,
+    fontSize: 16,
+  },
+  logData: {
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 4,
+    color: COLORS.darkGray,
+    fontFamily: 'monospace',
+    fontSize: 12,
+    padding: 8,
+  },
+  logEntry: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    marginBottom: 8,
+    padding: 12,
+  },
+  logHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
   logLevel: {
     fontSize: 12,
     fontWeight: 'bold',
   },
-  logTimestamp: {
-    fontSize: 12,
-    color: '#666666',
-  },
   logMessage: {
+    color: COLORS.darkText,
     fontSize: 14,
-    color: '#333333',
     marginBottom: 4,
   },
-  logData: {
+  logTimestamp: {
+    color: COLORS.darkGray,
     fontSize: 12,
-    color: '#666666',
-    fontFamily: 'monospace',
-    backgroundColor: '#f5f5f5',
-    padding: 8,
-    borderRadius: 4,
   },
-  settingRow: {
+  logsContainer: {
+    flex: 1,
+  },
+  logsHeader: {
+    marginBottom: 16,
+  },
+  metricLabel: {
+    color: COLORS.darkGray,
+    fontSize: 14,
+  },
+  metricRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
-  settingLabel: {
-    fontSize: 16,
-    color: '#333333',
+  metricValue: {
+    color: COLORS.darkText,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  searchInput: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.mediumGray,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 12,
+  },
+  section: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    marginBottom: 16,
+    padding: 16,
+  },
+  sectionTitle: {
+    color: COLORS.darkText,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
   },
   settingInput: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.lightGray,
     borderRadius: 4,
-    padding: 8,
     minWidth: 100,
+    padding: 8,
     textAlign: 'center',
+  },
+  settingLabel: {
+    color: COLORS.darkText,
+    fontSize: 16,
+  },
+  settingRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  tabButton: {
+    alignItems: 'center',
+    flex: 1,
+    paddingVertical: 12,
+  },
+  tabButtonText: {
+    color: COLORS.darkGray,
+    fontSize: 14,
+  },
+  tabContainer: {
+    backgroundColor: COLORS.white,
+    borderBottomColor: COLORS.mediumGray,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+  },
+  tabContent: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    color: COLORS.white,
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
 

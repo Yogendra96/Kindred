@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Export method: app-store for production, ad-hoc or development for testing -->
+    <key>method</key>
+    <string>app-store</string>
+    
+    <!-- Team ID for code signing -->
+    <key>teamID</key>
+    <string>YOUR_TEAM_ID</string>
+    
+    <!-- Upload bitcode (deprecated but still supported) -->
+    <key>uploadBitcode</key>
+    <false/>
+    
+    <!-- Upload symbols for crash reporting -->
+    <key>uploadSymbols</key>
+    <true/>
+    
+    <!-- Compile bitcode (deprecated) -->
+    <key>compileBitcode</key>
+    <false/>
+    
+    <!-- Code signing style -->
+    <key>signingStyle</key>
+    <string>manual</string>
+    
+    <!-- Provisioning profiles for each bundle identifier -->
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.kindred.app</key>
+        <string>YOUR_PROVISIONING_PROFILE_NAME</string>
+    </dict>
+    
+    <!-- Code signing identity -->
+    <key>signingCertificate</key>
+    <string>Apple Distribution</string>
+    
+    <!-- Destination for export -->
+    <key>destination</key>
+    <string>export</string>
+    
+    <!-- Strip Swift symbols -->
+    <key>stripSwiftSymbols</key>
+    <true/>
+    
+    <!-- Thin for all devices -->
+    <key>thinning</key>
+    <string>&lt;none&gt;</string>
+    
+    <!-- Include manifest for over-the-air installs -->
+    <key>manifest</key>
+    <dict>
+        <key>appURL</key>
+        <string>https://kindred.com/app.ipa</string>
+        <key>displayImageURL</key>
+        <string>https://kindred.com/icon-57.png</string>
+        <key>fullSizeImageURL</key>
+        <string>https://kindred.com/icon-512.png</string>
+    </dict>
+    
+    <!-- App thinning for specific devices -->
+    <key>embedOnDemandResourcesAssetPacksInBundle</key>
+    <false/>
+    
+    <!-- Generate App Size Report -->
+    <key>generateAppStoreInformation</key>
+    <true/>
+    
+    <!-- iCloud container environment -->
+    <key>iCloudContainerEnvironment</key>
+    <string>Production</string>
+</dict>
+</plist>

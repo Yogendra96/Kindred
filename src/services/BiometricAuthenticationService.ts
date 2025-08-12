@@ -37,7 +37,13 @@ interface BiometricTemplate {
   readonly antiSpoofingData: AntiSpoofingData;
 }
 
-type BiometricType = 'fingerprint' | 'face' | 'voice' | 'iris' | 'palm' | 'behavioral';
+type BiometricType =
+  | 'fingerprint'
+  | 'face'
+  | 'voice'
+  | 'iris'
+  | 'palm'
+  | 'behavioral';
 
 interface AntiSpoofingData {
   readonly livenessScore: number;
@@ -195,13 +201,31 @@ interface BehavioralBaseline {
   readonly sampleSize: number;
 }
 
+// Interface for ML models used in liveness detection
+interface LivenessDetectionModel {
+  modelVersion: string;
+  lastTrained: Date;
+  accuracy: number;
+  predict: (data: BiometricData) => Promise<{
+    isLive: boolean;
+    confidence: number;
+  }>;
+}
+
+// Interface for different biometric data formats
+interface BiometricData {
+  type: BiometricType;
+  data: ArrayBuffer | string | number[];
+  metadata?: Record<string, unknown>;
+}
+
 // Liveness Detection Engine
 class LivenessDetectionEngine {
-  private readonly models = new Map<BiometricType, any>();
+  private readonly models = new Map<BiometricType, LivenessDetectionModel>();
 
   async detectLiveness(
     biometricType: BiometricType,
-    biometricData: any,
+    biometricData: BiometricData,
     _metadata: CaptureMetadata,
   ): Promise<{
     isLive: boolean;
@@ -232,7 +256,12 @@ class LivenessDetectionEngine {
   }
 
   private async detectFaceLiveness(
-    _faceData: any,
+    _faceData: {
+      depthMap?: boolean;
+      eyeMovement?: { variance: number };
+      microExpressions?: unknown[];
+      [key: string]: unknown;
+    },
     metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
@@ -251,7 +280,10 @@ class LivenessDetectionEngine {
     }
 
     // Check for micro-expressions
-    if (!_faceData.microExpressions || _faceData.microExpressions.length === 0) {
+    if (
+      !_faceData.microExpressions ||
+      _faceData.microExpressions.length === 0
+    ) {
       indicators.push('no_micro_expressions');
       confidence -= 0.1;
     }
@@ -282,20 +314,31 @@ class LivenessDetectionEngine {
   }
 
   private async detectFingerprintLiveness(
-    _fingerprintData: any,
+    _fingerprintData: {
+      bloodFlow?: { detected: boolean };
+      pressure?: { variance: number };
+      temperature?: number;
+      [key: string]: unknown;
+    },
     _metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
     let confidence = 0.85;
 
     // Check for blood flow patterns
-    if (!_fingerprintData.bloodFlow || _fingerprintData.bloodFlow.detected === false) {
+    if (
+      !_fingerprintData.bloodFlow ||
+      _fingerprintData.bloodFlow.detected === false
+    ) {
       indicators.push('no_blood_flow_detected');
       confidence -= 0.3;
     }
 
     // Check for pressure variations
-    if (!_fingerprintData.pressure || _fingerprintData.pressure.variance < 0.05) {
+    if (
+      !_fingerprintData.pressure ||
+      _fingerprintData.pressure.variance < 0.05
+    ) {
       indicators.push('insufficient_pressure_variation');
       confidence -= 0.15;
     }
@@ -325,14 +368,25 @@ class LivenessDetectionEngine {
   }
 
   private async detectVoiceLiveness(
-    _voiceData: any,
+    _voiceData: {
+      breathingPatterns?: unknown[];
+      vocalTract?: { consistency: number };
+      pitch?: { variance: number };
+      noiseLevel?: number;
+      echo?: number;
+      distortion?: number;
+      [key: string]: unknown;
+    },
     _metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
     let confidence = 0.8;
 
     // Check for breathing patterns
-    if (!_voiceData.breathingPatterns || _voiceData.breathingPatterns.length === 0) {
+    if (
+      !_voiceData.breathingPatterns ||
+      _voiceData.breathingPatterns.length === 0
+    ) {
       indicators.push('no_breathing_patterns');
       confidence -= 0.2;
     }
@@ -365,7 +419,11 @@ class LivenessDetectionEngine {
   }
 
   private async detectIrisLiveness(
-    _irisData: any,
+    _irisData: {
+      pupilResponse?: { reactivity: number };
+      eyeMovement?: { naturalness: number };
+      [key: string]: unknown;
+    },
     metadata: CaptureMetadata,
   ): Promise<ReturnType<LivenessDetectionEngine['detectLiveness']>> {
     const indicators: string[] = [];
@@ -398,17 +456,17 @@ class LivenessDetectionEngine {
     };
   }
 
-  private analyzeFaceTexture(_faceData: any): number {
+  private analyzeFaceTexture(_faceData: Record<string, unknown>): number {
     // Simplified texture analysis - in production would use ML models
     return Math.random() * 0.3 + 0.7; // 0.7-1.0 range
   }
 
-  private analyzeRidgeFlow(_fingerprintData: any): number {
+  private analyzeRidgeFlow(_fingerprintData: Record<string, unknown>): number {
     // Simplified ridge flow analysis
     return Math.random() * 0.2 + 0.8; // 0.8-1.0 range
   }
 
-  private analyzeBackgroundNoise(_voiceData: any): {
+  private analyzeBackgroundNoise(_voiceData: Record<string, unknown>): {
     suspicious: boolean;
     score: number;
   } {
@@ -417,7 +475,7 @@ class LivenessDetectionEngine {
     return { suspicious: score < 0.1, score };
   }
 
-  private analyzeIrisTexture(_irisData: any): number {
+  private analyzeIrisTexture(_irisData: Record<string, unknown>): number {
     // Simplified iris texture analysis
     return Math.random() * 0.2 + 0.8; // 0.8-1.0 range
   }
@@ -440,7 +498,9 @@ class LivenessDetectionEngine {
     return Math.max(0, score);
   }
 
-  private calculateAudioEnvironmentalScore(voiceData: any): number {
+  private calculateAudioEnvironmentalScore(
+    voiceData: Record<string, unknown>,
+  ): number {
     let score = 1.0;
 
     if (voiceData.noiseLevel && voiceData.noiseLevel > 0.3) score -= 0.2;
@@ -465,7 +525,10 @@ class DeviceAttestationEngine {
         integrityCheck,
         securityFeatures,
       );
-      const riskScore = this.calculateRiskScore(integrityCheck, securityFeatures);
+      const riskScore = this.calculateRiskScore(
+        integrityCheck,
+        securityFeatures,
+      );
 
       return {
         verified: trustLevel !== 'unknown',
@@ -498,11 +561,9 @@ class DeviceAttestationEngine {
 
   private async getAttestationData(): Promise<AttestationCertificate[]> {
     // Platform-specific attestation
-    if (Platform.OS === 'ios') {
-      return this.getIOSAttestation();
-    } else {
-      return this.getAndroidAttestation();
-    }
+    return Platform.OS === 'ios'
+      ? this.getIOSAttestation()
+      : this.getAndroidAttestation();
   }
 
   private async getIOSAttestation(): Promise<AttestationCertificate[]> {
@@ -564,7 +625,9 @@ class DeviceAttestationEngine {
     };
   }
 
-  private async checkBootState(): Promise<'verified' | 'warning' | 'compromised'> {
+  private async checkBootState(): Promise<
+    'verified' | 'warning' | 'compromised'
+  > {
     // In production, check secure boot status
     return 'verified';
   }
@@ -594,7 +657,9 @@ class DeviceAttestationEngine {
     return [];
   }
 
-  private calculateIntegrityScore(integrity: Partial<DeviceIntegrityCheck>): number {
+  private calculateIntegrityScore(
+    integrity: Partial<DeviceIntegrityCheck>,
+  ): number {
     let score = 1.0;
 
     if (integrity.bootState === 'compromised') score -= 0.4;
@@ -603,7 +668,8 @@ class DeviceAttestationEngine {
     if (integrity.debuggingEnabled) score -= 0.1;
     if (integrity.rootDetected) score -= 0.3;
     if (integrity.hookedApis && integrity.hookedApis.length > 0) score -= 0.2;
-    if (integrity.suspiciousApps && integrity.suspiciousApps.length > 0) score -= 0.25;
+    if (integrity.suspiciousApps && integrity.suspiciousApps.length > 0)
+      score -= 0.25;
 
     return Math.max(0, score);
   }
@@ -653,7 +719,8 @@ class DeviceAttestationEngine {
       f => f.name.includes('Hardware') && f.enabled && f.trustLevel > 0.8,
     );
 
-    if (hasHardwareSecurity && integrity.integrityScore > 0.9) return 'strongbox';
+    if (hasHardwareSecurity && integrity.integrityScore > 0.9)
+      return 'strongbox';
     if (hasHardwareSecurity) return 'hardware';
 
     return 'basic';
@@ -673,7 +740,7 @@ class BehavioralBiometricsEngine {
 
   async analyzeUser(
     userId: string,
-    _sessionData: any,
+    _sessionData: Record<string, unknown>,
   ): Promise<{
     isAuthentic: boolean;
     confidence: number;
@@ -699,7 +766,10 @@ class BehavioralBiometricsEngine {
     return analysis;
   }
 
-  private async initializeUserPattern(userId: string, _sessionData: any): Promise<void> {
+  private async initializeUserPattern(
+    userId: string,
+    _sessionData: Record<string, unknown>,
+  ): Promise<void> {
     const pattern: BehavioralPattern = {
       userId,
       patterns: {
@@ -723,7 +793,7 @@ class BehavioralBiometricsEngine {
 
   private async performBehavioralAnalysis(
     pattern: BehavioralPattern,
-    _sessionData: any,
+    _sessionData: Record<string, unknown>,
   ): Promise<{
     isAuthentic: boolean;
     confidence: number;
@@ -734,28 +804,40 @@ class BehavioralBiometricsEngine {
     let confidence = 1.0;
 
     // Analyze typing patterns
-    const typingAnalysis = this.analyzeTypingPattern(pattern.patterns.typing, _sessionData);
+    const typingAnalysis = this.analyzeTypingPattern(
+      pattern.patterns.typing,
+      _sessionData,
+    );
     if (typingAnalysis.deviation > 0.3) {
       anomalies.push('typing_pattern_deviation');
       confidence -= 0.2;
     }
 
     // Analyze touch patterns
-    const touchAnalysis = this.analyzeTouchPattern(pattern.patterns.touch, _sessionData);
+    const touchAnalysis = this.analyzeTouchPattern(
+      pattern.patterns.touch,
+      _sessionData,
+    );
     if (touchAnalysis.deviation > 0.25) {
       anomalies.push('touch_pattern_deviation');
       confidence -= 0.15;
     }
 
     // Analyze motion patterns
-    const motionAnalysis = this.analyzeMotionPattern(pattern.patterns.motion, _sessionData);
+    const motionAnalysis = this.analyzeMotionPattern(
+      pattern.patterns.motion,
+      _sessionData,
+    );
     if (motionAnalysis.deviation > 0.35) {
       anomalies.push('motion_pattern_deviation');
       confidence -= 0.1;
     }
 
     // Analyze usage patterns
-    const usageAnalysis = this.analyzeUsagePattern(pattern.patterns.usage, _sessionData);
+    const usageAnalysis = this.analyzeUsagePattern(
+      pattern.patterns.usage,
+      _sessionData,
+    );
     if (usageAnalysis.deviation > 0.4) {
       anomalies.push('usage_pattern_deviation');
       confidence -= 0.1;
@@ -772,62 +854,85 @@ class BehavioralBiometricsEngine {
     };
   }
 
-  private extractTypingPattern(_sessionData: any): TypingPattern {
+  private extractTypingPattern(
+    _sessionData: Record<string, unknown>,
+  ): TypingPattern {
     return {
-      keystrokeDynamics: _sessionData.keystrokes?.dynamics || [],
-      typingSpeed: _sessionData.keystrokes?.speed || 0,
-      pressureDuration: _sessionData.keystrokes?.pressure || [],
-      flightTime: _sessionData.keystrokes?.flightTime || [],
-      dwellTime: _sessionData.keystrokes?.dwellTime || [],
+      keystrokeDynamics: _sessionData.keystrokes?.dynamics ?? [],
+      typingSpeed: _sessionData.keystrokes?.speed ?? 0,
+      pressureDuration: _sessionData.keystrokes?.pressure ?? [],
+      flightTime: _sessionData.keystrokes?.flightTime ?? [],
+      dwellTime: _sessionData.keystrokes?.dwellTime ?? [],
     };
   }
 
-  private extractTouchPattern(_sessionData: any): TouchPattern {
+  private extractTouchPattern(
+    _sessionData: Record<string, unknown>,
+  ): TouchPattern {
     return {
-      pressure: _sessionData.touch?.pressure || [],
-      area: _sessionData.touch?.area || [],
-      duration: _sessionData.touch?.duration || [],
-      velocity: _sessionData.touch?.velocity || [],
-      gestures: _sessionData.touch?.gestures || [],
+      pressure: _sessionData.touch?.pressure ?? [],
+      area: _sessionData.touch?.area ?? [],
+      duration: _sessionData.touch?.duration ?? [],
+      velocity: _sessionData.touch?.velocity ?? [],
+      gestures: _sessionData.touch?.gestures ?? [],
     };
   }
 
-  private extractMotionPattern(_sessionData: any): MotionPattern {
+  private extractMotionPattern(
+    _sessionData: Record<string, unknown>,
+  ): MotionPattern {
     return {
-      walkingGait: _sessionData.motion?.gait || [],
-      deviceHandling: _sessionData.motion?.handling || [],
-      orientationChanges: _sessionData.motion?.orientation || [],
-      accelerometerPatterns: _sessionData.motion?.accelerometer || [],
+      walkingGait: _sessionData.motion?.gait ?? [],
+      deviceHandling: _sessionData.motion?.handling ?? [],
+      orientationChanges: _sessionData.motion?.orientation ?? [],
+      accelerometerPatterns: _sessionData.motion?.accelerometer ?? [],
     };
   }
 
-  private extractUsagePattern(_sessionData: any): UsagePattern {
+  private extractUsagePattern(
+    _sessionData: Record<string, unknown>,
+  ): UsagePattern {
     return {
-      appUsage: _sessionData.usage?.apps || {},
-      navigationPatterns: _sessionData.usage?.navigation || [],
-      sessionDurations: _sessionData.usage?.sessions || [],
-      activeHours: _sessionData.usage?.hours || [],
+      appUsage: _sessionData.usage?.apps ?? {},
+      navigationPatterns: _sessionData.usage?.navigation ?? [],
+      sessionDurations: _sessionData.usage?.sessions ?? [],
+      activeHours: _sessionData.usage?.hours ?? [],
     };
   }
 
-  private analyzeTypingPattern(_baseline: TypingPattern, _sessionData: any): { deviation: number } {
+  private analyzeTypingPattern(
+    _baseline: TypingPattern,
+    _sessionData: Record<string, unknown>,
+  ): { deviation: number } {
     // Simplified analysis - in production would use ML models
     return { deviation: Math.random() * 0.5 };
   }
 
-  private analyzeTouchPattern(_baseline: TouchPattern, _sessionData: any): { deviation: number } {
+  private analyzeTouchPattern(
+    _baseline: TouchPattern,
+    _sessionData: Record<string, unknown>,
+  ): { deviation: number } {
     return { deviation: Math.random() * 0.4 };
   }
 
-  private analyzeMotionPattern(_baseline: MotionPattern, _sessionData: any): { deviation: number } {
+  private analyzeMotionPattern(
+    _baseline: MotionPattern,
+    _sessionData: Record<string, unknown>,
+  ): { deviation: number } {
     return { deviation: Math.random() * 0.6 };
   }
 
-  private analyzeUsagePattern(_baseline: UsagePattern, _sessionData: any): { deviation: number } {
+  private analyzeUsagePattern(
+    _baseline: UsagePattern,
+    _sessionData: Record<string, unknown>,
+  ): { deviation: number } {
     return { deviation: Math.random() * 0.5 };
   }
 
-  private async updateUserPattern(userId: string, _sessionData: any): Promise<void> {
+  private async updateUserPattern(
+    userId: string,
+    _sessionData: Record<string, unknown>,
+  ): Promise<void> {
     const pattern = this.userPatterns.get(userId);
     if (!pattern) return;
 
@@ -838,7 +943,10 @@ class BehavioralBiometricsEngine {
     // Mark baseline as established after sufficient samples
     if (pattern.baseline.sampleSize >= 10) {
       pattern.baseline.established = true;
-      pattern.baseline.confidence = Math.min(0.9, pattern.baseline.sampleSize / 20);
+      pattern.baseline.confidence = Math.min(
+        0.9,
+        pattern.baseline.sampleSize / 20,
+      );
     }
   }
 }
@@ -875,9 +983,14 @@ export class BiometricAuthenticationService {
       await this.loadBiometricTemplates();
 
       this.isInitialized = true;
-      console.log('✅ Biometric Authentication Service initialized successfully');
+      console.log(
+        '✅ Biometric Authentication Service initialized successfully',
+      );
     } catch (error) {
-      console.error('❌ Failed to initialize Biometric Authentication Service:', error);
+      console.error(
+        '❌ Failed to initialize Biometric Authentication Service:',
+        error,
+      );
       throw error;
     }
   }
@@ -913,7 +1026,7 @@ export class BiometricAuthenticationService {
   async enrollBiometric(
     userId: string,
     biometricType: BiometricType,
-    biometricData: any,
+    biometricData: Record<string, unknown>,
   ): Promise<{
     success: boolean;
     templateId?: string;
@@ -921,7 +1034,9 @@ export class BiometricAuthenticationService {
     errors: BiometricError[];
   }> {
     try {
-      console.log(`🔐 Enrolling ${biometricType} biometric for user ${userId}...`);
+      console.log(
+        `🔐 Enrolling ${biometricType} biometric for user ${userId}...`,
+      );
 
       // Perform liveness detection
       const metadata: CaptureMetadata = {
@@ -1024,7 +1139,7 @@ export class BiometricAuthenticationService {
 
   async authenticateBiometric(
     biometricType: BiometricType,
-    biometricData: any,
+    biometricData: Record<string, unknown>,
     userId?: string,
   ): Promise<BiometricAuthResult> {
     try {
@@ -1060,7 +1175,10 @@ export class BiometricAuthenticationService {
                 description: 'Device failed integrity checks',
               },
             ],
-            recommendations: ['Use fallback authentication', 'Verify device security'],
+            recommendations: [
+              'Use fallback authentication',
+              'Verify device security',
+            ],
             confidenceLevel: 0.1,
           },
         };
@@ -1084,7 +1202,11 @@ export class BiometricAuthenticationService {
       );
 
       // Find matching template
-      const matchResult = await this.findMatchingTemplate(biometricType, biometricData, userId);
+      const matchResult = await this.findMatchingTemplate(
+        biometricType,
+        biometricData,
+        userId,
+      );
 
       if (!matchResult.success) {
         return {
@@ -1101,13 +1223,20 @@ export class BiometricAuthenticationService {
               message: 'Biometric template not found or does not match',
               severity: 'medium',
               recoverable: true,
-              suggestions: ['Try again', 'Use alternative authentication', 'Re-enroll biometric'],
+              suggestions: [
+                'Try again',
+                'Use alternative authentication',
+                'Re-enroll biometric',
+              ],
             },
           ],
           riskAssessment: {
             overallRisk: 'medium',
             factors: [],
-            recommendations: ['Try alternative biometric', 'Use password authentication'],
+            recommendations: [
+              'Try alternative biometric',
+              'Use password authentication',
+            ],
             confidenceLevel: matchResult.confidence,
           },
         };
@@ -1154,7 +1283,10 @@ export class BiometricAuthenticationService {
         });
       }
 
-      const overallRisk = this.calculateOverallRisk(riskFactors, overallConfidence);
+      const overallRisk = this.calculateOverallRisk(
+        riskFactors,
+        overallConfidence,
+      );
 
       // Update template usage
       const template = this.biometricTemplates.get(matchResult.templateId);
@@ -1164,7 +1296,8 @@ export class BiometricAuthenticationService {
       }
 
       // Generate authentication token
-      const authToken = await zeroTrustSecurityService['crypto'].generateSecureKey('signing');
+      const authToken =
+        await zeroTrustSecurityService['crypto'].generateSecureKey('signing');
 
       // Track authentication
       observabilityService.trackBusinessEvent({
@@ -1194,7 +1327,10 @@ export class BiometricAuthenticationService {
         riskAssessment: {
           overallRisk,
           factors: riskFactors,
-          recommendations: this.generateRecommendations(riskFactors, overallConfidence),
+          recommendations: this.generateRecommendations(
+            riskFactors,
+            overallConfidence,
+          ),
           confidenceLevel: overallConfidence,
         },
       };
@@ -1227,22 +1363,29 @@ export class BiometricAuthenticationService {
     }
   }
 
-  private async createBiometricTemplate(biometricData: any): Promise<string> {
+  private async createBiometricTemplate(
+    biometricData: Record<string, unknown>,
+  ): Promise<string> {
     // In production, create secure biometric template
     // This would use proper template extraction algorithms
     const templateData = JSON.stringify({
-      features: biometricData.features || 'mock_features',
-      hash: await zeroTrustSecurityService['crypto'].hash(JSON.stringify(biometricData)),
+      features: biometricData.features ?? 'mock_features',
+      hash: await zeroTrustSecurityService['crypto'].hash(
+        JSON.stringify(biometricData),
+      ),
       timestamp: Date.now(),
     });
 
     // Encrypt the template
-    return zeroTrustSecurityService.encryptSensitiveData(templateData, 'biometric_template');
+    return zeroTrustSecurityService.encryptSensitiveData(
+      templateData,
+      'biometric_template',
+    );
   }
 
   private async findMatchingTemplate(
     biometricType: BiometricType,
-    biometricData: any,
+    biometricData: Record<string, unknown>,
     userId?: string,
   ): Promise<{
     success: boolean;
@@ -1250,7 +1393,9 @@ export class BiometricAuthenticationService {
     confidence: number;
   }> {
     const candidateTemplates = [...this.biometricTemplates.values()].filter(
-      template => template.type === biometricType && (!userId || template.userId === userId),
+      template =>
+        template.type === biometricType &&
+        (!userId || template.userId === userId),
     );
 
     if (candidateTemplates.length === 0) {
@@ -1274,7 +1419,9 @@ export class BiometricAuthenticationService {
     return { success: false, templateId: '', confidence: 0.5 };
   }
 
-  private extractEnvironmentalFactors(_metadata: CaptureMetadata): EnvironmentalFactors {
+  private extractEnvironmentalFactors(
+    _metadata: CaptureMetadata,
+  ): EnvironmentalFactors {
     return {
       lighting: 'medium',
       motion: 'stable',
@@ -1291,7 +1438,10 @@ export class BiometricAuthenticationService {
   private async saveBiometricTemplates(): Promise<void> {
     try {
       const templates = [...this.biometricTemplates.values()];
-      await AsyncStorage.setItem('biometric_templates', JSON.stringify(templates));
+      await AsyncStorage.setItem(
+        'biometric_templates',
+        JSON.stringify(templates),
+      );
     } catch (error) {
       console.error('Failed to save biometric templates:', error);
     }
@@ -1316,7 +1466,10 @@ export class BiometricAuthenticationService {
     return 'very-low';
   }
 
-  private generateRecommendations(factors: RiskFactor[], confidence: number): string[] {
+  private generateRecommendations(
+    factors: RiskFactor[],
+    confidence: number,
+  ): string[] {
     const recommendations: string[] = [];
 
     if (confidence < 0.7) {
@@ -1383,5 +1536,6 @@ export class BiometricAuthenticationService {
 }
 
 // Export singleton instance
-export const biometricAuthenticationService = new BiometricAuthenticationService();
+export const biometricAuthenticationService =
+  new BiometricAuthenticationService();
 export default biometricAuthenticationService;

@@ -1,0 +1,544 @@
+# Fastfile for Kindred App Store Automation
+# This file contains the fastlane.tools configuration
+
+default_platform(:ios)
+
+# Global variables
+BUNDLE_ID = "com.kindred.app"
+SCHEME_NAME = "Kindred"
+WORKSPACE_PATH = "./ios/Kindred.xcworkspace"
+
+# Helper methods
+def get_version_number_from_package_json
+  package_json = JSON.parse(File.read("../package.json"))
+  package_json["version"]
+end
+
+def get_build_number_from_env
+  ENV["BUILD_NUMBER"] || (Time.now.to_i - 1640995200).to_s
+end
+
+# iOS Platform
+platform :ios do
+  
+  desc "Setup iOS development environment"
+  lane :setup do
+    # Install CocoaPods dependencies
+    cocoapods(
+      podfile: "./ios/Podfile",
+      use_bundle_exec: false,
+      repo_update: true
+    )
+    
+    # Verify Xcode setup
+    ensure_xcode_version(version: "15.2")
+    
+    # Setup provisioning profiles
+    setup_provisioning_profiles
+  end
+
+  desc "Setup provisioning profiles and certificates"
+  private_lane :setup_provisioning_profiles do
+    # Match for App Store distribution
+    match(
+      type: "appstore",
+      app_identifier: BUNDLE_ID,
+      git_url: ENV["MATCH_GIT_URL"],
+      username: ENV["APPLE_ID"],
+      team_id: ENV["IOS_TEAM_ID"],
+      readonly: true
+    )
+    
+    # Match for development
+    match(
+      type: "development", 
+      app_identifier: BUNDLE_ID,
+      git_url: ENV["MATCH_GIT_URL"],
+      username: ENV["APPLE_ID"],
+      team_id: ENV["IOS_TEAM_ID"],
+      readonly: true
+    )
+  end
+
+  desc "Run tests"
+  lane :test do
+    run_tests(
+      workspace: WORKSPACE_PATH,
+      scheme: SCHEME_NAME,
+      device: "iPhone 15 Pro",
+      clean: true,
+      code_coverage: true,
+      output_directory: "./test_output",
+      output_types: "html,junit",
+      fail_build: true
+    )
+  end
+
+  desc "Build for development"
+  lane :build_dev do
+    # Setup development provisioning
+    setup_provisioning_profiles
+    
+    # Build the app
+    build_app(
+      workspace: WORKSPACE_PATH,
+      scheme: SCHEME_NAME,
+      configuration: "Debug",
+      export_method: "development",
+      export_options: {
+        method: "development",
+        teamID: ENV["IOS_TEAM_ID"],
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false
+      },
+      output_directory: "./build",
+      output_name: "Kindred-dev.ipa"
+    )
+  end
+
+  desc "Build for App Store"
+  lane :build_appstore do
+    # Ensure we're on main branch for production builds
+    ensure_git_branch(branch: 'main')
+    
+    # Setup App Store provisioning
+    setup_provisioning_profiles
+    
+    # Update version and build number
+    version = get_version_number_from_package_json
+    build_number = get_build_number_from_env
+    
+    increment_version_number(
+      version_number: version,
+      xcodeproj: "./ios/Kindred.xcodeproj"
+    )
+    
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "./ios/Kindred.xcodeproj"
+    )
+    
+    # Build the app
+    build_app(
+      workspace: WORKSPACE_PATH,
+      scheme: SCHEME_NAME,
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        teamID: ENV["IOS_TEAM_ID"],
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false,
+        provisioningProfiles: {
+          BUNDLE_ID => ENV["IOS_PROVISIONING_PROFILE_NAME"]
+        }
+      },
+      output_directory: "./build",
+      output_name: "Kindred.ipa"
+    )
+  end
+
+  desc "Deploy to TestFlight"
+  lane :beta do
+    # Build for App Store
+    build_appstore
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      skip_waiting_for_build_processing: false,
+      skip_submission: false,
+      distribute_external: true,
+      groups: ["Beta Testers", "Internal Team"],
+      changelog: ENV["RELEASE_NOTES"] || "Bug fixes and improvements",
+      demo_account_required: false,
+      beta_app_review_info: {
+        contact_email: "support@kindred.com",
+        contact_first_name: "Kindred",
+        contact_last_name: "Support",
+        contact_phone: "+1-555-0123",
+        demo_account_name: "demo@kindred.com",
+        demo_account_password: "demo123",
+        notes: "This is a carbon tracking app for environmental consciousness."
+      }
+    )
+    
+    # Notify team
+    slack(
+      message: "🍎 iOS Beta build uploaded to TestFlight successfully!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot"
+    )
+  end
+
+  desc "Deploy to App Store"
+  lane :release do
+    # Build for App Store  
+    build_appstore
+    
+    # Upload to App Store
+    upload_to_app_store(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      force: true,
+      reject_if_possible: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      submit_for_review: true,
+      automatic_release: false,
+      submission_information: {
+        add_id_info_limits_tracking: true,
+        add_id_info_serves_ads: false,
+        add_id_info_tracks_action: true,
+        add_id_info_tracks_install: true,
+        add_id_info_uses_idfa: false,
+        content_rights_has_rights: true,
+        content_rights_contains_third_party_content: false,
+        export_compliance_platform: 'ios',
+        export_compliance_compliance_required: false,
+        export_compliance_encryption_updated: false,
+        export_compliance_app_type: nil,
+        export_compliance_uses_encryption: false,
+        export_compliance_is_exempt: false,
+        export_compliance_contains_third_party_cryptography: false,
+        export_compliance_contains_proprietary_cryptography: false,
+        export_compliance_available_on_french_store: false
+      }
+    )
+    
+    # Notify team
+    slack(
+      message: "🚀 iOS app submitted to App Store for review!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot",
+      payload: {
+        "Version" => get_version_number_from_package_json,
+        "Build" => get_build_number_from_env
+      }
+    )
+  end
+
+  desc "Take screenshots for App Store"
+  lane :screenshots do
+    capture_screenshots(
+      workspace: WORKSPACE_PATH,
+      scheme: SCHEME_NAME,
+      output_directory: "./fastlane/screenshots",
+      clear_previous_screenshots: true,
+      override_status_bar: true,
+      devices: [
+        "iPhone 15 Pro Max",
+        "iPhone 15 Pro", 
+        "iPhone SE (3rd generation)",
+        "iPad Pro (12.9-inch) (5th generation)",
+        "iPad Pro (11-inch) (3rd generation)"
+      ],
+      languages: ["en-US"],
+      launch_arguments: ["-screenshot_mode YES"]
+    )
+    
+    # Deliver screenshots to App Store Connect
+    deliver(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      skip_metadata: true,
+      skip_binary_upload: true,
+      force: true
+    )
+  end
+
+  desc "Update App Store metadata"
+  lane :metadata do
+    deliver(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      force: true,
+      metadata_path: "./fastlane/metadata"
+    )
+  end
+
+  # Error handling
+  error do |lane, exception|
+    slack(
+      message: "❌ iOS lane '#{lane}' failed with error: #{exception}",
+      success: false,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot"
+    )
+  end
+end
+
+# Android Platform
+platform :android do
+  
+  desc "Setup Android development environment"
+  lane :setup do
+    # Ensure Android SDK is properly configured
+    ensure_env_vars(
+      env_vars: ['ANDROID_HOME', 'ANDROID_SDK_ROOT']
+    )
+    
+    # Setup signing configuration
+    setup_android_signing
+  end
+
+  desc "Setup Android signing configuration"
+  private_lane :setup_android_signing do
+    # Decode keystore from base64
+    keystore_path = "../android/app/release.keystore"
+    
+    sh("echo $ANDROID_KEYSTORE_BASE64 | base64 -d > #{keystore_path}")
+    
+    # Update gradle.properties
+    gradle_properties = [
+      "STORE_FILE=release.keystore",
+      "STORE_PASSWORD=#{ENV['ANDROID_STORE_PASSWORD']}",
+      "KEY_ALIAS=#{ENV['ANDROID_KEY_ALIAS']}",
+      "KEY_PASSWORD=#{ENV['ANDROID_KEY_PASSWORD']}"
+    ]
+    
+    File.write("../android/gradle.properties", gradle_properties.join("\n") + "\n", mode: "a")
+  end
+
+  desc "Run Android tests"
+  lane :test do
+    gradle(
+      project_dir: "android/",
+      task: "test",
+      build_type: "Debug"
+    )
+  end
+
+  desc "Build Android debug APK"
+  lane :build_debug do
+    gradle(
+      project_dir: "android/",
+      task: "clean assembleDebug",
+      print_command: false
+    )
+  end
+
+  desc "Build Android release bundle and APK"
+  lane :build_release do
+    # Ensure we're on main branch for production builds
+    ensure_git_branch(branch: 'main')
+    
+    # Setup signing
+    setup_android_signing
+    
+    # Update version
+    version = get_version_number_from_package_json
+    build_number = get_build_number_from_env
+    
+    # Update version in build.gradle
+    gradle_file = File.read("../android/app/build.gradle")
+    gradle_file.gsub!(/versionName\s+"[^"]*"/, "versionName \"#{version}\"")
+    gradle_file.gsub!(/versionCode\s+\d+/, "versionCode #{build_number}")
+    File.write("../android/app/build.gradle", gradle_file)
+    
+    # Build release
+    gradle(
+      project_dir: "android/",
+      task: "clean bundleRelease assembleRelease",
+      print_command: false,
+      properties: {
+        "STORE_FILE" => "release.keystore",
+        "STORE_PASSWORD" => ENV["ANDROID_STORE_PASSWORD"],
+        "KEY_ALIAS" => ENV["ANDROID_KEY_ALIAS"],
+        "KEY_PASSWORD" => ENV["ANDROID_KEY_PASSWORD"]
+      }
+    )
+  end
+
+  desc "Deploy to Google Play Internal Testing"
+  lane :internal do
+    # Build release
+    build_release
+    
+    # Upload to Google Play
+    upload_to_play_store(
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+      package_name: "com.kindred.app",
+      aab: "../android/app/build/outputs/bundle/release/app-release.aab",
+      track: "internal",
+      release_status: "completed",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    # Notify team
+    slack(
+      message: "🤖 Android Internal Testing build uploaded successfully!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot"
+    )
+  end
+
+  desc "Deploy to Google Play Production with staged rollout"
+  lane :production do |options|
+    # Build release
+    build_release
+    
+    # Get rollout percentage
+    rollout_percentage = options[:rollout] || 0.05 # Default 5%
+    
+    # Upload to Google Play
+    upload_to_play_store(
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+      package_name: "com.kindred.app",
+      aab: "../android/app/build/outputs/bundle/release/app-release.aab",
+      track: "production",
+      release_status: "inProgress",
+      rollout: rollout_percentage.to_s,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,  
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+      metadata_path: "../fastlane/metadata/android"
+    )
+    
+    # Notify team
+    slack(
+      message: "🚀 Android Production rollout started at #{(rollout_percentage * 100).to_i}%!",
+      success: true, 
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot",
+      payload: {
+        "Version" => get_version_number_from_package_json,
+        "Build" => get_build_number_from_env,
+        "Rollout" => "#{(rollout_percentage * 100).to_i}%"
+      }
+    )
+  end
+
+  desc "Increase rollout percentage"
+  lane :increase_rollout do |options|
+    rollout_percentage = options[:rollout] || 0.1 # Default 10%
+    
+    upload_to_play_store(
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+      package_name: "com.kindred.app",
+      track: "production",
+      rollout: rollout_percentage.to_s,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    slack(
+      message: "📈 Android rollout increased to #{(rollout_percentage * 100).to_i}%",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot"
+    )
+  end
+
+  desc "Halt rollout"
+  lane :halt_rollout do
+    upload_to_play_store(
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+      package_name: "com.kindred.app",
+      track: "production",
+      release_status: "halted",
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    slack(
+      message: "🛑 Android rollout has been halted",
+      success: false,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot"
+    )
+  end
+
+  # Error handling
+  error do |lane, exception|
+    slack(
+      message: "❌ Android lane '#{lane}' failed with error: #{exception}",
+      success: false,
+      slack_url: ENV["SLACK_WEBHOOK_URL"],
+      channel: "#releases",
+      username: "Fastlane Bot"
+    )
+  end
+end
+
+# Cross-platform lanes
+desc "Deploy to both platforms (beta)"
+lane :deploy_beta do
+  ios do
+    beta
+  end
+  
+  android do 
+    internal
+  end
+  
+  slack(
+    message: "🎉 Beta deployment completed for both platforms!",
+    success: true,
+    slack_url: ENV["SLACK_WEBHOOK_URL"],
+    channel: "#releases",
+    username: "Fastlane Bot"
+  )
+end
+
+desc "Deploy to both platforms (production)"
+lane :deploy_production do |options|
+  rollout = options[:rollout] || 0.05
+  
+  ios do
+    release
+  end
+  
+  android do
+    production(rollout: rollout)
+  end
+  
+  slack(
+    message: "🚀 Production deployment initiated for both platforms!",
+    success: true,
+    slack_url: ENV["SLACK_WEBHOOK_URL"],
+    channel: "#releases", 
+    username: "Fastlane Bot",
+    payload: {
+      "iOS" => "Submitted for review",
+      "Android" => "#{(rollout * 100).to_i}% rollout started"
+    }
+  )
+end
+
+desc "Emergency rollback"
+lane :emergency_rollback do
+  android do
+    halt_rollout
+  end
+  
+  # Note: iOS rollback requires manual intervention in App Store Connect
+  slack(
+    message: "🚨 EMERGENCY ROLLBACK INITIATED - Android halted, iOS requires manual action",
+    success: false,
+    slack_url: ENV["SLACK_WEBHOOK_URL"],
+    channel: "#releases",
+    username: "Fastlane Bot"
+  )
+end

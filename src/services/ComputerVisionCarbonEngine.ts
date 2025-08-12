@@ -111,7 +111,10 @@ interface CarbonEquivalent {
 }
 
 interface CarbonComparison {
-  readonly comparisonType: 'average_product' | 'best_in_category' | 'your_typical';
+  readonly comparisonType:
+    | 'average_product'
+    | 'best_in_category'
+    | 'your_typical';
   readonly multiplier: number;
   readonly description: string;
 }
@@ -225,7 +228,11 @@ interface EmissionFactor {
 
 interface MobilityOptimization {
   readonly optimizationId: string;
-  readonly type: 'mode_shift' | 'route_optimization' | 'trip_chaining' | 'timing';
+  readonly type:
+    | 'mode_shift'
+    | 'route_optimization'
+    | 'trip_chaining'
+    | 'timing';
   readonly suggestion: string;
   readonly potentialSavings: OptimizationSavings;
   readonly implementation: OptimizationImplementation;
@@ -254,7 +261,11 @@ interface MobilityBehaviorInsights {
 
 interface MobilityPattern {
   readonly patternId: string;
-  readonly type: 'regular_commute' | 'weekend_leisure' | 'business_travel' | 'shopping_trips';
+  readonly type:
+    | 'regular_commute'
+    | 'weekend_leisure'
+    | 'business_travel'
+    | 'shopping_trips';
   readonly frequency: number;
   readonly consistency: number;
   readonly carbonIntensity: number;
@@ -262,7 +273,13 @@ interface MobilityPattern {
 }
 
 interface MobilityPreference {
-  readonly factor: 'cost' | 'time' | 'comfort' | 'environment' | 'health' | 'convenience';
+  readonly factor:
+    | 'cost'
+    | 'time'
+    | 'comfort'
+    | 'environment'
+    | 'health'
+    | 'convenience';
   readonly importance: number;
   readonly consistency: number;
 }
@@ -312,7 +329,13 @@ interface RoomEnergyUsage {
 
 interface RoomEnergyIssue {
   readonly issueId: string;
-  readonly type: 'insulation' | 'lighting' | 'heating' | 'cooling' | 'ventilation' | 'windows';
+  readonly type:
+    | 'insulation'
+    | 'lighting'
+    | 'heating'
+    | 'cooling'
+    | 'ventilation'
+    | 'windows';
   readonly severity: 'low' | 'medium' | 'high';
   readonly description: string;
   readonly estimatedWaste: number;
@@ -767,12 +790,17 @@ export class ComputerVisionCarbonEngine {
       this.isInitialized = true;
       console.log('✅ Computer Vision Carbon Engine initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize Computer Vision Carbon Engine:', error);
+      console.error(
+        '❌ Failed to initialize Computer Vision Carbon Engine:',
+        error,
+      );
       throw error;
     }
   }
 
-  async scanProductForCarbon(_imageData: string): Promise<InstantCarbonFootprintScan> {
+  async scanProductForCarbon(
+    _imageData: string,
+  ): Promise<InstantCarbonFootprintScan> {
     console.log('🔍 Scanning product for carbon footprint...');
 
     const scanId = `scan_${Date.now()}_${Math.random().toString(36).substring(2)}`;
@@ -786,7 +814,8 @@ export class ComputerVisionCarbonEngine {
       const carbonData = await this.getCarbonData(productAnalysis);
 
       // Find alternatives
-      const alternatives = await this.findSustainableAlternatives(productAnalysis);
+      const alternatives =
+        await this.findSustainableAlternatives(productAnalysis);
 
       // Generate recommendations
       const recommendations = await this.generatePurchaseRecommendations(
@@ -795,7 +824,8 @@ export class ComputerVisionCarbonEngine {
       );
 
       // Create impact visualization
-      const impactVisualization = await this.createImpactVisualization(carbonData);
+      const impactVisualization =
+        await this.createImpactVisualization(carbonData);
 
       const processingTime = Date.now() - startTime;
 
@@ -859,7 +889,10 @@ export class ComputerVisionCarbonEngine {
       );
 
       // Extract behavior insights
-      const behaviorInsights = await this.extractMobilityInsights(detectedModes, routeAnalysis);
+      const behaviorInsights = await this.extractMobilityInsights(
+        detectedModes,
+        routeAnalysis,
+      );
 
       const result: AutomaticMobilityTracking = {
         sessionId,
@@ -888,7 +921,9 @@ export class ComputerVisionCarbonEngine {
     }
   }
 
-  async performHomeEnergyAudit(roomImages: RoomImageData[]): Promise<VisualEfficiencyAnalysis> {
+  async performHomeEnergyAudit(
+    roomImages: RoomImageData[],
+  ): Promise<VisualEfficiencyAnalysis> {
     console.log('🏠 Performing visual home energy audit...');
 
     const auditId = `audit_${Date.now()}`;
@@ -909,10 +944,12 @@ export class ComputerVisionCarbonEngine {
       );
 
       // Generate recommendations
-      const recommendations = await this.generateEnergyRecommendations(inefficiencies);
+      const recommendations =
+        await this.generateEnergyRecommendations(inefficiencies);
 
       // Calculate potential savings
-      const potentialSavings = await this.calculateEnergySavings(recommendations);
+      const potentialSavings =
+        await this.calculateEnergySavings(recommendations);
 
       const result: VisualEfficiencyAnalysis = {
         auditId,
@@ -952,7 +989,8 @@ export class ComputerVisionCarbonEngine {
 
     try {
       // Analyze current inventory
-      const currentInventory = await this.analyzeKitchenInventory(kitchenImages);
+      const currentInventory =
+        await this.analyzeKitchenInventory(kitchenImages);
 
       // Generate meal recommendations
       const mealRecommendations = await this.generateMealRecommendations(
@@ -967,10 +1005,12 @@ export class ComputerVisionCarbonEngine {
       );
 
       // Optimize nutrition
-      const nutritionOptimization = await this.optimizeNutrition(mealRecommendations);
+      const nutritionOptimization =
+        await this.optimizeNutrition(mealRecommendations);
 
       // Optimize carbon footprint
-      const carbonOptimization = await this.optimizeFoodCarbon(mealRecommendations);
+      const carbonOptimization =
+        await this.optimizeFoodCarbon(mealRecommendations);
 
       const result: AIOptimizedMealPlanning = {
         planId,
@@ -1000,7 +1040,9 @@ export class ComputerVisionCarbonEngine {
     }
   }
 
-  async analyzeBehaviorPatterns(motionData: MotionSensorData[]): Promise<MotionPatternInsights> {
+  async analyzeBehaviorPatterns(
+    motionData: MotionSensorData[],
+  ): Promise<MotionPatternInsights> {
     console.log('📊 Analyzing motion patterns for behavior insights...');
 
     const analysisId = `behavior_${Date.now()}`;
@@ -1010,13 +1052,16 @@ export class ComputerVisionCarbonEngine {
       const activityRecognition = await this.recognizeActivities(motionData);
 
       // Analyze behavior patterns
-      const behaviorPatterns = await this.analyzeBehaviorPatterns(activityRecognition);
+      const behaviorPatterns =
+        await this.analyzeBehaviorPatterns(activityRecognition);
 
       // Calculate health metrics
-      const healthMetrics = await this.calculateHealthMetrics(activityRecognition);
+      const healthMetrics =
+        await this.calculateHealthMetrics(activityRecognition);
 
       // Assess carbon implications
-      const carbonImplications = await this.assessActivityCarbonImpact(activityRecognition);
+      const carbonImplications =
+        await this.assessActivityCarbonImpact(activityRecognition);
 
       // Generate recommendations
       const recommendations = await this.generateActivityRecommendations(
@@ -1101,7 +1146,9 @@ export class ComputerVisionCarbonEngine {
   }
 
   // Placeholder implementations for complex analysis methods
-  private async analyzeProductImage(_imageData: string): Promise<ProductAnalysisResult> {
+  private async analyzeProductImage(
+    _imageData: string,
+  ): Promise<ProductAnalysisResult> {
     // Mock product analysis
     return {
       productId: 'sample_product',
@@ -1126,7 +1173,9 @@ export class ComputerVisionCarbonEngine {
     };
   }
 
-  private async getCarbonData(analysis: ProductAnalysisResult): Promise<ProductCarbonData> {
+  private async getCarbonData(
+    analysis: ProductAnalysisResult,
+  ): Promise<ProductCarbonData> {
     const stored = this.productDatabase.get(analysis.productId);
     if (stored) {
       return stored;

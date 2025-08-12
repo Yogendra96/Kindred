@@ -44,7 +44,10 @@ class EnhancedMemoryManagerService {
 
       console.log('🧠 Enhanced Memory Manager initialized');
     } catch (error) {
-      await observabilityService.trackError('memory_manager_init_failed', error as Error);
+      await observabilityService.trackError(
+        'memory_manager_init_failed',
+        error as Error,
+      );
       throw error;
     }
   }
@@ -82,7 +85,10 @@ class EnhancedMemoryManagerService {
 
       return analysis;
     } catch (error) {
-      await observabilityService.trackError('memory_analysis_failed', error as Error);
+      await observabilityService.trackError(
+        'memory_analysis_failed',
+        error as Error,
+      );
       throw error;
     }
   }
@@ -116,7 +122,10 @@ class EnhancedMemoryManagerService {
         actions: result.actions,
       };
     } catch (error) {
-      await observabilityService.trackError('memory_cleanup_failed', error as Error);
+      await observabilityService.trackError(
+        'memory_cleanup_failed',
+        error as Error,
+      );
       return {
         success: false,
         savings: 0,
@@ -130,7 +139,9 @@ class EnhancedMemoryManagerService {
    */
   getMemoryRecommendations(limit = 3): MemoryOptimization[] {
     if (!this.lastAnalysis) {
-      throw new Error('No memory analysis available. Run getMemoryAnalysis() first.');
+      throw new Error(
+        'No memory analysis available. Run getMemoryAnalysis() first.',
+      );
     }
 
     return this.lastAnalysis.recommendations.slice(0, limit).map(rec => ({

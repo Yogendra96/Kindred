@@ -109,7 +109,9 @@ export class AdvancedServiceContainer implements ServiceContainer {
     for (const [service, deps] of this.dependencies.entries()) {
       for (const dep of deps) {
         if (!this.hasService(dep)) {
-          loggingService.error(`Missing dependency ${dep} for service ${service}`);
+          loggingService.error(
+            `Missing dependency ${dep} for service ${service}`,
+          );
           return false;
         }
       }
@@ -118,13 +120,20 @@ export class AdvancedServiceContainer implements ServiceContainer {
   }
 
   private hasService(token: string): boolean {
-    return this.services.has(token) || this.factories.has(token) || this.scopedFactories.has(token);
+    return (
+      this.services.has(token) ||
+      this.factories.has(token) ||
+      this.scopedFactories.has(token)
+    );
   }
 
   dispose(): void {
     // Cleanup singletons that implement dispose
     for (const [token, instance] of this.singletons.entries()) {
-      if (instance && typeof (instance as { dispose?: () => void }).dispose === 'function') {
+      if (
+        instance &&
+        typeof (instance as { dispose?: () => void }).dispose === 'function'
+      ) {
         try {
           (instance as { dispose: () => void }).dispose();
         } catch (error) {
@@ -145,7 +154,10 @@ export class AdvancedServiceContainer implements ServiceContainer {
 export class EventStore {
   private readonly events: Event[] = [];
   private readonly snapshots = new Map<string, unknown>();
-  private readonly eventHandlers = new Map<string, Array<(event: Event<unknown>) => void>>();
+  private readonly eventHandlers = new Map<
+    string,
+    Array<(event: Event<unknown>) => void>
+  >();
 
   async appendEvent(event: Event): Promise<void> {
     this.events.push(event);
@@ -184,7 +196,11 @@ export class EventStore {
     return this.events.filter(event => event.type === eventType);
   }
 
-  async createSnapshot(aggregateId: string, state: unknown, version: number): Promise<void> {
+  async createSnapshot(
+    aggregateId: string,
+    state: unknown,
+    version: number,
+  ): Promise<void> {
     const snapshot = {
       aggregateId,
       state,
@@ -193,7 +209,10 @@ export class EventStore {
     };
 
     this.snapshots.set(aggregateId, snapshot);
-    await AsyncStorage.setItem(`snapshot_${aggregateId}`, JSON.stringify(snapshot));
+    await AsyncStorage.setItem(
+      `snapshot_${aggregateId}`,
+      JSON.stringify(snapshot),
+    );
   }
 
   async getSnapshot(aggregateId: string): Promise<unknown> {
@@ -250,14 +269,19 @@ export class EventStore {
       version: number;
       state: unknown;
     } | null;
-    const events = await this.getEvents(aggregateId, snapshot ? snapshot.version + 1 : 0);
+    const events = await this.getEvents(
+      aggregateId,
+      snapshot ? snapshot.version + 1 : 0,
+    );
 
     return {
       snapshot: snapshot?.state,
       events,
       currentVersion: Math.max(
         snapshot?.version ?? 0,
-        events.length > 0 ? (events[events.length - 1] as Event & { version: number }).version : 0,
+        events.length > 0
+          ? (events[events.length - 1] as Event & { version: number }).version
+          : 0,
       ),
     };
   }
@@ -283,16 +307,21 @@ export abstract class QueryHandler<T extends Query, R> {
 }
 
 export class CommandBus {
-  private readonly handlers = new Map<string, CommandHandler<unknown>>();
+  private readonly handlers = new Map<string, CommandHandler<any>>();
   private readonly middleware: Array<
     (command: Command, next: () => Promise<void>) => Promise<void>
   > = [];
 
-  register<T extends Command>(commandType: string, handler: CommandHandler<T>): void {
+  register<T extends Command>(
+    commandType: string,
+    handler: CommandHandler<T>,
+  ): void {
     this.handlers.set(commandType, handler);
   }
 
-  addMiddleware(middleware: (command: Command, next: () => Promise<void>) => Promise<void>): void {
+  addMiddleware(
+    middleware: (command: Command, next: () => Promise<void>) => Promise<void>,
+  ): void {
     this.middleware.push(middleware);
   }
 
@@ -318,10 +347,16 @@ export class CommandBus {
 }
 
 export class QueryBus {
-  private readonly handlers = new Map<string, QueryHandler<unknown, unknown>>();
-  private readonly cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
+  private readonly handlers = new Map<string, QueryHandler<any, any>>();
+  private readonly cache = new Map<
+    string,
+    { data: unknown; timestamp: number; ttl: number }
+  >();
 
-  register<T extends Query, R>(queryType: string, handler: QueryHandler<T, R>): void {
+  register<T extends Query, R>(
+    queryType: string,
+    handler: QueryHandler<T, R>,
+  ): void {
     this.handlers.set(queryType, handler);
   }
 
@@ -472,13 +507,9 @@ export abstract class Repository<T extends AggregateRoot> {
         return null;
       }
 
-      let aggregate: T;
-
-      if (snapshot) {
-        aggregate = this.deserializeAggregate(id, snapshot);
-      } else {
-        aggregate = new this.aggregateConstructor(id);
-      }
+      const aggregate: T = snapshot
+        ? this.deserializeAggregate(id, snapshot)
+        : new this.aggregateConstructor(id);
 
       // Apply remaining events
       for (const event of events) {
@@ -529,7 +560,7 @@ export abstract class Saga {
   }
 
   protected async compensate(): Promise<void> {
-    observabilityService.info(`Compensating saga ${this.id}...`);
+    loggingService.info(`Compensating saga ${this.id}...`);
 
     // Execute compensations in reverse order
     const compensationsReversed = [...this.compensations].reverse();
@@ -568,7 +599,7 @@ export class ModernArchitectureCore {
     if (this.isInitialized) return;
 
     try {
-      observabilityService.info('🏗️ Initializing Modern Architecture Core...');
+      loggingService.info('🏗️ Initializing Modern Architecture Core...');
 
       // Register core services
       this.registerCoreServices();
@@ -582,9 +613,14 @@ export class ModernArchitectureCore {
       }
 
       this.isInitialized = true;
-      observabilityService.info('✅ Modern Architecture Core initialized successfully');
+      loggingService.info(
+        '✅ Modern Architecture Core initialized successfully',
+      );
     } catch (error) {
-      loggingService.error('❌ Failed to initialize Modern Architecture Core:', { error });
+      loggingService.error(
+        '❌ Failed to initialize Modern Architecture Core:',
+        { error },
+      );
       throw error;
     }
   }
@@ -599,13 +635,15 @@ export class ModernArchitectureCore {
   private setupMiddleware(): void {
     // Logging middleware
     this.commandBus.addMiddleware(async (command, next) => {
-      observabilityService.info(`Executing command: ${command.type}`);
+      loggingService.info(`Executing command: ${command.type}`);
       const start = Date.now();
 
       try {
         await next();
         const duration = Date.now() - start;
-        observabilityService.info(`Command ${command.type} completed in ${duration}ms`);
+        loggingService.info(
+          `Command ${command.type} completed in ${duration}ms`,
+        );
       } catch (error) {
         loggingService.error(`Command ${command.type} failed:`, { error });
         throw error;
@@ -678,19 +716,21 @@ export class ModernArchitectureCore {
     try {
       // Check container health
       details.container = {
-        servicesRegistered: this.container['services'].size,
-        singletonsActive: this.container['singletons'].size,
+        servicesRegistered: (this.container as any).services?.size || 0,
+        singletonsActive: (this.container as any).singletons?.size || 0,
         dependenciesValid: this.container.validateDependencies(),
       };
 
       // Check event store health
-      details.eventStore = {
-        eventsCount: this.eventStore['events'].length,
-        snapshotsCount: this.eventStore['snapshots'].size,
-        handlersCount: this.eventStore['eventHandlers'].size,
+      (details as any).eventStore = {
+        eventsCount: (this.eventStore as any).events?.length || 0,
+        snapshotsCount: (this.eventStore as any).snapshots?.size || 0,
+        handlersCount: (this.eventStore as any).eventHandlers?.size || 0,
       };
 
-      const status = details.container.dependenciesValid ? 'healthy' : 'degraded';
+      const status = (details as any).container?.dependenciesValid
+        ? 'healthy'
+        : 'degraded';
 
       return { status, details };
     } catch (error) {
@@ -707,7 +747,7 @@ export class ModernArchitectureCore {
     this.container.dispose();
     this.eventEmitter.removeAllListeners();
     this.isInitialized = false;
-    observabilityService.info('🛑 Modern Architecture Core disposed');
+    loggingService.info('🛑 Modern Architecture Core disposed');
   }
 }
 

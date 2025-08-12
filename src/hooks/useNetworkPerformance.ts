@@ -82,7 +82,9 @@ export interface NetworkPerformanceConfig {
  * };
  * ```
  */
-export const useNetworkPerformance = (config: NetworkPerformanceConfig = {}): NetworkMetrics => {
+export const useNetworkPerformance = (
+  config: NetworkPerformanceConfig = {},
+): NetworkMetrics => {
   const {
     slowNetworkThreshold = 3000,
     requestHistorySize = 50,
@@ -149,7 +151,8 @@ export const useNetworkPerformance = (config: NetworkPerformanceConfig = {}): Ne
   // Calculate average request time
   useEffect(() => {
     if (requestTimes.length > 0) {
-      const average = requestTimes.reduce((sum, time) => sum + time, 0) / requestTimes.length;
+      const average =
+        requestTimes.reduce((sum, time) => sum + time, 0) / requestTimes.length;
       setAverageRequestTime(average);
 
       // Update slow network detection based on actual performance
@@ -198,11 +201,9 @@ export const useNetworkPerformance = (config: NetworkPerformanceConfig = {}): Ne
 
         // Parse response based on content type
         const contentType = response.headers.get('content-type');
-        if (contentType?.includes('application/json')) {
-          return await response.json();
-        } else {
-          return (await response.text()) as unknown as T;
-        }
+        return contentType?.includes('application/json')
+          ? await response.json()
+          : ((await response.text()) as unknown as T);
       } catch (error) {
         const duration = performance.now() - startTime;
 
@@ -221,7 +222,13 @@ export const useNetworkPerformance = (config: NetworkPerformanceConfig = {}): Ne
         throw error;
       }
     },
-    [isSlowNetwork, slowNetworkThreshold, requestHistorySize, onSlowNetwork, onNetworkFailure],
+    [
+      isSlowNetwork,
+      slowNetworkThreshold,
+      requestHistorySize,
+      onSlowNetwork,
+      onNetworkFailure,
+    ],
   );
 
   // Reset metrics
@@ -282,13 +289,16 @@ export const useNetworkCache = (config: NetworkCacheConfig = {}) => {
     useOfflineCache = true,
   } = config;
 
-  const [cache, setCache] = useState<Map<string, { data: any; timestamp: number; ttl: number }>>(
-    new Map(),
-  );
+  const [cache, setCache] = useState<
+    Map<string, { data: any; timestamp: number; ttl: number }>
+  >(new Map());
   const { isOnline, monitoredFetch } = useNetworkPerformance();
 
   const cachedFetch = useCallback(
-    async <T>(url: string, options: RequestInit & { ttl?: number } = {}): Promise<T> => {
+    async <T>(
+      url: string,
+      options: RequestInit & { ttl?: number } = {},
+    ): Promise<T> => {
       const { ttl = defaultTTL, ...fetchOptions } = options;
       const cacheKey = `${url}_${JSON.stringify(fetchOptions)}`;
       const now = Date.now();
@@ -337,7 +347,14 @@ export const useNetworkCache = (config: NetworkCacheConfig = {}) => {
         throw error;
       }
     },
-    [cache, defaultTTL, isOnline, maxCacheSize, monitoredFetch, useOfflineCache],
+    [
+      cache,
+      defaultTTL,
+      isOnline,
+      maxCacheSize,
+      monitoredFetch,
+      useOfflineCache,
+    ],
   );
 
   const clearCache = useCallback(() => {

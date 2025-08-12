@@ -34,6 +34,13 @@ import SkeletonLoader from './SkeletonLoader';
 const { width: screenWidth } = Dimensions.get('window');
 const chartWidth = screenWidth - 32;
 
+// Color constants to avoid literals
+const COLORS = {
+  black: '#000',
+  red: '#F44336',
+  whiteTransparent30: 'rgba(255, 255, 255, 0.3)',
+} as const;
+
 export interface MetricCard {
   id: string;
   title: string;
@@ -241,19 +248,27 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.metricHeader}>
-              <Text style={[styles.metricTitle, { color: theme.colors.text }]}>{metric.title}</Text>
-              {metric.icon && <Text style={styles.metricIcon}>{metric.icon}</Text>}
+              <Text style={[styles.metricTitle, { color: theme.colors.text }]}>
+                {metric.title}
+              </Text>
+              {metric.icon && (
+                <Text style={styles.metricIcon}>{metric.icon}</Text>
+              )}
             </View>
 
             <View style={styles.metricContent}>
               <Text style={[styles.metricValue, { color: theme.colors.text }]}>
                 {metric.value}
-                {metric.unit && <Text style={styles.metricUnit}> {metric.unit}</Text>}
+                {metric.unit && (
+                  <Text style={styles.metricUnit}> {metric.unit}</Text>
+                )}
               </Text>
 
               {metric.change !== undefined && (
                 <View style={styles.metricChange}>
-                  <Text style={[styles.changeText, { color: getChangeColor() }]}>
+                  <Text
+                    style={[styles.changeText, { color: getChangeColor() }]}
+                  >
                     {getChangeIcon()} {Math.abs(metric.change)}%
                   </Text>
                 </View>
@@ -273,7 +288,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     ]}
                   />
                 </View>
-                <Text style={[styles.targetText, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.targetText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Target: {metric.target}
                 </Text>
               </View>
@@ -301,17 +321,24 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               styles.periodButton,
               {
                 backgroundColor:
-                  selectedPeriod === period.key ? theme.colors.primary : theme.colors.surface,
+                  selectedPeriod === period.key
+                    ? theme.colors.primary
+                    : theme.colors.surface,
                 borderColor: theme.colors.border,
               },
             ]}
-            onPress={() => setSelectedPeriod(period.key as typeof comparisonPeriod)}
+            onPress={() =>
+              setSelectedPeriod(period.key as typeof comparisonPeriod)
+            }
           >
             <Text
               style={[
                 styles.periodButtonText,
                 {
-                  color: selectedPeriod === period.key ? theme.colors.surface : theme.colors.text,
+                  color:
+                    selectedPeriod === period.key
+                      ? theme.colors.surface
+                      : theme.colors.text,
                 },
               ]}
             >
@@ -344,7 +371,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         onPress={() => onChartPress?.(chartType, data)}
         activeOpacity={0.9}
       >
-        <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{title}</Text>
+        <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+          {title}
+        </Text>
 
         {chartType === 'line' && data && (
           <LineChart
@@ -354,10 +383,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             chartConfig={chartConfig}
             bezier
             style={styles.chart}
-            withDots={true}
+            withDots
             withShadow={false}
-            withVerticalLabels={true}
-            withHorizontalLabels={true}
+            withVerticalLabels
+            withHorizontalLabels
           />
         )}
 
@@ -368,8 +397,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             height={200}
             chartConfig={chartConfig}
             style={styles.chart}
-            showValuesOnTopOfBars={true}
-            withHorizontalLabels={true}
+            showValuesOnTopOfBars
+            withHorizontalLabels
           />
         )}
 
@@ -408,12 +437,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={isLoading} onRefresh={onRefresh} /> : undefined
+          onRefresh ? (
+            <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+          ) : undefined
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {title}
+          </Text>
           {showComparison && renderPeriodSelector()}
         </View>
 
@@ -431,18 +464,26 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   styles.filterButton,
                   {
                     backgroundColor:
-                      selectedFilter === filter.id ? theme.colors.primary : theme.colors.surface,
+                      selectedFilter === filter.id
+                        ? theme.colors.primary
+                        : theme.colors.surface,
                     borderColor: theme.colors.border,
                   },
                 ]}
-                onPress={() => setSelectedFilter(selectedFilter === filter.id ? null : filter.id)}
+                onPress={() =>
+                  setSelectedFilter(
+                    selectedFilter === filter.id ? null : filter.id,
+                  )
+                }
               >
                 <Text
                   style={[
                     styles.filterButtonText,
                     {
                       color:
-                        selectedFilter === filter.id ? theme.colors.surface : theme.colors.text,
+                        selectedFilter === filter.id
+                          ? theme.colors.surface
+                          : theme.colors.text,
                     },
                   ]}
                 >
@@ -467,7 +508,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
           {barChartData && renderChart('bar', barChartData, 'Comparison Chart')}
 
-          {pieChartData.length > 0 && renderChart('pie', pieChartData, 'Distribution')}
+          {pieChartData.length > 0 &&
+            renderChart('pie', pieChartData, 'Distribution')}
         </View>
       </ScrollView>
     </Animated.View>
@@ -478,124 +520,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 AnalyticsDashboard.displayName = 'AnalyticsDashboard';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  periodSelector: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  periodButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  periodButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  filtersContainer: {
-    marginBottom: 20,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  metricCard: {
-    width: '48%',
-    marginBottom: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  metricGradient: {
-    padding: 16,
-  },
-  metricHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  metricTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    opacity: 0.8,
-  },
-  metricIcon: {
-    fontSize: 20,
-  },
-  metricContent: {
-    marginBottom: 12,
-  },
-  metricValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  metricUnit: {
-    fontSize: 16,
-    fontWeight: 'normal',
-    opacity: 0.7,
-  },
-  metricChange: {
-    marginTop: 4,
-  },
   changeText: {
     fontSize: 12,
     fontWeight: '600',
   },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 2,
-    marginBottom: 4,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  targetText: {
-    fontSize: 10,
-    opacity: 0.7,
-  },
-  chartsContainer: {
-    gap: 20,
+  chart: {
+    borderRadius: 8,
   },
   chartContainer: {
     borderRadius: 16,
@@ -617,8 +547,120 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
   },
-  chart: {
-    borderRadius: 8,
+  chartsContainer: {
+    gap: 20,
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  filterButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    marginRight: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  filtersContainer: {
+    marginBottom: 20,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  metricCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+    overflow: 'hidden',
+    width: '48%',
+    ...Platform.select({
+      ios: {
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  metricChange: {
+    marginTop: 4,
+  },
+  metricContent: {
+    marginBottom: 12,
+  },
+  metricGradient: {
+    padding: 16,
+  },
+  metricHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  metricIcon: {
+    fontSize: 20,
+  },
+  metricTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.8,
+  },
+  metricUnit: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    opacity: 0.7,
+  },
+  metricValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  periodButton: {
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  periodButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  progressBar: {
+    backgroundColor: COLORS.whiteTransparent30,
+    borderRadius: 2,
+    height: 4,
+    marginBottom: 4,
+  },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressFill: {
+    borderRadius: 2,
+    height: '100%',
+  },
+  targetText: {
+    fontSize: 10,
+    opacity: 0.7,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
 });
 

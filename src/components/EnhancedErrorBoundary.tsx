@@ -1,9 +1,27 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
 
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { loggingService } from '../services/LoggingService';
+
+const COLORS = {
+  lightGray: '#f5f5f5',
+  white: 'white',
+  black: '#000',
+  darkGray: '#333',
+  mediumGray: '#666',
+  red: '#d32f2f',
+  orange: '#f57c00',
+  blue: '#1976d2',
+};
 
 interface Props {
   children: ReactNode;
@@ -154,17 +172,23 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Oops! Something went wrong</Text>
           <Text style={styles.errorMessage}>
-            We're sorry, but something unexpected happened. The error has been reported and we'll
-            fix it soon.
+            We're sorry, but something unexpected happened. The error has been
+            reported and we'll fix it soon.
           </Text>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={this.handleRetry}
+            >
               <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
 
             {__DEV__ && (
-              <TouchableOpacity style={styles.reportButton} onPress={this.handleReportError}>
+              <TouchableOpacity
+                style={styles.reportButton}
+                onPress={this.handleReportError}
+              >
                 <Text style={styles.reportButtonText}>Report Error</Text>
               </TouchableOpacity>
             )}
@@ -186,115 +210,118 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
     justifyContent: 'center',
+  },
+  container: {
     alignItems: 'center',
+    backgroundColor: COLORS.lightGray,
+    flex: 1,
+    justifyContent: 'center',
     padding: 20,
   },
   errorContainer: {
-    backgroundColor: 'white',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
-    padding: 24,
+    elevation: 3,
     maxWidth: '100%',
-    shadowColor: '#000',
+    padding: 24,
+    shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
-  },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#d32f2f',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  errorMessage: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  retryButton: {
-    backgroundColor: '#1976d2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  reportButton: {
-    backgroundColor: '#f57c00',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  reportButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
   },
   errorDetails: {
     marginTop: 24,
     maxHeight: 300,
   },
   errorDetailsTitle: {
+    color: COLORS.darkGray,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 16,
+  },
+  errorMessage: {
+    color: COLORS.mediumGray,
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 24,
+    textAlign: 'center',
   },
   errorSection: {
     marginBottom: 16,
   },
   errorSectionTitle: {
+    color: COLORS.mediumGray,
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
     marginBottom: 4,
   },
   errorText: {
-    fontSize: 12,
-    color: '#333',
-    fontFamily: 'monospace',
-    backgroundColor: '#f5f5f5',
-    padding: 8,
+    backgroundColor: COLORS.lightGray,
     borderRadius: 4,
+    color: COLORS.darkGray,
+    fontFamily: 'monospace',
+    fontSize: 12,
+    padding: 8,
+  },
+  errorTitle: {
+    color: COLORS.red,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  reportButton: {
+    backgroundColor: COLORS.orange,
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  reportButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  retryButton: {
+    backgroundColor: COLORS.blue,
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
 // Hook for functional components
 export const useErrorHandler = () => {
-  const reportError = React.useCallback((error: Error, errorInfo?: Record<string, unknown>) => {
-    const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const reportError = React.useCallback(
+    (error: Error, errorInfo?: Record<string, unknown>) => {
+      const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    loggingService.error('Manual error report:', {
-      error: error.message,
-      stack: error.stack,
-      errorInfo,
-      errorId,
-    });
+      loggingService.error('Manual error report:', {
+        error: error.message,
+        stack: error.stack,
+        errorInfo,
+        errorId,
+      });
 
-    if (__DEV__) {
-      console.error('Manual Error Report:', { error, errorInfo, errorId });
-    }
+      if (__DEV__) {
+        console.error('Manual Error Report:', { error, errorInfo, errorId });
+      }
 
-    return errorId;
-  }, []);
+      return errorId;
+    },
+    [],
+  );
 
   return { reportError };
 };

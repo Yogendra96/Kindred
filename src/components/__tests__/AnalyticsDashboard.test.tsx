@@ -1,12 +1,15 @@
 import React from 'react';
 
-import { Dimensions as _Dimensions } from 'react-native';
-
-import { waitFor as _waitFor, fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 // getTheme available for testing theme consistency if needed
 import { ThemeProvider } from '../../theme/ThemeProvider';
-import type { ChartData, MetricCard, PieChartData, TimeSeriesData } from '../AnalyticsDashboard';
+import type {
+  ChartData,
+  MetricCard,
+  PieChartData,
+  TimeSeriesData,
+} from '../AnalyticsDashboard';
 import AnalyticsDashboard from '../AnalyticsDashboard';
 
 // Mock dependencies
@@ -172,12 +175,16 @@ describe('AnalyticsDashboard', () => {
 
     it('renders custom title', () => {
       const customTitle = 'Custom Analytics';
-      const { getByText } = renderWithTheme(<AnalyticsDashboard title={customTitle} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard title={customTitle} />,
+      );
       expect(getByText(customTitle)).toBeTruthy();
     });
 
     it('renders loading state correctly', () => {
-      const { getAllByTestId } = renderWithTheme(<AnalyticsDashboard isLoading={true} />);
+      const { getAllByTestId } = renderWithTheme(
+        <AnalyticsDashboard isLoading />,
+      );
       const skeletonLoaders = getAllByTestId('skeleton-loader');
       expect(skeletonLoaders.length).toBeGreaterThan(0);
     });
@@ -185,7 +192,9 @@ describe('AnalyticsDashboard', () => {
 
   describe('Metrics Display', () => {
     it('renders metric cards correctly', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={mockMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={mockMetrics} />,
+      );
 
       expect(getByText('Total Users')).toBeTruthy();
       expect(getByText('1250')).toBeTruthy();
@@ -195,14 +204,18 @@ describe('AnalyticsDashboard', () => {
     });
 
     it('displays metric changes correctly', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={mockMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={mockMetrics} />,
+      );
 
       expect(getByText('↗ 12.5%')).toBeTruthy(); // increase
       expect(getByText('↘ 2.3%')).toBeTruthy(); // decrease
     });
 
     it('displays metric icons', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={mockMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={mockMetrics} />,
+      );
 
       expect(getByText('👥')).toBeTruthy();
       expect(getByText('💰')).toBeTruthy();
@@ -211,7 +224,9 @@ describe('AnalyticsDashboard', () => {
     });
 
     it('displays progress bars for metrics with targets', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={mockMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={mockMetrics} />,
+      );
 
       expect(getByText('Target: 1500')).toBeTruthy();
     });
@@ -219,7 +234,10 @@ describe('AnalyticsDashboard', () => {
     it('handles metric press events', () => {
       const onMetricPress = jest.fn();
       const { getByText } = renderWithTheme(
-        <AnalyticsDashboard metrics={mockMetrics} onMetricPress={onMetricPress} />,
+        <AnalyticsDashboard
+          metrics={mockMetrics}
+          onMetricPress={onMetricPress}
+        />,
       );
 
       fireEvent.press(getByText('Total Users'));
@@ -229,7 +247,9 @@ describe('AnalyticsDashboard', () => {
 
   describe('Period Selection', () => {
     it('renders period selector when showComparison is true', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard showComparison={true} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard showComparison />,
+      );
 
       expect(getByText('24H')).toBeTruthy();
       expect(getByText('7D')).toBeTruthy();
@@ -238,14 +258,18 @@ describe('AnalyticsDashboard', () => {
     });
 
     it('does not render period selector when showComparison is false', () => {
-      const { queryByText } = renderWithTheme(<AnalyticsDashboard showComparison={false} />);
+      const { queryByText } = renderWithTheme(
+        <AnalyticsDashboard showComparison={false} />,
+      );
 
       expect(queryByText('24H')).toBeNull();
       expect(queryByText('7D')).toBeNull();
     });
 
     it('handles period selection', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard showComparison={true} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard showComparison />,
+      );
 
       fireEvent.press(getByText('24H'));
       // Period selection should update internal state
@@ -294,13 +318,17 @@ describe('AnalyticsDashboard', () => {
     });
 
     it('renders bar chart with bar chart data', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard barChartData={mockBarChartData} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard barChartData={mockBarChartData} />,
+      );
 
       expect(getByText('Comparison Chart')).toBeTruthy();
     });
 
     it('renders pie chart with pie chart data', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard pieChartData={mockPieChartData} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard pieChartData={mockPieChartData} />,
+      );
 
       expect(getByText('Distribution')).toBeTruthy();
     });
@@ -308,7 +336,10 @@ describe('AnalyticsDashboard', () => {
     it('handles chart press events', () => {
       const onChartPress = jest.fn();
       const { getByText } = renderWithTheme(
-        <AnalyticsDashboard timeSeriesData={mockTimeSeriesData} onChartPress={onChartPress} />,
+        <AnalyticsDashboard
+          timeSeriesData={mockTimeSeriesData}
+          onChartPress={onChartPress}
+        />,
       );
 
       fireEvent.press(getByText('Trend Analysis'));
@@ -317,7 +348,7 @@ describe('AnalyticsDashboard', () => {
 
     it('shows skeleton loaders for charts when loading', () => {
       const { getAllByTestId } = renderWithTheme(
-        <AnalyticsDashboard timeSeriesData={mockTimeSeriesData} isLoading={true} />,
+        <AnalyticsDashboard timeSeriesData={mockTimeSeriesData} isLoading />,
       );
 
       const skeletonLoaders = getAllByTestId('skeleton-loader');
@@ -328,25 +359,35 @@ describe('AnalyticsDashboard', () => {
   describe('Data Processing', () => {
     it('processes time series data correctly for different periods', () => {
       const { rerender } = renderWithTheme(
-        <AnalyticsDashboard timeSeriesData={mockTimeSeriesData} comparisonPeriod='day' />,
+        <AnalyticsDashboard
+          timeSeriesData={mockTimeSeriesData}
+          comparisonPeriod='day'
+        />,
       );
 
       // Test day period processing
       expect(() =>
         rerender(
           <ThemeProvider>
-            <AnalyticsDashboard timeSeriesData={mockTimeSeriesData} comparisonPeriod='week' />
+            <AnalyticsDashboard
+              timeSeriesData={mockTimeSeriesData}
+              comparisonPeriod='week'
+            />
           </ThemeProvider>,
         ),
       ).not.toThrow();
     });
 
     it('handles empty data gracefully', () => {
-      const { container } = renderWithTheme(
-        <AnalyticsDashboard metrics={[]} timeSeriesData={[]} pieChartData={[]} />,
+      const renderResult = renderWithTheme(
+        <AnalyticsDashboard
+          metrics={[]}
+          timeSeriesData={[]}
+          pieChartData={[]}
+        />,
       );
 
-      expect(container).toBeTruthy();
+      expect(renderResult).toBeTruthy();
     });
   });
 
@@ -363,7 +404,9 @@ describe('AnalyticsDashboard', () => {
       jest.useFakeTimers();
       const onRefresh = jest.fn();
 
-      renderWithTheme(<AnalyticsDashboard onRefresh={onRefresh} refreshInterval={5000} />);
+      renderWithTheme(
+        <AnalyticsDashboard onRefresh={onRefresh} refreshInterval={5000} />,
+      );
 
       jest.advanceTimersByTime(5000);
       expect(onRefresh).toHaveBeenCalled();
@@ -375,13 +418,17 @@ describe('AnalyticsDashboard', () => {
   describe('Styling and Theming', () => {
     it('applies custom styles', () => {
       const customStyle = { backgroundColor: 'red' };
-      const { container } = renderWithTheme(<AnalyticsDashboard style={customStyle} />);
+      const renderResult = renderWithTheme(
+        <AnalyticsDashboard style={customStyle} />,
+      );
 
-      expect(container).toBeTruthy();
+      expect(renderResult).toBeTruthy();
     });
 
     it('uses theme colors correctly', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard title='Test Dashboard' />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard title='Test Dashboard' />,
+      );
 
       expect(getByText('Test Dashboard')).toBeTruthy();
     });
@@ -389,7 +436,9 @@ describe('AnalyticsDashboard', () => {
 
   describe('Accessibility', () => {
     it('provides accessible metric cards', () => {
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={mockMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={mockMetrics} />,
+      );
 
       const metricCard = getByText('Total Users');
       expect(metricCard).toBeTruthy();
@@ -408,7 +457,9 @@ describe('AnalyticsDashboard', () => {
   describe('Performance', () => {
     it('memoizes component correctly', () => {
       const MemoizedComponent = React.memo(AnalyticsDashboard);
-      const { rerender } = renderWithTheme(<MemoizedComponent metrics={mockMetrics} />);
+      const { rerender } = renderWithTheme(
+        <MemoizedComponent metrics={mockMetrics} />,
+      );
 
       // Re-render with same props should not cause issues
       rerender(
@@ -427,9 +478,11 @@ describe('AnalyticsDashboard', () => {
         changeType: 'increase' as const,
       }));
 
-      const { container } = renderWithTheme(<AnalyticsDashboard metrics={largeMetrics} />);
+      const renderResult = renderWithTheme(
+        <AnalyticsDashboard metrics={largeMetrics} />,
+      );
 
-      expect(container).toBeTruthy();
+      expect(renderResult).toBeTruthy();
     });
   });
 
@@ -457,7 +510,9 @@ describe('AnalyticsDashboard', () => {
       ];
 
       expect(() => {
-        renderWithTheme(<AnalyticsDashboard timeSeriesData={invalidTimeSeriesData} />);
+        renderWithTheme(
+          <AnalyticsDashboard timeSeriesData={invalidTimeSeriesData} />,
+        );
       }).not.toThrow();
     });
   });
@@ -474,7 +529,9 @@ describe('AnalyticsDashboard', () => {
         },
       ];
 
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={zeroMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={zeroMetrics} />,
+      );
 
       expect(getByText('0')).toBeTruthy();
     });
@@ -490,7 +547,9 @@ describe('AnalyticsDashboard', () => {
         },
       ];
 
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={negativeMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={negativeMetrics} />,
+      );
 
       expect(getByText('-100')).toBeTruthy();
     });
@@ -506,7 +565,9 @@ describe('AnalyticsDashboard', () => {
         },
       ];
 
-      const { getByText } = renderWithTheme(<AnalyticsDashboard metrics={largeMetrics} />);
+      const { getByText } = renderWithTheme(
+        <AnalyticsDashboard metrics={largeMetrics} />,
+      );
 
       expect(getByText('1000000000')).toBeTruthy();
     });

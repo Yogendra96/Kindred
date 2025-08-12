@@ -1,7 +1,5 @@
 import { Platform } from 'react-native';
 
-import _AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { enhancedSecurityService } from './EnhancedSecurityService';
 import { loggingService } from './LoggingService';
@@ -181,7 +179,11 @@ class LocationService {
 
       this.isInitialized = true;
 
-      this.performanceService.recordMetric('location_service_init', Date.now() - startTime, 'ms');
+      this.performanceService.recordMetric(
+        'location_service_init',
+        Date.now() - startTime,
+        'ms',
+      );
 
       this.logger.info('Location service initialized', {
         config: this.config,
@@ -190,7 +192,8 @@ class LocationService {
       });
     } catch (error) {
       this.metrics.errorCount++;
-      this.metrics.lastError = error instanceof Error ? error.message : 'Unknown error';
+      this.metrics.lastError =
+        error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error('Location service initialization failed', {
         error: error.message,
@@ -217,7 +220,9 @@ class LocationService {
       // In production, use proper permission libraries
       const permissions: LocationPermissions = {
         foreground: 'granted',
-        background: this.config.enableBackgroundLocation ? 'granted' : 'undetermined',
+        background: this.config.enableBackgroundLocation
+          ? 'granted'
+          : 'undetermined',
         canAskAgain: true,
       };
 
@@ -245,7 +250,11 @@ class LocationService {
       const locationData = await this.processLocationData(location, 'manual');
       this.currentLocation = locationData;
 
-      this.performanceService.recordMetric('location_retrieved', Date.now() - startTime, 'ms');
+      this.performanceService.recordMetric(
+        'location_retrieved',
+        Date.now() - startTime,
+        'ms',
+      );
 
       this.logger.info('Current location retrieved', {
         accuracy: locationData.accuracy,
@@ -255,7 +264,8 @@ class LocationService {
       return locationData;
     } catch (error) {
       this.metrics.errorCount++;
-      this.metrics.lastError = error instanceof Error ? error.message : 'Unknown error';
+      this.metrics.lastError =
+        error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error('Failed to get current location', {
         error: error.message,
@@ -333,7 +343,10 @@ class LocationService {
 
       this.performanceService.recordMetric('background_location_started', 1);
     } catch (error) {
-      this.performanceService.recordMetric('background_location_setup_error', 1);
+      this.performanceService.recordMetric(
+        'background_location_setup_error',
+        1,
+      );
       throw error;
     }
   }
@@ -407,13 +420,15 @@ class LocationService {
     region: Location.LocationRegion,
   ): Promise<void> {
     try {
-      const geofenceRegion = this.geofenceRegions.find(r => r.id === region.identifier);
+      const geofenceRegion = this.geofenceRegions.find(
+        r => r.id === region.identifier,
+      );
       if (!geofenceRegion) return;
 
       this.metrics.geofenceEvents++;
 
       // Notify listeners
-      this.geofenceListeners.forEach(listener => {
+      for (const listener of this.geofenceListeners) {
         try {
           listener({
             type: eventType,
@@ -423,12 +438,14 @@ class LocationService {
         } catch (error) {
           this.logger.error('Error in geofence listener:', error);
         }
-      });
+      }
 
       // Send notification if configured
       const shouldNotify =
-        (eventType === Location.GeofencingEventType.Enter && geofenceRegion.notifyOnEntry) ||
-        (eventType === Location.GeofencingEventType.Exit && geofenceRegion.notifyOnExit);
+        (eventType === Location.GeofencingEventType.Enter &&
+          geofenceRegion.notifyOnEntry) ||
+        (eventType === Location.GeofencingEventType.Exit &&
+          geofenceRegion.notifyOnExit);
 
       if (shouldNotify) {
         await notificationService.displayNotification({
@@ -459,11 +476,11 @@ class LocationService {
     const locationData: LocationData = {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
-      altitude: location.coords.altitude || undefined,
-      accuracy: location.coords.accuracy || undefined,
-      altitudeAccuracy: location.coords.altitudeAccuracy || undefined,
-      heading: location.coords.heading || undefined,
-      speed: location.coords.speed || undefined,
+      altitude: location.coords.altitude ?? undefined,
+      accuracy: location.coords.accuracy ?? undefined,
+      altitudeAccuracy: location.coords.altitudeAccuracy ?? undefined,
+      heading: location.coords.heading ?? undefined,
+      speed: location.coords.speed ?? undefined,
       timestamp: location.timestamp,
     };
 
@@ -471,7 +488,7 @@ class LocationService {
     if (this.config.privacyMode === 'approximate') {
       locationData.latitude = Math.round(locationData.latitude * 100) / 100;
       locationData.longitude = Math.round(locationData.longitude * 100) / 100;
-      locationData.accuracy = Math.max(locationData.accuracy || 0, 1000);
+      locationData.accuracy = Math.max(locationData.accuracy ?? 0, 1000);
     } else if (this.config.privacyMode === 'disabled') {
       return locationData; // Skip reverse geocoding
     }
@@ -484,11 +501,13 @@ class LocationService {
       });
 
       if (address) {
-        locationData.address = [address.streetNumber, address.street].filter(Boolean).join(' ');
-        locationData.city = address.city || undefined;
-        locationData.region = address.region || undefined;
-        locationData.country = address.country || undefined;
-        locationData.postalCode = address.postalCode || undefined;
+        locationData.address = [address.streetNumber, address.street]
+          .filter(Boolean)
+          .join(' ');
+        locationData.city = address.city ?? undefined;
+        locationData.region = address.region ?? undefined;
+        locationData.country = address.country ?? undefined;
+        locationData.postalCode = address.postalCode ?? undefined;
       }
     } catch (error) {
       this.logger.warn('Reverse geocoding failed:', error);
@@ -507,7 +526,8 @@ class LocationService {
 
     // Update average accuracy
     if (location.accuracy) {
-      const totalAccuracy = this.metrics.averageAccuracy * (this.metrics.totalLocationUpdates - 1);
+      const totalAccuracy =
+        this.metrics.averageAccuracy * (this.metrics.totalLocationUpdates - 1);
       this.metrics.averageAccuracy =
         (totalAccuracy + location.accuracy) / this.metrics.totalLocationUpdates;
     }
@@ -522,14 +542,17 @@ class LocationService {
       location,
       timestamp: new Date(),
       source,
-      accuracy: location.accuracy || 0,
+      accuracy: location.accuracy ?? 0,
     };
 
     this.locationHistory.unshift(historyEntry);
 
     // Keep only the specified number of entries
     if (this.locationHistory.length > this.config.maxLocationHistory) {
-      this.locationHistory = this.locationHistory.slice(0, this.config.maxLocationHistory);
+      this.locationHistory = this.locationHistory.slice(
+        0,
+        this.config.maxLocationHistory,
+      );
     }
 
     // Persist history
@@ -559,13 +582,13 @@ class LocationService {
   }
 
   private notifyLocationListeners(location: LocationData): void {
-    this.listeners.forEach(listener => {
+    for (const listener of this.listeners) {
       try {
         listener(location);
       } catch (error) {
         this.logger.error('Error in location listener:', error);
       }
-    });
+    }
   }
 
   private async handleLocationSharing(location: LocationData): Promise<void> {
@@ -580,7 +603,9 @@ class LocationService {
     }
   }
 
-  private prepareLocationForSharing(location: LocationData): Partial<LocationData> {
+  private prepareLocationForSharing(
+    location: LocationData,
+  ): Partial<LocationData> {
     const shared: Partial<LocationData> = {
       timestamp: location.timestamp,
     };
@@ -605,7 +630,12 @@ class LocationService {
     return shared;
   }
 
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371e3; // Earth's radius in meters
     const φ1 = (lat1 * Math.PI) / 180;
     const φ2 = (lat2 * Math.PI) / 180;
@@ -621,7 +651,10 @@ class LocationService {
   }
 
   // Public API methods
-  addLocationListener(id: string, listener: (location: LocationData) => void): void {
+  addLocationListener(
+    id: string,
+    listener: (location: LocationData) => void,
+  ): void {
     this.listeners.set(id, listener);
   }
 
@@ -653,7 +686,9 @@ class LocationService {
   }
 
   async removeGeofenceRegion(id: string): Promise<void> {
-    this.geofenceRegions = this.geofenceRegions.filter(region => region.id !== id);
+    this.geofenceRegions = this.geofenceRegions.filter(
+      region => region.id !== id,
+    );
     await this.persistData();
 
     // Restart geofencing if it's enabled
@@ -662,7 +697,9 @@ class LocationService {
     }
   }
 
-  async addPlaceOfInterest(place: Omit<PlaceOfInterest, 'id' | 'visitCount'>): Promise<string> {
+  async addPlaceOfInterest(
+    place: Omit<PlaceOfInterest, 'id' | 'visitCount'>,
+  ): Promise<string> {
     const id = `place_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const placeOfInterest: PlaceOfInterest = {
       ...place,
@@ -677,22 +714,30 @@ class LocationService {
   }
 
   async removePlaceOfInterest(id: string): Promise<void> {
-    this.placesOfInterest = this.placesOfInterest.filter(place => place.id !== id);
+    this.placesOfInterest = this.placesOfInterest.filter(
+      place => place.id !== id,
+    );
     await this.persistData();
   }
 
   // Data persistence
   private async loadPersistedData(): Promise<void> {
     try {
-      const [configData, historyData, geofenceData, placesData, metricsData, sharingData] =
-        await Promise.all([
-          this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}config`),
-          this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}history`),
-          this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}geofence`),
-          this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}places`),
-          this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}metrics`),
-          this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}sharing`),
-        ]);
+      const [
+        configData,
+        historyData,
+        geofenceData,
+        placesData,
+        metricsData,
+        sharingData,
+      ] = await Promise.all([
+        this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}config`),
+        this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}history`),
+        this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}geofence`),
+        this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}places`),
+        this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}metrics`),
+        this.securityService.secureRetrieve(`${STORAGE_KEY_PREFIX}sharing`),
+      ]);
 
       if (configData) {
         this.config = { ...this.config, ...configData };
@@ -720,7 +765,9 @@ class LocationService {
         this.metrics = {
           ...this.metrics,
           ...metricsData,
-          lastUpdate: metricsData.lastUpdate ? new Date(metricsData.lastUpdate) : undefined,
+          lastUpdate: metricsData.lastUpdate
+            ? new Date(metricsData.lastUpdate)
+            : undefined,
         };
       }
 
@@ -728,7 +775,9 @@ class LocationService {
         this.sharingSettings = {
           ...this.sharingSettings,
           ...sharingData,
-          expiresAt: sharingData.expiresAt ? new Date(sharingData.expiresAt) : undefined,
+          expiresAt: sharingData.expiresAt
+            ? new Date(sharingData.expiresAt)
+            : undefined,
         };
       }
     } catch (error) {
@@ -741,12 +790,30 @@ class LocationService {
   private async persistData(): Promise<void> {
     try {
       await Promise.all([
-        this.securityService.secureStore(`${STORAGE_KEY_PREFIX}config`, this.config),
-        this.securityService.secureStore(`${STORAGE_KEY_PREFIX}history`, this.locationHistory),
-        this.securityService.secureStore(`${STORAGE_KEY_PREFIX}geofence`, this.geofenceRegions),
-        this.securityService.secureStore(`${STORAGE_KEY_PREFIX}places`, this.placesOfInterest),
-        this.securityService.secureStore(`${STORAGE_KEY_PREFIX}metrics`, this.metrics),
-        this.securityService.secureStore(`${STORAGE_KEY_PREFIX}sharing`, this.sharingSettings),
+        this.securityService.secureStore(
+          `${STORAGE_KEY_PREFIX}config`,
+          this.config,
+        ),
+        this.securityService.secureStore(
+          `${STORAGE_KEY_PREFIX}history`,
+          this.locationHistory,
+        ),
+        this.securityService.secureStore(
+          `${STORAGE_KEY_PREFIX}geofence`,
+          this.geofenceRegions,
+        ),
+        this.securityService.secureStore(
+          `${STORAGE_KEY_PREFIX}places`,
+          this.placesOfInterest,
+        ),
+        this.securityService.secureStore(
+          `${STORAGE_KEY_PREFIX}metrics`,
+          this.metrics,
+        ),
+        this.securityService.secureStore(
+          `${STORAGE_KEY_PREFIX}sharing`,
+          this.sharingSettings,
+        ),
       ]);
     } catch (error) {
       this.logger.error('Error persisting location data', {
@@ -769,7 +836,9 @@ class LocationService {
   }
 
   getLocationHistory(limit?: number): LocationHistory[] {
-    return limit ? this.locationHistory.slice(0, limit) : [...this.locationHistory];
+    return limit
+      ? this.locationHistory.slice(0, limit)
+      : [...this.locationHistory];
   }
 
   getGeofenceRegions(): GeofenceRegion[] {
@@ -799,23 +868,21 @@ class LocationService {
 
     // Restart services if needed
     if (updates.enableBackgroundLocation !== undefined) {
-      if (updates.enableBackgroundLocation) {
-        await this.setupBackgroundLocation();
-      } else {
-        await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
-      }
+      await (updates.enableBackgroundLocation
+        ? this.setupBackgroundLocation()
+        : Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME));
     }
 
     if (updates.enableGeofencing !== undefined) {
-      if (updates.enableGeofencing) {
-        await this.setupGeofencing();
-      } else {
-        await Location.stopGeofencingAsync(GEOFENCE_TASK_NAME);
-      }
+      await (updates.enableGeofencing
+        ? this.setupGeofencing()
+        : Location.stopGeofencingAsync(GEOFENCE_TASK_NAME));
     }
   }
 
-  async updateSharingSettings(updates: Partial<LocationSharingSettings>): Promise<void> {
+  async updateSharingSettings(
+    updates: Partial<LocationSharingSettings>,
+  ): Promise<void> {
     this.sharingSettings = { ...this.sharingSettings, ...updates };
     await this.persistData();
   }

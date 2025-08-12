@@ -32,14 +32,20 @@ export class BundleOptimizerCore {
   /**
    * Main bundle analysis entry point
    */
-  async analyzeBundleStructure(bundlePath: string): Promise<BundleAnalysisResult> {
+  async analyzeBundleStructure(
+    bundlePath: string,
+  ): Promise<BundleAnalysisResult> {
     const startTime = performance.now();
 
     try {
       const modules = await this.analyzeModules(bundlePath);
       const duplicates = this.findDuplicateModules(modules);
       const unusedExports = this.findUnusedExports(modules);
-      const suggestions = this.generateOptimizationSuggestions(modules, duplicates, unusedExports);
+      const suggestions = this.generateOptimizationSuggestions(
+        modules,
+        duplicates,
+        unusedExports,
+      );
       const performanceImpact = this.calculatePerformanceImpact(modules);
 
       const totalSize = modules.reduce((sum, mod) => sum + mod.size, 0);
@@ -130,16 +136,16 @@ export class BundleOptimizerCore {
     const moduleMap = new Map<string, string[]>();
 
     // Group by module name (ignoring version differences)
-    modules.forEach(module => {
+    for (const module of modules) {
       const baseName = this.getBaseModuleName(module.path);
       if (!moduleMap.has(baseName)) {
         moduleMap.set(baseName, []);
       }
       moduleMap.get(baseName)!.push(module.path);
-    });
+    }
 
     // Find actual duplicates
-    moduleMap.forEach((instances, moduleName) => {
+    for (const [moduleName, instances] of moduleMap.entries()) {
       if (instances.length > 1) {
         const wastedBytes = instances.slice(1).reduce((sum, path) => {
           const module = modules.find(m => m.path === path);
@@ -150,10 +156,13 @@ export class BundleOptimizerCore {
           moduleName,
           instances,
           wastedBytes,
-          consolidationStrategy: this.getConsolidationStrategy(moduleName, instances),
+          consolidationStrategy: this.getConsolidationStrategy(
+            moduleName,
+            instances,
+          ),
         });
       }
-    });
+    }
 
     return duplicates;
   }
@@ -164,7 +173,7 @@ export class BundleOptimizerCore {
   private findUnusedExports(modules: ModuleAnalysis[]): UnusedExport[] {
     const unusedExports: UnusedExport[] = [];
 
-    modules.forEach(module => {
+    for (const module of modules) {
       if (module.usage.exportUsage < 100) {
         const unusedPercentage = 100 - module.usage.exportUsage;
         const bytesWasted = Math.round(module.size * (unusedPercentage / 100));
@@ -179,7 +188,7 @@ export class BundleOptimizerCore {
           });
         }
       }
-    });
+    }
 
     return unusedExports;
   }
@@ -195,7 +204,7 @@ export class BundleOptimizerCore {
     const suggestions: OptimizationSuggestion[] = [];
 
     // Tree shaking suggestions
-    unusedExports.forEach(unused => {
+    for (const unused of unusedExports) {
       if (unused.bytesWasted > 5000) {
         suggestions.push({
           type: 'tree_shaking',
@@ -205,11 +214,13 @@ export class BundleOptimizerCore {
           implementation: `Use named imports instead of wildcard imports for ${unused.module}`,
         });
       }
-    });
+    }
 
     // Code splitting suggestions
-    const heavyModules = modules.filter(m => m.size > 50000 && m.usage.loadPriority !== 'critical');
-    heavyModules.forEach(module => {
+    const heavyModules = modules.filter(
+      m => m.size > 50000 && m.usage.loadPriority !== 'critical',
+    );
+    for (const module of heavyModules) {
       suggestions.push({
         type: 'lazy_loading',
         description: `Lazy load ${module.path}`,
@@ -217,10 +228,10 @@ export class BundleOptimizerCore {
         effort: 'medium',
         implementation: `Use React.lazy() or dynamic import() for ${module.path}`,
       });
-    });
+    }
 
     // Duplicate removal suggestions
-    duplicates.forEach(duplicate => {
+    for (const duplicate of duplicates) {
       if (duplicate.wastedBytes > 10000) {
         suggestions.push({
           type: 'duplicate_removal',
@@ -230,10 +241,13 @@ export class BundleOptimizerCore {
           implementation: `Use resolutions in package.json to force single version`,
         });
       }
-    });
+    }
 
     // Mobile-specific optimizations
-    if (this.constraints.maxSize && this.getTotalBundleSize(modules) > this.constraints.maxSize) {
+    if (
+      this.constraints.maxSize &&
+      this.getTotalBundleSize(modules) > this.constraints.maxSize
+    ) {
       suggestions.push({
         type: 'compression',
         description: 'Enable Hermes bytecode compilation',
@@ -249,16 +263,23 @@ export class BundleOptimizerCore {
   /**
    * Calculate performance impact of current bundle
    */
-  private calculatePerformanceImpact(modules: ModuleAnalysis[]): PerformanceImpact {
+  private calculatePerformanceImpact(
+    modules: ModuleAnalysis[],
+  ): PerformanceImpact {
     const totalSize = this.getTotalBundleSize(modules);
-    const criticalModules = modules.filter(m => m.usage.loadPriority === 'critical');
+    const criticalModules = modules.filter(
+      m => m.usage.loadPriority === 'critical',
+    );
     const criticalSize = criticalModules.reduce((sum, m) => sum + m.size, 0);
 
     // Rough estimates for React Native
     const startupTime = Math.round((criticalSize / 1000) * 2); // ~2ms per KB
     const memoryUsage = Math.round((totalSize / (1024 * 1024)) * 1.5); // ~1.5x size in memory
-    const networkRequests = modules.filter(m => !m.usage.isDynamicallyLoaded).length;
-    const cacheEfficiency = modules.filter(m => m.usage.isTreeShakeable).length / modules.length;
+    const networkRequests = modules.filter(
+      m => !m.usage.isDynamicallyLoaded,
+    ).length;
+    const cacheEfficiency =
+      modules.filter(m => m.usage.isTreeShakeable).length / modules.length;
 
     return {
       startupTime,
@@ -296,7 +317,10 @@ export class BundleOptimizerCore {
     return modulePath.split('@')[0].replace(/\/.*$/, '');
   }
 
-  private getConsolidationStrategy(moduleName: string, instances: string[]): any {
+  private getConsolidationStrategy(
+    moduleName: string,
+    instances: string[],
+  ): any {
     if (instances.length === 2 && instances.some(i => i.includes('@'))) {
       return 'upgrade_version';
     }

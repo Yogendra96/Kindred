@@ -19,6 +19,7 @@ import { useTheme } from '@theme/ThemeProvider';
 import { BlurView } from 'expo-blur';
 
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
+import { AnimatedTouchable } from './MicroInteractions';
 
 const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
@@ -127,15 +128,19 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     });
   };
 
-  const onGestureEvent = Animated.event([{ nativeEvent: { translationX: translateX } }], {
-    useNativeDriver: true,
-  });
+  const onGestureEvent = Animated.event(
+    [{ nativeEvent: { translationX: translateX } }],
+    {
+      useNativeDriver: true,
+    },
+  );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
       const threshold = screenWidth * 0.3;
-      const shouldDismiss = Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
+      const shouldDismiss =
+        Math.abs(translationX) > threshold || Math.abs(velocityX) > 500;
 
       if (shouldDismiss) {
         handleDismiss();
@@ -241,10 +246,17 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   });
 
   return (
-    <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
+    <PanGestureHandler
+      onGestureEvent={onGestureEvent}
+      onHandlerStateChange={onHandlerStateChange}
+    >
       <Animated.View
-        style={[styles.notificationContainer, getNotificationStyle(), animatedStyle]}
-        accessible={true}
+        style={[
+          styles.notificationContainer,
+          getNotificationStyle(),
+          animatedStyle,
+        ]}
+        accessible
         accessibilityRole='alert'
         accessibilityLabel={`${notification.type} notification: ${notification.title}`}
         accessibilityHint='Swipe right to dismiss'
@@ -269,7 +281,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
               name={getIcon() as string}
               size={24}
               color={getIconColor()}
-              accessible={true}
+              accessible
               accessibilityLabel={`${notification.type} icon`}
             />
           </View>
@@ -279,7 +291,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             <Text
               style={[styles.title, { color: theme.colors.onSurface }]}
               numberOfLines={2}
-              accessible={true}
+              accessible
               accessibilityRole='header'
             >
               {notification.title}
@@ -287,15 +299,18 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             <Text
               style={[styles.message, { color: theme.colors.onSurfaceVariant }]}
               numberOfLines={3}
-              accessible={true}
+              accessible
             >
               {notification.message}
             </Text>
 
             {notification.timestamp && (
               <Text
-                style={[styles.timestamp, { color: theme.colors.onSurfaceVariant }]}
-                accessible={true}
+                style={[
+                  styles.timestamp,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+                accessible
               >
                 {notification.timestamp.toLocaleTimeString([], {
                   hour: '2-digit',
@@ -311,11 +326,15 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             style={styles.dismissButton}
             hapticType='light'
             animationType='scale'
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel='Dismiss notification'
           >
-            <Ionicons name='close' size={20} color={theme.colors.onSurfaceVariant} />
+            <Ionicons
+              name='close'
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
           </AnimatedTouchable>
         </View>
 
@@ -349,7 +368,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                 ]}
                 hapticType='medium'
                 animationType='scale'
-                accessible={true}
+                accessible
                 accessibilityRole='button'
                 accessibilityLabel={action.label}
               >
@@ -386,7 +405,9 @@ interface EnhancedNotificationSystemProps {
   testID?: string;
 }
 
-export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProps> = ({
+export const EnhancedNotificationSystem: React.FC<
+  EnhancedNotificationSystemProps
+> = ({
   maxNotifications = 5,
   position = 'top',
   enableBlur = true,
@@ -419,7 +440,10 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
 
   const _saveSettings = async (newSettings: typeof settings) => {
     try {
-      await AsyncStorage.setItem('notification_settings', JSON.stringify(newSettings));
+      await AsyncStorage.setItem(
+        'notification_settings',
+        JSON.stringify(newSettings),
+      );
       setSettings(newSettings);
     } catch (error) {
       console.error('Error saving notification settings:', error);
@@ -471,10 +495,13 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
     setNotifications([]);
   }, []);
 
-  const handleAction = useCallback((notificationId: string, actionId: string) => {
-    // Log action for analytics
-    console.warn('Notification action:', { notificationId, actionId });
-  }, []);
+  const handleAction = useCallback(
+    (notificationId: string, actionId: string) => {
+      // Log action for analytics
+      console.warn('Notification action:', { notificationId, actionId });
+    },
+    [],
+  );
 
   if (notifications.length === 0) {
     return null;
@@ -486,7 +513,11 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
   };
 
   return (
-    <View style={[styles.container, containerStyle]} testID={testID} pointerEvents='box-none'>
+    <View
+      style={[styles.container, containerStyle]}
+      testID={testID}
+      pointerEvents='box-none'
+    >
       {settings.enableBlur && Platform.OS === 'ios' ? (
         <BlurView intensity={20} style={styles.blurContainer}>
           {notifications.map((notification, index) => (
@@ -518,14 +549,22 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
         <View style={styles.clearAllContainer}>
           <AnimatedTouchable
             onPress={clearAllNotifications}
-            style={[styles.clearAllButton, { backgroundColor: theme.colors.surfaceVariant }]}
+            style={[
+              styles.clearAllButton,
+              { backgroundColor: theme.colors.surfaceVariant },
+            ]}
             hapticType='medium'
             animationType='scale'
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel='Clear all notifications'
           >
-            <Text style={[styles.clearAllText, { color: theme.colors.onSurfaceVariant }]}>
+            <Text
+              style={[
+                styles.clearAllText,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
               Clear All ({notifications.length})
             </Text>
           </AnimatedTouchable>
@@ -538,7 +577,9 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
 // Hook for using the notification system
 export const useNotifications = () => {
   const [notificationSystem, setNotificationSystem] = useState<{
-    addNotification: (notification: Omit<NotificationData, 'id' | 'timestamp'>) => string;
+    addNotification: (
+      notification: Omit<NotificationData, 'id' | 'timestamp'>,
+    ) => string;
     removeNotification: (id: string) => void;
     clearAllNotifications: () => void;
   } | null>(null);
@@ -658,24 +699,70 @@ export const useNotifications = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    zIndex: 1000,
-    pointerEvents: 'box-none',
+  actionButton: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
   },
   blurContainer: {
     borderRadius: 12,
     overflow: 'hidden',
   },
-  regularContainer: {
-    // No additional styles needed
+  clearAllButton: {
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  clearAllContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  clearAllText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  container: {
+    left: 16,
+    pointerEvents: 'box-none',
+    position: 'absolute',
+    right: 16,
+    zIndex: 1000,
+  },
+  contentContainer: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    padding: 16,
+    paddingTop: 18, // Account for progress bar
+  },
+  dismissButton: {
+    padding: 4,
+  },
+  iconContainer: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  message: {
+    fontSize: 14,
+    lineHeight: 18,
+    marginBottom: 4,
   },
   notificationContainer: {
-    borderRadius: 12,
-    marginBottom: 8,
     borderLeftWidth: 4,
+    borderRadius: 12,
+    elevation: 4,
+    marginBottom: 8,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -683,76 +770,30 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
-    overflow: 'hidden',
   },
   progressBar: {
+    height: 2,
+    left: 0,
+    opacity: 0.7,
     position: 'absolute',
     top: 0,
-    left: 0,
-    height: 2,
-    opacity: 0.7,
   },
-  contentContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 16,
-    paddingTop: 18, // Account for progress bar
-  },
-  iconContainer: {
-    marginRight: 12,
-    marginTop: 2,
+  regularContainer: {
+    // No additional styles needed
   },
   textContainer: {
     flex: 1,
     marginRight: 8,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  message: {
-    fontSize: 14,
-    lineHeight: 18,
-    marginBottom: 4,
-  },
   timestamp: {
     fontSize: 12,
     opacity: 0.7,
   },
-  dismissButton: {
-    padding: 4,
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 8,
-  },
-  actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  clearAllContainer: {
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  clearAllButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  clearAllText: {
-    fontSize: 12,
-    fontWeight: '500',
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 20,
+    marginBottom: 4,
   },
 });
 

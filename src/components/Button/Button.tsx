@@ -1,9 +1,27 @@
 import React from 'react';
 
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import type { TextStyle, ViewStyle } from 'react-native';
 
 import { HapticFeedbackService } from '../../services/HapticFeedbackService';
+
+// Color constants to avoid literals
+const COLORS = {
+  black: '#000',
+  white: '#FFFFFF',
+  red: '#F44336',
+  green: '#4CAF50',
+  blue: '#2196F3',
+  gray: '#666666',
+  lightGray: '#E0E0E0',
+  transparent: 'transparent',
+} as const;
 
 export interface ButtonProps {
   title: string;
@@ -48,8 +66,8 @@ export const Button: React.FC<ButtonProps> = ({
 
   const buttonStyle = [
     styles.button,
-    styles[variant],
-    styles[size],
+    styles[variant], // Uses: primary, secondary, danger, ghost, outline
+    styles[size], // Uses: small, medium, large
     fullWidth && styles.fullWidth,
     disabled && styles.disabled,
     loading && styles.loading,
@@ -58,8 +76,8 @@ export const Button: React.FC<ButtonProps> = ({
 
   const textStyleCombined = [
     styles.text,
-    styles[`${variant}Text`],
-    styles[`${size}Text`],
+    styles[`${variant}Text`], // Uses: primaryText, secondaryText, dangerText, ghostText, outlineText
+    styles[`${size}Text`], // Uses: smallText, mediumText, largeText
     disabled && styles.disabledText,
     textStyle,
   ];
@@ -69,19 +87,29 @@ export const Button: React.FC<ButtonProps> = ({
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator
-            size={size === 'small' ? 'small' : 'small'}
-            color={variant === 'primary' || variant === 'danger' ? '#FFFFFF' : '#4CAF50'}
+            size={size === 'small' ? 'small' : 'large'}
+            color={
+              variant === 'primary' || variant === 'danger'
+                ? COLORS.white
+                : COLORS.green
+            }
           />
-          <Text style={[textStyleCombined, styles.loadingText]}>Loading...</Text>
+          <Text style={[textStyleCombined, styles.loadingText]}>
+            Loading...
+          </Text>
         </View>
       );
     }
 
     return (
       <View style={styles.contentContainer}>
-        {icon && iconPosition === 'left' && <View style={styles.iconContainer}>{icon}</View>}
+        {icon && iconPosition === 'left' && (
+          <View style={styles.iconContainer}>{icon}</View>
+        )}
         <Text style={textStyleCombined}>{title}</Text>
-        {icon && iconPosition === 'right' && <View style={styles.iconContainer}>{icon}</View>}
+        {icon && iconPosition === 'right' && (
+          <View style={styles.iconContainer}>{icon}</View>
+        )}
       </View>
     );
   };
@@ -101,127 +129,141 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 12,
+    elevation: 5,
     flexDirection: 'row',
-    shadowColor: '#000',
+    justifyContent: 'center',
+    shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 5,
-  },
-
-  // Variants
-  primary: {
-    backgroundColor: '#4CAF50',
-    borderWidth: 0,
-  },
-  secondary: {
-    backgroundColor: '#2196F3',
-    borderWidth: 0,
-  },
-  danger: {
-    backgroundColor: '#F44336',
-    borderWidth: 0,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#4CAF50',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-
-  // Sizes
-  small: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minHeight: 36,
-  },
-  medium: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    minHeight: 48,
-  },
-  large: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    minHeight: 56,
-  },
-
-  // States
-  disabled: {
-    opacity: 0.6,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  loading: {
-    opacity: 0.8,
-  },
-  fullWidth: {
-    width: '100%',
-  },
-
-  // Text styles
-  text: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  primaryText: {
-    color: '#FFFFFF',
-  },
-  secondaryText: {
-    color: '#FFFFFF',
-  },
-  dangerText: {
-    color: '#FFFFFF',
-  },
-  ghostText: {
-    color: '#666666',
-  },
-  outlineText: {
-    color: '#4CAF50',
-  },
-  smallText: {
-    fontSize: 14,
-  },
-  mediumText: {
-    fontSize: 16,
-  },
-  largeText: {
-    fontSize: 18,
-  },
-  disabledText: {
-    opacity: 0.7,
   },
 
   // Content layout
   contentContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
+  },
+
+  // Variants - used dynamically via styles[variant]
+  // eslint-disable-next-line react-native/no-unused-styles
+  danger: {
+    backgroundColor: COLORS.red,
+    borderWidth: 0,
+  },
+
+  // Text styles
+  // eslint-disable-next-line react-native/no-unused-styles
+  dangerText: {
+    color: COLORS.white,
+  },
+
+  // States
+  disabled: {
+    elevation: 0,
+    opacity: 0.6,
+    shadowOpacity: 0,
+  },
+  disabledText: {
+    opacity: 0.7,
+  },
+  fullWidth: {
+    width: '100%',
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  ghost: {
+    backgroundColor: COLORS.transparent,
+    borderColor: COLORS.lightGray,
+    borderWidth: 1,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  ghostText: {
+    color: COLORS.gray,
   },
   iconContainer: {
     marginHorizontal: 4,
   },
+  // eslint-disable-next-line react-native/no-unused-styles
+  large: {
+    minHeight: 56,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  largeText: {
+    fontSize: 18,
+  },
+  loading: {
+    opacity: 0.8,
+  },
   loadingContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
   },
   loadingText: {
     marginLeft: 8,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  medium: {
+    minHeight: 48,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  mediumText: {
+    fontSize: 16,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  outline: {
+    backgroundColor: COLORS.transparent,
+    borderColor: COLORS.green,
+    borderWidth: 2,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  outlineText: {
+    color: COLORS.green,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  primary: {
+    backgroundColor: COLORS.green,
+    borderWidth: 0,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  primaryText: {
+    color: COLORS.white,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  secondary: {
+    backgroundColor: COLORS.blue,
+    borderWidth: 0,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  secondaryText: {
+    color: COLORS.white,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  small: {
+    minHeight: 36,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  smallText: {
+    fontSize: 14,
+  },
+  text: {
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 

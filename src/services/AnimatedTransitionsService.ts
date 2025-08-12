@@ -1,4 +1,4 @@
-import { Platform as _Platform, Animated, Dimensions, Easing } from 'react-native';
+import { Animated, Dimensions, Easing } from 'react-native';
 
 import HapticFeedbackService from './HapticFeedbackService';
 import { PerformanceMonitoringService } from './PerformanceMonitoringService';
@@ -121,7 +121,8 @@ export interface TransitionPreset {
 class AnimatedTransitionsService {
   private performanceMonitor: PerformanceMonitoringService;
   private hapticService: typeof HapticFeedbackService;
-  private activeAnimations: Map<string, Animated.CompositeAnimation> = new Map();
+  private activeAnimations: Map<string, Animated.CompositeAnimation> =
+    new Map();
   private animationCounter: number = 0;
 
   // Common easing functions
@@ -144,7 +145,8 @@ class AnimatedTransitionsService {
     easeOutElastic: Easing.out(Easing.elastic(1)),
     easeInBounce: Easing.bounce,
     easeOutBounce: Easing.out(Easing.bounce),
-    bezier: (x1: number, y1: number, x2: number, y2: number) => Easing.bezier(x1, y1, x2, y2),
+    bezier: (x1: number, y1: number, x2: number, y2: number) =>
+      Easing.bezier(x1, y1, x2, y2),
   };
 
   // Predefined transition presets
@@ -238,50 +240,57 @@ class AnimatedTransitionsService {
 
   // Basic animation creators
   createFadeAnimation(transition: FadeTransition): Animated.CompositeAnimation {
-    const animatedValue = new Animated.Value(transition.from || 0);
+    const animatedValue = new Animated.Value(transition.from ?? 0);
 
     return Animated.timing(animatedValue, {
-      toValue: transition.to || 1,
-      duration: transition.config?.duration || 300,
-      delay: transition.config?.delay || 0,
-      easing: transition.config?.easing || this.easings.easeOut,
+      toValue: transition.to ?? 1,
+      duration: transition.config?.duration ?? 300,
+      delay: transition.config?.delay ?? 0,
+      easing: transition.config?.easing ?? this.easings.easeOut,
       useNativeDriver: transition.config?.useNativeDriver ?? true,
     });
   }
 
-  createSlideAnimation(transition: SlideTransition): Animated.CompositeAnimation {
+  createSlideAnimation(
+    transition: SlideTransition,
+  ): Animated.CompositeAnimation {
     const animatedValue = new Animated.Value(0);
-    const distance = transition.distance || this.getDefaultSlideDistance(transition.direction);
+    const distance =
+      transition.distance ?? this.getDefaultSlideDistance(transition.direction);
 
     return Animated.timing(animatedValue, {
       toValue: distance,
-      duration: transition.config?.duration || 400,
-      delay: transition.config?.delay || 0,
-      easing: transition.config?.easing || this.easings.easeOutBack,
+      duration: transition.config?.duration ?? 400,
+      delay: transition.config?.delay ?? 0,
+      easing: transition.config?.easing ?? this.easings.easeOutBack,
       useNativeDriver: transition.config?.useNativeDriver ?? true,
     });
   }
 
-  createScaleAnimation(transition: ScaleTransition): Animated.CompositeAnimation {
-    const animatedValue = new Animated.Value(transition.from || 0);
+  createScaleAnimation(
+    transition: ScaleTransition,
+  ): Animated.CompositeAnimation {
+    const animatedValue = new Animated.Value(transition.from ?? 0);
 
     return Animated.timing(animatedValue, {
-      toValue: transition.to || 1,
-      duration: transition.config?.duration || 300,
-      delay: transition.config?.delay || 0,
-      easing: transition.config?.easing || this.easings.easeOutBack,
+      toValue: transition.to ?? 1,
+      duration: transition.config?.duration ?? 300,
+      delay: transition.config?.delay ?? 0,
+      easing: transition.config?.easing ?? this.easings.easeOutBack,
       useNativeDriver: transition.config?.useNativeDriver ?? true,
     });
   }
 
-  createRotateAnimation(transition: RotateTransition): Animated.CompositeAnimation {
+  createRotateAnimation(
+    transition: RotateTransition,
+  ): Animated.CompositeAnimation {
     const animatedValue = new Animated.Value(0);
 
     return Animated.timing(animatedValue, {
       toValue: 1,
-      duration: transition.config?.duration || 500,
-      delay: transition.config?.delay || 0,
-      easing: transition.config?.easing || this.easings.easeInOut,
+      duration: transition.config?.duration ?? 500,
+      delay: transition.config?.delay ?? 0,
+      easing: transition.config?.easing ?? this.easings.easeInOut,
       useNativeDriver: transition.config?.useNativeDriver ?? true,
     });
   }
@@ -293,10 +302,10 @@ class AnimatedTransitionsService {
   ): Animated.CompositeAnimation {
     return Animated.spring(animatedValue, {
       toValue,
-      tension: config.tension || 40,
-      friction: config.friction || 7,
-      speed: config.speed || 12,
-      bounciness: config.bounciness || 8,
+      tension: config.tension ?? 40,
+      friction: config.friction ?? 7,
+      speed: config.speed ?? 12,
+      bounciness: config.bounciness ?? 8,
       useNativeDriver: config.useNativeDriver ?? true,
     });
   }
@@ -744,9 +753,9 @@ class AnimatedTransitionsService {
   }
 
   stopAllAnimations(): void {
-    this.activeAnimations.forEach((animation, _id) => {
+    for (const [_id, animation] of this.activeAnimations.entries()) {
       animation.stop();
-    });
+    }
     this.activeAnimations.clear();
   }
 
@@ -812,13 +821,17 @@ class AnimatedTransitionsService {
       const translateX = position.interpolate({
         inputRange: [index - 1, index, index + 1],
         outputRange:
-          type === 'slide' && direction === 'left' ? [initWidth, 0, -initWidth] : [0, 0, 0],
+          type === 'slide' && direction === 'left'
+            ? [initWidth, 0, -initWidth]
+            : [0, 0, 0],
       });
 
       const translateY = position.interpolate({
         inputRange: [index - 1, index, index + 1],
         outputRange:
-          type === 'slide' && direction === 'up' ? [initHeight, 0, -initHeight] : [0, 0, 0],
+          type === 'slide' && direction === 'up'
+            ? [initHeight, 0, -initHeight]
+            : [0, 0, 0],
       });
 
       const opacity = position.interpolate({
@@ -841,7 +854,9 @@ class AnimatedTransitionsService {
   }
 
   // Utility methods
-  private getDefaultSlideDistance(direction: 'left' | 'right' | 'up' | 'down'): number {
+  private getDefaultSlideDistance(
+    direction: 'left' | 'right' | 'up' | 'down',
+  ): number {
     switch (direction) {
       case 'left':
       case 'right':
@@ -861,9 +876,9 @@ class AnimatedTransitionsService {
   // Performance optimization
   enableNativeDriver(enable: boolean = true): void {
     // Update all presets to use native driver
-    Object.values(this.presets).forEach(preset => {
+    for (const preset of Object.values(this.presets)) {
       preset.config.useNativeDriver = enable;
-    });
+    }
   }
 
   // Animation analytics
@@ -915,9 +930,9 @@ class AnimatedTransitionsService {
   setReducedMotion(enabled: boolean): void {
     if (enabled) {
       // Reduce animation durations and disable complex animations
-      Object.values(this.presets).forEach(preset => {
+      for (const preset of Object.values(this.presets)) {
         preset.config.duration = Math.min(preset.config.duration || 300, 150);
-      });
+      }
     }
   }
 

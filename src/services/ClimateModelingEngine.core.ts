@@ -4,8 +4,6 @@
  * File size target: 200-300 lines max
  */
 
-import { Platform as _Platform } from 'react-native';
-
 import type {
   CarbonImpactProjection,
   ClimateAPIConfig,
@@ -52,8 +50,14 @@ export class ClimateModelingCore {
 
       // Generate predictions based on mobile processing constraints
       const globalData = await this.generateGlobalPredictions(timeHorizon);
-      const localData = await this.generateLocalPredictions(coordinates, timeHorizon);
-      const carbonImpact = await this.projectCarbonImpact(coordinates, timeHorizon);
+      const localData = await this.generateLocalPredictions(
+        coordinates,
+        timeHorizon,
+      );
+      const carbonImpact = await this.projectCarbonImpact(
+        coordinates,
+        timeHorizon,
+      );
       const scenarios = this.generateClimateScenarios(timeHorizon);
       const confidence = this.calculateModelConfidence();
       const dataSource = this.getDataSourceInfo();
@@ -71,7 +75,9 @@ export class ClimateModelingCore {
       this.cacheResult(cacheKey, result);
 
       const processingTime = performance.now() - startTime;
-      console.log(`🌍 Climate modeling completed in ${processingTime.toFixed(2)}ms`);
+      console.log(
+        `🌍 Climate modeling completed in ${processingTime.toFixed(2)}ms`,
+      );
 
       return result;
     } catch (error) {
@@ -135,13 +141,18 @@ export class ClimateModelingCore {
   /**
    * Generate global climate predictions optimized for mobile
    */
-  private async generateGlobalPredictions(timeHorizon: number): Promise<GlobalClimateData> {
+  private async generateGlobalPredictions(
+    timeHorizon: number,
+  ): Promise<GlobalClimateData> {
     const currentYear = new Date().getFullYear();
 
     // Simplified global temperature projection
     const temperatureProjection: TemperatureProjection = {
       current: 15.1, // Global average temperature in Celsius
-      projections: this.generateTemperatureProjections(currentYear, timeHorizon),
+      projections: this.generateTemperatureProjections(
+        currentYear,
+        timeHorizon,
+      ),
       anomaly: 1.1, // Current anomaly vs 1900-2000 baseline
       extremes: {
         maxTemperature: 18.5,
@@ -155,7 +166,10 @@ export class ClimateModelingCore {
       temperature: temperatureProjection,
       precipitation: {
         current: 990, // mm/year global average
-        projections: this.generatePrecipitationProjections(currentYear, timeHorizon),
+        projections: this.generatePrecipitationProjections(
+          currentYear,
+          timeHorizon,
+        ),
         seasonality: [
           {
             season: 'spring',
@@ -245,7 +259,10 @@ export class ClimateModelingCore {
           maxTemperature: baseTemperature + 15,
           minTemperature: baseTemperature - 12,
           heatWaveDays: Math.round(45 * regionMultiplier.extremes),
-          freezingDays: baseTemperature < 10 ? Math.round(120 * regionMultiplier.extremes) : 0,
+          freezingDays:
+            baseTemperature < 10
+              ? Math.round(120 * regionMultiplier.extremes)
+              : 0,
         },
       },
       precipitation: {
@@ -408,13 +425,19 @@ export class ClimateModelingCore {
     multiplier: { temperature: number },
     timeHorizon: number,
   ): TimeSeriesProjection[] {
-    return this.generateTemperatureProjections(new Date().getFullYear(), timeHorizon).map(proj => ({
+    return this.generateTemperatureProjections(
+      new Date().getFullYear(),
+      timeHorizon,
+    ).map(proj => ({
       ...proj,
       value: baseTemp + (proj.value - 15.1) * multiplier.temperature,
       uncertainty: {
-        lower: baseTemp + (proj.uncertainty.lower - 15.1) * multiplier.temperature,
-        median: baseTemp + (proj.uncertainty.median - 15.1) * multiplier.temperature,
-        upper: baseTemp + (proj.uncertainty.upper - 15.1) * multiplier.temperature,
+        lower:
+          baseTemp + (proj.uncertainty.lower - 15.1) * multiplier.temperature,
+        median:
+          baseTemp + (proj.uncertainty.median - 15.1) * multiplier.temperature,
+        upper:
+          baseTemp + (proj.uncertainty.upper - 15.1) * multiplier.temperature,
       },
     }));
   }
@@ -444,7 +467,10 @@ export class ClimateModelingCore {
     };
   }
 
-  private generateCacheKey(coordinates: GeographicCoordinate, timeHorizon: number): string {
+  private generateCacheKey(
+    coordinates: GeographicCoordinate,
+    timeHorizon: number,
+  ): string {
     const lat = Math.round(coordinates.latitude * 10) / 10; // Round to 1 decimal for caching
     const lon = Math.round(coordinates.longitude * 10) / 10;
     return `climate_${lat}_${lon}_${timeHorizon}`;
@@ -515,7 +541,11 @@ export class ClimateModelingCore {
   }
 
   // Simplified placeholder methods for mobile optimization
-  private generateEmissionPathway(_scenario: string, _startYear: number, _endYear: number): any {
+  private generateEmissionPathway(
+    _scenario: string,
+    _startYear: number,
+    _endYear: number,
+  ): any {
     return { co2: [], methane: [], nitrousOxide: [], totalGHG: [] };
   }
 
@@ -559,11 +589,16 @@ export class ClimateModelingCore {
     return [];
   }
 
-  private calculateBiodiversityIndex(_coordinates: GeographicCoordinate): number {
+  private calculateBiodiversityIndex(
+    _coordinates: GeographicCoordinate,
+  ): number {
     return 0.75;
   }
 
-  private projectHabitatLoss(_coordinates: GeographicCoordinate, _timeHorizon: number): number {
+  private projectHabitatLoss(
+    _coordinates: GeographicCoordinate,
+    _timeHorizon: number,
+  ): number {
     return 15;
   }
 
@@ -571,11 +606,16 @@ export class ClimateModelingCore {
     return 1250;
   }
 
-  private calculateCarbonSequestration(_coordinates: GeographicCoordinate): number {
+  private calculateCarbonSequestration(
+    _coordinates: GeographicCoordinate,
+  ): number {
     return 2.3;
   }
 
-  private generateCarbonEmissionProjections(_current: number, _timeHorizon: number): any[] {
+  private generateCarbonEmissionProjections(
+    _current: number,
+    _timeHorizon: number,
+  ): any[] {
     return [];
   }
 }

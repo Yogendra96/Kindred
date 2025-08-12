@@ -27,7 +27,10 @@ import { observabilityService } from './ObservabilityService';
 class NetworkPerformanceOptimizerService {
   private config: NetworkOptimizerConfig;
   private requestHistory: RequestMetrics[] = [];
-  private cache = new Map<string, { data: any; timestamp: number; size: number }>();
+  private cache = new Map<
+    string,
+    { data: any; timestamp: number; size: number }
+  >();
   private isMonitoring = false;
   private connectionQuality: ConnectionQuality | null = null;
 
@@ -50,12 +53,12 @@ class NetworkPerformanceOptimizerService {
 
     try {
       // Check cache first
-      if (this.shouldUseCache(url, options.method || 'GET')) {
+      if (this.shouldUseCache(url, options.method ?? 'GET')) {
         const cached = this.getCachedResponse(url);
         if (cached) {
           await this.trackRequest(
             url,
-            options.method || 'GET',
+            options.method ?? 'GET',
             performance.now() - startTime,
             0,
             200,
@@ -72,25 +75,32 @@ class NetworkPerformanceOptimizerService {
       const optimizedOptions = this.applyOptimizations(options);
 
       // Perform request with retry logic
-      const response = await this.performRequestWithRetry(url, optimizedOptions);
+      const response = await this.performRequestWithRetry(
+        url,
+        optimizedOptions,
+      );
 
       // Cache successful responses
-      if (response.ok && this.shouldCache(url, options.method || 'GET')) {
+      if (response.ok && this.shouldCache(url, options.method ?? 'GET')) {
         const data = await response
           .clone()
           .json()
           .catch(() => null);
         if (data) {
-          this.cacheResponse(url, data, response.headers.get('content-length') || '0');
+          this.cacheResponse(
+            url,
+            data,
+            response.headers.get('content-length') ?? '0',
+          );
         }
       }
 
       const responseTime = performance.now() - startTime;
-      const size = parseInt(response.headers.get('content-length') || '0');
+      const size = parseInt(response.headers.get('content-length') ?? '0');
 
       await this.trackRequest(
         url,
-        options.method || 'GET',
+        options.method ?? 'GET',
         responseTime,
         size,
         response.status,
@@ -100,7 +110,15 @@ class NetworkPerformanceOptimizerService {
       return response;
     } catch (error) {
       const responseTime = performance.now() - startTime;
-      await this.trackRequest(url, options.method || 'GET', responseTime, 0, 0, false, 1);
+      await this.trackRequest(
+        url,
+        options.method ?? 'GET',
+        responseTime,
+        0,
+        0,
+        false,
+        1,
+      );
       throw error;
     }
   }
@@ -114,10 +132,14 @@ class NetworkPerformanceOptimizerService {
     try {
       const recentRequests = this.getRecentRequests();
       const metrics = this.calculateMetrics(recentRequests);
-      const optimizations = this.generateOptimizationSuggestions(metrics, recentRequests);
+      const optimizations = this.generateOptimizationSuggestions(
+        metrics,
+        recentRequests,
+      );
       const cacheEfficiency = this.calculateCacheEfficiency();
 
-      const connectionQuality = this.connectionQuality || (await this.detectConnectionQuality());
+      const connectionQuality =
+        this.connectionQuality ?? (await this.detectConnectionQuality());
 
       const analysisTime = performance.now() - startTime;
 
@@ -145,7 +167,10 @@ class NetworkPerformanceOptimizerService {
         connectionQuality,
       };
     } catch (error) {
-      await observabilityService.trackError('network_analysis_failed', error as Error);
+      await observabilityService.trackError(
+        'network_analysis_failed',
+        error as Error,
+      );
       throw error;
     }
   }
@@ -164,7 +189,10 @@ class NetworkPerformanceOptimizerService {
    */
   async clearCache(): Promise<{ clearedItems: number; freedBytes: number }> {
     const clearedItems = this.cache.size;
-    const freedBytes = [...this.cache.values()].reduce((sum, item) => sum + item.size, 0);
+    const freedBytes = [...this.cache.values()].reduce(
+      (sum, item) => sum + item.size,
+      0,
+    );
 
     this.cache.clear();
 
@@ -202,7 +230,7 @@ class NetworkPerformanceOptimizerService {
   private updateConnectionQuality(state: any): void {
     this.connectionQuality = {
       type: this.mapConnectionType(state.type),
-      strength: state.details?.strength || 1,
+      strength: state.details?.strength ?? 1,
       bandwidth: this.estimateBandwidth(state.type, state.details),
       packetLoss: 0, // Would need native implementation
       jitter: 0, // Would need native implementation
@@ -238,7 +266,11 @@ class NetworkPerformanceOptimizerService {
   }
 
   private shouldCache(url: string, method: string): boolean {
-    return this.config.caching.enabled && method === 'GET' && !url.includes('no-cache');
+    return (
+      this.config.caching.enabled &&
+      method === 'GET' &&
+      !url.includes('no-cache')
+    );
   }
 
   private getCachedResponse(url: string): any {
@@ -255,10 +287,13 @@ class NetworkPerformanceOptimizerService {
   }
 
   private cacheResponse(url: string, data: any, contentLength: string): void {
-    const size = parseInt(contentLength) || JSON.stringify(data).length;
+    const size = parseInt(contentLength) ?? JSON.stringify(data).length;
 
     // Check cache size limit
-    const currentSize = [...this.cache.values()].reduce((sum, item) => sum + item.size, 0);
+    const currentSize = [...this.cache.values()].reduce(
+      (sum, item) => sum + item.size,
+      0,
+    );
 
     if (currentSize + size > this.config.caching.maxSize) {
       this.evictOldestEntries(size);
@@ -272,7 +307,9 @@ class NetworkPerformanceOptimizerService {
   }
 
   private evictOldestEntries(neededSpace: number): void {
-    const entries = [...this.cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const entries = [...this.cache.entries()].sort(
+      (a, b) => a[1].timestamp - b[1].timestamp,
+    );
 
     let freedSpace = 0;
     for (const [key, value] of entries) {
@@ -298,7 +335,10 @@ class NetworkPerformanceOptimizerService {
     return { ...options, headers };
   }
 
-  private async performRequestWithRetry(url: string, options: RequestInit): Promise<Response> {
+  private async performRequestWithRetry(
+    url: string,
+    options: RequestInit,
+  ): Promise<Response> {
     let lastError: Error;
 
     for (let attempt = 0; attempt <= this.config.retry.maxRetries; attempt++) {
@@ -381,7 +421,9 @@ class NetworkPerformanceOptimizerService {
     return this.requestHistory.filter(req => req.timestamp > oneHourAgo);
   }
 
-  private calculateMetrics(requests: RequestMetrics[]): NetworkPerformanceMetrics {
+  private calculateMetrics(
+    requests: RequestMetrics[],
+  ): NetworkPerformanceMetrics {
     if (requests.length === 0) {
       return {
         averageLatency: 0,
@@ -395,14 +437,18 @@ class NetworkPerformanceOptimizerService {
     }
 
     const latencies = requests.map(r => r.responseTime).sort((a, b) => a - b);
-    const errors = requests.filter(r => r.statusCode >= 400 || r.statusCode === 0);
+    const errors = requests.filter(
+      r => r.statusCode >= 400 || r.statusCode === 0,
+    );
     const cacheHits = requests.filter(r => r.fromCache);
     const totalBytes = requests.reduce((sum, r) => sum + r.size, 0);
-    const totalTime = requests[requests.length - 1].timestamp - requests[0].timestamp;
+    const totalTime =
+      requests[requests.length - 1].timestamp - requests[0].timestamp;
 
     return {
-      averageLatency: latencies.reduce((sum, l) => sum + l, 0) / latencies.length,
-      p95Latency: latencies[Math.floor(latencies.length * 0.95)] || 0,
+      averageLatency:
+        latencies.reduce((sum, l) => sum + l, 0) / latencies.length,
+      p95Latency: latencies[Math.floor(latencies.length * 0.95)] ?? 0,
       errorRate: errors.length / requests.length,
       throughput: totalTime > 0 ? totalBytes / (totalTime / 1000) : 0,
       cacheHitRate: cacheHits.length / requests.length,
@@ -424,13 +470,16 @@ class NetworkPerformanceOptimizerService {
         description: 'Improve caching strategy for better performance',
         expectedImprovement: 40,
         effort: 'medium',
-        implementation: 'Increase cache TTL and implement smarter cache invalidation',
+        implementation:
+          'Increase cache TTL and implement smarter cache invalidation',
         priority: 8,
       });
     }
 
     // Compression optimization
-    const uncompressedRequests = requests.filter(r => r.size > 1024 && !r.fromCache);
+    const uncompressedRequests = requests.filter(
+      r => r.size > 1024 && !r.fromCache,
+    );
     if (uncompressedRequests.length > requests.length * 0.5) {
       suggestions.push({
         type: 'compression',
@@ -460,10 +509,16 @@ class NetworkPerformanceOptimizerService {
   private calculateCacheEfficiency(): CacheEfficiency {
     const recentRequests = this.getRecentRequests();
     const cacheHits = recentRequests.filter(r => r.fromCache);
-    const totalSize = [...this.cache.values()].reduce((sum, item) => sum + item.size, 0);
+    const totalSize = [...this.cache.values()].reduce(
+      (sum, item) => sum + item.size,
+      0,
+    );
 
     return {
-      hitRate: recentRequests.length > 0 ? cacheHits.length / recentRequests.length : 0,
+      hitRate:
+        recentRequests.length > 0
+          ? cacheHits.length / recentRequests.length
+          : 0,
       missCount: recentRequests.length - cacheHits.length,
       totalRequests: recentRequests.length,
       cacheSize: totalSize,
@@ -495,7 +550,10 @@ class NetworkPerformanceOptimizerService {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
+    const i = Math.min(
+      Math.floor(Math.log(bytes) / Math.log(k)),
+      sizes.length - 1,
+    );
     const unit = sizes.at(i) ?? 'B';
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${unit}`;
   }
@@ -558,5 +616,6 @@ class NetworkPerformanceOptimizerService {
 }
 
 // Export singleton instance
-export const networkPerformanceOptimizer = new NetworkPerformanceOptimizerService();
+export const networkPerformanceOptimizer =
+  new NetworkPerformanceOptimizerService();
 export default networkPerformanceOptimizer;

@@ -39,7 +39,13 @@ export interface DigitalLifestyleModel {
 }
 
 interface LifestyleCategory {
-  readonly category: 'transportation' | 'energy' | 'food' | 'consumption' | 'travel' | 'waste';
+  readonly category:
+    | 'transportation'
+    | 'energy'
+    | 'food'
+    | 'consumption'
+    | 'travel'
+    | 'waste';
   readonly currentState: LifestyleCategoryState;
   readonly historicalTrends: HistoricalTrend[];
   readonly seasonalPatterns: SeasonalPattern[];
@@ -61,7 +67,12 @@ interface LifestyleCategoryState {
 
 interface BehaviorPattern {
   readonly patternId: string;
-  readonly type: 'habitual' | 'intentional' | 'reactive' | 'social' | 'economic';
+  readonly type:
+    | 'habitual'
+    | 'intentional'
+    | 'reactive'
+    | 'social'
+    | 'economic';
   readonly strength: number; // 0-1 (how ingrained)
   readonly consistency: number; // 0-1 (how regular)
   readonly triggers: BehaviorTrigger[];
@@ -72,7 +83,13 @@ interface BehaviorPattern {
 
 interface BehaviorTrigger {
   readonly triggerId: string;
-  readonly type: 'time' | 'location' | 'emotion' | 'social' | 'environmental' | 'economic';
+  readonly type:
+    | 'time'
+    | 'location'
+    | 'emotion'
+    | 'social'
+    | 'environmental'
+    | 'economic';
   readonly strength: number;
   readonly frequency: number;
   readonly predictability: number;
@@ -119,7 +136,12 @@ interface LifestyleScenario {
 interface LifestyleChange {
   readonly changeId: string;
   readonly category: string;
-  readonly changeType: 'increase' | 'decrease' | 'substitute' | 'eliminate' | 'add';
+  readonly changeType:
+    | 'increase'
+    | 'decrease'
+    | 'substitute'
+    | 'eliminate'
+    | 'add';
   readonly magnitude: number; // percentage or absolute
   readonly phaseIn: PhaseInPlan;
   readonly difficulty: DifficultyAssessment;
@@ -195,7 +217,11 @@ export interface GenerationalImpactModeling {
 }
 
 interface GenerationImpact {
-  readonly generation: 'self' | 'children' | 'grandchildren' | 'great_grandchildren';
+  readonly generation:
+    | 'self'
+    | 'children'
+    | 'grandchildren'
+    | 'great_grandchildren';
   readonly directEmissions: number;
   readonly behaviorInfluence: BehaviorInfluenceMetric;
   readonly educationalImpact: EducationalImpactMetric;
@@ -215,7 +241,11 @@ export interface AILifestylePredictionEngine {
 
 interface PredictionModel {
   readonly modelId: string;
-  readonly modelType: 'neural_network' | 'gradient_boosting' | 'ensemble' | 'transformer';
+  readonly modelType:
+    | 'neural_network'
+    | 'gradient_boosting'
+    | 'ensemble'
+    | 'transformer';
   readonly trainingData: TrainingDataSummary;
   readonly performance: ModelPerformance;
   readonly updateFrequency: number; // days
@@ -244,7 +274,13 @@ export interface LiveDataIntegrationHub {
 
 interface DataSource {
   readonly sourceId: string;
-  readonly type: 'smart_home' | 'wearable' | 'financial' | 'transportation' | 'energy' | 'social';
+  readonly type:
+    | 'smart_home'
+    | 'wearable'
+    | 'financial'
+    | 'transportation'
+    | 'energy'
+    | 'social';
   readonly provider: string;
   readonly dataTypes: string[];
   readonly updateFrequency: number;
@@ -265,7 +301,12 @@ export interface CarbonTwinInsights {
 
 interface PersonalizedInsight {
   readonly insightId: string;
-  readonly type: 'behavior' | 'opportunity' | 'risk' | 'achievement' | 'prediction';
+  readonly type:
+    | 'behavior'
+    | 'opportunity'
+    | 'risk'
+    | 'achievement'
+    | 'prediction';
   readonly title: string;
   readonly description: string;
   readonly actionable: boolean;
@@ -297,7 +338,13 @@ interface ImprovementPotential {
 
 interface LifestyleBarrier {
   readonly barrierId: string;
-  readonly type: 'financial' | 'social' | 'infrastructure' | 'knowledge' | 'time' | 'psychological';
+  readonly type:
+    | 'financial'
+    | 'social'
+    | 'infrastructure'
+    | 'knowledge'
+    | 'time'
+    | 'psychological';
   readonly strength: number; // 0-1
   readonly description: string;
   readonly overcomingStrategies: string[];
@@ -305,7 +352,13 @@ interface LifestyleBarrier {
 
 interface LifestyleEnabler {
   readonly enablerId: string;
-  readonly type: 'financial' | 'social' | 'infrastructure' | 'knowledge' | 'time' | 'psychological';
+  readonly type:
+    | 'financial'
+    | 'social'
+    | 'infrastructure'
+    | 'knowledge'
+    | 'time'
+    | 'psychological';
   readonly strength: number; // 0-1
   readonly description: string;
   readonly leverageStrategies: string[];
@@ -384,25 +437,41 @@ export class CarbonTwinEngine {
     const twinId = `twin_${userId}_${Date.now()}`;
 
     // Build comprehensive digital lifestyle model
-    const digitalLifestyle = await this.buildDigitalLifestyleModel(userId, _initialData);
+    const digitalLifestyle = await this.buildDigitalLifestyleModel(
+      userId,
+      _initialData,
+    );
 
     // Initialize prediction engine
-    const behaviorPrediction = await this.initializeBehaviorPrediction(userId, digitalLifestyle);
+    const behaviorPrediction = await this.initializeBehaviorPrediction(
+      userId,
+      digitalLifestyle,
+    );
 
     // Setup real-time data integration
     const realTimeSync = await this.setupUserDataIntegration(userId);
 
     // Generate initial projections
-    const futureProjections = await this.generateLifetimeProjections(userId, digitalLifestyle);
+    const futureProjections = await this.generateLifetimeProjections(
+      userId,
+      digitalLifestyle,
+    );
 
     // Create virtual testing environment
-    const optimizationExperiments = await this.createVirtualTestingEnvironment(userId);
+    const optimizationExperiments =
+      await this.createVirtualTestingEnvironment(userId);
 
     // Initialize generational impact modeling
-    const legacyPlanning = await this.initializeGenerationalModeling(userId, digitalLifestyle);
+    const legacyPlanning = await this.initializeGenerationalModeling(
+      userId,
+      digitalLifestyle,
+    );
 
     // Generate initial insights
-    const insights = await this.generateCarbonTwinInsights(userId, digitalLifestyle);
+    const insights = await this.generateCarbonTwinInsights(
+      userId,
+      digitalLifestyle,
+    );
 
     const carbonTwin: PersonalCarbonTwin = {
       id: twinId,
@@ -455,10 +524,17 @@ export class CarbonTwinEngine {
     const results = await this.executeSimulation(twin, scenario);
 
     // Perform sensitivity analysis
-    const sensitivity = await this.performSensitivityAnalysis(twin, scenario, results);
+    const sensitivity = await this.performSensitivityAnalysis(
+      twin,
+      scenario,
+      results,
+    );
 
     // Generate recommendations
-    const recommendations = await this.generateScenarioRecommendations(results, sensitivity);
+    const recommendations = await this.generateScenarioRecommendations(
+      results,
+      sensitivity,
+    );
 
     const simulation: CarbonImpactSimulation = {
       simulationId,
@@ -533,7 +609,10 @@ export class CarbonTwinEngine {
     // Update twin's virtual testing environment
     const updatedEnvironment = {
       ...twin.optimizationExperiments,
-      activeExperiments: [...twin.optimizationExperiments.activeExperiments, experiment],
+      activeExperiments: [
+        ...twin.optimizationExperiments.activeExperiments,
+        experiment,
+      ],
     };
 
     const updatedTwin = {
@@ -559,7 +638,10 @@ export class CarbonTwinEngine {
     }
 
     // Update digital lifestyle model with new data
-    const updatedLifestyle = await this.updateDigitalLifestyle(twin.digitalLifestyle, realTimeData);
+    const updatedLifestyle = await this.updateDigitalLifestyle(
+      twin.digitalLifestyle,
+      realTimeData,
+    );
 
     // Update behavior predictions
     const updatedPredictions = await this.updateBehaviorPredictions(
@@ -574,7 +656,10 @@ export class CarbonTwinEngine {
     );
 
     // Update insights
-    const updatedInsights = await this.updateCarbonInsights(twin.insights, realTimeData);
+    const updatedInsights = await this.updateCarbonInsights(
+      twin.insights,
+      realTimeData,
+    );
 
     const updatedTwin = {
       ...twin,
@@ -682,7 +767,10 @@ export class CarbonTwinEngine {
     _initialData: Partial<DigitalLifestyleModel>,
   ): Promise<DigitalLifestyleModel> {
     // Build comprehensive lifestyle model
-    const categories = await this.analyzeLifestyleCategories(userId, _initialData);
+    const categories = await this.analyzeLifestyleCategories(
+      userId,
+      _initialData,
+    );
     const patterns = await this.identifyBehaviorPatterns(userId, categories);
     const triggers = await this.identifyDecisionTriggers(patterns);
 
@@ -720,8 +808,14 @@ export class CarbonTwinEngine {
         category: categoryType,
         currentState: await this.analyzeCategoryState(userId, categoryType),
         historicalTrends: await this.getHistoricalTrends(userId, categoryType),
-        seasonalPatterns: await this.analyzeSeasonalPatterns(userId, categoryType),
-        improvementPotential: await this.assessImprovementPotential(userId, categoryType),
+        seasonalPatterns: await this.analyzeSeasonalPatterns(
+          userId,
+          categoryType,
+        ),
+        improvementPotential: await this.assessImprovementPotential(
+          userId,
+          categoryType,
+        ),
         barriers: await this.identifyBarriers(userId, categoryType),
         enablers: await this.identifyEnablers(userId, categoryType),
       };
@@ -751,7 +845,9 @@ export class CarbonTwinEngine {
     };
   }
 
-  private estimateCategoryEmissions(category: LifestyleCategory['category']): number {
+  private estimateCategoryEmissions(
+    category: LifestyleCategory['category'],
+  ): number {
     // Estimate emissions for category based on average data
     const averageEmissions = {
       transportation: 2300, // kg CO2e/year
@@ -836,7 +932,10 @@ export class CarbonTwinEngine {
 
   private async persistCarbonTwin(twin: PersonalCarbonTwin): Promise<void> {
     try {
-      await AsyncStorage.setItem(`carbon_twin_${twin.id}`, JSON.stringify(twin));
+      await AsyncStorage.setItem(
+        `carbon_twin_${twin.id}`,
+        JSON.stringify(twin),
+      );
     } catch (error) {
       console.error('Failed to persist carbon twin:', error);
     }
@@ -851,28 +950,40 @@ export class CarbonTwinEngine {
     return [];
   }
 
-  private async identifyDecisionTriggers(_patterns: BehaviorPattern[]): Promise<DecisionTrigger[]> {
+  private async identifyDecisionTriggers(
+    _patterns: BehaviorPattern[],
+  ): Promise<DecisionTrigger[]> {
     // Decision trigger analysis
     return [];
   }
 
-  private async analyzeEnvironmentalFactors(_userId: string): Promise<EnvironmentalFactor[]> {
+  private async analyzeEnvironmentalFactors(
+    _userId: string,
+  ): Promise<EnvironmentalFactor[]> {
     return [];
   }
 
-  private async analyzeSocialInfluences(_userId: string): Promise<SocialInfluenceFactor[]> {
+  private async analyzeSocialInfluences(
+    _userId: string,
+  ): Promise<SocialInfluenceFactor[]> {
     return [];
   }
 
-  private async analyzeEconomicConstraints(_userId: string): Promise<EconomicConstraint[]> {
+  private async analyzeEconomicConstraints(
+    _userId: string,
+  ): Promise<EconomicConstraint[]> {
     return [];
   }
 
-  private async analyzePersonalValues(_userId: string): Promise<PersonalValue[]> {
+  private async analyzePersonalValues(
+    _userId: string,
+  ): Promise<PersonalValue[]> {
     return [];
   }
 
-  private async analyzeHabitFormation(_patterns: BehaviorPattern[]): Promise<HabitFormationModel> {
+  private async analyzeHabitFormation(
+    _patterns: BehaviorPattern[],
+  ): Promise<HabitFormationModel> {
     return {} as HabitFormationModel;
   }
 
@@ -902,11 +1013,17 @@ export class CarbonTwinEngine {
     };
   }
 
-  private async identifyBarriers(_userId: string, _category: string): Promise<LifestyleBarrier[]> {
+  private async identifyBarriers(
+    _userId: string,
+    _category: string,
+  ): Promise<LifestyleBarrier[]> {
     return [];
   }
 
-  private async identifyEnablers(_userId: string, _category: string): Promise<LifestyleEnabler[]> {
+  private async identifyEnablers(
+    _userId: string,
+    _category: string,
+  ): Promise<LifestyleEnabler[]> {
     return [];
   }
 
@@ -922,7 +1039,7 @@ export class CarbonTwinEngine {
 interface RealTimeDataUpdate {
   readonly timestamp: number;
   readonly dataType: string;
-  readonly value: any;
+  readonly value: string | number | boolean | Record<string, unknown>;
   readonly source: string;
 }
 
@@ -976,7 +1093,7 @@ interface PersonalValue {
 
 interface HabitFormationModel {
   readonly modelId: string;
-  readonly habits: any[];
+  readonly habits: Record<string, unknown>[];
 }
 
 // Export singleton instance

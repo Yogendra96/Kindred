@@ -15,7 +15,8 @@ class PerformanceMonitoringService {
 
   public static getInstance(): PerformanceMonitoringService {
     if (!PerformanceMonitoringService.instance) {
-      PerformanceMonitoringService.instance = new PerformanceMonitoringService();
+      PerformanceMonitoringService.instance =
+        new PerformanceMonitoringService();
     }
     return PerformanceMonitoringService.instance;
   }
@@ -24,9 +25,9 @@ class PerformanceMonitoringService {
     try {
       this.performanceObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
-        entries.forEach(entry => {
+        for (const entry of entries) {
           this.logPerformanceEntry(entry);
-        });
+        }
       });
 
       this.performanceObserver.observe({
@@ -78,9 +79,9 @@ class PerformanceMonitoringService {
       if (trace) {
         // Add custom attributes
         if (customAttributes) {
-          Object.entries(customAttributes).forEach(([key, value]) => {
+          for (const [key, value] of Object.entries(customAttributes)) {
             trace.putAttribute(key, value);
-          });
+          }
         }
 
         await trace.stop();
@@ -95,7 +96,11 @@ class PerformanceMonitoringService {
     }
   }
 
-  public async addTraceMetric(traceName: string, metricName: string, value: number): Promise<void> {
+  public async addTraceMetric(
+    traceName: string,
+    metricName: string,
+    value: number,
+  ): Promise<void> {
     try {
       const trace = this.traces.get(traceName);
       if (trace) {
@@ -107,7 +112,11 @@ class PerformanceMonitoringService {
   }
 
   // Custom metrics for app-specific performance
-  public logCustomMetric(metricName: string, value: number, unit: string = 'ms'): void {
+  public logCustomMetric(
+    metricName: string,
+    value: number,
+    unit: string = 'ms',
+  ): void {
     try {
       // Log to Firebase Performance
       perf()
@@ -146,7 +155,10 @@ class PerformanceMonitoringService {
   }
 
   // Network request performance
-  public async trackNetworkRequest(url: string, method: string = 'GET'): Promise<any> {
+  public async trackNetworkRequest(
+    url: string,
+    method: string = 'GET',
+  ): Promise<any> {
     try {
       const metric = perf().newHttpMetric(url, method);
       const startTime = performance.now();
@@ -185,9 +197,21 @@ class PerformanceMonitoringService {
       try {
         const memoryInfo = performance.memory;
         if (memoryInfo) {
-          this.logCustomMetric('memory_used_heap', memoryInfo.usedJSHeapSize / 1024 / 1024, 'MB');
-          this.logCustomMetric('memory_total_heap', memoryInfo.totalJSHeapSize / 1024 / 1024, 'MB');
-          this.logCustomMetric('memory_heap_limit', memoryInfo.jsHeapSizeLimit / 1024 / 1024, 'MB');
+          this.logCustomMetric(
+            'memory_used_heap',
+            memoryInfo.usedJSHeapSize / 1024 / 1024,
+            'MB',
+          );
+          this.logCustomMetric(
+            'memory_total_heap',
+            memoryInfo.totalJSHeapSize / 1024 / 1024,
+            'MB',
+          );
+          this.logCustomMetric(
+            'memory_heap_limit',
+            memoryInfo.jsHeapSizeLimit / 1024 / 1024,
+            'MB',
+          );
         }
       } catch (error) {
         console.warn('Memory tracking not available:', error);
@@ -261,7 +285,8 @@ export default PerformanceMonitoringService.getInstance();
 
 // Convenience hooks and utilities
 export const usePerformanceTrace = (traceName: string) => {
-  const startTrace = () => PerformanceMonitoringService.getInstance().startTrace(traceName);
+  const startTrace = () =>
+    PerformanceMonitoringService.getInstance().startTrace(traceName);
   const stopTrace = (attributes?: Record<string, string>) =>
     PerformanceMonitoringService.getInstance().stopTrace(traceName, attributes);
 

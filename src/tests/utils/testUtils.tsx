@@ -57,7 +57,7 @@ const AllProviders: React.FC<AllProvidersProps> = ({
   const store = createMockStore(initialState);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={testStyles.container}>
       <SafeAreaProvider>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
@@ -482,7 +482,11 @@ export const TestHelpers = {
   },
 
   // Network mocking
-  mockNetworkResponse: (url: string, response: Record<string, unknown>, delay = 0) => {
+  mockNetworkResponse: (
+    url: string,
+    response: Record<string, unknown>,
+    delay = 0,
+  ) => {
     const originalFetch = global.fetch;
     global.fetch = jest.fn(requestUrl => {
       if (requestUrl === url) {
@@ -533,36 +537,40 @@ expect.extend({
     const checks = TestHelpers.checkAccessibility(received);
     const pass = checks.hasAccessibilityLabel && checks.isAccessible;
 
-    if (pass) {
-      return {
-        message: () => `Expected element not to be accessible`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () =>
-          `Expected element to be accessible (missing accessibility label or not accessible)`,
-        pass: false,
-      };
-    }
+    return pass
+      ? {
+          message: () => `Expected element not to be accessible`,
+          pass: true,
+        }
+      : {
+          message: () =>
+            `Expected element to be accessible (missing accessibility label or not accessible)`,
+          pass: false,
+        };
   },
 
   toHavePerformanceWithin(received: number, expected: number) {
     const pass = received <= expected;
 
-    if (pass) {
-      return {
-        message: () => `Expected render time ${received}ms to be greater than ${expected}ms`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () => `Expected render time ${received}ms to be within ${expected}ms`,
-        pass: false,
-      };
-    }
+    return pass
+      ? {
+          message: () =>
+            `Expected render time ${received}ms to be greater than ${expected}ms`,
+          pass: true,
+        }
+      : {
+          message: () =>
+            `Expected render time ${received}ms to be within ${expected}ms`,
+          pass: false,
+        };
   },
 });
+
+const testStyles = {
+  container: {
+    flex: 1,
+  },
+};
 
 // Export everything
 export * from '@testing-library/react-native';

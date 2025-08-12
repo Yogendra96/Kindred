@@ -1,0 +1,242 @@
+# Maestro E2E Test: Carbon Tracking Complete User Flow
+# Tests the end-to-end carbon tracking functionality
+
+appId: com.kindred.carbontracker
+
+---
+
+# Test: Complete Carbon Tracking Flow
+- launchApp:
+    clearState: true
+
+# Initial Login
+- assertVisible: "Welcome to Kindred"
+- tapOn: "email-input"
+- inputText: "test@example.com"
+- tapOn: "password-input"
+- inputText: "password123"
+- tapOn: "Login"
+
+# Verify successful login
+- assertVisible: "Carbon Tracker"
+- assertVisible: "Track Your Carbon Impact"
+
+# Test Transportation Category
+- tapOn: "Transportation"
+- assertVisible: "Transportation Details"
+- tapOn: "Car"
+- inputText: "25"
+- tapOn: "km"
+- tapOn: "Calculate Impact"
+
+# Verify calculation result
+- assertVisible: "Carbon Footprint:"
+- assertVisible: "kg CO₂"
+- tapOn: "Save Activity"
+- assertVisible: "Activity saved successfully"
+
+# Navigate to Dashboard
+- tapOn: "Dashboard"
+- assertVisible: "Today's Impact"
+- assertVisible: "This Week"
+
+# Test Energy Category
+- tapOn: "Carbon Tracker"
+- tapOn: "Energy"
+- assertVisible: "Energy Usage"
+- tapOn: "Electricity"
+- inputText: "150"
+- tapOn: "kWh"
+- tapOn: "Calculate Impact"
+- tapOn: "Save Activity"
+
+# Test Food Category  
+- tapOn: "Carbon Tracker"
+- tapOn: "Food & Diet"
+- assertVisible: "Food Consumption"
+- tapOn: "Meat"
+- tapOn: "Beef"
+- inputText: "0.5"
+- tapOn: "kg"
+- tapOn: "Calculate Impact"
+- tapOn: "Save Activity"
+
+# Verify Dashboard Updates
+- tapOn: "Dashboard"
+- assertVisible: "Total Activities: 3"
+
+# Test History View
+- tapOn: "History"
+- assertVisible: "Recent Activities"
+- assertVisible: "Transportation"
+- assertVisible: "Energy"
+- assertVisible: "Food"
+
+# Test Analytics
+- tapOn: "Analytics"
+- assertVisible: "Carbon Trends"
+- assertVisible: "Weekly Progress"
+- swipeUp
+
+# Test Settings
+- tapOn: "Settings"
+- assertVisible: "Carbon Goals"
+- tapOn: "Carbon Goals"
+- inputText: "50"
+- tapOn: "Save Goal"
+- assertVisible: "Goal updated successfully"
+
+# Test Accessibility Features
+- tapOn: "Accessibility"
+- tapOn: "High Contrast"
+- assertVisible: "High contrast enabled"
+- tapOn: "Back"
+
+# Test Offline Functionality
+- runFlow: 
+    when:
+      visible: "Network Settings"
+    commands:
+      - tapOn: "Airplane Mode"
+      - tapOn: "Carbon Tracker"
+      - tapOn: "Transportation"
+      - inputText: "10"
+      - tapOn: "Save Offline"
+      - assertVisible: "Saved for sync"
+
+# Test Export Feature
+- tapOn: "Settings"
+- tapOn: "Export Data"
+- tapOn: "Export as CSV"
+- assertVisible: "Export completed"
+
+# Test Logout
+- tapOn: "Logout"
+- assertVisible: "Are you sure"
+- tapOn: "Logout"
+- assertVisible: "Welcome to Kindred"
+
+---
+
+# Test: Quick Actions Flow
+- launchApp
+- assertVisible: "Welcome to Kindred"
+- inputText: "test@example.com"
+- inputText: "password123"
+- tapOn: "Login"
+
+# Test Quick Commute
+- tapOn: "Add Commute"
+- assertVisible: "Quick Commute"
+- tapOn: "To Work"
+- assertVisible: "Commute saved"
+
+# Test Quick Meal Log
+- tapOn: "Log Meal"
+- assertVisible: "Quick Meal"
+- tapOn: "Lunch"
+- tapOn: "Vegetarian"
+- tapOn: "Save"
+- assertVisible: "Meal logged"
+
+---
+
+# Test: Voice Control Flow (iOS)
+- launchApp
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible: "Welcome to Kindred"
+      - voiceCommand: "Tap email input"
+      - voiceCommand: "Type test at example dot com"
+      - voiceCommand: "Tap password input"  
+      - voiceCommand: "Type password one two three"
+      - voiceCommand: "Tap login"
+      - assertVisible: "Carbon Tracker"
+
+---
+
+# Test: Accessibility Navigation
+- launchApp
+- enableAccessibility
+- assertVisible: "Welcome to Kindred"
+- accessibilityNavigate: "next"
+- accessibilityNavigate: "next"
+- accessibilityActivate
+- inputText: "test@example.com"
+- accessibilityNavigate: "next"
+- accessibilityActivate
+- inputText: "password123"
+- accessibilityNavigate: "next"
+- accessibilityActivate
+- assertVisible: "Carbon Tracker"
+- disableAccessibility
+
+---
+
+# Test: Performance Under Load
+- launchApp
+- assertVisible: "Welcome to Kindred"
+- inputText: "test@example.com"
+- inputText: "password123"
+- tapOn: "Login"
+
+# Rapid fire carbon calculations
+- repeat: 10
+  commands:
+    - tapOn: "Transportation"
+    - inputText: "${Math.random() * 50}"
+    - tapOn: "Calculate Impact"
+    - tapOn: "Save Activity"
+    - assertVisible: "Activity saved"
+
+# Verify app remains responsive
+- assertVisible: "Dashboard"
+- tapOn: "Dashboard"
+- assertVisible: "Total Activities"
+
+---
+
+# Test: Dark Mode
+- launchApp
+- inputText: "test@example.com"
+- inputText: "password123"
+- tapOn: "Login"
+- tapOn: "Settings"
+- tapOn: "Dark Mode"
+- assertVisible: "Dark mode enabled"
+# Verify dark theme is applied
+- assertVisible:
+    text: "Settings"
+    color: "#FFFFFF"
+
+---
+
+# Test: Biometric Authentication
+- launchApp
+- inputText: "test@example.com"
+- inputText: "password123"
+- tapOn: "Login"
+- tapOn: "Settings"
+- tapOn: "Biometric Login"
+- tapOn: "Enable"
+- assertVisible: "Biometric enabled"
+- tapOn: "Logout"
+- tapOn: "Logout"
+- assertVisible: "Use Face ID"
+- tapOn: "Use Face ID"
+- assertVisible: "Carbon Tracker"
+
+---
+
+# Test: Multi-language Support  
+- launchApp
+- tapOn: "Settings"
+- tapOn: "Language"
+- tapOn: "Español"
+- assertVisible: "Rastreador de Carbono"
+- tapOn: "Configuración"
+- tapOn: "Idioma" 
+- tapOn: "English"
+- assertVisible: "Carbon Tracker"

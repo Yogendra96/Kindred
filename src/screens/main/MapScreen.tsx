@@ -227,13 +227,21 @@ const MapScreen = () => {
     }
   }, [startLocation, userLocation, dispatch]);
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ) => {
     const R = 6371; // Earth's radius in km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c; // Distance in km
     return d * 0.621371; // Convert to miles
@@ -288,15 +296,23 @@ const MapScreen = () => {
       )}
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
+        <TouchableOpacity
+          style={styles.locationButton}
+          onPress={getCurrentLocation}
+        >
           <Text style={styles.buttonText}>Get Current Location</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.trackingButton, isTracking ? styles.trackingActiveButton : null]}
+          style={[
+            styles.trackingButton,
+            isTracking ? styles.trackingActiveButton : null,
+          ]}
           onPress={isTracking ? stopTrackingJourney : startTrackingJourney}
         >
-          <Text style={styles.buttonText}>{isTracking ? 'Stop Tracking' : 'Start Tracking'}</Text>
+          <Text style={styles.buttonText}>
+            {isTracking ? 'Stop Tracking' : 'Start Tracking'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -304,58 +320,58 @@ const MapScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  },
   buttonContainer: {
-    position: 'absolute',
     bottom: 20,
-    width: '100%',
-    paddingHorizontal: 20,
     gap: 10,
-  },
-  locationButton: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  trackingButton: {
-    backgroundColor: '#2ecc71',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  trackingActiveButton: {
-    backgroundColor: '#e74c3c',
+    paddingHorizontal: 20,
+    position: 'absolute',
+    width: '100%',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
+  centerContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  container: {
+    flex: 1,
+  },
   errorContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
     backgroundColor: 'rgba(231, 76, 60, 0.9)',
-    padding: 10,
     borderRadius: 8,
+    left: 20,
+    padding: 10,
+    position: 'absolute',
+    right: 20,
+    top: 20,
   },
   errorText: {
     color: '#fff',
-    textAlign: 'center',
     fontSize: 14,
+    textAlign: 'center',
+  },
+  locationButton: {
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    padding: 15,
+  },
+  map: {
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
+  },
+  trackingActiveButton: {
+    backgroundColor: '#e74c3c',
+  },
+  trackingButton: {
+    alignItems: 'center',
+    backgroundColor: '#2ecc71',
+    borderRadius: 8,
+    padding: 15,
   },
 });
 

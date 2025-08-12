@@ -26,7 +26,13 @@ export interface AttestationResult {
 }
 
 export interface IntegrityCheck {
-  readonly type: 'root' | 'debug' | 'hook' | 'emulator' | 'tamper' | 'signature';
+  readonly type:
+    | 'root'
+    | 'debug'
+    | 'hook'
+    | 'emulator'
+    | 'tamper'
+    | 'signature';
   readonly status: 'pass' | 'fail' | 'warning';
   readonly description: string;
   readonly evidence?: string;
@@ -123,7 +129,9 @@ class DeviceAttestationService {
   /**
    * Perform comprehensive device attestation
    */
-  public async performDeviceAttestation(forceRefresh = false): Promise<AttestationResult> {
+  public async performDeviceAttestation(
+    forceRefresh = false,
+  ): Promise<AttestationResult> {
     const startTime = Date.now();
 
     try {
@@ -142,7 +150,10 @@ class DeviceAttestationService {
       const riskFactors = await this.analyzeRiskFactors(integrityChecks);
 
       // Calculate confidence level
-      const confidence = this.calculateConfidenceLevel(integrityChecks, riskFactors);
+      const confidence = this.calculateConfidenceLevel(
+        integrityChecks,
+        riskFactors,
+      );
 
       // Determine overall validity
       const isValid = this.determineValidity(integrityChecks, riskFactors);
@@ -202,7 +213,9 @@ class DeviceAttestationService {
   /**
    * Verify device identity against stored baseline
    */
-  public async verifyDeviceIdentity(expectedIdentity: DeviceIdentity): Promise<boolean> {
+  public async verifyDeviceIdentity(
+    expectedIdentity: DeviceIdentity,
+  ): Promise<boolean> {
     try {
       const currentIdentity = await this.generateDeviceIdentity();
 
@@ -210,12 +223,17 @@ class DeviceAttestationService {
       const identityMatch =
         currentIdentity.deviceId === expectedIdentity.deviceId &&
         currentIdentity.fingerprint === expectedIdentity.fingerprint &&
-        currentIdentity.hardwareSignature === expectedIdentity.hardwareSignature;
+        currentIdentity.hardwareSignature ===
+          expectedIdentity.hardwareSignature;
 
       if (!identityMatch) {
         loggingService.warn('Device identity verification failed', {
-          expectedDeviceId: await advancedEncryptionService.hashData(expectedIdentity.deviceId),
-          currentDeviceId: await advancedEncryptionService.hashData(currentIdentity.deviceId),
+          expectedDeviceId: await advancedEncryptionService.hashData(
+            expectedIdentity.deviceId,
+          ),
+          currentDeviceId: await advancedEncryptionService.hashData(
+            currentIdentity.deviceId,
+          ),
           expectedFingerprint: expectedIdentity.fingerprint.substring(0, 8),
           currentFingerprint: currentIdentity.fingerprint.substring(0, 8),
         });
@@ -233,7 +251,10 @@ class DeviceAttestationService {
   /**
    * Record suspicious behavior for analysis
    */
-  public recordSuspiciousActivity(activity: string, severity: 'low' | 'medium' | 'high'): void {
+  public recordSuspiciousActivity(
+    activity: string,
+    severity: 'low' | 'medium' | 'high',
+  ): void {
     this.suspiciousActivityCount++;
 
     const currentCount = this.behaviorMetrics.get(activity) || 0;
@@ -297,7 +318,9 @@ class DeviceAttestationService {
    * Get cached attestation if valid
    */
   public getCachedAttestation(): AttestationResult | null {
-    return this.isCacheValid() ? (this.cachedAttestation as AttestationResult) : null;
+    return this.isCacheValid()
+      ? (this.cachedAttestation as AttestationResult)
+      : null;
   }
 
   /**
@@ -327,12 +350,18 @@ class DeviceAttestationService {
       ]);
 
       const deviceId = components[0];
-      const fingerprint = await advancedEncryptionService.hashData(components.join('|'));
+      const fingerprint = await advancedEncryptionService.hashData(
+        components.join('|'),
+      );
       const hardwareSignature = await advancedEncryptionService.hashData(
         components.slice(2, 8).join('|'),
       );
-      const osSignature = await advancedEncryptionService.hashData(components[4]);
-      const appSignature = await advancedEncryptionService.hashData(components[5] + components[6]);
+      const osSignature = await advancedEncryptionService.hashData(
+        components[4],
+      );
+      const appSignature = await advancedEncryptionService.hashData(
+        components[5] + components[6],
+      );
 
       return {
         deviceId,
@@ -589,7 +618,13 @@ class DeviceAttestationService {
   }
 
   private checkHooks(): IntegrityCheck {
-    const suspiciousGlobals = ['frida', 'xposed', 'substrate', 'cydia', '_orig'];
+    const suspiciousGlobals = [
+      'frida',
+      'xposed',
+      'substrate',
+      'cydia',
+      '_orig',
+    ];
 
     const detectedHooks = suspiciousGlobals.filter(
       global => typeof (global as any)[global] !== 'undefined',
@@ -645,7 +680,9 @@ class DeviceAttestationService {
     }
   }
 
-  private async analyzeRiskFactors(integrityChecks: IntegrityCheck[]): Promise<RiskFactor[]> {
+  private async analyzeRiskFactors(
+    integrityChecks: IntegrityCheck[],
+  ): Promise<RiskFactor[]> {
     const riskFactors: RiskFactor[] = [];
 
     // Analyze failed integrity checks
@@ -725,8 +762,12 @@ class DeviceAttestationService {
     integrityChecks: IntegrityCheck[],
     riskFactors: RiskFactor[],
   ): 'low' | 'medium' | 'high' {
-    const failedChecks = integrityChecks.filter(c => c.status === 'fail').length;
-    const criticalRisks = riskFactors.filter(r => r.severity === 'critical').length;
+    const failedChecks = integrityChecks.filter(
+      c => c.status === 'fail',
+    ).length;
+    const criticalRisks = riskFactors.filter(
+      r => r.severity === 'critical',
+    ).length;
     const highRisks = riskFactors.filter(r => r.severity === 'high').length;
 
     if (failedChecks > 2 || criticalRisks > 0) {
@@ -740,17 +781,24 @@ class DeviceAttestationService {
     return 'high';
   }
 
-  private determineValidity(integrityChecks: IntegrityCheck[], riskFactors: RiskFactor[]): boolean {
+  private determineValidity(
+    integrityChecks: IntegrityCheck[],
+    riskFactors: RiskFactor[],
+  ): boolean {
     const criticalFailures = integrityChecks.filter(
       c => c.status === 'fail' && (c.type === 'root' || c.type === 'hook'),
     ).length;
 
-    const criticalRisks = riskFactors.filter(r => r.severity === 'critical').length;
+    const criticalRisks = riskFactors.filter(
+      r => r.severity === 'critical',
+    ).length;
 
     return criticalFailures === 0 && criticalRisks === 0;
   }
 
-  private mapCheckToSeverity(checkType: IntegrityCheck['type']): RiskFactor['severity'] {
+  private mapCheckToSeverity(
+    checkType: IntegrityCheck['type'],
+  ): RiskFactor['severity'] {
     switch (checkType) {
       case 'root':
       case 'hook':
@@ -847,17 +895,27 @@ class DeviceAttestationService {
     this.lastAttestationTime = Date.now();
   }
 
-  private async logAttestationResult(attestation: AttestationResult): Promise<void> {
+  private async logAttestationResult(
+    attestation: AttestationResult,
+  ): Promise<void> {
     const logLevel = attestation.isValid ? 'info' : 'warn';
 
     loggingService[logLevel]('Device attestation completed', {
       isValid: attestation.isValid,
       confidence: attestation.confidence,
       deviceFingerprint: attestation.deviceIdentity.fingerprint.substring(0, 8),
-      integrityChecksPassed: attestation.integrityChecks.filter(c => c.status === 'pass').length,
-      integrityChecksFailed: attestation.integrityChecks.filter(c => c.status === 'fail').length,
-      riskFactorsCritical: attestation.riskFactors.filter(r => r.severity === 'critical').length,
-      riskFactorsHigh: attestation.riskFactors.filter(r => r.severity === 'high').length,
+      integrityChecksPassed: attestation.integrityChecks.filter(
+        c => c.status === 'pass',
+      ).length,
+      integrityChecksFailed: attestation.integrityChecks.filter(
+        c => c.status === 'fail',
+      ).length,
+      riskFactorsCritical: attestation.riskFactors.filter(
+        r => r.severity === 'critical',
+      ).length,
+      riskFactorsHigh: attestation.riskFactors.filter(
+        r => r.severity === 'high',
+      ).length,
       attestationTime: attestation.attestationTime,
     });
 
@@ -870,14 +928,16 @@ class DeviceAttestationService {
         fingerprint: attestation.deviceIdentity.fingerprint,
       });
 
-      const encrypted = await advancedEncryptionService.encryptData(attestationData);
+      const encrypted =
+        await advancedEncryptionService.encryptData(attestationData);
 
       await Keychain.setInternetCredentials(
         'device_attestation',
         'system',
         JSON.stringify(encrypted),
         {
-          accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+          accessControl:
+            Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
         },
       );
     } catch (error) {

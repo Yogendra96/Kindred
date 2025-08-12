@@ -4,12 +4,27 @@
  */
 import React, { useCallback, useRef, useState } from 'react';
 
-import type { AccessibilityRole, AccessibilityState, TextStyle, ViewStyle } from 'react-native';
-import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type {
+  AccessibilityRole,
+  AccessibilityState,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
+import {
+  Animated,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { hapticFeedbackService } from '../../services/HapticFeedbackService';
 import { useTheme } from '../../theme/ThemeProvider';
-import { accessibilityService, AccessibilityUtils } from '../../utils/accessibility';
+import {
+  accessibilityService,
+  AccessibilityUtils,
+} from '../../utils/accessibility';
 
 export interface AccessibleButtonProps {
   // Content
@@ -83,7 +98,10 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
   // Use legacy props if new props not provided
   const finalAccessibilityLabel =
-    accessibilityLabel || label || title || (typeof children === 'string' ? children : 'Button');
+    accessibilityLabel ||
+    label ||
+    title ||
+    (typeof children === 'string' ? children : 'Button');
   const finalAccessibilityHint = accessibilityHint || hint;
 
   // Handle press with accessibility features
@@ -97,7 +115,9 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
     // Announce button press for screen readers
     if (announcePress && finalAccessibilityLabel) {
-      accessibilityService.announceForAccessibility(`${finalAccessibilityLabel} pressed`);
+      accessibilityService.announceForAccessibility(
+        `${finalAccessibilityLabel} pressed`,
+      );
     }
 
     // Scale animation for visual feedback
@@ -348,7 +368,12 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   };
 
   return (
-    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && styles.fullWidth]}>
+    <Animated.View
+      style={[
+        { transform: [{ scale: scaleAnim }] },
+        fullWidth && styles.fullWidth,
+      ]}
+    >
       <TouchableOpacity
         {...accessibilityProps}
         style={[
@@ -375,7 +400,11 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
         onPressOut={handlePressOut}
         disabled={disabled || loading}
         activeOpacity={0.8}
-        hitSlop={minimumTouchTarget ? { top: 10, bottom: 10, left: 10, right: 10 } : undefined}
+        hitSlop={
+          minimumTouchTarget
+            ? { top: 10, bottom: 10, left: 10, right: 10 }
+            : undefined
+        }
       >
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -401,11 +430,11 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
+    alignItems: 'center',
     borderRadius: 8,
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     flexDirection: 'row',
+    justifyContent: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -418,56 +447,56 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  fullWidth: {
-    width: '100%',
-  },
-  focused: {
-    borderWidth: 3,
-    borderColor: '#4A90E2',
-  },
-  pressed: {
-    opacity: 0.8,
-  },
   disabled: {
     opacity: 0.6,
   },
-  loading: {
-    opacity: 0.8,
+  focused: {
+    borderColor: '#4A90E2',
+    borderWidth: 3,
+  },
+  fullWidth: {
+    width: '100%',
   },
   horizontalContent: {
+    alignItems: 'center',
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  verticalContent: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textContainer: {
-    alignItems: 'center',
     justifyContent: 'center',
   },
   iconContainer: {
     marginHorizontal: 4,
     marginVertical: 2,
   },
-  titleText: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  subtitleText: {
-    fontWeight: '400',
-    textAlign: 'center',
-    marginTop: 2,
+  loading: {
+    opacity: 0.8,
   },
   loadingContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
   },
   loadingText: {
     fontWeight: '500',
+  },
+  pressed: {
+    opacity: 0.8,
+  },
+  subtitleText: {
+    fontWeight: '400',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  verticalContent: {
+    alignItems: 'center',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
 });
 

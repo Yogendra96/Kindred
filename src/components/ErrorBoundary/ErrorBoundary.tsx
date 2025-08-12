@@ -47,7 +47,12 @@ export interface ErrorDetails {
 
 export interface ErrorBreadcrumb {
   timestamp: number;
-  category: 'navigation' | 'user_action' | 'api_call' | 'state_change' | 'lifecycle';
+  category:
+    | 'navigation'
+    | 'user_action'
+    | 'api_call'
+    | 'state_change'
+    | 'lifecycle';
   message: string;
   level: 'info' | 'warning' | 'error';
   data?: Record<string, unknown>;
@@ -72,8 +77,16 @@ export interface ErrorBoundaryState {
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: (error: Error, errorInfo: ErrorInfo, retry: () => void) => ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo, errorDetails: ErrorDetails) => void;
+  fallback?: (
+    error: Error,
+    errorInfo: ErrorInfo,
+    retry: () => void,
+  ) => ReactNode;
+  onError?: (
+    error: Error,
+    errorInfo: ErrorInfo,
+    errorDetails: ErrorDetails,
+  ) => void;
   enableReporting?: boolean;
   enableRetry?: boolean;
   maxRetries?: number;
@@ -180,7 +193,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   componentWillUnmount() {
     // Clear any pending retry timeouts
-    this.retryTimeouts.forEach(timeout => clearTimeout(timeout));
+    for (const timeout of this.retryTimeouts) clearTimeout(timeout);
   }
 
   private createErrorDetails(error: Error, errorInfo: ErrorInfo): ErrorDetails {
@@ -246,7 +259,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
-  private async sendToReportingService(errorDetails: ErrorDetails): Promise<void> {
+  private async sendToReportingService(
+    errorDetails: ErrorDetails,
+  ): Promise<void> {
     // This would integrate with your crash reporting service
     // Example: Crashlytics, Sentry, Bugsnag, etc.
     try {
@@ -376,22 +391,31 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     };
 
     // This could open an email client, feedback form, or support chat
-    Alert.alert('Report Issue', 'Would you like to report this issue to help us improve the app?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Report',
-        onPress: () => {
-          // Implement your reporting mechanism here
-          console.warn('User reported issue:', reportData);
-          this.hapticService.triggerSuccess();
+    Alert.alert(
+      'Report Issue',
+      'Would you like to report this issue to help us improve the app?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Report',
+          onPress: () => {
+            // Implement your reporting mechanism here
+            console.warn('User reported issue:', reportData);
+            this.hapticService.triggerSuccess();
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   private renderErrorFallback(): ReactNode {
-    const { error, errorInfo, showDetails, retryCount, isReporting } = this.state;
-    const { enableRetry = true, maxRetries = 3, level = 'component' } = this.props;
+    const { error, errorInfo, showDetails, retryCount, isReporting } =
+      this.state;
+    const {
+      enableRetry = true,
+      maxRetries = 3,
+      level = 'component',
+    } = this.props;
 
     if (!error || !errorInfo) return null;
 
@@ -452,7 +476,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               {errorInfo.componentStack && (
                 <>
                   <Text style={styles.detailsTitle}>Component Stack:</Text>
-                  <Text style={styles.stackText}>{errorInfo.componentStack}</Text>
+                  <Text style={styles.stackText}>
+                    {errorInfo.componentStack}
+                  </Text>
                 </>
               )}
             </View>
@@ -467,7 +493,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 activeOpacity={0.8}
               >
                 <Text style={styles.retryButtonText}>
-                  {retryCount > 0 ? `Retry (${retryCount}/${maxRetries})` : 'Try Again'}
+                  {retryCount > 0
+                    ? `Retry (${retryCount}/${maxRetries})`
+                    : 'Try Again'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -516,97 +544,66 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
+  button: {
     alignItems: 'center',
-    padding: 20,
-    minHeight: height * 0.8,
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
   },
-  iconContainer: {
-    marginBottom: 20,
+  buttonContainer: {
+    gap: 12,
+    maxWidth: 300,
+    width: '100%',
   },
-  errorIcon: {
-    fontSize: 64,
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#dc3545',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  message: {
-    fontSize: 16,
-    color: '#6c757d',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-    paddingHorizontal: 20,
+  container: {
+    backgroundColor: '#f8f9fa',
+    flex: 1,
   },
   detailsButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
     marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   detailsButtonText: {
-    fontSize: 14,
     color: '#007bff',
+    fontSize: 14,
     textDecorationLine: 'underline',
   },
   detailsContainer: {
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
-    padding: 16,
     marginBottom: 24,
-    width: '100%',
     maxWidth: width - 40,
+    padding: 16,
+    width: '100%',
   },
   detailsTitle: {
+    color: '#495057',
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#495057',
     marginBottom: 8,
     marginTop: 12,
   },
+  errorIcon: {
+    fontSize: 64,
+    textAlign: 'center',
+  },
   errorText: {
-    fontSize: 12,
     color: '#dc3545',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 12,
     marginBottom: 8,
   },
-  stackText: {
-    fontSize: 10,
+  iconContainer: {
+    marginBottom: 20,
+  },
+  message: {
     color: '#6c757d',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    lineHeight: 14,
-  },
-  buttonContainer: {
-    width: '100%',
-    maxWidth: 300,
-    gap: 12,
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  retryButton: {
-    backgroundColor: '#28a745',
-  },
-  retryButtonText: {
-    color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    lineHeight: 24,
+    marginBottom: 24,
+    paddingHorizontal: 20,
+    textAlign: 'center',
   },
   reportButton: {
     backgroundColor: '#6c757d',
@@ -616,11 +613,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  retryButton: {
+    backgroundColor: '#28a745',
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   retryInfo: {
-    fontSize: 12,
     color: '#6c757d',
-    textAlign: 'center',
+    fontSize: 12,
     marginTop: 16,
+    textAlign: 'center',
+  },
+  scrollContent: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    minHeight: height * 0.8,
+    padding: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  stackText: {
+    color: '#6c757d',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 10,
+    lineHeight: 14,
+  },
+  title: {
+    color: '#dc3545',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
   },
 });
 

@@ -37,7 +37,15 @@ export interface ChartMetadata {
 }
 
 export interface ChartConfig {
-  type: 'line' | 'bar' | 'pie' | 'doughnut' | 'area' | 'scatter' | 'heatmap' | 'treemap';
+  type:
+    | 'line'
+    | 'bar'
+    | 'pie'
+    | 'doughnut'
+    | 'area'
+    | 'scatter'
+    | 'heatmap'
+    | 'treemap';
   responsive: boolean;
   maintainAspectRatio: boolean;
   plugins: {
@@ -76,9 +84,21 @@ export interface TooltipConfig {
   cornerRadius: number;
   displayColors: boolean;
   callbacks?: {
-    title?: (context: any) => string;
-    label?: (context: any) => string;
-    footer?: (context: any) => string;
+    title?: (context: {
+      dataIndex?: number;
+      dataset?: unknown;
+      chart?: unknown;
+    }) => string;
+    label?: (context: {
+      dataIndex?: number;
+      dataset?: unknown;
+      chart?: unknown;
+    }) => string;
+    footer?: (context: {
+      dataIndex?: number;
+      dataset?: unknown;
+      chart?: unknown;
+    }) => string;
   };
 }
 
@@ -103,7 +123,18 @@ export interface SubtitleConfig {
 export interface FontConfig {
   family: string;
   size: number;
-  weight: 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+  weight:
+    | 'normal'
+    | 'bold'
+    | '100'
+    | '200'
+    | '300'
+    | '400'
+    | '500'
+    | '600'
+    | '700'
+    | '800'
+    | '900';
   style: 'normal' | 'italic';
 }
 
@@ -133,7 +164,7 @@ export interface AxisConfig {
     font: FontConfig;
     maxTicksLimit?: number;
     stepSize?: number;
-    callback?: (value: any, index: number, values: any[]) => string;
+    callback?: (value: unknown, index: number, values: unknown[]) => string;
   };
   min?: number;
   max?: number;
@@ -258,7 +289,7 @@ export interface DashboardWidget {
   };
   visualization?: CarbonVisualization;
   config: WidgetConfig;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface WidgetConfig {
@@ -275,13 +306,13 @@ export interface DashboardFilter {
   name: string;
   type: 'date' | 'category' | 'location' | 'user' | 'custom';
   options: FilterOption[];
-  defaultValue: any;
+  defaultValue: unknown;
   multiple: boolean;
 }
 
 export interface FilterOption {
   label: string;
-  value: any;
+  value: unknown;
   color?: string;
   icon?: string;
 }
@@ -487,11 +518,11 @@ class CarbonImpactVisualizationService {
   }
 
   getTheme(themeName?: string): VisualizationTheme | null {
-    return this.themes.get(themeName || this.currentTheme) || null;
+    return this.themes.get(themeName ?? this.currentTheme) ?? null;
   }
 
   getColorScheme(schemeName: string): ColorScheme | null {
-    return this.colorSchemes.get(schemeName) || null;
+    return this.colorSchemes.get(schemeName) ?? null;
   }
 
   // Emissions overview visualization
@@ -519,7 +550,7 @@ class CarbonImpactVisualizationService {
 
     // Fetch emissions data
     const emissionsData = await this.carbonAPI.getEmissionsByCategory(
-      categories || ['transport', 'energy', 'food', 'consumption'],
+      categories ?? ['transport', 'energy', 'food', 'consumption'],
       startDate,
       endDate,
     );
@@ -540,7 +571,10 @@ class CarbonImpactVisualizationService {
         subtitle: `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`,
         unit: 'kg CO₂',
         period,
-        totalValue: Object.values(emissionsData).reduce((sum, val) => sum + val, 0),
+        totalValue: Object.values(emissionsData).reduce(
+          (sum, val) => sum + val,
+          0,
+        ),
         averageValue:
           Object.values(emissionsData).reduce((sum, val) => sum + val, 0) /
           Object.values(emissionsData).length,
@@ -621,10 +655,16 @@ class CarbonImpactVisualizationService {
         title: `${this.getMetricLabel(metric)} Trend - ${period}`,
         subtitle: `${granularity} breakdown`,
         unit:
-          metric === 'emissions' ? 'kg CO₂' : metric === 'reductions' ? 'kg CO₂ saved' : 'credits',
+          metric === 'emissions'
+            ? 'kg CO₂'
+            : metric === 'reductions'
+              ? 'kg CO₂ saved'
+              : 'credits',
         period,
         totalValue: trendData.values.reduce((sum, val) => sum + val, 0),
-        averageValue: trendData.values.reduce((sum, val) => sum + val, 0) / trendData.values.length,
+        averageValue:
+          trendData.values.reduce((sum, val) => sum + val, 0) /
+          trendData.values.length,
         trend: this.calculateTrend(trendData.values),
         trendPercentage: this.calculateTrendPercentage(trendData.values),
         insights: this.generateTrendInsights(trendData, metric),
@@ -689,14 +729,19 @@ class CarbonImpactVisualizationService {
 
     const progress = (goalData.current / goalData.target) * 100;
     const timeProgress =
-      ((Date.now() - goalData.startDate) / (goalData.deadline - goalData.startDate)) * 100;
+      ((Date.now() - goalData.startDate) /
+        (goalData.deadline - goalData.startDate)) *
+      100;
 
     const chartData: ChartData = {
       labels: ['Achieved', 'Remaining'],
       datasets: [
         {
           label: 'Goal Progress',
-          data: [goalData.current, Math.max(0, goalData.target - goalData.current)],
+          data: [
+            goalData.current,
+            Math.max(0, goalData.target - goalData.current),
+          ],
           backgroundColor: [
             this.getColorScheme('default')!.semantic.success,
             this.getColorScheme('default')!.neutral[3],
@@ -719,7 +764,9 @@ class CarbonImpactVisualizationService {
         trend: progress > timeProgress ? 'up' : 'down',
         trendPercentage: Math.abs(progress - timeProgress),
         insights: [
-          progress > timeProgress ? "You're ahead of schedule!" : "You're behind schedule",
+          progress > timeProgress
+            ? "You're ahead of schedule!"
+            : "You're behind schedule",
           `${Math.ceil((goalData.deadline - Date.now()) / (24 * 60 * 60 * 1000))} days remaining`,
           `Need ${(goalData.target - goalData.current).toFixed(1)} more to reach goal`,
         ],
@@ -737,7 +784,11 @@ class CarbonImpactVisualizationService {
       responsive: true,
     });
 
-    const insights = this.generateGoalInsights(goalData, progress, timeProgress);
+    const insights = this.generateGoalInsights(
+      goalData,
+      progress,
+      timeProgress,
+    );
     const actions = this.generateGoalActions(goalData, goalType);
 
     return {
@@ -767,8 +818,11 @@ class CarbonImpactVisualizationService {
 
   // Comparison visualization
   async createComparison(
-    comparisonType: 'user-vs-average' | 'period-vs-period' | 'category-comparison',
-    data: any,
+    comparisonType:
+      | 'user-vs-average'
+      | 'period-vs-period'
+      | 'category-comparison',
+    data: Record<string, unknown>,
   ): Promise<CarbonVisualization> {
     let chartData: ChartData;
     let title: string;
@@ -778,7 +832,8 @@ class CarbonImpactVisualizationService {
       case 'user-vs-average':
         chartData = this.createUserVsAverageChart(data);
         title = 'Your Emissions vs. Average';
-        description = 'Compare your carbon footprint with global and regional averages';
+        description =
+          'Compare your carbon footprint with global and regional averages';
         break;
       case 'period-vs-period':
         chartData = this.createPeriodComparisonChart(data);
@@ -921,7 +976,7 @@ class CarbonImpactVisualizationService {
   }
 
   getDashboard(dashboardId: string): CarbonDashboard | null {
-    return this.dashboards.get(dashboardId) || null;
+    return this.dashboards.get(dashboardId) ?? null;
   }
 
   async updateDashboard(
@@ -988,7 +1043,7 @@ class CarbonImpactVisualizationService {
         },
         title: {
           display: !!options.title,
-          text: options.title || '',
+          text: options.title ?? '',
           position: 'top',
           align: 'center',
           font: {
@@ -1008,7 +1063,7 @@ class CarbonImpactVisualizationService {
               position: 'bottom',
               title: {
                 display: !!options.scales.x?.title,
-                text: options.scales.x?.title || '',
+                text: options.scales.x?.title ?? '',
                 font: theme.fonts.secondary,
                 color: theme.colors.neutral[6],
               },
@@ -1030,7 +1085,7 @@ class CarbonImpactVisualizationService {
               position: 'left',
               title: {
                 display: !!options.scales.y?.title,
-                text: options.scales.y?.title || '',
+                text: options.scales.y?.title ?? '',
                 font: theme.fonts.secondary,
                 color: theme.colors.neutral[6],
               },
@@ -1099,14 +1154,14 @@ class CarbonImpactVisualizationService {
         month: 30,
         quarter: 90,
         year: 365,
-      }[period] || 30;
+      }[period] ?? 30;
 
     const granularityDays =
       {
         daily: 1,
         weekly: 7,
         monthly: 30,
-      }[granularity] || 1;
+      }[granularity] ?? 1;
 
     return Math.ceil(periodDays / granularityDays);
   }
@@ -1149,7 +1204,7 @@ class CarbonImpactVisualizationService {
   }
 
   // Chart data creation helpers
-  private createUserVsAverageChart(data: any): ChartData {
+  private createUserVsAverageChart(data: Record<string, unknown>): ChartData {
     return {
       labels: ['Transport', 'Energy', 'Food', 'Consumption'],
       datasets: [
@@ -1167,7 +1222,9 @@ class CarbonImpactVisualizationService {
     };
   }
 
-  private createPeriodComparisonChart(data: any): ChartData {
+  private createPeriodComparisonChart(
+    data: Record<string, unknown>,
+  ): ChartData {
     return {
       labels: ['Transport', 'Energy', 'Food', 'Consumption'],
       datasets: [
@@ -1185,7 +1242,9 @@ class CarbonImpactVisualizationService {
     };
   }
 
-  private createCategoryComparisonChart(data: any): ChartData {
+  private createCategoryComparisonChart(
+    data: Record<string, unknown>,
+  ): ChartData {
     return {
       labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
       datasets: [
@@ -1209,7 +1268,10 @@ class CarbonImpactVisualizationService {
   }
 
   // Insight and action generation
-  private generateInsights(data: any, type: string): VisualizationInsight[] {
+  private generateInsights(
+    data: Record<string, unknown>,
+    type: string,
+  ): VisualizationInsight[] {
     // This would use AI/ML to generate insights based on data patterns
     return [
       {
@@ -1232,7 +1294,10 @@ class CarbonImpactVisualizationService {
     ];
   }
 
-  private generateActions(data: any, type: string): VisualizationAction[] {
+  private generateActions(
+    data: Record<string, unknown>,
+    type: string,
+  ): VisualizationAction[] {
     return [
       {
         id: 'action-1',
@@ -1258,7 +1323,7 @@ class CarbonImpactVisualizationService {
   }
 
   private generateGoalInsights(
-    goalData: any,
+    goalData: Record<string, unknown>,
     progress: number,
     timeProgress: number,
   ): VisualizationInsight[] {
@@ -1291,7 +1356,10 @@ class CarbonImpactVisualizationService {
     return insights;
   }
 
-  private generateGoalActions(goalData: any, goalType: string): VisualizationAction[] {
+  private generateGoalActions(
+    goalData: Record<string, unknown>,
+    goalType: string,
+  ): VisualizationAction[] {
     const actions: VisualizationAction[] = [];
 
     if (goalType === 'reduction') {
@@ -1310,16 +1378,23 @@ class CarbonImpactVisualizationService {
     return actions;
   }
 
-  private generateTrendInsights(trendData: any, metric: string): string[] {
+  private generateTrendInsights(
+    trendData: Record<string, unknown>,
+    metric: string,
+  ): string[] {
     return [
       `${metric} has been trending ${this.calculateTrend(trendData.values)}`,
       `Average ${metric} per day: ${(
-        trendData.values.reduce((a: number, b: number) => a + b, 0) / trendData.values.length
+        trendData.values.reduce((a: number, b: number) => a + b, 0) /
+        trendData.values.length
       ).toFixed(1)}`,
     ];
   }
 
-  private generateTrendRecommendations(trendData: any, metric: string): string[] {
+  private generateTrendRecommendations(
+    trendData: Record<string, unknown>,
+    metric: string,
+  ): string[] {
     return [
       'Continue monitoring trends for better insights',
       'Set up alerts for significant changes',
@@ -1327,7 +1402,10 @@ class CarbonImpactVisualizationService {
     ];
   }
 
-  private generateComparisonInsights(data: any, comparisonType: string): VisualizationInsight[] {
+  private generateComparisonInsights(
+    data: Record<string, unknown>,
+    comparisonType: string,
+  ): VisualizationInsight[] {
     return [
       {
         type: 'neutral',
@@ -1338,7 +1416,10 @@ class CarbonImpactVisualizationService {
     ];
   }
 
-  private generateComparisonActions(data: any, comparisonType: string): VisualizationAction[] {
+  private generateComparisonActions(
+    data: Record<string, unknown>,
+    comparisonType: string,
+  ): VisualizationAction[] {
     return [
       {
         id: 'comparison-action-1',
@@ -1360,7 +1441,7 @@ class CarbonImpactVisualizationService {
       reductions: 'CO₂ Reductions',
       offsets: 'Carbon Offsets',
     };
-    return labels[metric as keyof typeof labels] || metric;
+    return labels[metric as keyof typeof labels] ?? metric;
   }
 
   private getGoalTypeLabel(goalType: string): string {

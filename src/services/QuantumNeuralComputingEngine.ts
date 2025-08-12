@@ -257,7 +257,9 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
     this.quantumAdvantage = this.initializeQuantumAdvantage();
   }
 
-  async predictCarbonFootprintQuantum(input: CarbonInputData): Promise<QuantumCarbonPrediction> {
+  async predictCarbonFootprintQuantum(
+    input: CarbonInputData,
+  ): Promise<QuantumCarbonPrediction> {
     const startTime = performance.now();
 
     try {
@@ -265,20 +267,28 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
       const quantumStates = await this.encodeToQuantumStates(input);
 
       // Run quantum neural network inference
-      const quantumResult = await this.neuralQuantumNetworks.inference.predict(quantumStates);
+      const quantumResult =
+        await this.neuralQuantumNetworks.inference.predict(quantumStates);
 
       // Apply quantum error correction
-      const correctedResult = await this.quantumCircuits.errorCorrection.correct(quantumResult);
+      const correctedResult =
+        await this.quantumCircuits.errorCorrection.correct(quantumResult);
 
       // Decode quantum result to classical prediction
       const prediction = await this.decodeQuantumResult(correctedResult);
 
       // Hybrid classical-quantum post-processing
-      const enhancedPrediction = await this.hybridComputing.enhance(prediction, input);
+      const enhancedPrediction = await this.hybridComputing.enhance(
+        prediction,
+        input,
+      );
 
       const executionTime = performance.now() - startTime;
 
-      await observabilityService.trackMetric('quantum_prediction_time', executionTime);
+      await observabilityService.trackMetric(
+        'quantum_prediction_time',
+        executionTime,
+      );
 
       return {
         prediction: enhancedPrediction,
@@ -293,7 +303,9 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
     }
   }
 
-  private async encodeToQuantumStates(input: CarbonInputData): Promise<QuantumState[]> {
+  private async encodeToQuantumStates(
+    input: CarbonInputData,
+  ): Promise<QuantumState[]> {
     // Feature mapping to quantum Hilbert space
     const features = this.extractQuantumFeatures(input);
     const quantumStates: QuantumState[] = [];
@@ -344,7 +356,9 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
     ];
   }
 
-  private calculateQuantumAdvantage(executionTime: number): QuantumAdvantageMetrics {
+  private calculateQuantumAdvantage(
+    executionTime: number,
+  ): QuantumAdvantageMetrics {
     const classicalTime = this.estimateClassicalTime();
     const speedup = classicalTime / executionTime;
 
@@ -664,4 +678,5 @@ interface QuantumFeature {
 }
 
 // Export singleton instance
-export const quantumNeuralComputingEngine = new QuantumNeuralComputingEngineImpl();
+export const quantumNeuralComputingEngine =
+  new QuantumNeuralComputingEngineImpl();

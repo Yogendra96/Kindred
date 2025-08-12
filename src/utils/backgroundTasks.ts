@@ -1,6 +1,9 @@
 import { Platform } from 'react-native';
 
-export const registerBackgroundTask = (taskName: string, _task: () => void): void => {
+export const registerBackgroundTask = (
+  taskName: string,
+  _task: () => void,
+): void => {
   switch (Platform.OS) {
     case 'android':
       // Android-specific background task registration

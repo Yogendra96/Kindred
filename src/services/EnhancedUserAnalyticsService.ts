@@ -24,7 +24,7 @@ export interface UserProfile {
   carbonFootprint: CarbonFootprintData;
   achievements: Achievement[];
   segments: string[];
-  customAttributes: Record<string, any>;
+  customAttributes: Record<string, unknown>;
 }
 
 export interface UserPreferences {
@@ -180,7 +180,7 @@ export interface AnalyticsEvent {
   timestamp: number;
   userId?: string;
   sessionId: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   context: EventContext;
 }
 
@@ -244,7 +244,7 @@ export interface LocationContext {
 export interface UserContext {
   id?: string;
   anonymousId: string;
-  traits: Record<string, any>;
+  traits: Record<string, unknown>;
 }
 
 export interface ScreenContext {
@@ -343,7 +343,7 @@ export interface Cohort {
   size: number;
   retention: number[];
   revenue: number[];
-  characteristics: Record<string, any>;
+  characteristics: Record<string, unknown>;
 }
 
 export interface CohortInsight {
@@ -403,9 +403,9 @@ class EnhancedUserAnalyticsService {
   }): Promise<void> {
     try {
       if (config) {
-        this.batchSize = config.batchSize || this.batchSize;
-        this.flushInterval = config.flushInterval || this.flushInterval;
-        this.sessionTimeout = config.sessionTimeout || this.sessionTimeout;
+        this.batchSize = config.batchSize ?? this.batchSize;
+        this.flushInterval = config.flushInterval ?? this.flushInterval;
+        this.sessionTimeout = config.sessionTimeout ?? this.sessionTimeout;
       }
 
       // Load cached user data
@@ -430,7 +430,10 @@ class EnhancedUserAnalyticsService {
   }
 
   // User management
-  async identifyUser(userId: string, traits?: Record<string, any>): Promise<void> {
+  async identifyUser(
+    userId: string,
+    traits?: Record<string, unknown>,
+  ): Promise<void> {
     if (!this.currentUser) {
       throw new Error('Analytics service not initialized');
     }
@@ -457,7 +460,9 @@ class EnhancedUserAnalyticsService {
     await this.track('user_profile_updated', { updates });
   }
 
-  async setUserPreferences(preferences: Partial<UserPreferences>): Promise<void> {
+  async setUserPreferences(
+    preferences: Partial<UserPreferences>,
+  ): Promise<void> {
     if (!this.currentUser) {
       throw new Error('Analytics service not initialized');
     }
@@ -473,7 +478,7 @@ class EnhancedUserAnalyticsService {
   // Event tracking
   async track(
     eventName: string,
-    properties?: Record<string, any>,
+    properties?: Record<string, unknown>,
     options?: {
       category?: string;
       label?: string;
@@ -489,14 +494,14 @@ class EnhancedUserAnalyticsService {
     const event: AnalyticsEvent = {
       id: this.generateEventId(),
       name: eventName,
-      category: options?.category || 'general',
+      category: options?.category ?? 'general',
       action: eventName,
       label: options?.label,
       value: options?.value,
-      timestamp: options?.timestamp || Date.now(),
+      timestamp: options?.timestamp ?? Date.now(),
       userId: this.currentUser?.userId,
-      sessionId: this.currentSession?.id || '',
-      properties: properties || {},
+      sessionId: this.currentSession?.id ?? '',
+      properties: properties ?? {},
       context: await this.getEventContext(),
     };
 
@@ -514,7 +519,10 @@ class EnhancedUserAnalyticsService {
   }
 
   // Screen tracking
-  async screen(screenName: string, properties?: Record<string, any>): Promise<void> {
+  async screen(
+    screenName: string,
+    properties?: Record<string, unknown>,
+  ): Promise<void> {
     const screenView: ScreenView = {
       id: this.generateEventId(),
       name: screenName,
@@ -530,7 +538,9 @@ class EnhancedUserAnalyticsService {
     // End previous screen view
     if (this.currentSession && this.currentSession.screenViews.length > 0) {
       const lastScreen =
-        this.currentSession.screenViews[this.currentSession.screenViews.length - 1];
+        this.currentSession.screenViews[
+          this.currentSession.screenViews.length - 1
+        ];
       if (!lastScreen.endTime) {
         lastScreen.endTime = Date.now();
         lastScreen.duration = lastScreen.endTime - lastScreen.startTime;
@@ -559,7 +569,7 @@ class EnhancedUserAnalyticsService {
     this.currentSession = {
       id: sessionId,
       userId: this.currentUser?.userId,
-      anonymousId: this.currentUser?.anonymousId || '',
+      anonymousId: this.currentUser?.anonymousId ?? '',
       startTime: Date.now(),
       screenViews: [],
       events: [],
@@ -582,20 +592,25 @@ class EnhancedUserAnalyticsService {
     );
   }
 
-  async endSession(reason: 'user' | 'timeout' | 'crash' | 'background' = 'user'): Promise<void> {
+  async endSession(
+    reason: 'user' | 'timeout' | 'crash' | 'background' = 'user',
+  ): Promise<void> {
     if (!this.currentSession) {
       return;
     }
 
     this.currentSession.endTime = Date.now();
-    this.currentSession.duration = this.currentSession.endTime - this.currentSession.startTime;
+    this.currentSession.duration =
+      this.currentSession.endTime - this.currentSession.startTime;
     this.currentSession.isActive = false;
     this.currentSession.exitReason = reason;
 
     // End last screen view
     if (this.currentSession.screenViews.length > 0) {
       const lastScreen =
-        this.currentSession.screenViews[this.currentSession.screenViews.length - 1];
+        this.currentSession.screenViews[
+          this.currentSession.screenViews.length - 1
+        ];
       if (!lastScreen.endTime) {
         lastScreen.endTime = this.currentSession.endTime;
         lastScreen.duration = lastScreen.endTime - lastScreen.startTime;
@@ -678,7 +693,7 @@ class EnhancedUserAnalyticsService {
 
   getABTestVariant(testId: string): string | null {
     const participation = this.abTests.get(testId);
-    return participation?.variant || null;
+    return participation?.variant ?? null;
   }
 
   // User segmentation
@@ -709,7 +724,8 @@ class EnhancedUserAnalyticsService {
     if (this.currentUser) {
       this.currentUser.carbonFootprint.totalEmissions += emissions;
       this.currentUser.carbonFootprint.categories[category] =
-        (this.currentUser.carbonFootprint.categories[category] || 0) + emissions;
+        (this.currentUser.carbonFootprint.categories[category] ?? 0) +
+        emissions;
 
       await this.cacheUserData();
     }
@@ -770,7 +786,7 @@ class EnhancedUserAnalyticsService {
     const achievement: Achievement = {
       id: achievementId,
       name,
-      description: properties?.description || '',
+      description: properties?.description ?? '',
       category,
       unlockedAt: Date.now(),
       progress: properties?.progress || 100,
@@ -808,11 +824,11 @@ class EnhancedUserAnalyticsService {
   }
 
   async getEngagementMetrics(): Promise<EngagementMetrics | null> {
-    return this.currentUser?.engagement || null;
+    return this.currentUser?.engagement ?? null;
   }
 
   async getCarbonFootprint(): Promise<CarbonFootprintData | null> {
-    return this.currentUser?.carbonFootprint || null;
+    return this.currentUser?.carbonFootprint ?? null;
   }
 
   async getAchievements(): Promise<Achievement[]> {
@@ -920,7 +936,7 @@ class EnhancedUserAnalyticsService {
         build: await DeviceInfo.getBuildNumber(),
         namespace: await DeviceInfo.getBundleId(),
         installId: await DeviceInfo.getUniqueId(),
-        sessionId: this.currentSession?.id || '',
+        sessionId: this.currentSession?.id ?? '',
       },
       device: {
         id: await DeviceInfo.getUniqueId(),
@@ -950,8 +966,8 @@ class EnhancedUserAnalyticsService {
       },
       user: {
         id: this.currentUser?.userId,
-        anonymousId: this.currentUser?.anonymousId || '',
-        traits: this.currentUser?.customAttributes || {},
+        anonymousId: this.currentUser?.anonymousId ?? '',
+        traits: this.currentUser?.customAttributes ?? {},
       },
       screen: {
         name: this.getCurrentScreenName(),
@@ -962,7 +978,10 @@ class EnhancedUserAnalyticsService {
     };
   }
 
-  private getNetworkSpeed(netInfo: any): 'slow' | 'medium' | 'fast' {
+  private getNetworkSpeed(netInfo: {
+    type: string;
+    details?: { cellularGeneration?: string };
+  }): 'slow' | 'medium' | 'fast' {
     if (netInfo.type === 'cellular') {
       const subtype = netInfo.details?.cellularGeneration;
       if (subtype === '2g') return 'slow';
@@ -975,7 +994,9 @@ class EnhancedUserAnalyticsService {
   private getCurrentScreenName(): string {
     if (this.currentSession && this.currentSession.screenViews.length > 0) {
       const lastScreen =
-        this.currentSession.screenViews[this.currentSession.screenViews.length - 1];
+        this.currentSession.screenViews[
+          this.currentSession.screenViews.length - 1
+        ];
       return lastScreen.name;
     }
     return 'unknown';
@@ -1141,7 +1162,10 @@ class EnhancedUserAnalyticsService {
   private async cacheUserData(): Promise<void> {
     try {
       if (this.currentUser) {
-        await AsyncStorage.setItem('analytics_user', JSON.stringify(this.currentUser));
+        await AsyncStorage.setItem(
+          'analytics_user',
+          JSON.stringify(this.currentUser),
+        );
       }
     } catch (error) {
       console.error('Failed to cache user data:', error);
@@ -1157,7 +1181,10 @@ class EnhancedUserAnalyticsService {
         // Keep only last 100 sessions
         const recentSessions = sessions.slice(-100);
 
-        await AsyncStorage.setItem('analytics_sessions', JSON.stringify(recentSessions));
+        await AsyncStorage.setItem(
+          'analytics_sessions',
+          JSON.stringify(recentSessions),
+        );
       }
     } catch (error) {
       console.error('Failed to cache session data:', error);
@@ -1172,7 +1199,10 @@ class EnhancedUserAnalyticsService {
       // Keep only last 1000 events
       const recentEvents = cachedEvents.slice(-1000);
 
-      await AsyncStorage.setItem('analytics_events', JSON.stringify(recentEvents));
+      await AsyncStorage.setItem(
+        'analytics_events',
+        JSON.stringify(recentEvents),
+      );
     } catch (error) {
       console.error('Failed to cache events:', error);
     }

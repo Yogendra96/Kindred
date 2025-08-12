@@ -23,8 +23,16 @@ export interface AdvancedLoggingHook {
   debug: (message: string, metadata?: Partial<LogMetadata>) => void;
   info: (message: string, metadata?: Partial<LogMetadata>) => void;
   warn: (message: string, metadata?: Partial<LogMetadata>) => void;
-  error: (message: string, metadata?: Partial<LogMetadata>, error?: Error) => void;
-  fatal: (message: string, metadata?: Partial<LogMetadata>, error?: Error) => void;
+  error: (
+    message: string,
+    metadata?: Partial<LogMetadata>,
+    error?: Error,
+  ) => void;
+  fatal: (
+    message: string,
+    metadata?: Partial<LogMetadata>,
+    error?: Error,
+  ) => void;
 
   // Performance tracking
   startTimer: (name: string) => void;
@@ -32,18 +40,32 @@ export interface AdvancedLoggingHook {
 
   // User action tracking
   trackUserAction: (action: string, metadata?: Partial<LogMetadata>) => void;
-  trackButtonPress: (buttonName: string, metadata?: Partial<LogMetadata>) => void;
-  trackNavigation: (destination: string, metadata?: Partial<LogMetadata>) => void;
+  trackButtonPress: (
+    buttonName: string,
+    metadata?: Partial<LogMetadata>,
+  ) => void;
+  trackNavigation: (
+    destination: string,
+    metadata?: Partial<LogMetadata>,
+  ) => void;
   trackFormSubmission: (
     formName: string,
     success: boolean,
     metadata?: Partial<LogMetadata>,
   ) => void;
-  trackError: (errorName: string, error: Error, metadata?: Partial<LogMetadata>) => void;
+  trackError: (
+    errorName: string,
+    error: Error,
+    metadata?: Partial<LogMetadata>,
+  ) => void;
 
   // Business logic tracking
   trackBusinessEvent: (event: string, metadata?: Partial<LogMetadata>) => void;
-  trackCarbonCalculation: (result: number, method: string, metadata?: Partial<LogMetadata>) => void;
+  trackCarbonCalculation: (
+    result: number,
+    method: string,
+    metadata?: Partial<LogMetadata>,
+  ) => void;
   trackDataFetch: (
     endpoint: string,
     duration: number,
@@ -54,17 +76,24 @@ export interface AdvancedLoggingHook {
   // State change tracking
   trackStateChange: (
     stateName: string,
-    oldValue: any,
-    newValue: any,
+    oldValue: unknown,
+    newValue: unknown,
     metadata?: Partial<LogMetadata>,
   ) => void;
 
   // Search and analytics
-  search: (query: string) => any[];
-  getComponentAnalytics: () => any;
+  search: (query: string) => LogMetadata[];
+  getComponentAnalytics: () => {
+    totalLogs: number;
+    logsByLevel: Record<string, number>;
+    averageResponseTime: number;
+    errorCount: number;
+  };
 }
 
-export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): AdvancedLoggingHook => {
+export const useAdvancedLogging = (
+  options: UseAdvancedLoggingOptions,
+): AdvancedLoggingHook => {
   const {
     component,
     screen,
@@ -82,14 +111,18 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
   // Base metadata for all logs from this component
   const baseMetadata: LogMetadata = {
     component,
-    screen: screen || component,
+    screen: screen ?? component,
     category,
   };
 
   // Enhanced logging methods with automatic component context
   const createLogMethod = useCallback(
     (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal') => {
-      return (message: string, metadata: Partial<LogMetadata> = {}, error?: Error) => {
+      return (
+        message: string,
+        metadata: Partial<LogMetadata> = {},
+        error?: Error,
+      ) => {
         const fullMetadata = {
           ...baseMetadata,
           ...metadata,
@@ -148,7 +181,7 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
         ...metadata,
         action: 'user_action',
         userAction: action,
-        tags: ['user_interaction', ...(metadata.tags || [])],
+        tags: ['user_interaction', ...(metadata.tags ?? [])],
       });
     },
     [info],
@@ -159,7 +192,7 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
       trackUserAction(`button_press_${buttonName}`, {
         ...metadata,
         buttonName,
-        tags: ['button_press', ...(metadata.tags || [])],
+        tags: ['button_press', ...(metadata.tags ?? [])],
       });
     },
     [trackUserAction],
@@ -172,35 +205,50 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
         action: 'navigation',
         destination,
         source: component,
-        tags: ['navigation', ...(metadata.tags || [])],
+        tags: ['navigation', ...(metadata.tags ?? [])],
       });
     },
     [info, component],
   );
 
   const trackFormSubmission = useCallback(
-    (formName: string, success: boolean, metadata: Partial<LogMetadata> = {}) => {
+    (
+      formName: string,
+      success: boolean,
+      metadata: Partial<LogMetadata> = {},
+    ) => {
       const logLevel = success ? info : warn;
-      logLevel(`Form submission: ${formName} - ${success ? 'success' : 'failed'}`, {
-        ...metadata,
-        action: 'form_submission',
-        formName,
-        success,
-        tags: ['form_submission', success ? 'success' : 'error', ...(metadata.tags || [])],
-      });
+      logLevel(
+        `Form submission: ${formName} - ${success ? 'success' : 'failed'}`,
+        {
+          ...metadata,
+          action: 'form_submission',
+          formName,
+          success,
+          tags: [
+            'form_submission',
+            success ? 'success' : 'error',
+            ...(metadata.tags ?? []),
+          ],
+        },
+      );
     },
     [info, warn],
   );
 
   const trackError = useCallback(
-    (errorName: string, errorObj: Error, metadata: Partial<LogMetadata> = {}) => {
+    (
+      errorName: string,
+      errorObj: Error,
+      metadata: Partial<LogMetadata> = {},
+    ) => {
       error(
         `Component error: ${errorName}`,
         {
           ...metadata,
           action: 'component_error',
           errorName,
-          tags: ['component_error', ...(metadata.tags || [])],
+          tags: ['component_error', ...(metadata.tags ?? [])],
         },
         errorObj,
       );
@@ -215,7 +263,7 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
         ...metadata,
         action: 'business_event',
         businessEvent: event,
-        tags: ['business_logic', ...(metadata.tags || [])],
+        tags: ['business_logic', ...(metadata.tags ?? [])],
       });
     },
     [info],
@@ -229,37 +277,60 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
         carbonResult: result,
         calculationMethod: method,
         category: 'carbon',
-        tags: ['carbon_calculation', ...(metadata.tags || [])],
+        tags: ['carbon_calculation', ...(metadata.tags ?? [])],
       });
     },
     [info],
   );
 
   const trackDataFetch = useCallback(
-    (endpoint: string, duration: number, success: boolean, metadata: Partial<LogMetadata> = {}) => {
+    (
+      endpoint: string,
+      duration: number,
+      success: boolean,
+      metadata: Partial<LogMetadata> = {},
+    ) => {
       const logLevel = success ? info : warn;
-      logLevel(`Data fetch ${success ? 'completed' : 'failed'}: ${endpoint} (${duration}ms)`, {
-        ...metadata,
-        action: 'data_fetch',
-        endpoint,
-        duration,
-        success,
-        tags: ['data_fetch', success ? 'success' : 'error', ...(metadata.tags || [])],
-      });
+      logLevel(
+        `Data fetch ${success ? 'completed' : 'failed'}: ${endpoint} (${duration}ms)`,
+        {
+          ...metadata,
+          action: 'data_fetch',
+          endpoint,
+          duration,
+          success,
+          tags: [
+            'data_fetch',
+            success ? 'success' : 'error',
+            ...(metadata.tags ?? []),
+          ],
+        },
+      );
     },
     [info, warn],
   );
 
   // State change tracking
   const trackStateChange = useCallback(
-    (stateName: string, oldValue: any, newValue: any, metadata: Partial<LogMetadata> = {}) => {
+    (
+      stateName: string,
+      oldValue: any,
+      newValue: any,
+      metadata: Partial<LogMetadata> = {},
+    ) => {
       debug(`State change: ${stateName}`, {
         ...metadata,
         action: 'state_change',
         stateName,
-        oldValue: typeof oldValue === 'object' ? JSON.stringify(oldValue) : String(oldValue),
-        newValue: typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue),
-        tags: ['state_change', ...(metadata.tags || [])],
+        oldValue:
+          typeof oldValue === 'object'
+            ? JSON.stringify(oldValue)
+            : String(oldValue),
+        newValue:
+          typeof newValue === 'object'
+            ? JSON.stringify(newValue)
+            : String(newValue),
+        tags: ['state_change', ...(metadata.tags ?? [])],
       });
     },
     [debug],
@@ -270,7 +341,7 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
     (query: string) => {
       return Logger.search({
         query,
-        screen: screen || component,
+        screen: screen ?? component,
         component,
         limit: 100,
       });
@@ -285,12 +356,20 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
       limit: 1000,
     });
 
+    const logsByLevel = logs.reduce(
+      (acc, log) => {
+        acc[log.level] = (acc[log.level] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
     return {
       totalLogs: logs.length,
-      renderCount: renderCountRef.current,
-      componentAge: Date.now() - mountTimeRef.current,
-      errorCount: logs.filter(log => ['error', 'fatal'].includes(log.level)).length,
-      userActionCount: logs.filter(log => log.metadata.tags?.includes('user_interaction')).length,
+      logsByLevel,
+      averageResponseTime: 0, // TODO: Implement response time tracking
+      errorCount: logs.filter(log => ['error', 'fatal'].includes(log.level))
+        .length,
     };
   }, [component]);
 
@@ -299,7 +378,7 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
     if (autoTrackLifecycle) {
       mountTimeRef.current = Date.now();
 
-      Logger.setScreen(screen || component, baseMetadata);
+      Logger.setScreen(screen ?? component, baseMetadata);
 
       info('Component mounted', {
         action: 'component_mount',
@@ -353,7 +432,8 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
   useEffect(() => {
     if (autoTrackMemory) {
       const interval = setInterval(() => {
-        const memoryUsage = (global as any).performance?.memory?.usedJSHeapSize || 0;
+        const memoryUsage =
+          (global as any).performance?.memory?.usedJSHeapSize ?? 0;
 
         debug('Memory usage check', {
           action: 'memory_check',
@@ -410,7 +490,10 @@ export const useAdvancedLogging = (options: UseAdvancedLoggingOptions): Advanced
 };
 
 // Export a simpler version for basic components
-export const useBasicLogging = (component: string, category?: LogMetadata['category']) => {
+export const useBasicLogging = (
+  component: string,
+  category?: LogMetadata['category'],
+) => {
   return useAdvancedLogging({
     component,
     category,

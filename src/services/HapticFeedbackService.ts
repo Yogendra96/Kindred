@@ -345,7 +345,11 @@ class HapticFeedbackService {
     context?: Record<string, any>,
   ): Promise<void> {
     const patternName = `carbonTracking.${impact}Impact`;
-    await this.triggerHaptic(patternName, { ...context, impact }, { priority: 'medium' });
+    await this.triggerHaptic(
+      patternName,
+      { ...context, impact },
+      { priority: 'medium' },
+    );
   }
 
   async triggerGoalReached(context?: Record<string, any>): Promise<void> {
@@ -540,8 +544,8 @@ class HapticFeedbackService {
   }
 
   private async executePattern(pattern: HapticPattern): Promise<void> {
-    const repeat = pattern.repeat || 1;
-    const delay = pattern.delay || 0;
+    const repeat = pattern.repeat ?? 1;
+    const delay = pattern.delay ?? 0;
 
     for (let i = 0; i < repeat; i++) {
       await this.executeNativeHaptic(pattern);
@@ -556,13 +560,15 @@ class HapticFeedbackService {
     try {
       switch (pattern.type) {
         case 'impact':
-          const impactStyle = this.mapIntensityToImpactStyle(pattern.intensity || 'medium');
+          const impactStyle = this.mapIntensityToImpactStyle(
+            pattern.intensity ?? 'medium',
+          );
           await Haptics.impactAsync(impactStyle);
           break;
 
         case 'notification':
           const notificationStyle = this.mapIntensityToNotificationStyle(
-            pattern.intensity || 'medium',
+            pattern.intensity ?? 'medium',
           );
           await Haptics.notificationAsync(notificationStyle);
           break;
@@ -573,7 +579,9 @@ class HapticFeedbackService {
 
         case 'custom':
           // For custom patterns, use impact as fallback
-          const customStyle = this.mapIntensityToImpactStyle(pattern.intensity || 'medium');
+          const customStyle = this.mapIntensityToImpactStyle(
+            pattern.intensity ?? 'medium',
+          );
           await Haptics.impactAsync(customStyle);
           break;
 
@@ -586,7 +594,9 @@ class HapticFeedbackService {
     }
   }
 
-  private mapIntensityToImpactStyle(intensity: string): Haptics.ImpactFeedbackStyle {
+  private mapIntensityToImpactStyle(
+    intensity: string,
+  ): Haptics.ImpactFeedbackStyle {
     switch (intensity) {
       case 'light':
         return Haptics.ImpactFeedbackStyle.Light;
@@ -599,7 +609,9 @@ class HapticFeedbackService {
     }
   }
 
-  private mapIntensityToNotificationStyle(intensity: string): Haptics.NotificationFeedbackType {
+  private mapIntensityToNotificationStyle(
+    intensity: string,
+  ): Haptics.NotificationFeedbackType {
     switch (intensity) {
       case 'light':
         return Haptics.NotificationFeedbackType.Success;
@@ -612,7 +624,9 @@ class HapticFeedbackService {
     }
   }
 
-  private mapIntensityToNative(intensity: number): 'light' | 'medium' | 'heavy' {
+  private mapIntensityToNative(
+    intensity: number,
+  ): 'light' | 'medium' | 'heavy' {
     if (intensity < 0.3) return 'light';
     if (intensity < 0.7) return 'medium';
     return 'heavy';
@@ -628,7 +642,7 @@ class HapticFeedbackService {
     this.hapticQueue.push({
       pattern: {
         ...pattern,
-        delay: delay || pattern.delay,
+        delay: delay ?? pattern.delay,
       },
       context: { ...context, patternName },
     });
@@ -645,7 +659,7 @@ class HapticFeedbackService {
       try {
         const item = this.hapticQueue.shift();
         if (item) {
-          const patternName = item.context?.patternName || 'queued';
+          const patternName = item.context?.patternName ?? 'queued';
           await this.executeHaptic(item.pattern, patternName, item.context);
         }
       } catch (error) {
@@ -679,7 +693,9 @@ class HapticFeedbackService {
       }
     }
 
-    return current && typeof current === 'object' && current.type ? current : null;
+    return current && typeof current === 'object' && current.type
+      ? current
+      : null;
   }
 
   // Configuration management
@@ -699,11 +715,15 @@ class HapticFeedbackService {
 
     // Adjust all pattern intensities
     const intensityMap = { low: 'light', medium: 'medium', high: 'heavy' };
-    const newIntensity = intensityMap[intensity] as 'light' | 'medium' | 'heavy';
+    const newIntensity = intensityMap[intensity] as
+      | 'light'
+      | 'medium'
+      | 'heavy';
 
-    Object.keys(this.config.patterns).forEach(key => {
-      this.config.patterns[key as keyof typeof this.config.patterns].intensity = newIntensity;
-    });
+    for (const key of Object.keys(this.config.patterns)) {
+      this.config.patterns[key as keyof typeof this.config.patterns].intensity =
+        newIntensity;
+    }
 
     await this.saveUserPreferences();
   }
@@ -715,7 +735,9 @@ class HapticFeedbackService {
 
   async enablePattern(patternName: string): Promise<void> {
     this.analytics.userPreferences.disabledPatterns =
-      this.analytics.userPreferences.disabledPatterns.filter(p => p !== patternName);
+      this.analytics.userPreferences.disabledPatterns.filter(
+        p => p !== patternName,
+      );
     await this.saveUserPreferences();
   }
 
@@ -725,16 +747,19 @@ class HapticFeedbackService {
 
     // Update analytics
     this.analytics.totalEvents++;
-    this.analytics.eventsByType[event.type] = (this.analytics.eventsByType[event.type] || 0) + 1;
+    this.analytics.eventsByType[event.type] =
+      (this.analytics.eventsByType[event.type] ?? 0) + 1;
 
     if (event.duration) {
       this.analytics.averageResponseTime =
-        (this.analytics.averageResponseTime * (this.analytics.totalEvents - 1) + event.duration) /
+        (this.analytics.averageResponseTime * (this.analytics.totalEvents - 1) +
+          event.duration) /
         this.analytics.totalEvents;
     }
 
     this.analytics.successRate =
-      (this.analytics.successRate * (this.analytics.totalEvents - 1) + (event.success ? 1 : 0)) /
+      (this.analytics.successRate * (this.analytics.totalEvents - 1) +
+        (event.success ? 1 : 0)) /
       this.analytics.totalEvents;
   }
 
@@ -819,11 +844,12 @@ class HapticFeedbackService {
   async setBatteryOptimization(enabled: boolean): Promise<void> {
     if (enabled) {
       // Reduce haptic intensity and frequency
-      Object.keys(this.config.patterns).forEach(key => {
-        const pattern = this.config.patterns[key as keyof typeof this.config.patterns];
+      for (const key of Object.keys(this.config.patterns)) {
+        const pattern =
+          this.config.patterns[key as keyof typeof this.config.patterns];
         pattern.intensity = 'light';
-        pattern.repeat = Math.min(pattern.repeat || 1, 1);
-      });
+        pattern.repeat = Math.min(pattern.repeat ?? 1, 1);
+      }
     }
 
     await this.saveUserPreferences();

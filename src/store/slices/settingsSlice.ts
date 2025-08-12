@@ -96,11 +96,17 @@ const settingsSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-    updateNotificationSettings: (state, action: PayloadAction<Partial<NotificationSettings>>) => {
+    updateNotificationSettings: (
+      state,
+      action: PayloadAction<Partial<NotificationSettings>>,
+    ) => {
       state.notifications = { ...state.notifications, ...action.payload };
       state.lastSynced = Date.now();
     },
-    updatePrivacySettings: (state, action: PayloadAction<Partial<PrivacySettings>>) => {
+    updatePrivacySettings: (
+      state,
+      action: PayloadAction<Partial<PrivacySettings>>,
+    ) => {
       state.privacy = { ...state.privacy, ...action.payload };
       state.lastSynced = Date.now();
     },
@@ -108,15 +114,22 @@ const settingsSlice = createSlice({
       state.app = { ...state.app, ...action.payload };
       state.lastSynced = Date.now();
     },
-    updateSecuritySettings: (state, action: PayloadAction<Partial<SecuritySettings>>) => {
+    updateSecuritySettings: (
+      state,
+      action: PayloadAction<Partial<SecuritySettings>>,
+    ) => {
       state.security = { ...state.security, ...action.payload };
       state.lastSynced = Date.now();
     },
     resetSettings: state => {
       Object.assign(state, initialState);
     },
-    syncSettings: (state, action: PayloadAction<Omit<SettingsState, 'isLoading' | 'error'>>) => {
-      const { notifications, privacy, app, security, lastSynced } = action.payload;
+    syncSettings: (
+      state,
+      action: PayloadAction<Omit<SettingsState, 'isLoading' | 'error'>>,
+    ) => {
+      const { notifications, privacy, app, security, lastSynced } =
+        action.payload;
       state.notifications = notifications;
       state.privacy = privacy;
       state.app = app;

@@ -148,7 +148,9 @@ describe('LocationService', () => {
       await LocationService.initialize();
 
       expect(LocationService.isServiceInitialized()).toBe(true);
-      expect(mockPerformanceMonitoring.startTimer).toHaveBeenCalledWith('location_service_init');
+      expect(mockPerformanceMonitoring.startTimer).toHaveBeenCalledWith(
+        'location_service_init',
+      );
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
         'location_service_initialized',
         1,
@@ -174,7 +176,9 @@ describe('LocationService', () => {
 
     it('should load persisted data during initialization', async () => {
       const mockConfig = { enableLocationHistory: false };
-      const mockHistory = [{ id: '1', location: mockLocationObject.coords, timestamp: new Date() }];
+      const mockHistory = [
+        { id: '1', location: mockLocationObject.coords, timestamp: new Date() },
+      ];
 
       mockDataEncryption.secureRetrieve
         .mockResolvedValueOnce(mockConfig)
@@ -182,15 +186,21 @@ describe('LocationService', () => {
 
       await LocationService.initialize();
 
-      expect(mockDataEncryption.secureRetrieve).toHaveBeenCalledWith('location_config');
-      expect(mockDataEncryption.secureRetrieve).toHaveBeenCalledWith('location_history');
+      expect(mockDataEncryption.secureRetrieve).toHaveBeenCalledWith(
+        'location_config',
+      );
+      expect(mockDataEncryption.secureRetrieve).toHaveBeenCalledWith(
+        'location_history',
+      );
     });
 
     it('should handle initialization errors', async () => {
       const error = new Error('Permission denied');
       mockLocation.requestForegroundPermissionsAsync.mockRejectedValue(error);
 
-      await expect(LocationService.initialize()).rejects.toThrow('Permission denied');
+      await expect(LocationService.initialize()).rejects.toThrow(
+        'Permission denied',
+      );
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
         'location_service_init_error',
         1,
@@ -254,7 +264,10 @@ describe('LocationService', () => {
       expect(location.latitude).toBe(37.7749);
       expect(location.longitude).toBe(-122.4194);
       expect(location.city).toBe('San Francisco');
-      expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith('location_retrieved', 1);
+      expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
+        'location_retrieved',
+        1,
+      );
     });
 
     it('should get current location with high accuracy', async () => {
@@ -269,7 +282,9 @@ describe('LocationService', () => {
 
     it('should start location tracking', async () => {
       const mockSubscription = { remove: jest.fn() };
-      mockLocation.watchPositionAsync.mockResolvedValue(mockSubscription as any);
+      mockLocation.watchPositionAsync.mockResolvedValue(
+        mockSubscription as any,
+      );
 
       await LocationService.startLocationTracking();
 
@@ -283,7 +298,9 @@ describe('LocationService', () => {
 
     it('should stop location tracking', async () => {
       const mockSubscription = { remove: jest.fn() };
-      mockLocation.watchPositionAsync.mockResolvedValue(mockSubscription as any);
+      mockLocation.watchPositionAsync.mockResolvedValue(
+        mockSubscription as any,
+      );
 
       await LocationService.startLocationTracking();
       await LocationService.stopLocationTracking();
@@ -672,7 +689,9 @@ describe('LocationService', () => {
       const error = new Error('Location unavailable');
       mockLocation.getCurrentPositionAsync.mockRejectedValue(error);
 
-      await expect(LocationService.getCurrentLocation()).rejects.toThrow('Location unavailable');
+      await expect(LocationService.getCurrentLocation()).rejects.toThrow(
+        'Location unavailable',
+      );
 
       const metrics = LocationService.getMetrics();
       expect(metrics.errorCount).toBe(1);
@@ -684,7 +703,9 @@ describe('LocationService', () => {
     });
 
     it('should handle reverse geocoding errors gracefully', async () => {
-      mockLocation.reverseGeocodeAsync.mockRejectedValue(new Error('Geocoding failed'));
+      mockLocation.reverseGeocodeAsync.mockRejectedValue(
+        new Error('Geocoding failed'),
+      );
 
       const location = await LocationService.getCurrentLocation();
 
@@ -706,7 +727,9 @@ describe('LocationService', () => {
     });
 
     it('should handle persistence errors gracefully', async () => {
-      mockDataEncryption.secureStore.mockRejectedValue(new Error('Storage error'));
+      mockDataEncryption.secureStore.mockRejectedValue(
+        new Error('Storage error'),
+      );
 
       await LocationService.initialize();
 
@@ -723,7 +746,9 @@ describe('LocationService', () => {
       });
 
       const mockSubscription = { remove: jest.fn() };
-      mockLocation.watchPositionAsync.mockResolvedValue(mockSubscription as any);
+      mockLocation.watchPositionAsync.mockResolvedValue(
+        mockSubscription as any,
+      );
       await LocationService.startLocationTracking();
 
       await LocationService.cleanup();
@@ -731,7 +756,9 @@ describe('LocationService', () => {
       expect(mockLocation.stopLocationUpdatesAsync).toHaveBeenCalledWith(
         'background-location-task',
       );
-      expect(mockLocation.stopGeofencingAsync).toHaveBeenCalledWith('geofence-task');
+      expect(mockLocation.stopGeofencingAsync).toHaveBeenCalledWith(
+        'geofence-task',
+      );
       expect(mockSubscription.remove).toHaveBeenCalled();
       expect(LocationService.isServiceInitialized()).toBe(false);
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(

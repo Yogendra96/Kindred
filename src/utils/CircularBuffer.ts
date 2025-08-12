@@ -15,7 +15,7 @@ export class CircularBuffer<T> {
       throw new Error('Capacity must be greater than 0');
     }
     this._capacity = capacity;
-    this._data = new Array(capacity);
+    this._data = Array.from({ length: capacity });
   }
 
   /**
@@ -202,7 +202,9 @@ export class CircularBuffer<T> {
     const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
     const median =
       sorted.length % 2 === 0
-        ? ((sorted[sorted.length / 2 - 1] ?? 0) + (sorted[sorted.length / 2] ?? 0)) / 2
+        ? ((sorted[sorted.length / 2 - 1] ?? 0) +
+            (sorted[sorted.length / 2] ?? 0)) /
+          2
         : (sorted[Math.floor(sorted.length / 2)] ?? 0);
 
     return { min, max, avg, median, count: values.length };
@@ -211,7 +213,10 @@ export class CircularBuffer<T> {
   /**
    * Calculate percentile (0-100)
    */
-  getPercentile(percentile: number, valueExtractor: (item: T) => number): number | null {
+  getPercentile(
+    percentile: number,
+    valueExtractor: (item: T) => number,
+  ): number | null {
     if (this._size === 0 || percentile < 0 || percentile > 100) {
       return null;
     }
@@ -243,7 +248,7 @@ export class CircularBuffer<T> {
    */
   fromArray(items: T[]): void {
     this.clear();
-    items.forEach(item => this.add(item));
+    for (const item of items) this.add(item);
   }
 
   /**

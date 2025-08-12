@@ -17,12 +17,7 @@ import type {
   PerformanceConfig,
   UserJourneyEvent,
 } from '../types/performance';
-import {
-  CircularBuffer as _ICircularBuffer,
-  JourneyPerformanceInsight as _JourneyPerformanceInsight,
-  SessionPerformanceData as _SessionPerformanceData,
-  DEFAULT_PERFORMANCE_CONFIG,
-} from '../types/performance';
+import { DEFAULT_PERFORMANCE_CONFIG } from '../types/performance';
 import { CircularBuffer } from '../utils/CircularBuffer';
 
 import { loggingService } from './LoggingService';
@@ -115,7 +110,8 @@ export class EnhancedPerformanceService {
   private activeAlerts: Map<string, PerformanceAlert> = new Map();
 
   // Memory leak detection
-  private componentLifecycles: Map<string, ComponentLifecycleEvent[]> = new Map();
+  private componentLifecycles: Map<string, ComponentLifecycleEvent[]> =
+    new Map();
   private memoryLeaks: MemoryLeak[] = [];
 
   // User journey correlation
@@ -209,10 +205,13 @@ export class EnhancedPerformanceService {
         },
       });
     } catch (error) {
-      this.logger.error('Failed to initialize enhanced performance monitoring', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        sessionId: this.currentSessionId,
-      });
+      this.logger.error(
+        'Failed to initialize enhanced performance monitoring',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          sessionId: this.currentSessionId,
+        },
+      );
       throw error;
     }
   }
@@ -293,7 +292,10 @@ export class EnhancedPerformanceService {
     }
 
     if (__DEV__) {
-      this.logger.debug(`Performance metric recorded: ${name} = ${value}${unit}`, context);
+      this.logger.debug(
+        `Performance metric recorded: ${name} = ${value}${unit}`,
+        context,
+      );
     }
   }
 
@@ -372,7 +374,9 @@ export class EnhancedPerformanceService {
     // Log slow renders in development
     if (__DEV__ && renderTime > 16) {
       // 16ms = 60fps threshold
-      this.logger.warn(`Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`);
+      this.logger.warn(
+        `Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`,
+      );
     }
   }
 
@@ -405,7 +409,9 @@ export class EnhancedPerformanceService {
     // Log slow network requests
     if (__DEV__ && duration > 3000) {
       // 3 seconds threshold
-      this.logger.warn(`Slow network request: ${method} ${url} took ${duration}ms`);
+      this.logger.warn(
+        `Slow network request: ${method} ${url} took ${duration}ms`,
+      );
     }
   }
 
@@ -434,7 +440,10 @@ export class EnhancedPerformanceService {
     return {
       overview: {
         isMonitoring: this.isMonitoring,
-        totalMetrics: [...this.metrics.values()].reduce((sum, arr) => sum + arr.length, 0),
+        totalMetrics: [...this.metrics.values()].reduce(
+          (sum, arr) => sum + arr.length,
+          0,
+        ),
         memorySnapshots: this.memoryMetrics.length,
         renderMetrics: this.renderMetrics.length,
         networkRequests: this.networkMetrics.length,
@@ -455,7 +464,8 @@ export class EnhancedPerformanceService {
 
     const latest = this.memoryMetrics[this.memoryMetrics.length - 1];
     const peak = this.memoryMetrics.reduce(
-      (max, metric) => (metric.usedJSHeapSize > max.usedJSHeapSize ? metric : max),
+      (max, metric) =>
+        metric.usedJSHeapSize > max.usedJSHeapSize ? metric : max,
       this.memoryMetrics[0],
     );
 
@@ -479,9 +489,14 @@ export class EnhancedPerformanceService {
   private getRenderingSummary(): any {
     if (this.renderMetrics.length === 0) return null;
 
-    const totalRenderTime = this.renderMetrics.reduce((sum, metric) => sum + metric.renderTime, 0);
+    const totalRenderTime = this.renderMetrics.reduce(
+      (sum, metric) => sum + metric.renderTime,
+      0,
+    );
     const averageRenderTime = totalRenderTime / this.renderMetrics.length;
-    const slowRenders = this.renderMetrics.filter(metric => metric.renderTime > 16);
+    const slowRenders = this.renderMetrics.filter(
+      metric => metric.renderTime > 16,
+    );
 
     return {
       totalRenders: this.renderMetrics.length,
@@ -502,9 +517,14 @@ export class EnhancedPerformanceService {
 
     const totalRequests = this.networkMetrics.length;
     const averageDuration =
-      this.networkMetrics.reduce((sum, metric) => sum + metric.duration, 0) / totalRequests;
-    const slowRequests = this.networkMetrics.filter(metric => metric.duration > 3000);
-    const errorRequests = this.networkMetrics.filter(metric => metric.statusCode >= 400);
+      this.networkMetrics.reduce((sum, metric) => sum + metric.duration, 0) /
+      totalRequests;
+    const slowRequests = this.networkMetrics.filter(
+      metric => metric.duration > 3000,
+    );
+    const errorRequests = this.networkMetrics.filter(
+      metric => metric.statusCode >= 400,
+    );
 
     return {
       totalRequests,
@@ -512,7 +532,10 @@ export class EnhancedPerformanceService {
       slowRequests: slowRequests.length,
       errorRequests: errorRequests.length,
       totalDataTransferred: this.formatBytes(
-        this.networkMetrics.reduce((sum, metric) => sum + metric.responseSize, 0),
+        this.networkMetrics.reduce(
+          (sum, metric) => sum + metric.responseSize,
+          0,
+        ),
       ),
     };
   }
@@ -755,5 +778,6 @@ export class EnhancedPerformanceService {
 }
 
 // Create and export singleton instance
-export const enhancedPerformanceService = EnhancedPerformanceService.getInstance();
+export const enhancedPerformanceService =
+  EnhancedPerformanceService.getInstance();
 export default enhancedPerformanceService;

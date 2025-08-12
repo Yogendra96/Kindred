@@ -120,7 +120,10 @@ class AdvancedEncryptionService {
   /**
    * Decrypt data using AES-256-GCM with authentication verification
    */
-  async decryptData(encryptedData: EncryptedData, keyId?: string): Promise<string> {
+  async decryptData(
+    encryptedData: EncryptedData,
+    keyId?: string,
+  ): Promise<string> {
     const startTime = Date.now();
 
     try {
@@ -181,9 +184,13 @@ class AdvancedEncryptionService {
         const encoder = new TextEncoder();
         const passwordBuffer = encoder.encode(password);
 
-        const baseKey = await crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
-          'deriveKey',
-        ]);
+        const baseKey = await crypto.subtle.importKey(
+          'raw',
+          passwordBuffer,
+          'PBKDF2',
+          false,
+          ['deriveKey'],
+        );
 
         return await crypto.subtle.deriveKey(
           {
@@ -202,11 +209,15 @@ class AdvancedEncryptionService {
         );
       } else {
         // Fallback implementation for React Native
-        const key = CryptoJS.PBKDF2(password, CryptoJS.lib.WordArray.create(salt), {
-          keySize: derivationOptions.keyLength / 32,
-          iterations: derivationOptions.iterations,
-          hasher: CryptoJS.algo.SHA256,
-        });
+        const key = CryptoJS.PBKDF2(
+          password,
+          CryptoJS.lib.WordArray.create(salt),
+          {
+            keySize: derivationOptions.keyLength / 32,
+            iterations: derivationOptions.iterations,
+            hasher: CryptoJS.algo.SHA256,
+          },
+        );
 
         // Convert to CryptoKey-like object for consistency
         return this.createFallbackCryptoKey(key);
@@ -252,7 +263,9 @@ class AdvancedEncryptionService {
         const dataBuffer = encoder.encode(data);
         const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
         const hashArray = [...new Uint8Array(hashBuffer)];
-        return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+        return hashArray
+          .map(byte => byte.toString(16).padStart(2, '0'))
+          .join('');
       } else {
         // Fallback to CryptoJS
         const hash = CryptoJS.SHA256(data);
@@ -284,9 +297,15 @@ class AdvancedEncryptionService {
           ['sign'],
         );
 
-        const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataBuffer);
+        const signature = await crypto.subtle.sign(
+          'HMAC',
+          cryptoKey,
+          dataBuffer,
+        );
         const signatureArray = [...new Uint8Array(signature)];
-        return signatureArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+        return signatureArray
+          .map(byte => byte.toString(16).padStart(2, '0'))
+          .join('');
       } else {
         // Fallback to CryptoJS
         const hmac = CryptoJS.HmacSHA256(data, secret);
@@ -303,7 +322,11 @@ class AdvancedEncryptionService {
   /**
    * Verify HMAC signature
    */
-  async verifyHMAC(data: string, signature: string, secret: string): Promise<boolean> {
+  async verifyHMAC(
+    data: string,
+    signature: string,
+    secret: string,
+  ): Promise<boolean> {
     try {
       const computedSignature = await this.createHMAC(data, secret);
       return this.constantTimeCompare(signature, computedSignature);
@@ -360,7 +383,9 @@ class AdvancedEncryptionService {
 
   private isSubtleCryptoAvailable(): boolean {
     return (
-      typeof crypto !== 'undefined' && crypto.subtle !== undefined && Platform.OS !== 'android'
+      typeof crypto !== 'undefined' &&
+      crypto.subtle !== undefined &&
+      Platform.OS !== 'android'
     ); // SubtleCrypto has issues on some Android versions
   }
 
@@ -395,7 +420,10 @@ class AdvancedEncryptionService {
     }
   }
 
-  private async encryptWithCryptoJS(data: string, keyId?: string): Promise<EncryptedData> {
+  private async encryptWithCryptoJS(
+    data: string,
+    keyId?: string,
+  ): Promise<EncryptedData> {
     const key = keyId || 'default';
     const iv = CryptoJS.lib.WordArray.random(96 / 8); // 96-bit IV
     const keyWordArray = CryptoJS.lib.WordArray.random(256 / 8); // 256-bit key
@@ -502,7 +530,9 @@ class AdvancedEncryptionService {
     return newKeys;
   }
 
-  private async reEncryptDataWithNewKeys(_newKeys: Map<string, CryptoKey>): Promise<void> {
+  private async reEncryptDataWithNewKeys(
+    _newKeys: Map<string, CryptoKey>,
+  ): Promise<void> {
     // Implementation would depend on how data is stored
     // This would typically involve:
     // 1. Retrieving all encrypted data

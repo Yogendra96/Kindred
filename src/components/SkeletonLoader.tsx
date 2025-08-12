@@ -142,18 +142,16 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   const shimmerValue = useSharedValue(0);
 
   useEffect(() => {
-    if (isLoading) {
-      shimmerValue.value = withRepeat(
-        withTiming(1, {
-          duration: animationDuration,
-          easing: Easing.linear,
-        }),
-        -1,
-        false,
-      );
-    } else {
-      shimmerValue.value = 0;
-    }
+    shimmerValue.value = isLoading
+      ? withRepeat(
+          withTiming(1, {
+            duration: animationDuration,
+            easing: Easing.linear,
+          }),
+          -1,
+          false,
+        )
+      : 0;
   }, [isLoading, animationDuration]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -310,7 +308,13 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
       {/* Header with Avatar and Title */}
       {(showAvatar || showTitle || showSubtitle) && (
         <View style={styles.cardHeader}>
-          {showAvatar && <SkeletonCircle size={avatarSize} isLoading={isLoading} {...props} />}
+          {showAvatar && (
+            <SkeletonCircle
+              size={avatarSize}
+              isLoading={isLoading}
+              {...props}
+            />
+          )}
           <View style={styles.cardHeaderText}>
             {showTitle && (
               <SkeletonText
@@ -407,7 +411,12 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
             <View style={styles.listItem}>
               <SkeletonCircle size={40} isLoading={isLoading} {...props} />
               <View style={styles.listItemContent}>
-                <SkeletonLoader width='80%' height={16} isLoading={isLoading} {...props} />
+                <SkeletonLoader
+                  width='80%'
+                  height={16}
+                  isLoading={isLoading}
+                  {...props}
+                />
                 <SkeletonLoader
                   width='60%'
                   height={12}
@@ -418,8 +427,12 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
               </View>
             </View>
           )}
-          {showSeparator && index < itemCount - 1 && <View style={styles.separator} />}
-          {!showSeparator && index < itemCount - 1 && <View style={{ height: itemSpacing }} />}
+          {showSeparator && index < itemCount - 1 && (
+            <View style={styles.separator} />
+          )}
+          {!showSeparator && index < itemCount - 1 && (
+            <View style={{ height: itemSpacing }} />
+          )}
         </View>
       ))}
     </View>
@@ -469,7 +482,8 @@ export const SkeletonGrid: React.FC<SkeletonGridProps> = ({
                 width: itemWidth,
                 height: itemHeight,
                 marginRight: col < columns - 1 ? itemSpacing : 0,
-                marginBottom: row < Math.ceil(itemCount / columns) - 1 ? itemSpacing : 0,
+                marginBottom:
+                  row < Math.ceil(itemCount / columns) - 1 ? itemSpacing : 0,
               },
             ]}
           >
@@ -517,7 +531,11 @@ export const SkeletonChart: React.FC<SkeletonChartProps> = ({
       case 'pie':
         return (
           <View style={styles.pieChart}>
-            <SkeletonCircle size={height * 0.8} isLoading={isLoading} {...props} />
+            <SkeletonCircle
+              size={height * 0.8}
+              isLoading={isLoading}
+              {...props}
+            />
           </View>
         );
       case 'bar':
@@ -548,22 +566,25 @@ export const SkeletonChart: React.FC<SkeletonChartProps> = ({
     }
   };
 
-  return <View style={[{ width, height }, style]}>{renderChartSkeleton()}</View>;
+  return (
+    <View style={[{ width, height }, style]}>{renderChartSkeleton()}</View>
+  );
 };
 
 const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: '#f0f0f0',
-    overflow: 'hidden',
-  },
-  textContainer: {
-    width: '100%',
+  barChart: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    height: '100%',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
   },
   card: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 16,
+    elevation: 3,
     marginVertical: 8,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -571,11 +592,18 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+  },
+  cardActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cardContent: {
+    marginBottom: 16,
   },
   cardHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 12,
   },
   cardHeaderText: {
@@ -585,20 +613,20 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     marginTop: 4,
   },
-  cardContent: {
-    marginBottom: 16,
-  },
-  cardActions: {
+  grid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    width: '100%',
+  },
+  gridItem: {
+    // Dynamic styles applied inline
   },
   list: {
     width: '100%',
   },
   listItem: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     paddingVertical: 8,
   },
   listItemContent: {
@@ -608,30 +636,22 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     marginTop: 6,
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#e0e0e0',
-    marginVertical: 8,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: '100%',
-  },
-  gridItem: {
-    // Dynamic styles applied inline
-  },
   pieChart: {
     alignItems: 'center',
+    height: '100%',
     justifyContent: 'center',
-    height: '100%',
   },
-  barChart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-around',
-    height: '100%',
-    paddingHorizontal: 20,
+  separator: {
+    backgroundColor: '#e0e0e0',
+    height: 1,
+    marginVertical: 8,
+  },
+  skeleton: {
+    backgroundColor: '#f0f0f0',
+    overflow: 'hidden',
+  },
+  textContainer: {
+    width: '100%',
   },
 });
 

@@ -1,6 +1,10 @@
 // Import services for middleware integration
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { configureStore, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
+import {
+  configureStore,
+  createListenerMiddleware,
+  isAnyOf,
+} from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 import {
   FLUSH,
@@ -57,7 +61,12 @@ listenerMiddleware.startListening({
       await enhancedAnalyticsService.endSession();
 
       // Track logout event
-      enhancedAnalyticsService.trackEvent('user_logout', {}, 'user_action', 'medium');
+      enhancedAnalyticsService.trackEvent(
+        'user_logout',
+        {},
+        'user_action',
+        'medium',
+      );
 
       loggingService.info('User logged out');
     }
@@ -69,7 +78,12 @@ listenerMiddleware.startListening({
   actionCreator: addEvent,
   effect: async (action, _listenerApi) => {
     const event = action.payload;
-    enhancedAnalyticsService.trackEvent(event.name, event.properties, event.category, 'medium');
+    enhancedAnalyticsService.trackEvent(
+      event.name,
+      event.properties,
+      event.category,
+      'medium',
+    );
   },
 });
 
@@ -111,7 +125,15 @@ export type AppDispatch = typeof store.dispatch;
 // Action creators for easy access
 export { loginSuccess, logout } from './slices/authSlice';
 export { updateProfile, updatePreferences } from './slices/userSlice';
-export { updateFootprint, addHistoryEntry } from './slices/carbonSlice';
+export { 
+  updateFootprint, 
+  addHistoryEntry,
+  addCarbonActivity,
+  loadStoredActivities,
+  saveActivityToStorage,
+  clearOldStoredActivities,
+  syncActivityStatus,
+} from './slices/carbonSlice';
 export {
   updateNotificationSettings,
   updatePrivacySettings,

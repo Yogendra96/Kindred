@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 import {
   AccessibilityInfo,
@@ -30,7 +36,12 @@ interface AccessibilitySettings {
   lineHeight: number;
   buttonSize: number;
   touchTargetSize: number;
-  colorBlindnessType: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
+  colorBlindnessType:
+    | 'none'
+    | 'protanopia'
+    | 'deuteranopia'
+    | 'tritanopia'
+    | 'achromatopsia';
   announceChanges: boolean;
   skipToContent: boolean;
   keyboardNavigation: boolean;
@@ -39,9 +50,14 @@ interface AccessibilitySettings {
 interface AccessibilityContextType {
   settings: AccessibilitySettings;
   updateSettings: (newSettings: Partial<AccessibilitySettings>) => void;
-  announceMessage: (message: string, priority?: 'low' | 'medium' | 'high') => void;
+  announceMessage: (
+    message: string,
+    priority?: 'low' | 'medium' | 'high',
+  ) => void;
   focusElement: (elementId: string) => void;
-  getAccessibleProps: (props: AccessibleElementProps) => Record<string, unknown>;
+  getAccessibleProps: (
+    props: AccessibleElementProps,
+  ) => Record<string, unknown>;
   isScreenReaderActive: boolean;
   isHighContrastActive: boolean;
   getScaledSize: (size: number) => number;
@@ -90,12 +106,16 @@ const defaultSettings: AccessibilitySettings = {
   keyboardNavigation: false,
 };
 
-const AccessibilityContext = createContext<AccessibilityContextType | null>(null);
+const AccessibilityContext = createContext<AccessibilityContextType | null>(
+  null,
+);
 
 export const useAccessibility = () => {
   const context = useContext(AccessibilityContext);
   if (!context) {
-    throw new Error('useAccessibility must be used within AccessibilityProvider');
+    throw new Error(
+      'useAccessibility must be used within AccessibilityProvider',
+    );
   }
   return context;
 };
@@ -104,9 +124,12 @@ interface AccessibilityProviderProps {
   children: React.ReactNode;
 }
 
-export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ children }) => {
+export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
+  children,
+}) => {
   const { theme } = useTheme();
-  const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
+  const [settings, setSettings] =
+    useState<AccessibilitySettings>(defaultSettings);
   const [isScreenReaderActive, setIsScreenReaderActive] = useState(false);
   const [isHighContrastActive, setIsHighContrastActive] = useState(false);
 
@@ -131,11 +154,13 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
       screenReaderListener?.remove();
       reduceMotionListener?.remove();
     };
-  }, []);
+  }, [checkSystemAccessibilitySettings, updateSettings]);
 
   const loadAccessibilitySettings = async () => {
     try {
-      const savedSettings = await AsyncStorage.getItem('accessibility_settings');
+      const savedSettings = await AsyncStorage.getItem(
+        'accessibility_settings',
+      );
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
         setSettings({ ...defaultSettings, ...parsed });
@@ -145,18 +170,25 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     }
   };
 
-  const saveAccessibilitySettings = async (newSettings: AccessibilitySettings) => {
+  const saveAccessibilitySettings = async (
+    newSettings: AccessibilitySettings,
+  ) => {
     try {
-      await AsyncStorage.setItem('accessibility_settings', JSON.stringify(newSettings));
+      await AsyncStorage.setItem(
+        'accessibility_settings',
+        JSON.stringify(newSettings),
+      );
     } catch (error) {
       console.error('Error saving accessibility settings:', error);
     }
   };
 
-  const checkSystemAccessibilitySettings = async () => {
+  const checkSystemAccessibilitySettings = useCallback(async () => {
     try {
-      const screenReaderEnabled = await AccessibilityInfo.isScreenReaderEnabled();
-      const _reduceMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
+      const screenReaderEnabled =
+        await AccessibilityInfo.isScreenReaderEnabled();
+      const _reduceMotionEnabled =
+        await AccessibilityInfo.isReduceMotionEnabled();
 
       setIsScreenReaderActive(screenReaderEnabled);
 
@@ -169,19 +201,22 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     } catch (error) {
       console.error('Error checking system accessibility settings:', error);
     }
-  };
+  }, [updateSettings]);
 
-  const updateSettings = useCallback((newSettings: Partial<AccessibilitySettings>) => {
-    setSettings(prev => {
-      const updated = { ...prev, ...newSettings };
-      saveAccessibilitySettings(updated);
+  const updateSettings = useCallback(
+    (newSettings: Partial<AccessibilitySettings>) => {
+      setSettings(prev => {
+        const updated = { ...prev, ...newSettings };
+        void saveAccessibilitySettings(updated);
 
-      // Update derived states
-      setIsHighContrastActive(updated.highContrastEnabled);
+        // Update derived states
+        setIsHighContrastActive(updated.highContrastEnabled);
 
-      return updated;
-    });
-  }, []);
+        return updated;
+      });
+    },
+    [],
+  );
 
   const announceMessage = useCallback(
     (message: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
@@ -198,18 +233,22 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
       if (settings.hapticFeedbackEnabled) {
         switch (priority) {
           case 'high':
-            HapticFeedbackService.triggerError();
+            void HapticFeedbackService.triggerError();
             break;
           case 'medium':
-            HapticFeedbackService.triggerImpact('medium');
+            void HapticFeedbackService.triggerImpact('medium');
             break;
           case 'low':
-            HapticFeedbackService.triggerSelection();
+            void HapticFeedbackService.triggerSelection();
             break;
         }
       }
     },
-    [settings.announceChanges, settings.hapticFeedbackEnabled, isScreenReaderActive],
+    [
+      settings.announceChanges,
+      settings.hapticFeedbackEnabled,
+      isScreenReaderActive,
+    ],
   );
 
   const focusElement = useCallback((elementId: string) => {
@@ -323,7 +362,10 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     return baseColors;
   }, [settings.highContrastEnabled, settings.colorBlindnessType, theme.colors]);
 
-  const applyColorBlindnessFilter = (colors: AccessibleColors, type: string): AccessibleColors => {
+  const applyColorBlindnessFilter = (
+    colors: AccessibleColors,
+    type: string,
+  ): AccessibleColors => {
     // This is a simplified implementation
     // In a real app, you'd use proper color transformation algorithms
     switch (type) {
@@ -378,7 +420,9 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   };
 
   return (
-    <AccessibilityContext.Provider value={contextValue}>{children}</AccessibilityContext.Provider>
+    <AccessibilityContext.Provider value={contextValue}>
+      {children}
+    </AccessibilityContext.Provider>
   );
 };
 
@@ -423,12 +467,17 @@ export const AccessibleText: React.FC<AccessibleTextProps> = ({
 
   const accessibilityProps = {
     accessible,
-    accessibilityRole: accessibilityRole || (variant === 'heading' ? 'header' : 'text'),
+    accessibilityRole:
+      accessibilityRole || (variant === 'heading' ? 'header' : 'text'),
     ...(variant === 'heading' && { accessibilityLevel: level }),
   };
 
   return (
-    <Text style={[getTextStyle(), style]} testID={testID} {...accessibilityProps}>
+    <Text
+      style={[getTextStyle(), style]}
+      testID={testID}
+      {...accessibilityProps}
+    >
       {children}
     </Text>
   );
@@ -458,14 +507,15 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   accessibilityHint,
   testID,
 }) => {
-  const { getScaledSize, getAccessibleColors, settings, announceMessage } = useAccessibility();
+  const { getScaledSize, getAccessibleColors, settings, announceMessage } =
+    useAccessibility();
   const colors = getAccessibleColors();
 
   const handlePress = () => {
     if (disabled) return;
 
     if (settings.hapticFeedbackEnabled) {
-      HapticFeedbackService.triggerSelection();
+      void HapticFeedbackService.triggerSelection();
     }
 
     onPress();
@@ -527,7 +577,7 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
       disabled={disabled}
       hapticType='medium'
       animationType={settings.reducedMotionEnabled ? 'none' : 'scale'}
-      accessible={true}
+      accessible
       accessibilityRole='button'
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
@@ -536,7 +586,7 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
     >
       <AccessibleText
         variant='label'
-        style={{ color: getTextColor(), fontWeight: '600' }}
+        style={[styles.buttonText, { color: getTextColor() }]}
         accessible={false}
       >
         {children}
@@ -583,7 +633,10 @@ export const AccessibilitySettingsPanel: React.FC = () => {
     updateSettings({ [key]: !settings[key] });
   };
 
-  const _updateNumericSetting = (key: keyof AccessibilitySettings, value: number) => {
+  const _updateNumericSetting = (
+    key: keyof AccessibilitySettings,
+    value: number,
+  ) => {
     updateSettings({ [key]: value });
   };
 
@@ -605,10 +658,12 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.highContrastEnabled ? colors.primary : colors.border,
+                backgroundColor: settings.highContrastEnabled
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
-            accessible={true}
+            accessible
             accessibilityRole='switch'
             accessibilityState={{ checked: settings.highContrastEnabled }}
             accessibilityLabel='Toggle high contrast mode'
@@ -636,10 +691,12 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.largeTextEnabled ? colors.primary : colors.border,
+                backgroundColor: settings.largeTextEnabled
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
-            accessible={true}
+            accessible
             accessibilityRole='switch'
             accessibilityState={{ checked: settings.largeTextEnabled }}
             accessibilityLabel='Toggle large text'
@@ -667,10 +724,12 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.reducedMotionEnabled ? colors.primary : colors.border,
+                backgroundColor: settings.reducedMotionEnabled
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
-            accessible={true}
+            accessible
             accessibilityRole='switch'
             accessibilityState={{ checked: settings.reducedMotionEnabled }}
             accessibilityLabel='Toggle reduced motion'
@@ -704,10 +763,12 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.hapticFeedbackEnabled ? colors.primary : colors.border,
+                backgroundColor: settings.hapticFeedbackEnabled
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
-            accessible={true}
+            accessible
             accessibilityRole='switch'
             accessibilityState={{ checked: settings.hapticFeedbackEnabled }}
             accessibilityLabel='Toggle haptic feedback'
@@ -735,10 +796,12 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.announceChanges ? colors.primary : colors.border,
+                backgroundColor: settings.announceChanges
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
-            accessible={true}
+            accessible
             accessibilityRole='switch'
             accessibilityState={{ checked: settings.announceChanges }}
             accessibilityLabel='Toggle change announcements'
@@ -764,44 +827,47 @@ export const AccessibilitySettingsPanel: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  skipToContent: {
-    position: 'absolute',
-    top: -100,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-  },
-  skipButton: {
-    margin: 16,
-  },
-  settingsPanel: {
-    padding: 16,
-    borderRadius: 12,
-    margin: 16,
-  },
-  settingsTitle: {
-    marginBottom: 24,
-  },
   settingGroup: {
     marginBottom: 24,
   },
   settingItem: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: 12,
   },
+  settingsPanel: {
+    borderRadius: 12,
+    margin: 16,
+    padding: 16,
+  },
+  settingsTitle: {
+    marginBottom: 24,
+  },
+  skipButton: {
+    margin: 16,
+  },
+  skipToContent: {
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: -100,
+    zIndex: 1000,
+  },
   toggle: {
-    width: 50,
-    height: 30,
     borderRadius: 15,
+    height: 30,
     justifyContent: 'center',
     paddingHorizontal: 2,
+    width: 50,
   },
   toggleThumb: {
-    width: 26,
-    height: 26,
     borderRadius: 13,
+    height: 26,
+    width: 26,
+  },
+  buttonText: {
+    fontWeight: '600',
   },
 });
 

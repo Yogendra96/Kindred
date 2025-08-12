@@ -191,7 +191,9 @@ class SustainabilityScoreCalculator {
     context: UserContext,
     weights?: Partial<ScoreWeights>,
   ): Promise<SustainabilityScore> {
-    const trace = this.performanceMonitor.startTrace('calculate-sustainability-score');
+    const trace = this.performanceMonitor.startTrace(
+      'calculate-sustainability-score',
+    );
 
     try {
       // Check cache first
@@ -242,7 +244,11 @@ class SustainabilityScoreCalculator {
       const benchmarks = await this.getBenchmarks(context);
 
       // Generate predictions
-      const predictions = await this.generatePredictions(context.id, overall, trends);
+      const predictions = await this.generatePredictions(
+        context.id,
+        overall,
+        trends,
+      );
 
       const score: SustainabilityScore = {
         overall,
@@ -288,7 +294,10 @@ class SustainabilityScoreCalculator {
     const baseline = await this.getBaselineFootprint(context.demographics);
 
     // Calculate relative impact (lower footprint = higher score)
-    const relativeImpact = Math.max(0, (baseline - carbonFootprint.total) / baseline);
+    const relativeImpact = Math.max(
+      0,
+      (baseline - carbonFootprint.total) / baseline,
+    );
 
     // Base score from relative impact
     let score = Math.min(100, relativeImpact * 100 + 50);
@@ -312,7 +321,10 @@ class SustainabilityScoreCalculator {
     return Math.round(Math.max(0, Math.min(100, score)));
   }
 
-  private calculateBehaviorScore(metrics: SustainabilityMetrics, context: UserContext): number {
+  private calculateBehaviorScore(
+    metrics: SustainabilityMetrics,
+    context: UserContext,
+  ): number {
     const { behaviorMetrics, actionMetrics } = metrics;
 
     // Consistency score (40%)
@@ -328,7 +340,8 @@ class SustainabilityScoreCalculator {
     const actionFrequency = Math.min(1, actionMetrics.totalActions / 100);
     const actionScore = actionFrequency * 10;
 
-    const totalScore = consistencyScore + engagementScore + goalScore + actionScore;
+    const totalScore =
+      consistencyScore + engagementScore + goalScore + actionScore;
 
     // Adjust for user history
     const historyMultiplier = Math.min(
@@ -336,10 +349,15 @@ class SustainabilityScoreCalculator {
       1 + (context.history.activeDays / context.history.totalDays) * 0.2,
     );
 
-    return Math.round(Math.max(0, Math.min(100, totalScore * historyMultiplier)));
+    return Math.round(
+      Math.max(0, Math.min(100, totalScore * historyMultiplier)),
+    );
   }
 
-  private calculateKnowledgeScore(metrics: SustainabilityMetrics, context: UserContext): number {
+  private calculateKnowledgeScore(
+    metrics: SustainabilityMetrics,
+    context: UserContext,
+  ): number {
     const { knowledgeMetrics } = metrics;
 
     // Base score from education completed
@@ -348,7 +366,8 @@ class SustainabilityScoreCalculator {
     // Quiz performance
     if (knowledgeMetrics.quizScores.length > 0) {
       const avgQuizScore =
-        knowledgeMetrics.quizScores.reduce((a, b) => a + b, 0) / knowledgeMetrics.quizScores.length;
+        knowledgeMetrics.quizScores.reduce((a, b) => a + b, 0) /
+        knowledgeMetrics.quizScores.length;
       score += avgQuizScore * 0.3;
     }
 
@@ -368,7 +387,10 @@ class SustainabilityScoreCalculator {
     return Math.round(Math.max(0, Math.min(100, score)));
   }
 
-  private calculateSocialScore(metrics: SustainabilityMetrics, context: UserContext): number {
+  private calculateSocialScore(
+    metrics: SustainabilityMetrics,
+    context: UserContext,
+  ): number {
     const { socialMetrics } = metrics;
 
     // Influence score (30%)
@@ -383,12 +405,16 @@ class SustainabilityScoreCalculator {
     // Leadership activities (20%)
     const leadershipScore = socialMetrics.leadership * 20;
 
-    const totalScore = influenceScore + communityScore + sharingScore + leadershipScore;
+    const totalScore =
+      influenceScore + communityScore + sharingScore + leadershipScore;
 
     return Math.round(Math.max(0, Math.min(100, totalScore)));
   }
 
-  private calculateProgressScore(metrics: SustainabilityMetrics, context: UserContext): number {
+  private calculateProgressScore(
+    metrics: SustainabilityMetrics,
+    context: UserContext,
+  ): number {
     const { behaviorMetrics, actionMetrics } = metrics;
 
     // Improvement rate (40%)
@@ -401,9 +427,13 @@ class SustainabilityScoreCalculator {
     const challengeScore = Math.min(20, actionMetrics.challengesCompleted * 2);
 
     // Recommendation follow-through (10%)
-    const recommendationScore = Math.min(10, actionMetrics.recommendationsFollowed);
+    const recommendationScore = Math.min(
+      10,
+      actionMetrics.recommendationsFollowed,
+    );
 
-    const totalScore = improvementScore + habitsScore + challengeScore + recommendationScore;
+    const totalScore =
+      improvementScore + habitsScore + challengeScore + recommendationScore;
 
     // Adjust for time since joining (newer users get bonus)
     const daysSinceJoining =
@@ -426,7 +456,10 @@ class SustainabilityScoreCalculator {
   }
 
   // Percentile calculation
-  private async calculatePercentile(score: number, context: UserContext): Promise<number> {
+  private async calculatePercentile(
+    score: number,
+    context: UserContext,
+  ): Promise<number> {
     if (!this.benchmarks) {
       await this.loadBenchmarks();
     }
@@ -441,8 +474,7 @@ class SustainabilityScoreCalculator {
       .map(Number)
       .sort((a, b) => a - b);
 
-    for (let i = 0; i < sortedPercentiles.length; i++) {
-      const percentile = sortedPercentiles[i];
+    for (const percentile of sortedPercentiles) {
       if (score <= percentiles[percentile]) {
         return percentile;
       }
@@ -463,22 +495,22 @@ class SustainabilityScoreCalculator {
     const achievements: string[] = [];
 
     // Identify strengths (scores > 80)
-    Object.entries(componentScores).forEach(([component, score]) => {
+    for (const [component, score] of Object.entries(componentScores)) {
       if (score > 80) {
         strengths.push(this.getStrengthMessage(component, score));
       } else if (score < 60) {
         improvements.push(this.getImprovementMessage(component, score));
       }
-    });
+    }
 
     // Generate next steps based on lowest scores
     const sortedComponents = Object.entries(componentScores)
       .sort(([, a], [, b]) => a - b)
       .slice(0, 2);
 
-    sortedComponents.forEach(([component]) => {
+    for (const [component] of sortedComponents) {
       nextSteps.push(this.getNextStepMessage(component, metrics, context));
-    });
+    }
 
     // Identify achievements
     if (componentScores.impact > 85) {
@@ -510,7 +542,10 @@ class SustainabilityScoreCalculator {
       social: `Great community engagement and influence`,
       progress: `Impressive improvement trajectory`,
     };
-    return messages[component as keyof typeof messages] || `Strong ${component} performance`;
+    return (
+      messages[component as keyof typeof messages] ||
+      `Strong ${component} performance`
+    );
   }
 
   private getImprovementMessage(component: string, score: number): string {
@@ -521,7 +556,10 @@ class SustainabilityScoreCalculator {
       social: 'Increase community participation and sharing',
       progress: 'Set more ambitious goals and track improvements',
     };
-    return messages[component as keyof typeof messages] || `Improve ${component} performance`;
+    return (
+      messages[component as keyof typeof messages] ||
+      `Improve ${component} performance`
+    );
   }
 
   private getNextStepMessage(
@@ -536,11 +574,16 @@ class SustainabilityScoreCalculator {
       social: 'Share your achievements and invite friends',
       progress: 'Set a new monthly carbon reduction goal',
     };
-    return steps[component as keyof typeof steps] || `Focus on improving ${component}`;
+    return (
+      steps[component as keyof typeof steps] ||
+      `Focus on improving ${component}`
+    );
   }
 
   // Trends calculation
-  private async calculateTrends(userId: string): Promise<SustainabilityScore['trends']> {
+  private async calculateTrends(
+    userId: string,
+  ): Promise<SustainabilityScore['trends']> {
     // This would fetch historical score data
     // For now, returning mock data
     return {
@@ -551,13 +594,17 @@ class SustainabilityScoreCalculator {
   }
 
   // Benchmarks
-  private async getBenchmarks(context: UserContext): Promise<SustainabilityScore['benchmarks']> {
+  private async getBenchmarks(
+    context: UserContext,
+  ): Promise<SustainabilityScore['benchmarks']> {
     if (!this.benchmarks) {
       await this.loadBenchmarks();
     }
 
     const global = this.benchmarks?.global.average || 65;
-    const country = this.benchmarks?.byCountry[context.demographics.location]?.average || global;
+    const country =
+      this.benchmarks?.byCountry[context.demographics.location]?.average ||
+      global;
     const demographic = this.getDemographicBenchmark(context) || global;
 
     return {
@@ -591,11 +638,15 @@ class SustainabilityScoreCalculator {
     const recentTrend = trends.weekly.slice(-4);
     const avgChange =
       recentTrend.length > 1
-        ? (recentTrend[recentTrend.length - 1] - recentTrend[0]) / (recentTrend.length - 1)
+        ? (recentTrend[recentTrend.length - 1] - recentTrend[0]) /
+          (recentTrend.length - 1)
         : 0;
 
     const nextMonth = Math.max(0, Math.min(100, currentScore + avgChange * 4));
-    const nextQuarter = Math.max(0, Math.min(100, currentScore + avgChange * 12));
+    const nextQuarter = Math.max(
+      0,
+      Math.min(100, currentScore + avgChange * 12),
+    );
     const yearEnd = Math.max(0, Math.min(100, currentScore + avgChange * 52));
 
     // Confidence based on trend consistency
@@ -614,7 +665,9 @@ class SustainabilityScoreCalculator {
     if (values.length < 2) return 0;
 
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / values.length;
+    const variance =
+      values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) /
+      values.length;
     return Math.sqrt(variance);
   }
 
@@ -666,7 +719,9 @@ class SustainabilityScoreCalculator {
   }
 
   // Utility methods
-  private async getBaselineFootprint(demographics: UserContext['demographics']): Promise<number> {
+  private async getBaselineFootprint(
+    demographics: UserContext['demographics'],
+  ): Promise<number> {
     // This would use carbon API to get baseline for demographic
     // For now, using simplified calculation
     const baselineMap = {
@@ -683,7 +738,10 @@ class SustainabilityScoreCalculator {
     return baseline;
   }
 
-  private generateCacheKey(userId: string, metrics: SustainabilityMetrics): string {
+  private generateCacheKey(
+    userId: string,
+    metrics: SustainabilityMetrics,
+  ): string {
     // Create a hash of key metrics for caching
     const keyData = {
       userId,
@@ -695,12 +753,18 @@ class SustainabilityScoreCalculator {
   }
 
   // Score history management
-  async saveScoreHistory(userId: string, score: SustainabilityScore): Promise<void> {
+  async saveScoreHistory(
+    userId: string,
+    score: SustainabilityScore,
+  ): Promise<void> {
     // This would save to database
     // Implementation depends on storage solution
   }
 
-  async getScoreHistory(userId: string, days: number = 30): Promise<ScoreHistory> {
+  async getScoreHistory(
+    userId: string,
+    days: number = 30,
+  ): Promise<ScoreHistory> {
     // This would fetch from database
     // For now, returning mock data
     return {
@@ -730,7 +794,11 @@ class SustainabilityScoreCalculator {
         'Reduced carbon footprint by 15%',
         'Completed 5 sustainability challenges',
       ],
-      goals: ['Reach 85+ overall score', 'Achieve A grade rating', 'Join top 10% percentile'],
+      goals: [
+        'Reach 85+ overall score',
+        'Achieve A grade rating',
+        'Join top 10% percentile',
+      ],
     };
   }
 

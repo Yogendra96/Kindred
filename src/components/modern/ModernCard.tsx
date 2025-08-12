@@ -16,6 +16,7 @@ import {
   StyleSheet,
   TapGestureHandler,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -100,10 +101,16 @@ class CardGestureManager {
   private rotation = new Animated.Value(0);
   private opacity = new Animated.Value(1);
 
-  constructor(private onGesture?: (gesture: string, data: Record<string, unknown>) => void) {}
+  constructor(
+    private onGesture?: (
+      gesture: string,
+      data: Record<string, unknown>,
+    ) => void,
+  ) {}
 
   handlePanGesture = (event: Record<string, unknown>) => {
-    const { translationX, translationY, velocityX, velocityY } = event.nativeEvent;
+    const { translationX, translationY, velocityX, velocityY } =
+      event.nativeEvent;
 
     // Update pan values
     this.panX.setValue(translationX);
@@ -113,7 +120,10 @@ class CardGestureManager {
     const swipeThreshold = 100;
     const velocityThreshold = 500;
 
-    if (Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > velocityThreshold) {
+    if (
+      Math.abs(translationX) > swipeThreshold ||
+      Math.abs(velocityX) > velocityThreshold
+    ) {
       const direction = translationX > 0 ? 'right' : 'left';
       this.onGesture?.('swipe', {
         direction,
@@ -122,7 +132,10 @@ class CardGestureManager {
       });
     }
 
-    if (Math.abs(translationY) > swipeThreshold || Math.abs(velocityY) > velocityThreshold) {
+    if (
+      Math.abs(translationY) > swipeThreshold ||
+      Math.abs(velocityY) > velocityThreshold
+    ) {
       const direction = translationY > 0 ? 'down' : 'up';
       this.onGesture?.('swipe', {
         direction,
@@ -183,7 +196,9 @@ class CardGestureManager {
     ]).start();
   };
 
-  animateEntrance = (type: NonNullable<ModernCardProps['entranceAnimation']>) => {
+  animateEntrance = (
+    type: NonNullable<ModernCardProps['entranceAnimation']>,
+  ) => {
     const animations: Record<string, Animated.CompositeAnimation> = {
       fadeIn: Animated.timing(this.opacity, {
         toValue: 1,
@@ -505,10 +520,14 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       case 'glass':
         return {
           ...baseStyles,
-          backgroundColor: theme.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+          backgroundColor: theme.isDark
+            ? 'rgba(255, 255, 255, 0.1)'
+            : 'rgba(0, 0, 0, 0.05)',
           backdropFilter: 'blur(10px)',
           borderWidth: 1,
-          borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+          borderColor: theme.isDark
+            ? 'rgba(255, 255, 255, 0.2)'
+            : 'rgba(0, 0, 0, 0.1)',
         };
       default:
         return baseStyles;
@@ -668,7 +687,12 @@ export const ModernCard: React.FC<ModernCardProps> = ({
 
   if (!isVisible && lazyLoad) {
     return (
-      <View style={[cardStyle, { backgroundColor: theme.colors.backgroundSecondary }]}>
+      <View
+        style={[
+          cardStyle,
+          { backgroundColor: theme.colors.backgroundSecondary },
+        ]}
+      >
         <Text>Loading...</Text>
       </View>
     );
@@ -678,7 +702,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
     <Animated.View
       style={[cardStyle, gestureManager.getTransformStyle()]}
       onLayout={handleLayout}
-      accessible={true}
+      accessible
       accessibilityLabel={accessibilityLabel || title}
       accessibilityHint={accessibilityHint}
       accessibilityActions={accessibilityActions}
@@ -751,47 +775,47 @@ export const ModernCard: React.FC<ModernCardProps> = ({
 };
 
 const styles = StyleSheet.create({
+  actionButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  actionLabel: {
+    fontWeight: '500',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
   badge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    position: 'absolute',
+    right: 12,
+    top: 12,
     zIndex: 1,
   },
   badgeText: {
     fontWeight: '600',
   },
-  imageContainer: {
-    marginBottom: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
+  content: {
+    flex: 1,
   },
-  title: {
-    marginBottom: 4,
-    fontWeight: '600',
+  imageContainer: {
+    borderRadius: 8,
+    marginBottom: 12,
+    overflow: 'hidden',
   },
   subtitle: {
     marginBottom: 12,
     opacity: 0.8,
   },
-  content: {
-    flex: 1,
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    marginTop: 16,
-    gap: 8,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  actionLabel: {
-    fontWeight: '500',
+  title: {
+    fontWeight: '600',
+    marginBottom: 4,
   },
 });
 

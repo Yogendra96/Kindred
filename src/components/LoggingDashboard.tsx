@@ -31,16 +31,28 @@ interface LoggingDashboardProps {
   onClose: () => void;
 }
 
-const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose }) => {
+const LoggingDashboard: React.FC<LoggingDashboardProps> = ({
+  visible,
+  onClose,
+}) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [analytics, setAnalytics] = useState<LogAnalytics | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevels, setSelectedLevels] = useState<LogLevel[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
-  const [activeTab, setActiveTab] = useState<'logs' | 'analytics' | 'search'>('logs');
+  const [activeTab, setActiveTab] = useState<'logs' | 'analytics' | 'search'>(
+    'logs',
+  );
 
-  const levels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
+  const levels: LogLevel[] = [
+    'trace',
+    'debug',
+    'info',
+    'warn',
+    'error',
+    'fatal',
+  ];
 
   useEffect(() => {
     if (visible) {
@@ -116,9 +128,17 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
         <Text style={styles.logTime}>{formatTimestamp(item.timestamp)}</Text>
         {item.metadata.category && (
           <View
-            style={[styles.categoryBadge, { backgroundColor: `${getLevelColor(item.level)}20` }]}
+            style={[
+              styles.categoryBadge,
+              { backgroundColor: `${getLevelColor(item.level)}20` },
+            ]}
           >
-            <Text style={[styles.categoryText, { color: getLevelColor(item.level) }]}>
+            <Text
+              style={[
+                styles.categoryText,
+                { color: getLevelColor(item.level) },
+              ]}
+            >
               {item.metadata.category}
             </Text>
           </View>
@@ -151,7 +171,10 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Log Details</Text>
-            <TouchableOpacity onPress={() => setSelectedLog(null)} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={() => setSelectedLog(null)}
+              style={styles.closeButton}
+            >
               <Icon name='close' size={24} color='#007AFF' />
             </TouchableOpacity>
           </View>
@@ -163,8 +186,12 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
               <Text style={styles.detailText}>
                 Time: {new Date(selectedLog.timestamp).toLocaleString()}
               </Text>
-              <Text style={styles.detailText}>Platform: {selectedLog.platform}</Text>
-              <Text style={styles.detailText}>Environment: {selectedLog.environment}</Text>
+              <Text style={styles.detailText}>
+                Platform: {selectedLog.platform}
+              </Text>
+              <Text style={styles.detailText}>
+                Environment: {selectedLog.environment}
+              </Text>
             </View>
 
             <View style={styles.detailSection}>
@@ -175,11 +202,17 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
             {selectedLog.error && (
               <View style={styles.detailSection}>
                 <Text style={styles.detailTitle}>Error Details</Text>
-                <Text style={styles.detailText}>Name: {selectedLog.error.name}</Text>
-                <Text style={styles.detailText}>Message: {selectedLog.error.message}</Text>
+                <Text style={styles.detailText}>
+                  Name: {selectedLog.error.name}
+                </Text>
+                <Text style={styles.detailText}>
+                  Message: {selectedLog.error.message}
+                </Text>
                 {selectedLog.error.stack && (
                   <ScrollView style={styles.stackTrace}>
-                    <Text style={styles.stackText}>{selectedLog.error.stack}</Text>
+                    <Text style={styles.stackText}>
+                      {selectedLog.error.stack}
+                    </Text>
                   </ScrollView>
                 )}
               </View>
@@ -224,11 +257,14 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
           <Text style={styles.analyticsTitle}>Logs by Level</Text>
           {levels.map(level => {
             const count = analytics.logsByLevel[level] || 0;
-            const percentage = analytics.totalLogs > 0 ? (count / analytics.totalLogs) * 100 : 0;
+            const percentage =
+              analytics.totalLogs > 0 ? (count / analytics.totalLogs) * 100 : 0;
 
             return (
               <View key={level} style={styles.levelRow}>
-                <Text style={[styles.levelName, { color: getLevelColor(level) }]}>
+                <Text
+                  style={[styles.levelName, { color: getLevelColor(level) }]}
+                >
                   {level.toUpperCase()}
                 </Text>
                 <View style={styles.levelBar}>
@@ -305,7 +341,11 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
                 <Text
                   style={[
                     styles.levelFilterText,
-                    { color: selectedLevels.includes(level) ? '#FFFFFF' : getLevelColor(level) },
+                    {
+                      color: selectedLevels.includes(level)
+                        ? '#FFFFFF'
+                        : getLevelColor(level),
+                    },
                   ]}
                 >
                   {level.toUpperCase()}
@@ -340,7 +380,11 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
   };
 
   return (
-    <Modal visible={visible} animationType='slide' presentationStyle='fullScreen'>
+    <Modal
+      visible={visible}
+      animationType='slide'
+      presentationStyle='fullScreen'
+    >
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Logging Dashboard</Text>
@@ -371,7 +415,10 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
                 color={activeTab === tab.key ? '#007AFF' : '#8E8E93'}
               />
               <Text
-                style={[styles.tabLabel, { color: activeTab === tab.key ? '#007AFF' : '#8E8E93' }]}
+                style={[
+                  styles.tabLabel,
+                  { color: activeTab === tab.key ? '#007AFF' : '#8E8E93' },
+                ]}
               >
                 {tab.label}
               </Text>
@@ -411,169 +458,9 @@ const LoggingDashboard: React.FC<LoggingDashboardProps> = ({ visible, onClose })
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 50,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5EA',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1C1E',
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  exportButton: {
-    padding: 8,
-  },
-  closeButton: {
-    padding: 8,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5EA',
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    gap: 6,
-  },
   activeTab: {
-    borderBottomWidth: 2,
     borderBottomColor: '#007AFF',
-  },
-  tabLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  content: {
-    flex: 1,
-  },
-  logsList: {
-    flex: 1,
-  },
-  logItem: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginVertical: 4,
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-  },
-  logHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    gap: 8,
-  },
-  logLevel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  logTime: {
-    fontSize: 12,
-    color: '#8E8E93',
-  },
-  categoryBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  categoryText: {
-    fontSize: 10,
-    fontWeight: '500',
-  },
-  logMessage: {
-    fontSize: 14,
-    color: '#1C1C1E',
-    marginBottom: 4,
-  },
-  logComponent: {
-    fontSize: 12,
-    color: '#8E8E93',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5EA',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1C1E',
-  },
-  modalContent: {
-    flex: 1,
-    padding: 16,
-  },
-  detailSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  detailTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginBottom: 8,
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#3C3C43',
-    marginBottom: 4,
-  },
-  detailMessage: {
-    fontSize: 14,
-    color: '#1C1C1E',
-    lineHeight: 20,
-  },
-  stackTrace: {
-    maxHeight: 200,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 4,
-    padding: 8,
-    marginTop: 8,
-  },
-  stackText: {
-    fontSize: 12,
-    fontFamily: 'Menlo',
-    color: '#3C3C43',
-  },
-  metadataContainer: {
-    maxHeight: 200,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 4,
-    padding: 8,
-  },
-  metadataText: {
-    fontSize: 12,
-    fontFamily: 'Menlo',
-    color: '#3C3C43',
+    borderBottomWidth: 2,
   },
   analyticsContainer: {
     padding: 16,
@@ -581,140 +468,300 @@ const styles = StyleSheet.create({
   analyticsSection: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    padding: 16,
     marginBottom: 16,
+    padding: 16,
   },
   analyticsTitle: {
+    color: '#1C1C1E',
     fontSize: 16,
     fontWeight: '600',
-    color: '#1C1C1E',
     marginBottom: 12,
   },
-  statRow: {
+  categoryBadge: {
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  categoryCount: {
+    color: '#8E8E93',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  categoryInput: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+    fontSize: 14,
+    padding: 12,
+  },
+  categoryName: {
+    color: '#1C1C1E',
+    fontSize: 14,
+  },
+  categoryRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  container: {
+    backgroundColor: '#F2F2F7',
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  detailMessage: {
+    color: '#1C1C1E',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  detailSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    marginBottom: 16,
+    padding: 16,
+  },
+  detailText: {
+    color: '#3C3C43',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  detailTitle: {
+    color: '#1C1C1E',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  errorCount: {
+    color: '#8E8E93',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  errorMessage: {
+    color: '#FF3B30',
+    flex: 1,
+    fontSize: 14,
+    marginRight: 8,
+  },
+  errorRow: {
+    alignItems: 'center',
+    borderBottomColor: '#E5E5EA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  exportButton: {
+    padding: 8,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  filterSection: {
+    marginBottom: 12,
+  },
+  filterTitle: {
+    color: '#1C1C1E',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  header: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderBottomColor: '#E5E5EA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    paddingTop: 50,
+  },
+  headerButtons: {
     flexDirection: 'row',
     gap: 12,
   },
-  statCard: {
+  levelBar: {
+    backgroundColor: '#E5E5EA',
+    borderRadius: 4,
     flex: 1,
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 8,
+    height: 8,
   },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1C1C1E',
+  levelBarFill: {
+    borderRadius: 4,
+    height: '100%',
   },
-  statLabel: {
+  levelCount: {
+    color: '#3C3C43',
     fontSize: 12,
-    color: '#8E8E93',
-    marginTop: 4,
+    textAlign: 'right',
+    width: 40,
   },
-  levelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
+  levelFilter: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  levelFilterText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   levelName: {
     fontSize: 12,
     fontWeight: '600',
     width: 60,
   },
-  levelBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#E5E5EA',
-    borderRadius: 4,
-  },
-  levelBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  levelCount: {
-    fontSize: 12,
-    color: '#3C3C43',
-    width: 40,
-    textAlign: 'right',
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  levelRow: {
     alignItems: 'center',
-    paddingVertical: 4,
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
   },
-  categoryName: {
-    fontSize: 14,
-    color: '#1C1C1E',
-  },
-  categoryCount: {
-    fontSize: 14,
+  logComponent: {
     color: '#8E8E93',
+    fontSize: 12,
+  },
+  logHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 4,
+  },
+  logItem: {
+    backgroundColor: '#FFFFFF',
+    borderLeftWidth: 4,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginVertical: 4,
+    padding: 12,
+  },
+  logLevel: {
+    fontSize: 12,
     fontWeight: '600',
   },
-  errorRow: {
+  logMessage: {
+    color: '#1C1C1E',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  logTime: {
+    color: '#8E8E93',
+    fontSize: 12,
+  },
+  logsList: {
+    flex: 1,
+  },
+  metadataContainer: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 4,
+    maxHeight: 200,
+    padding: 8,
+  },
+  metadataText: {
+    color: '#3C3C43',
+    fontFamily: 'Menlo',
+    fontSize: 12,
+  },
+  modalContainer: {
+    backgroundColor: '#F2F2F7',
+    flex: 1,
+  },
+  modalContent: {
+    flex: 1,
+    padding: 16,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderBottomColor: '#E5E5EA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5EA',
+    padding: 16,
   },
-  errorMessage: {
-    fontSize: 14,
-    color: '#FF3B30',
-    flex: 1,
-    marginRight: 8,
-  },
-  errorCount: {
-    fontSize: 14,
-    color: '#8E8E93',
+  modalTitle: {
+    color: '#1C1C1E',
+    fontSize: 18,
     fontWeight: '600',
   },
   searchContainer: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E5E5EA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    padding: 16,
   },
   searchInput: {
     backgroundColor: '#F2F2F7',
     borderRadius: 8,
-    padding: 12,
     fontSize: 16,
     marginBottom: 16,
-  },
-  filterSection: {
-    marginBottom: 12,
-  },
-  filterTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginBottom: 8,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  levelFilter: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  levelFilterText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  categoryInput: {
-    backgroundColor: '#F2F2F7',
-    borderRadius: 8,
     padding: 12,
-    fontSize: 14,
   },
   searchResults: {
     flex: 1,
+  },
+  stackText: {
+    color: '#3C3C43',
+    fontFamily: 'Menlo',
+    fontSize: 12,
+  },
+  stackTrace: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 4,
+    marginTop: 8,
+    maxHeight: 200,
+    padding: 8,
+  },
+  statCard: {
+    alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+    flex: 1,
+    padding: 12,
+  },
+  statLabel: {
+    color: '#8E8E93',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statValue: {
+    color: '#1C1C1E',
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  tab: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
+    padding: 12,
+  },
+  tabBar: {
+    backgroundColor: '#FFFFFF',
+    borderBottomColor: '#E5E5EA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  title: {
+    color: '#1C1C1E',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
 

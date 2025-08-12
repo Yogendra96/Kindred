@@ -20,6 +20,12 @@ import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import EnhancedSkeletonLoader from './EnhancedSkeletonLoader';
 import { AnimatedTouchable } from './MicroInteractions';
 
+const COLORS = {
+  black: '#000',
+  blackTransparent05: 'rgba(0,0,0,0.05)',
+  blackTransparent10: 'rgba(0,0,0,0.1)',
+};
+
 const { width: screenWidth } = Dimensions.get('window');
 const chartWidth = screenWidth - 32;
 
@@ -116,6 +122,8 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
         }),
       ]).start();
     }
+    // fadeAnim and scaleAnim are refs and don't change between renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, data]);
 
   const defaultColors = [
@@ -131,7 +139,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
     '#F7DC6F',
   ];
 
-  const colors = customColors || defaultColors;
+  const colors = customColors ?? defaultColors;
 
   const formatValueDisplay = (value: number): string => {
     if (formatValue) {
@@ -165,7 +173,8 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
       backgroundColor: 'transparent',
       backgroundGradientFrom: theme.colors.surface,
       backgroundGradientTo: theme.colors.surface,
-      color: (_opacity = 1) => `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
+      color: (_opacity = 1) =>
+        `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`,
       strokeWidth: 2,
       barPercentage: 0.7,
       useShadowColorFromDataset: false,
@@ -189,7 +198,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
   const renderPieChart = () => {
     const pieData = (data as DataPoint[]).map((item, index) => ({
       ...item,
-      color: item.color || colors[index % colors.length],
+      color: item.color ?? colors[index % colors.length],
       legendFontColor: theme.colors.onSurface,
       legendFontSize: 12,
     }));
@@ -213,8 +222,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
         {isScreenReaderEnabled && (
           <View style={styles.accessibleSummary}>
             <Text
-              style={[styles.accessibleTitle, { color: theme.colors.onSurface }]}
-              accessible={true}
+              style={[
+                styles.accessibleTitle,
+                { color: theme.colors.onSurface },
+              ]}
+              accessible
               accessibilityRole='header'
             >
               Chart Data Summary
@@ -222,8 +234,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
             {pieData.map((item, index) => (
               <Text
                 key={index}
-                style={[styles.accessibleItem, { color: theme.colors.onSurface }]}
-                accessible={true}
+                style={[
+                  styles.accessibleItem,
+                  { color: theme.colors.onSurface },
+                ]}
+                accessible
               >
                 {item.name}: {formatValueDisplay(item.value)}
               </Text>
@@ -258,13 +273,10 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
             fillShadowGradientOpacity: 0.1,
           }}
           bezier
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-          withDots={true}
-          withShadow={true}
-          withScrollableDot={true}
+          style={styles.chartStyle}
+          withDots
+          withShadow
+          withScrollableDot
           withInnerLines={showGrid}
           withOuterLines={showAxis}
         />
@@ -273,8 +285,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
         {isScreenReaderEnabled && (
           <View style={styles.accessibleSummary}>
             <Text
-              style={[styles.accessibleTitle, { color: theme.colors.onSurface }]}
-              accessible={true}
+              style={[
+                styles.accessibleTitle,
+                { color: theme.colors.onSurface },
+              ]}
+              accessible
               accessibilityRole='header'
             >
               Line Chart Data
@@ -282,8 +297,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
             {(data as LineDataPoint[]).map((point, index) => (
               <Text
                 key={index}
-                style={[styles.accessibleItem, { color: theme.colors.onSurface }]}
-                accessible={true}
+                style={[
+                  styles.accessibleItem,
+                  { color: theme.colors.onSurface },
+                ]}
+                accessible
               >
                 Point {index + 1}: {formatValueDisplay(point.y)}
               </Text>
@@ -311,21 +329,21 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
           width={chartWidth}
           height={height}
           chartConfig={getChartConfig()}
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
+          style={styles.chartStyle}
           showValuesOnTopOfBars={showValues}
           withInnerLines={showGrid}
-          fromZero={true}
+          fromZero
         />
 
         {/* Accessible data summary for screen readers */}
         {isScreenReaderEnabled && (
           <View style={styles.accessibleSummary}>
             <Text
-              style={[styles.accessibleTitle, { color: theme.colors.onSurface }]}
-              accessible={true}
+              style={[
+                styles.accessibleTitle,
+                { color: theme.colors.onSurface },
+              ]}
+              accessible
               accessibilityRole='header'
             >
               Bar Chart Data
@@ -333,8 +351,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
             {(data as DataPoint[]).map((item, index) => (
               <Text
                 key={index}
-                style={[styles.accessibleItem, { color: theme.colors.onSurface }]}
-                accessible={true}
+                style={[
+                  styles.accessibleItem,
+                  { color: theme.colors.onSurface },
+                ]}
+                accessible
               >
                 {item.name}: {formatValueDisplay(item.value)}
               </Text>
@@ -374,14 +395,14 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
             onPress={() => handleDataPointPress(item, index)}
             style={[
               styles.legendItem,
-              {
-                backgroundColor:
-                  selectedIndex === index ? theme.colors.primaryContainer : 'transparent',
-              },
+              selectedIndex === index ? [
+                styles.selectedLegendItem,
+                { backgroundColor: theme.colors.primaryContainer }
+              ] : styles.unselectedLegendItem,
             ]}
             hapticType='light'
             animationType='scale'
-            accessible={true}
+            accessible
             accessibilityRole='button'
             accessibilityLabel={`${item.name}: ${formatValueDisplay(item.value)}`}
             accessibilityState={{ selected: selectedIndex === index }}
@@ -401,7 +422,12 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
               >
                 {item.name}
               </Text>
-              <Text style={[styles.legendValue, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                style={[
+                  styles.legendValue,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 {formatValueDisplay(item.value)}
               </Text>
             </View>
@@ -412,15 +438,23 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
   };
 
   const renderError = () => (
-    <View style={[styles.errorContainer, { backgroundColor: theme.colors.errorContainer }]}>
+    <View
+      style={[
+        styles.errorContainer,
+        { backgroundColor: theme.colors.errorContainer },
+      ]}
+    >
       <Ionicons
         name='warning-outline'
         size={32}
         color={theme.colors.error}
-        accessible={true}
+        accessible
         accessibilityLabel='Error icon'
       />
-      <Text style={[styles.errorText, { color: theme.colors.onErrorContainer }]} accessible={true}>
+      <Text
+        style={[styles.errorText, { color: theme.colors.onErrorContainer }]}
+        accessible
+      >
         {error || 'Failed to load chart data'}
       </Text>
     </View>
@@ -445,7 +479,10 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
             accessibilityLabel='Loading chart subtitle'
           />
         )}
-        <EnhancedSkeletonLoader variant='chart' accessibilityLabel='Loading chart data' />
+        <EnhancedSkeletonLoader
+          variant='chart'
+          accessibilityLabel='Loading chart data'
+        />
       </View>
     );
   }
@@ -460,17 +497,22 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
 
   if (!data || data.length === 0) {
     return (
-      <View style={[styles.emptyContainer, { backgroundColor: theme.colors.surface }]}>
+      <View
+        style={[
+          styles.emptyContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
         <Ionicons
           name='bar-chart-outline'
           size={48}
           color={theme.colors.onSurfaceVariant}
-          accessible={true}
+          accessible
           accessibilityLabel='No data icon'
         />
         <Text
           style={[styles.emptyText, { color: theme.colors.onSurfaceVariant }]}
-          accessible={true}
+          accessible
         >
           No data available
         </Text>
@@ -497,9 +539,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
         },
       ]}
       testID={testID}
-      accessible={true}
+      accessible
       accessibilityLabel={accessibilityLabel || `${type} chart`}
-      accessibilityHint={accessibilityHint || 'Double tap to interact with chart data'}
+      accessibilityHint={
+        accessibilityHint || 'Double tap to interact with chart data'
+      }
     >
       {/* Header */}
       {(title || subtitle) && (
@@ -507,7 +551,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
           {title && (
             <Text
               style={[styles.title, { color: theme.colors.onSurface }]}
-              accessible={true}
+              accessible
               accessibilityRole='header'
             >
               {title}
@@ -515,8 +559,11 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
           )}
           {subtitle && (
             <Text
-              style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
-              accessible={true}
+              style={[
+                styles.subtitle,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+              accessible
             >
               {subtitle}
             </Text>
@@ -534,11 +581,16 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
       {type === 'pie' && !isScreenReaderEnabled && (
         <View style={styles.summaryContainer}>
           <Text
-            style={[styles.summaryTitle, { color: theme.colors.onSurfaceVariant }]}
-            accessible={true}
+            style={[
+              styles.summaryTitle,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
+            accessible
           >
             Total:{' '}
-            {formatValueDisplay((data as DataPoint[]).reduce((sum, item) => sum + item.value, 0))}
+            {formatValueDisplay(
+              (data as DataPoint[]).reduce((sum, item) => sum + item.value, 0),
+            )}
           </Text>
         </View>
       )}
@@ -547,34 +599,71 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
 };
 
 const styles = StyleSheet.create({
+  accessibleItem: {
+    fontSize: 14,
+    marginBottom: 4,
+    paddingLeft: 8,
+  },
+  accessibleSummary: {
+    backgroundColor: COLORS.blackTransparent05,
+    borderRadius: 8,
+    marginTop: 16,
+    padding: 12,
+  },
+  accessibleTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  chartContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   container: {
     borderRadius: 16,
-    padding: 16,
+    elevation: 4,
     marginVertical: 8,
-    shadowColor: '#000',
+    padding: 16,
+    shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    borderRadius: 16,
+    justifyContent: 'center',
+    marginVertical: 8,
+    padding: 48,
+  },
+  emptyText: {
+    fontSize: 16,
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    borderRadius: 12,
+    justifyContent: 'center',
+    marginVertical: 16,
+    padding: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    marginTop: 8,
+    textAlign: 'center',
   },
   header: {
     marginBottom: 16,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  chartContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
+  legendColor: {
+    borderRadius: 6,
+    height: 12,
+    marginRight: 8,
+    width: 12,
   },
   legendContainer: {
     maxHeight: 120,
@@ -583,80 +672,53 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   legendItem: {
-    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    marginHorizontal: 4,
+    minWidth: 120,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginHorizontal: 4,
-    borderRadius: 8,
-    minWidth: 120,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  legendTextContainer: {
-    flex: 1,
   },
   legendName: {
     fontSize: 12,
     fontWeight: '500',
   },
+  legendTextContainer: {
+    flex: 1,
+  },
   legendValue: {
     fontSize: 11,
     marginTop: 2,
   },
+  subtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
   summaryContainer: {
     alignItems: 'center',
-    paddingTop: 8,
+    borderTopColor: COLORS.blackTransparent10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+    paddingTop: 8,
   },
   summaryTitle: {
     fontSize: 14,
     fontWeight: '500',
   },
-  errorContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    borderRadius: 12,
-    marginVertical: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 48,
+  chartStyle: {
     borderRadius: 16,
     marginVertical: 8,
   },
-  emptyText: {
-    fontSize: 16,
-    marginTop: 12,
-    textAlign: 'center',
+  selectedLegendItem: {
+    // backgroundColor handled dynamically with theme
   },
-  accessibleSummary: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 8,
-  },
-  accessibleTitle: {
-    fontSize: 16,
+  title: {
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
-  },
-  accessibleItem: {
-    fontSize: 14,
     marginBottom: 4,
-    paddingLeft: 8,
+  },
+  unselectedLegendItem: {
+    backgroundColor: 'transparent',
   },
 });
 

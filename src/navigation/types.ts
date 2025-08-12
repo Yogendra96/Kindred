@@ -1,20 +1,21 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
+import type { CarbonActivityType } from '../components/forms/CarbonActivityForm';
 
-export type RootStackParamList = {
+export interface RootStackParamList {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainStackParamList>;
   Onboarding: undefined;
-};
+}
 
-export type AuthStackParamList = {
+export interface AuthStackParamList {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { token: string };
   SocialLogin: undefined;
-};
+}
 
-export type MainStackParamList = {
+export interface MainStackParamList {
   Home: undefined;
   Profile: { userId: string };
   Settings: undefined;
@@ -22,6 +23,11 @@ export type MainStackParamList = {
     initialDate?: string;
     category?: string;
   };
+  CarbonActivity: {
+    activityType: CarbonActivityType;
+    initialData?: Record<string, unknown>;
+  };
+  CarbonDashboard: undefined;
   ActivityHistory: {
     startDate?: string;
     endDate?: string;
@@ -34,14 +40,14 @@ export type MainStackParamList = {
     timeFrame?: 'weekly' | 'monthly' | 'allTime';
     category?: string;
   };
-};
+}
 
-export type MainTabParamList = {
+export interface MainTabParamList {
   HomeTab: NavigatorScreenParams<MainStackParamList>;
   ActivityTab: undefined;
   ChallengesTab: undefined;
   ProfileTab: { userId?: string };
-};
+}
 
 // Type augmentation for React Navigation
 // This extends the global RootParamList to provide type safety for navigation
