@@ -350,3 +350,24 @@ e2e/artifacts/
 e2e/screenshots/
 e2e/videos/
 detox-*.log
+
+# Development test files and artifacts
+App.*.tsx
+App.*.js
+Test*.tsx
+test-index.js
+*.error-boundary-test.*
+*.minimal.*
+*.pure-js.*
+*.ultra-minimal.*
+
+# Screenshots and images (development artifacts)
+kindred_*.png
+*.after_*.png
+*.current.png
+*.latest.png
+*.simple_test.png
+
+# Development documentation and logs
+BOOTUP_ISSUE_RESOLUTION_LOG.md
+*_RESOLUTION_LOG.md

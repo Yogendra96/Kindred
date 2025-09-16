@@ -537,7 +537,7 @@ class BarcodeScannerService {
   ): number {
     let emissions = 0;
 
-    packaging.materials.forEach(material => {
+    for (const material of packaging.materials) {
       switch (material.toLowerCase()) {
         case 'plastic':
           emissions += 0.5;
@@ -555,7 +555,7 @@ class BarcodeScannerService {
         default:
           emissions += 0.3;
       }
-    });
+    }
 
     return emissions;
   }
