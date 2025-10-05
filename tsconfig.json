@@ -56,7 +56,10 @@
     "jest.config.js",
     "vendor",
     "coverage",
-    "dist"
+    "dist",
+    "src/examples/**/*",
+    "src/services/EnhancedPerformanceService.ts",
+    "src/services/ZeroTrustSecurityService.ts"
   ],
   "include": [
     "src/**/*",

@@ -1,1 +1,599 @@
-/**\n * Modern APM Integration Example\n * Demonstrates how to integrate the Modern APM service with React Native components\n */\n\nimport React, { useEffect, useState } from 'react';\nimport {\n  View,\n  Text,\n  TouchableOpacity,\n  ScrollView,\n  StyleSheet,\n  Alert,\n  ActivityIndicator,\n} from 'react-native';\nimport {\n  useModernAPM,\n  useComponentPerformance,\n  useInteractionTracking,\n  useNavigationPerformance,\n} from '../hooks/useModernAPM';\nimport { EnhancedPerformanceMetric } from '../types/performance';\n\n// Example: Screen component with comprehensive APM integration\nconst CarbonTrackingScreen: React.FC = () => {\n  // Initialize APM for this screen\n  const {\n    startScreenRender,\n    endScreenRender,\n    recordCoreVital,\n    recordMetric,\n    trackMemory,\n    sessionSummary,\n    realTimeMetrics,\n    activeAlerts,\n    isInitialized,\n    error,\n  } = useModernAPM({\n    screenName: 'CarbonTrackingScreen',\n    autoTrackRender: true,\n    trackInteractions: true,\n    trackMemory: true,\n    userId: 'user_123',\n  });\n\n  // Track component performance\n  const { trackUpdate } = useComponentPerformance('CarbonTrackingScreen', {\n    trackMemory: true,\n    trackRender: true,\n  });\n\n  // Track user interactions\n  const { trackInteraction } = useInteractionTracking('CarbonTrackingScreen');\n\n  // Track navigation performance\n  const { trackNavigation } = useNavigationPerformance();\n\n  // Component state\n  const [carbonData, setCarbonData] = useState<any[]>([]);\n  const [isLoading, setIsLoading] = useState(true);\n  const [calculationResults, setCalculationResults] = useState<any>(null);\n\n  // Simulate data loading with performance tracking\n  useEffect(() => {\n    if (!isInitialized) return;\n\n    const loadCarbonData = async () => {\n      const loadStartTime = performance.now();\n      \n      try {\n        setIsLoading(true);\n        \n        // Simulate API call\n        await new Promise(resolve => setTimeout(resolve, 800));\n        \n        // Mock carbon data\n        const mockData = [\n          { id: 1, type: 'transport', value: 2.5, date: '2024-01-15' },\n          { id: 2, type: 'energy', value: 1.8, date: '2024-01-15' },\n          { id: 3, type: 'food', value: 3.2, date: '2024-01-15' },\n        ];\n        \n        setCarbonData(mockData);\n        \n        const loadTime = performance.now() - loadStartTime;\n        \n        // Record data loading performance\n        recordMetric({\n          name: 'carbon_data_load',\n          value: loadTime,\n          unit: 'ms',\n          severity: loadTime > 1000 ? 'medium' : 'low',\n          context: {\n            dataCount: mockData.length,\n            loadTime,\n            screenName: 'CarbonTrackingScreen',\n          },\n        });\n        \n        // Record as Core Web Vital (LCP - largest content loaded)\n        recordCoreVital('LCP', loadTime, {\n          contentType: 'carbon_data',\n          itemCount: mockData.length,\n        });\n        \n      } catch (error) {\n        recordMetric({\n          name: 'carbon_data_load_error',\n          value: performance.now() - loadStartTime,\n          unit: 'ms',\n          severity: 'high',\n          context: {\n            error: error instanceof Error ? error.message : 'Unknown error',\n            screenName: 'CarbonTrackingScreen',\n          },\n        });\n      } finally {\n        setIsLoading(false);\n      }\n    };\n\n    loadCarbonData();\n  }, [isInitialized, recordMetric, recordCoreVital]);\n\n  // Handle carbon calculation with interaction tracking\n  const handleCarbonCalculation = async () => {\n    if (!isInitialized) return;\n    \n    const interaction = trackInteraction('carbon_calculation', 'touch', {\n      carbonDataCount: carbonData.length,\n    });\n\n    const calculationStartTime = performance.now();\n\n    try {\n      // Simulate carbon calculation\n      await new Promise(resolve => setTimeout(resolve, 500));\n      \n      const totalCarbon = carbonData.reduce((sum, item) => sum + item.value, 0);\n      const calculationTime = performance.now() - calculationStartTime;\n      \n      setCalculationResults({\n        total: totalCarbon,\n        calculationTime,\n        breakdown: carbonData,\n      });\n\n      // Record calculation performance\n      recordMetric({\n        name: 'carbon_calculation',\n        value: calculationTime,\n        unit: 'ms',\n        severity: calculationTime > 200 ? 'medium' : 'low',\n        context: {\n          totalCarbon,\n          dataPoints: carbonData.length,\n          calculationTime,\n        },\n      });\n\n      // Complete interaction tracking\n      interaction.end('success');\n      \n      Alert.alert(\n        'Calculation Complete',\n        `Total Carbon Footprint: ${totalCarbon.toFixed(2)} kg CO₂\\nCalculation Time: ${calculationTime.toFixed(0)}ms`,\n      );\n      \n    } catch (error) {\n      const calculationTime = performance.now() - calculationStartTime;\n      \n      recordMetric({\n        name: 'carbon_calculation_error',\n        value: calculationTime,\n        unit: 'ms',\n        severity: 'high',\n        context: {\n          error: error instanceof Error ? error.message : 'Unknown error',\n          dataPoints: carbonData.length,\n        },\n      });\n      \n      interaction.end('error');\n      \n      Alert.alert('Calculation Error', 'Failed to calculate carbon footprint');\n    }\n  };\n\n  // Handle navigation to details screen\n  const navigateToDetails = () => {\n    if (!isInitialized) return;\n    \n    const navigation = trackNavigation('CarbonTrackingScreen', 'CarbonDetailsScreen', 'push');\n    \n    // Simulate navigation\n    setTimeout(() => {\n      navigation.complete({\n        carbonTotal: calculationResults?.total || 0,\n        dataCount: carbonData.length,\n      });\n    }, 300);\n    \n    Alert.alert('Navigation', 'Would navigate to Carbon Details Screen');\n  };\n\n  // Handle memory check\n  const checkMemoryUsage = async () => {\n    if (!isInitialized) return;\n    \n    try {\n      const memoryMetrics = await trackMemory();\n      \n      Alert.alert(\n        'Memory Usage',\n        `Used: ${(memoryMetrics.usedMemory / 1024 / 1024).toFixed(1)}MB\\n` +\n        `Available: ${(memoryMetrics.availableMemory / 1024 / 1024).toFixed(1)}MB\\n` +\n        `Pressure: ${memoryMetrics.memoryPressure}\\n` +\n        `JS Heap: ${(memoryMetrics.jsHeapSize / 1024 / 1024).toFixed(1)}MB`,\n      );\n    } catch (error) {\n      Alert.alert('Error', 'Failed to check memory usage');\n    }\n  };\n\n  // Track component updates\n  useEffect(() => {\n    if (isInitialized) {\n      trackUpdate({\n        carbonDataLoaded: carbonData.length > 0,\n        hasCalculationResults: !!calculationResults,\n        isLoading,\n      });\n    }\n  }, [carbonData, calculationResults, isLoading, isInitialized, trackUpdate]);\n\n  if (error) {\n    return (\n      <View style={styles.container}>\n        <Text style={styles.errorText}>APM Error: {error}</Text>\n      </View>\n    );\n  }\n\n  return (\n    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>\n      {/* APM Status */}\n      <View style={styles.statusCard}>\n        <Text style={styles.statusTitle}>APM Status</Text>\n        <Text style={styles.statusText}>\n          Initialized: {isInitialized ? '✅' : '❌'}\n        </Text>\n        {sessionSummary && (\n          <View>\n            <Text style={styles.statusText}>\n              Session ID: {sessionSummary.sessionId.slice(-8)}\n            </Text>\n            <Text style={styles.statusText}>\n              Performance Score: {sessionSummary.performanceScore}/100\n            </Text>\n            <Text style={styles.statusText}>\n              Metrics: {sessionSummary.metricsCollected}\n            </Text>\n            <Text style={styles.statusText}>\n              Alerts: {sessionSummary.alertsTriggered}\n            </Text>\n          </View>\n        )}\n      </View>\n\n      {/* Active Alerts */}\n      {activeAlerts.length > 0 && (\n        <View style={styles.alertsCard}>\n          <Text style={styles.alertsTitle}>🚨 Active Performance Alerts</Text>\n          {activeAlerts.map((alert) => (\n            <View key={alert.id} style={styles.alertItem}>\n              <Text style={styles.alertText}>\n                {alert.metricType}: {alert.value} > {alert.threshold}\n              </Text>\n              <Text style={styles.alertSeverity}>\n                Severity: {alert.severity}\n              </Text>\n            </View>\n          ))}\n        </View>\n      )}\n\n      {/* Carbon Data Section */}\n      <View style={styles.card}>\n        <Text style={styles.cardTitle}>Carbon Footprint Data</Text>\n        \n        {isLoading ? (\n          <View style={styles.loadingContainer}>\n            <ActivityIndicator size=\"large\" color=\"#007AFF\" />\n            <Text style={styles.loadingText}>Loading carbon data...</Text>\n          </View>\n        ) : (\n          <View>\n            {carbonData.map((item) => (\n              <View key={item.id} style={styles.dataItem}>\n                <Text style={styles.dataType}>{item.type}</Text>\n                <Text style={styles.dataValue}>{item.value} kg CO₂</Text>\n              </View>\n            ))}\n            \n            <TouchableOpacity\n              style={styles.calculateButton}\n              onPress={handleCarbonCalculation}\n              disabled={carbonData.length === 0}\n            >\n              <Text style={styles.buttonText}>Calculate Total Footprint</Text>\n            </TouchableOpacity>\n          </View>\n        )}\n      </View>\n\n      {/* Calculation Results */}\n      {calculationResults && (\n        <View style={styles.card}>\n          <Text style={styles.cardTitle}>Calculation Results</Text>\n          <Text style={styles.resultText}>\n            Total: {calculationResults.total.toFixed(2)} kg CO₂\n          </Text>\n          <Text style={styles.timeText}>\n            Calculated in {calculationResults.calculationTime.toFixed(0)}ms\n          </Text>\n          \n          <TouchableOpacity\n            style={styles.detailsButton}\n            onPress={navigateToDetails}\n          >\n            <Text style={styles.buttonText}>View Details</Text>\n          </TouchableOpacity>\n        </View>\n      )}\n\n      {/* Performance Tools */}\n      <View style={styles.card}>\n        <Text style={styles.cardTitle}>Performance Tools</Text>\n        \n        <TouchableOpacity\n          style={styles.toolButton}\n          onPress={checkMemoryUsage}\n        >\n          <Text style={styles.buttonText}>Check Memory Usage</Text>\n        </TouchableOpacity>\n        \n        <TouchableOpacity\n          style={styles.toolButton}\n          onPress={() => {\n            // Simulate layout shift\n            recordCoreVital('CLS', 0.15, {\n              shiftType: 'manual_test',\n              timestamp: Date.now(),\n            });\n            Alert.alert('Layout Shift Recorded', 'CLS value: 0.15');\n          }}\n        >\n          <Text style={styles.buttonText}>Simulate Layout Shift</Text>\n        </TouchableOpacity>\n        \n        <TouchableOpacity\n          style={styles.toolButton}\n          onPress={() => {\n            // Record custom metric\n            recordMetric({\n              name: 'custom_user_action',\n              value: performance.now(),\n              unit: 'timestamp',\n              severity: 'low',\n              context: {\n                action: 'manual_metric_test',\n                userInitiated: true,\n              },\n            });\n            Alert.alert('Custom Metric Recorded', 'Check APM dashboard for details');\n          }}\n        >\n          <Text style={styles.buttonText}>Record Custom Metric</Text>\n        </TouchableOpacity>\n      </View>\n\n      {/* Real-time Metrics */}\n      {realTimeMetrics && (\n        <View style={styles.card}>\n          <Text style={styles.cardTitle}>Real-time Metrics</Text>\n          <Text style={styles.metricsText}>\n            Core Vitals: {realTimeMetrics.coreVitals.length}\n          </Text>\n          <Text style={styles.metricsText}>\n            Recent Metrics: {realTimeMetrics.recentMetrics.length}\n          </Text>\n          <Text style={styles.metricsText}>\n            Memory Trend: {realTimeMetrics.memoryTrend.length} samples\n          </Text>\n          <Text style={styles.metricsText}>\n            Network Trend: {realTimeMetrics.networkTrend.length} requests\n          </Text>\n        </View>\n      )}\n    </ScrollView>\n  );\n};\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    backgroundColor: '#f5f5f5',\n  },\n  contentContainer: {\n    padding: 16,\n  },\n  statusCard: {\n    backgroundColor: '#e3f2fd',\n    padding: 16,\n    borderRadius: 8,\n    marginBottom: 16,\n    borderLeftWidth: 4,\n    borderLeftColor: '#2196f3',\n  },\n  statusTitle: {\n    fontSize: 18,\n    fontWeight: 'bold',\n    color: '#1976d2',\n    marginBottom: 8,\n  },\n  statusText: {\n    fontSize: 14,\n    color: '#1565c0',\n    marginBottom: 4,\n  },\n  alertsCard: {\n    backgroundColor: '#ffebee',\n    padding: 16,\n    borderRadius: 8,\n    marginBottom: 16,\n    borderLeftWidth: 4,\n    borderLeftColor: '#f44336',\n  },\n  alertsTitle: {\n    fontSize: 16,\n    fontWeight: 'bold',\n    color: '#d32f2f',\n    marginBottom: 8,\n  },\n  alertItem: {\n    marginBottom: 8,\n  },\n  alertText: {\n    fontSize: 14,\n    color: '#c62828',\n  },\n  alertSeverity: {\n    fontSize: 12,\n    color: '#b71c1c',\n    fontWeight: 'bold',\n  },\n  card: {\n    backgroundColor: 'white',\n    padding: 16,\n    borderRadius: 8,\n    marginBottom: 16,\n    shadowColor: '#000',\n    shadowOffset: {\n      width: 0,\n      height: 2,\n    },\n    shadowOpacity: 0.1,\n    shadowRadius: 3.84,\n    elevation: 5,\n  },\n  cardTitle: {\n    fontSize: 18,\n    fontWeight: 'bold',\n    color: '#333',\n    marginBottom: 12,\n  },\n  loadingContainer: {\n    alignItems: 'center',\n    padding: 20,\n  },\n  loadingText: {\n    marginTop: 10,\n    color: '#666',\n  },\n  dataItem: {\n    flexDirection: 'row',\n    justifyContent: 'space-between',\n    alignItems: 'center',\n    paddingVertical: 8,\n    borderBottomWidth: 1,\n    borderBottomColor: '#eee',\n  },\n  dataType: {\n    fontSize: 16,\n    color: '#333',\n    textTransform: 'capitalize',\n  },\n  dataValue: {\n    fontSize: 16,\n    fontWeight: 'bold',\n    color: '#007AFF',\n  },\n  calculateButton: {\n    backgroundColor: '#007AFF',\n    padding: 12,\n    borderRadius: 6,\n    alignItems: 'center',\n    marginTop: 16,\n  },\n  detailsButton: {\n    backgroundColor: '#34C759',\n    padding: 12,\n    borderRadius: 6,\n    alignItems: 'center',\n    marginTop: 12,\n  },\n  toolButton: {\n    backgroundColor: '#FF9500',\n    padding: 10,\n    borderRadius: 6,\n    alignItems: 'center',\n    marginBottom: 8,\n  },\n  buttonText: {\n    color: 'white',\n    fontSize: 16,\n    fontWeight: 'bold',\n  },\n  resultText: {\n    fontSize: 20,\n    fontWeight: 'bold',\n    color: '#333',\n    marginBottom: 8,\n  },\n  timeText: {\n    fontSize: 14,\n    color: '#666',\n    marginBottom: 12,\n  },\n  metricsText: {\n    fontSize: 14,\n    color: '#333',\n    marginBottom: 4,\n  },\n  errorText: {\n    fontSize: 16,\n    color: '#f44336',\n    textAlign: 'center',\n    padding: 20,\n  },\n});\n\nexport default CarbonTrackingScreen;\n\n// Example: HOC for automatic APM integration\nexport const withAPMTracking = <P extends object>(\n  WrappedComponent: React.ComponentType<P>,\n  componentName: string,\n  options: {\n    trackRender?: boolean;\n    trackMemory?: boolean;\n    trackInteractions?: boolean;\n  } = {}\n) => {\n  const WithAPMComponent: React.FC<P> = (props) => {\n    const { trackRender = true, trackMemory = true, trackInteractions = true } = options;\n    \n    const { recordMetric, isInitialized } = useModernAPM({\n      autoTrackRender: trackRender,\n      trackMemory,\n      trackInteractions,\n    });\n    \n    const { trackUpdate } = useComponentPerformance(componentName, {\n      trackMemory,\n      trackRender,\n    });\n    \n    // Track component render on prop changes\n    useEffect(() => {\n      if (isInitialized) {\n        trackUpdate({ propsChanged: true });\n      }\n    }, [props, isInitialized, trackUpdate]);\n    \n    return <WrappedComponent {...props} />;\n  };\n  \n  WithAPMComponent.displayName = `withAPM(${componentName})`;\n  \n  return WithAPMComponent;\n};\n\n// Example usage of HOC:\n// const TrackedCarbonComponent = withAPMTracking(CarbonTrackingScreen, 'CarbonTrackingScreen');
+/**
+ * Modern APM Integration Example
+ * Demonstrates how to integrate the Modern APM service with React Native components
+ */
+
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import {
+  useModernAPM,
+  useComponentPerformance,
+  useInteractionTracking,
+  useNavigationPerformance,
+} from '../hooks/useModernAPM';
+import { EnhancedPerformanceMetric } from '../types/performance';
+
+// Example: Screen component with comprehensive APM integration
+const CarbonTrackingScreen: React.FC = () => {
+  // Initialize APM for this screen
+  const {
+    startScreenRender,
+    endScreenRender,
+    recordCoreVital,
+    recordMetric,
+    trackMemory,
+    sessionSummary,
+    realTimeMetrics,
+    activeAlerts,
+    isInitialized,
+    error,
+  } = useModernAPM({
+    screenName: 'CarbonTrackingScreen',
+    autoTrackRender: true,
+    trackInteractions: true,
+    trackMemory: true,
+    userId: 'user_123',
+  });
+
+  // Track component performance
+  const { trackUpdate } = useComponentPerformance('CarbonTrackingScreen', {
+    trackMemory: true,
+    trackRender: true,
+  });
+
+  // Track user interactions
+  const { trackInteraction } = useInteractionTracking('CarbonTrackingScreen');
+
+  // Track navigation performance
+  const { trackNavigation } = useNavigationPerformance();
+
+  // Component state
+  const [carbonData, setCarbonData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [calculationResults, setCalculationResults] = useState<any>(null);
+
+  // Simulate data loading with performance tracking
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const loadCarbonData = async () => {
+      const loadStartTime = performance.now();
+      
+      try {
+        setIsLoading(true);
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Mock carbon data
+        const mockData = [
+          { id: 1, type: 'transport', value: 2.5, date: '2024-01-15' },
+          { id: 2, type: 'energy', value: 1.8, date: '2024-01-15' },
+          { id: 3, type: 'food', value: 3.2, date: '2024-01-15' },
+        ];
+        
+        setCarbonData(mockData);
+        
+        const loadTime = performance.now() - loadStartTime;
+        
+        // Record data loading performance
+        recordMetric({
+          name: 'carbon_data_load',
+          value: loadTime,
+          unit: 'ms',
+          severity: loadTime > 1000 ? 'medium' : 'low',
+          context: {
+            dataCount: mockData.length,
+            loadTime,
+            screenName: 'CarbonTrackingScreen',
+          },
+        });
+        
+        // Record as Core Web Vital (LCP - largest content loaded)
+        recordCoreVital('LCP', loadTime, {
+          contentType: 'carbon_data',
+          itemCount: mockData.length,
+        });
+        
+      } catch (error) {
+        recordMetric({
+          name: 'carbon_data_load_error',
+          value: performance.now() - loadStartTime,
+          unit: 'ms',
+          severity: 'high',
+          context: {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            screenName: 'CarbonTrackingScreen',
+          },
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCarbonData();
+  }, [isInitialized, recordMetric, recordCoreVital]);
+
+  // Handle carbon calculation with interaction tracking
+  const handleCarbonCalculation = async () => {
+    if (!isInitialized) return;
+    
+    const interaction = trackInteraction('carbon_calculation', 'touch', {
+      carbonDataCount: carbonData.length,
+    });
+
+    const calculationStartTime = performance.now();
+
+    try {
+      // Simulate carbon calculation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const totalCarbon = carbonData.reduce((sum, item) => sum + item.value, 0);
+      const calculationTime = performance.now() - calculationStartTime;
+      
+      setCalculationResults({
+        total: totalCarbon,
+        calculationTime,
+        breakdown: carbonData,
+      });
+
+      // Record calculation performance
+      recordMetric({
+        name: 'carbon_calculation',
+        value: calculationTime,
+        unit: 'ms',
+        severity: calculationTime > 200 ? 'medium' : 'low',
+        context: {
+          totalCarbon,
+          dataPoints: carbonData.length,
+          calculationTime,
+        },
+      });
+
+      // Complete interaction tracking
+      interaction.end('success');
+      
+      Alert.alert(
+        'Calculation Complete',
+        `Total Carbon Footprint: ${totalCarbon.toFixed(2)} kg CO₂\
+Calculation Time: ${calculationTime.toFixed(0)}ms`,
+      );
+      
+    } catch (error) {
+      const calculationTime = performance.now() - calculationStartTime;
+      
+      recordMetric({
+        name: 'carbon_calculation_error',
+        value: calculationTime,
+        unit: 'ms',
+        severity: 'high',
+        context: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          dataPoints: carbonData.length,
+        },
+      });
+      
+      interaction.end('error');
+      
+      Alert.alert('Calculation Error', 'Failed to calculate carbon footprint');
+    }
+  };
+
+  // Handle navigation to details screen
+  const navigateToDetails = () => {
+    if (!isInitialized) return;
+    
+    const navigation = trackNavigation('CarbonTrackingScreen', 'CarbonDetailsScreen', 'push');
+    
+    // Simulate navigation
+    setTimeout(() => {
+      navigation.complete({
+        carbonTotal: calculationResults?.total || 0,
+        dataCount: carbonData.length,
+      });
+    }, 300);
+    
+    Alert.alert('Navigation', 'Would navigate to Carbon Details Screen');
+  };
+
+  // Handle memory check
+  const checkMemoryUsage = async () => {
+    if (!isInitialized) return;
+    
+    try {
+      const memoryMetrics = await trackMemory();
+      
+      Alert.alert(
+        'Memory Usage',
+        `Used: ${(memoryMetrics.usedMemory / 1024 / 1024).toFixed(1)}MB\
+` +
+        `Available: ${(memoryMetrics.availableMemory / 1024 / 1024).toFixed(1)}MB\
+` +
+        `Pressure: ${memoryMetrics.memoryPressure}\
+` +
+        `JS Heap: ${(memoryMetrics.jsHeapSize / 1024 / 1024).toFixed(1)}MB`,
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to check memory usage');
+    }
+  };
+
+  // Track component updates
+  useEffect(() => {
+    if (isInitialized) {
+      trackUpdate({
+        carbonDataLoaded: carbonData.length > 0,
+        hasCalculationResults: !!calculationResults,
+        isLoading,
+      });
+    }
+  }, [carbonData, calculationResults, isLoading, isInitialized, trackUpdate]);
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>APM Error: {error}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {/* APM Status */}
+      <View style={styles.statusCard}>
+        <Text style={styles.statusTitle}>APM Status</Text>
+        <Text style={styles.statusText}>
+          Initialized: {isInitialized ? '✅' : '❌'}
+        </Text>
+        {sessionSummary && (
+          <View>
+            <Text style={styles.statusText}>
+              Session ID: {sessionSummary.sessionId.slice(-8)}
+            </Text>
+            <Text style={styles.statusText}>
+              Performance Score: {sessionSummary.performanceScore}/100
+            </Text>
+            <Text style={styles.statusText}>
+              Metrics: {sessionSummary.metricsCollected}
+            </Text>
+            <Text style={styles.statusText}>
+              Alerts: {sessionSummary.alertsTriggered}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Active Alerts */}
+      {activeAlerts.length > 0 && (
+        <View style={styles.alertsCard}>
+          <Text style={styles.alertsTitle}>🚨 Active Performance Alerts</Text>
+          {activeAlerts.map((alert) => (
+            <View key={alert.id} style={styles.alertItem}>
+              <Text style={styles.alertText}>
+                {alert.metricType}: {alert.value} > {alert.threshold}
+              </Text>
+              <Text style={styles.alertSeverity}>
+                Severity: {alert.severity}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Carbon Data Section */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Carbon Footprint Data</Text>
+        
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size=\"large\" color=\"#007AFF\" />
+            <Text style={styles.loadingText}>Loading carbon data...</Text>
+          </View>
+        ) : (
+          <View>
+            {carbonData.map((item) => (
+              <View key={item.id} style={styles.dataItem}>
+                <Text style={styles.dataType}>{item.type}</Text>
+                <Text style={styles.dataValue}>{item.value} kg CO₂</Text>
+              </View>
+            ))}
+            
+            <TouchableOpacity
+              style={styles.calculateButton}
+              onPress={handleCarbonCalculation}
+              disabled={carbonData.length === 0}
+            >
+              <Text style={styles.buttonText}>Calculate Total Footprint</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Calculation Results */}
+      {calculationResults && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Calculation Results</Text>
+          <Text style={styles.resultText}>
+            Total: {calculationResults.total.toFixed(2)} kg CO₂
+          </Text>
+          <Text style={styles.timeText}>
+            Calculated in {calculationResults.calculationTime.toFixed(0)}ms
+          </Text>
+          
+          <TouchableOpacity
+            style={styles.detailsButton}
+            onPress={navigateToDetails}
+          >
+            <Text style={styles.buttonText}>View Details</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Performance Tools */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Performance Tools</Text>
+        
+        <TouchableOpacity
+          style={styles.toolButton}
+          onPress={checkMemoryUsage}
+        >
+          <Text style={styles.buttonText}>Check Memory Usage</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.toolButton}
+          onPress={() => {
+            // Simulate layout shift
+            recordCoreVital('CLS', 0.15, {
+              shiftType: 'manual_test',
+              timestamp: Date.now(),
+            });
+            Alert.alert('Layout Shift Recorded', 'CLS value: 0.15');
+          }}
+        >
+          <Text style={styles.buttonText}>Simulate Layout Shift</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.toolButton}
+          onPress={() => {
+            // Record custom metric
+            recordMetric({
+              name: 'custom_user_action',
+              value: performance.now(),
+              unit: 'timestamp',
+              severity: 'low',
+              context: {
+                action: 'manual_metric_test',
+                userInitiated: true,
+              },
+            });
+            Alert.alert('Custom Metric Recorded', 'Check APM dashboard for details');
+          }}
+        >
+          <Text style={styles.buttonText}>Record Custom Metric</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Real-time Metrics */}
+      {realTimeMetrics && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Real-time Metrics</Text>
+          <Text style={styles.metricsText}>
+            Core Vitals: {realTimeMetrics.coreVitals.length}
+          </Text>
+          <Text style={styles.metricsText}>
+            Recent Metrics: {realTimeMetrics.recentMetrics.length}
+          </Text>
+          <Text style={styles.metricsText}>
+            Memory Trend: {realTimeMetrics.memoryTrend.length} samples
+          </Text>
+          <Text style={styles.metricsText}>
+            Network Trend: {realTimeMetrics.networkTrend.length} requests
+          </Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  statusCard: {
+    backgroundColor: '#e3f2fd',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196f3',
+  },
+  statusTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1976d2',
+    marginBottom: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#1565c0',
+    marginBottom: 4,
+  },
+  alertsCard: {
+    backgroundColor: '#ffebee',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f44336',
+  },
+  alertsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#d32f2f',
+    marginBottom: 8,
+  },
+  alertItem: {
+    marginBottom: 8,
+  },
+  alertText: {
+    fontSize: 14,
+    color: '#c62828',
+  },
+  alertSeverity: {
+    fontSize: 12,
+    color: '#b71c1c',
+    fontWeight: 'bold',
+  },
+  card: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
+  },
+  dataItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  dataType: {
+    fontSize: 16,
+    color: '#333',
+    textTransform: 'capitalize',
+  },
+  dataValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#007AFF',
+  },
+  calculateButton: {
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  detailsButton: {
+    backgroundColor: '#34C759',
+    padding: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  toolButton: {
+    backgroundColor: '#FF9500',
+    padding: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  resultText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  timeText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+  },
+  metricsText: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#f44336',
+    textAlign: 'center',
+    padding: 20,
+  },
+});
+
+export default CarbonTrackingScreen;
+
+// Example: HOC for automatic APM integration
+export const withAPMTracking = <P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  componentName: string,
+  options: {
+    trackRender?: boolean;
+    trackMemory?: boolean;
+    trackInteractions?: boolean;
+  } = {}
+) => {
+  const WithAPMComponent: React.FC<P> = (props) => {
+    const { trackRender = true, trackMemory = true, trackInteractions = true } = options;
+    
+    const { recordMetric, isInitialized } = useModernAPM({
+      autoTrackRender: trackRender,
+      trackMemory,
+      trackInteractions,
+    });
+    
+    const { trackUpdate } = useComponentPerformance(componentName, {
+      trackMemory,
+      trackRender,
+    });
+    
+    // Track component render on prop changes
+    useEffect(() => {
+      if (isInitialized) {
+        trackUpdate({ propsChanged: true });
+      }
+    }, [props, isInitialized, trackUpdate]);
+    
+    return <WrappedComponent {...props} />;
+  };
+  
+  WithAPMComponent.displayName = `withAPM(${componentName})`;
+  
+  return WithAPMComponent;
+};
+
+// Example usage of HOC:
+// const TrackedCarbonComponent = withAPMTracking(CarbonTrackingScreen, 'CarbonTrackingScreen');
