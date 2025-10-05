@@ -1,2 +1,13 @@
 #!/bin/sh
-bun run lint:staged
+
+echo "🔨 Running pre-commit checks..."
+
+# Run TypeScript compilation check
+echo "📝 Type checking..."
+bun run typecheck || exit 1
+
+# Run lint-staged (ESLint, Prettier, Jest on staged files)
+echo "🧹 Linting and formatting staged files..."
+bun run lint:staged || exit 1
+
+echo "✅ Pre-commit checks passed!"
