@@ -1,0 +1,22 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push checks..."
+
+# Run type checking
+echo "📝 Type checking..."
+bun run typecheck || exit 1
+
+# Run full test suite
+echo "🧪 Running tests..."
+bun run test:ci || exit 1
+
+# Check bundle size
+echo "📦 Checking bundle size..."
+bun run bundle:check || exit 1
+
+# Check for license violations
+echo "📜 Checking licenses..."
+bun run license:check || exit 1
+
+echo "✅ All pre-push checks passed!"

@@ -1,0 +1,4 @@
+{
+  "pattern": "^(main|master|develop|dev)$|^(feature|bugfix|hotfix|release|chore|docs|refactor|test|perf|ci)\\/.+$",
+  "errorMsg": "❌ Branch name must follow the pattern: feature/*, bugfix/*, hotfix/*, release/*, chore/*, docs/*, refactor/*, test/*, perf/*, ci/*, or be main/master/develop/dev"
+}

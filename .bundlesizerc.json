@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "path": "android/app/build/outputs/apk/release/app-release.apk",
+      "maxSize": "50 MB",
+      "compression": "none"
+    },
+    {
+      "path": "ios/build/Build/Products/Release-iphoneos/Kindred.app",
+      "maxSize": "50 MB",
+      "compression": "none"
+    }
+  ],
+  "ci": {
+    "trackBranches": ["main", "master", "develop"],
+    "repoBranchBase": "main"
+  }
+}

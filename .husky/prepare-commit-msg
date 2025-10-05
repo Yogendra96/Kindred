@@ -1,0 +1,5 @@
+# Validate branch name
+bun run validate:branch || exit 1
+
+# Note: Auto-prefixing branch name disabled due to sed issues with slash characters
+# You can manually add branch context to commits if needed

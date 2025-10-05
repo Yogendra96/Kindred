@@ -28,6 +28,8 @@
 !.husky/pre-commit
 !.husky/commit-msg
 !.husky/pre-push
+!.husky/prepare-commit-msg
+!.husky/README.md
 
 # OSX
 .DS_Store
