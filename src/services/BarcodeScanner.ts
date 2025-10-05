@@ -1,14 +1,15 @@
 import PerformanceMonitoringService from './PerformanceMonitoringService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { runOnJS } from 'react-native-reanimated';
-import {
-  Camera,
-  useCameraDevices,
-  useFrameProcessor,
-} from 'react-native-vision-camera';
+// import { runOnJS } from 'react-native-reanimated'; // Optional dependency
+// Commented out unused imports - kept for future camera integration
+// import {
+//   Camera,
+//   useCameraDevices,
+//   useFrameProcessor,
+// } from 'react-native-vision-camera';
 
 // Types for Product Carbon Footprint
 export interface ProductInfo {
@@ -137,12 +138,12 @@ class BarcodeScannerService {
 
   private setupInterceptors(): void {
     this.apiClient.interceptors.request.use(
-      async config => {
+      async (config: InternalAxiosRequestConfig) => {
         const trace = await this.performanceService.trackNetworkRequest(
           config.url || '',
           config.method?.toUpperCase() || 'GET',
         );
-        config.metadata = { trace, startTime: performance.now() };
+        (config as InternalAxiosRequestConfig & { metadata?: unknown }).metadata = { trace, startTime: performance.now() };
         return config;
       },
       error => Promise.reject(error),
@@ -150,14 +151,14 @@ class BarcodeScannerService {
 
     this.apiClient.interceptors.response.use(
       response => {
-        const { trace } = response.config.metadata || {};
+        const { trace } = (response.config as InternalAxiosRequestConfig & { metadata?: { trace?: { stop: (status: number, size?: number) => void } } }).metadata || {};
         if (trace) {
           trace.stop(response.status, JSON.stringify(response.data).length);
         }
         return response;
       },
       error => {
-        const { trace } = error.config?.metadata || {};
+        const { trace } = (error.config as InternalAxiosRequestConfig & { metadata?: { trace?: { stop: (status: number) => void } } })?.metadata || {};
         if (trace) {
           trace.stop(error.response?.status || 0);
         }
@@ -344,29 +345,29 @@ class BarcodeScannerService {
   }
 
   private async getProductFromUPCDatabase(
-    barcode: string,
+    _barcode: string,
   ): Promise<ProductInfo | null> {
     try {
       // This would use a UPC database API
       // Implementation depends on the specific API chosen
-      return null;
+      // TODO: Implement actual UPC database API integration
     } catch (error) {
       console.error('Error fetching from UPC database:', error);
-      return null;
     }
+    return null;
   }
 
   private async getProductFromBarcodeLookup(
-    barcode: string,
+    _barcode: string,
   ): Promise<ProductInfo | null> {
     try {
       // This would use a barcode lookup API
       // Implementation depends on the specific API chosen
-      return null;
+      // TODO: Implement actual barcode lookup API integration
     } catch (error) {
       console.error('Error fetching from barcode lookup:', error);
-      return null;
     }
+    return null;
   }
 
   // Get carbon footprint data
@@ -409,31 +410,31 @@ class BarcodeScannerService {
   }
 
   private async getCarbonFromHowGoodAPI(
-    barcode: string,
-    productInfo: ProductInfo,
+    _barcode: string,
+    _productInfo: ProductInfo,
   ): Promise<CarbonFootprintData | null> {
     try {
       // This would integrate with HowGood API
       // Implementation depends on API access
-      return null;
+      // TODO: Implement actual HowGood API integration
     } catch (error) {
       console.error('Error fetching from HowGood API:', error);
-      return null;
     }
+    return null;
   }
 
   private async getCarbonFromCarbonTrustAPI(
-    barcode: string,
-    productInfo: ProductInfo,
+    _barcode: string,
+    _productInfo: ProductInfo,
   ): Promise<CarbonFootprintData | null> {
     try {
       // This would integrate with Carbon Trust API
       // Implementation depends on API access
-      return null;
+      // TODO: Implement actual Carbon Trust API integration
     } catch (error) {
       console.error('Error fetching from Carbon Trust API:', error);
-      return null;
     }
+    return null;
   }
 
   private async calculateEstimatedCarbonFootprint(
@@ -605,7 +606,7 @@ class BarcodeScannerService {
     return Math.min(score, 100);
   }
 
-  private calculateEconomicScore(productInfo: ProductInfo): number {
+  private calculateEconomicScore(_productInfo: ProductInfo): number {
     // This would consider factors like local economy support, fair pricing, etc.
     return 70; // Placeholder
   }
