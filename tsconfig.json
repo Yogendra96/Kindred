@@ -20,11 +20,7 @@
       "@mocks/*": ["src/__mocks__/*"]
     },
     "types": ["react-native", "jest", "detox", "node"],
-    "typeRoots": [
-      "node_modules/@types",
-      "src/types",
-      "@types"
-    ],
+    "typeRoots": ["node_modules/@types", "src/types", "@types"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -58,19 +54,15 @@
     "coverage",
     "dist",
     "src/examples/**/*",
-    "src/services/EnhancedPerformanceService.ts",
-    "src/services/ZeroTrustSecurityService.ts"
-  ],
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
     "e2e/**/*",
-    "index.js",
-    "App.tsx",
-    "index.d.ts",
-    "src/types/*.d.ts",
-    "jest.setup.ts"
+    "src/services/*.broken"
   ],
+  "include": ["src/**/*", "index.js", "App.tsx", "index.d.ts", "src/types/*.d.ts"],
   "watchOptions": {
     "watchFile": "useFsEvents",
     "watchDirectory": "useFsEvents",

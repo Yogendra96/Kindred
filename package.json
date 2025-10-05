@@ -4,71 +4,74 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "android:release": "react-native run-android --variant=release",
     "android:clean": "cd android && ./gradlew clean",
+    "android:release": "react-native run-android --variant=release",
+    "bundle:analyze": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android-bundle.js --verbose",
+    "bundle:check": "bundlesize",
+    "bundle:ios": "npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios-bundle.js",
+    "clean": "rimraf node_modules && rm -rf package-lock.json bun.lockb && bun install",
+    "clean:all": "bun run clean && bun run clean:metro && bun run clean:watchman && bun run clean:pods && bun run clean:gradle",
+    "clean:gradle": "cd android && ./gradlew clean && rm -rf .gradle",
+    "clean:metro": "rm -rf .metro-cache && rm -rf /tmp/metro-* && rm -rf /tmp/haste-map-*",
+    "clean:pods": "cd ios && rm -rf Pods && rm -rf Podfile.lock",
+    "clean:watchman": "watchman watch-del-all",
+    "commitlint": "commitlint --edit",
+    "danger:ci": "danger ci",
+    "danger:local": "danger local",
+    "deps:check": "npx npm-check-updates",
+    "deps:update": "npx npm-check-updates -u && bun install",
+    "dev:env": "npx react-native config",
+    "doctor": "npx react-native doctor",
+    "flipper:clean": "rm -rf ~/.flipper",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
+    "hooks:install": "husky install",
+    "hooks:test": "echo '✅ Testing hooks...' && bun run validate:branch && echo '✅ Branch name validation passed'",
+    "info": "npx react-native info",
     "ios": "react-native run-ios",
-    "ios:release": "react-native run-ios --configuration Release",
     "ios:clean": "cd ios && xcodebuild clean -workspace Kindred.xcworkspace -scheme Kindred",
-    "start": "react-native start",
-    "start:reset": "react-native start --reset-cache",
-    "start:verbose": "react-native start --verbose",
+    "ios:release": "react-native run-ios --configuration Release",
+    "license:check": "license-checker --production --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense'",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "lint:staged": "lint-staged",
-    "test": "jest --coverage --watchAll=false",
-    "test:watch": "jest --watch",
-    "test:unit": "jest --selectProjects='Unit Tests'",
-    "test:integration": "jest --selectProjects='Integration Tests'",
-    "test:e2e": "detox test",
-    "test:e2e:build": "detox build",
-    "test:e2e:ios": "detox test --configuration ios.sim.debug",
-    "test:e2e:android": "detox test --configuration android.emu.debug",
-    "test:maestro": "maestro test .maestro",
-    "test:performance": "jest --testNamePattern='performance'",
-    "test:accessibility": "jest --testNamePattern='accessibility'",
-    "test:ci": "jest --coverage --watchAll=false --ci",
-    "clean": "rimraf node_modules && rm -rf package-lock.json bun.lockb && bun install",
-    "clean:metro": "rm -rf .metro-cache && rm -rf /tmp/metro-* && rm -rf /tmp/haste-map-*",
-    "clean:watchman": "watchman watch-del-all",
-    "clean:pods": "cd ios && rm -rf Pods && rm -rf Podfile.lock",
-    "clean:gradle": "cd android && ./gradlew clean && rm -rf .gradle",
-    "clean:all": "bun run clean && bun run clean:metro && bun run clean:watchman && bun run clean:pods && bun run clean:gradle",
-    "reset": "bun run clean:all && bun install && bun run pod:install",
-    "typecheck": "tsc --noEmit",
-    "typecheck:watch": "tsc --noEmit --watch",
     "pod:install": "cd ios && pod install --repo-update",
     "pod:update": "cd ios && pod update",
-    "prepare": "husky install",
-    "commitlint": "commitlint --edit",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
-    "validate": "bun run lint && bun run typecheck && bun run test:ci",
-    "validate:quick": "bun run lint && bun run typecheck",
     "postinstall:disabled": "bun run pod:install && patch-package",
     "precommit": "bun run lint:staged && bun run typecheck",
+    "prepare": "husky install",
+    "release:major": "npm version major && git push --tags",
+    "release:minor": "npm version minor && git push --tags",
+    "release:patch": "npm version patch && git push --tags",
+    "reset": "bun run clean:all && bun install && bun run pod:install",
+    "security:audit": "bun audit",
+    "security:check": "npx audit-ci --config audit-ci.json",
+    "start": "react-native start",
+    "start:reset": "react-native start --reset-cache",
+    "start:verbose": "react-native start --verbose",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "storybook:test": "test-storybook",
-    "bundle:analyze": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android-bundle.js --verbose",
-    "bundle:ios": "npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios-bundle.js",
-    "flipper:clean": "rm -rf ~/.flipper",
-    "doctor": "npx react-native doctor",
-    "info": "npx react-native info",
-    "dev:env": "npx react-native config",
-    "security:audit": "bun audit",
-    "security:check": "npx audit-ci --config audit-ci.json",
-    "deps:check": "npx npm-check-updates",
-    "deps:update": "npx npm-check-updates -u && bun install",
-    "release:patch": "npm version patch && git push --tags",
-    "release:minor": "npm version minor && git push --tags",
-    "release:major": "npm version major && git push --tags",
+    "test": "jest --coverage --watchAll=false",
+    "test:accessibility": "jest --testNamePattern='accessibility'",
+    "test:ci": "jest --coverage --watchAll=false --ci",
+    "test:e2e": "detox test",
+    "test:e2e:android": "detox test --configuration android.emu.debug",
+    "test:e2e:build": "detox build",
+    "test:e2e:ios": "detox test --configuration ios.sim.debug",
+    "test:integration": "jest --selectProjects='Integration Tests'",
+    "test:maestro": "maestro test .maestro",
+    "test:performance": "jest --testNamePattern='performance'",
+    "test:unit": "jest --selectProjects='Unit Tests'",
+    "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+    "validate": "bun run lint && bun run typecheck && bun run test:ci",
     "validate:branch": "validate-branch-name",
-    "bundle:check": "bundlesize",
-    "license:check": "license-checker --production --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense'",
-    "danger:local": "danger local",
-    "danger:ci": "danger ci",
-    "hooks:install": "husky install",
-    "hooks:test": "echo '✅ Testing hooks...' && bun run validate:branch && echo '✅ Branch name validation passed'"
+    "validate:quick": "bun run lint && bun run typecheck"
+  },
+  "resolutions": {
+    "@types/react": "^18.2.0"
   },
   "dependencies": {
     "@notifee/react-native": "^7.8.2",
@@ -131,6 +134,7 @@
     "@babel/plugin-transform-flow-strip-types": "^7.27.1",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
+    "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@react-native/babel-preset": "^0.81.1",
     "@react-native/eslint-config": "^0.81.1",
@@ -164,6 +168,10 @@
     "typescript": "5.0.4",
     "validate-branch-name": "^1.3.2"
   },
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
   "detox": {
     "testRunner": {
       "args": {
@@ -171,7 +179,9 @@
         "config": "e2e/jest.config.js"
       },
       "jest": {
-        "setupFilesAfterEnv": ["./e2e/init.js"]
+        "setupFilesAfterEnv": [
+          "./e2e/init.js"
+        ]
       }
     },
     "apps": {
@@ -210,12 +220,5 @@
         "app": "android"
       }
     }
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "bun": ">=1.0.0"
-  },
-  "resolutions": {
-    "@types/react": "^18.2.0"
   }
 }

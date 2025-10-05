@@ -22,15 +22,8 @@ fix_file() {
 # Fix the corrupted files
 fix_file "src/hooks/useModernAPM.tsx"
 fix_file "src/examples/APMIntegrationExample.tsx"
-
-# Check if services need fixing
-if grep -q '\\n' src/services/EnhancedPerformanceService.ts 2>/dev/null; then
-    fix_file "src/services/EnhancedPerformanceService.ts"
-fi
-
-if grep -q '\\n' src/services/ZeroTrustSecurityService.ts 2>/dev/null; then
-    fix_file "src/services/ZeroTrustSecurityService.ts"
-fi
+fix_file "src/services/EnhancedPerformanceService.ts"
+fix_file "src/services/ZeroTrustSecurityService.ts"
 
 echo "✅ All files fixed!"
 echo "Backup files created with .bak extension"
