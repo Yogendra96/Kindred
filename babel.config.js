@@ -24,7 +24,7 @@ module.exports = {
   plugins: [
     // Environment variables
     [
-      'react-native-dotenv',
+      'module:react-native-dotenv',
       {
         envName: 'APP_ENV',
         moduleName: '@env',
@@ -91,14 +91,9 @@ module.exports = {
     '@babel/plugin-transform-async-to-generator',
 
     // Development plugins
-  ]
-    .concat(
-      process.env.NODE_ENV === 'development' ? ['react-refresh/babel'] : [],
-    )
-    .concat([
-      // React Native specific (must be last)
-      'react-native-reanimated/plugin',
-    ]),
+  ].concat(
+    process.env.NODE_ENV === 'development' ? ['react-refresh/babel'] : [],
+  ),
 
   env: {
     development: {
