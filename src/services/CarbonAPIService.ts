@@ -1,7 +1,21 @@
-import type { AxiosInstance, AxiosResponse , AxiosInstance, AxiosResponse } from 'axios';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, {
+  type AxiosInstance,
+  type AxiosResponse,
+  type AxiosError,
+  AxiosRequestConfig,
+} from 'axios';
 import { CARBON_API_KEY, CARBON_API_BASE_URL } from '@env';
-import axios, { AxiosRequestConfig } from 'axios';
+import { loggingService } from './LoggingService';
+
+// Extend AxiosRequestConfig to include metadata
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    metadata?: {
+      startTime: number;
+      requestId: string;
+    };
+  }
+}
 
 // Types for Carbon API
 export interface CarbonEmissionFactor {
@@ -114,8 +128,14 @@ export interface CarbonTrend {
 export interface APIError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: Date;
+}
+
+interface APIErrorResponse {
+  code?: string;
+  message?: string;
+  details?: unknown;
 }
 
 class CarbonAPIService {
@@ -172,7 +192,9 @@ class CarbonAPIService {
     this.api.interceptors.response.use(
       response => {
         // Track performance
-        const duration = Date.now() - response.config.metadata.startTime;
+        const duration = response.config.metadata?.startTime
+          ? Date.now() - response.config.metadata.startTime
+          : 0;
         this.logger.debug('API call completed', {
           url: response.config.url,
           status: 'success',
@@ -184,7 +206,7 @@ class CarbonAPIService {
 
         return response;
       },
-      error => {
+      (error: AxiosError) => {
         // Track error
         const duration = error.config?.metadata?.startTime
           ? Date.now() - error.config.metadata.startTime
@@ -567,11 +589,12 @@ class CarbonAPIService {
     }
   }
 
-  private handleAPIError(error: any): Promise<never> {
+  private handleAPIError(error: AxiosError): Promise<never> {
+    const errorData = error.response?.data as APIErrorResponse | undefined;
     const apiError: APIError = {
-      code: error.response?.data?.code || 'UNKNOWN_ERROR',
-      message: error.response?.data?.message || error.message,
-      details: error.response?.data?.details,
+      code: errorData?.code || 'UNKNOWN_ERROR',
+      message: errorData?.message || error.message,
+      details: errorData?.details,
       timestamp: new Date(),
     };
 

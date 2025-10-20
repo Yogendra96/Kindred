@@ -36,7 +36,7 @@ module.exports = {
         verbose: false,
       },
     ],
-    
+
     // Module resolution
     [
       'module-resolver',
@@ -80,7 +80,7 @@ module.exports = {
         },
       },
     ],
-    
+
     // General plugins
     '@babel/plugin-transform-runtime',
     '@babel/plugin-proposal-export-default-from',
@@ -88,23 +88,21 @@ module.exports = {
     ['@babel/plugin-proposal-class-properties', { loose: true }],
     ['@babel/plugin-proposal-private-methods', { loose: true }],
     ['@babel/plugin-proposal-private-property-in-object', { loose: true }],
-    '@babel/plugin-transform-async-to-generator'
-    
+    '@babel/plugin-transform-async-to-generator',
+
     // Development plugins
-  ].concat(process.env.NODE_ENV === 'development'
-     ? [
-         'react-refresh/babel',
-       ]
-     : []).concat([
-     // React Native specific (must be last)
-     'react-native-reanimated/plugin',
-   ]),
-  
+  ]
+    .concat(
+      process.env.NODE_ENV === 'development' ? ['react-refresh/babel'] : [],
+    )
+    .concat([
+      // React Native specific (must be last)
+      'react-native-reanimated/plugin',
+    ]),
+
   env: {
     development: {
-      plugins: [
-        'react-refresh/babel',
-      ],
+      plugins: ['react-refresh/babel'],
     },
     production: {
       plugins: [
@@ -138,13 +136,13 @@ module.exports = {
       ],
     },
   },
-  
+
   // Source maps and optimization
   sourceMaps: process.env.NODE_ENV === 'development',
   compact: process.env.NODE_ENV === 'production',
   comments: process.env.NODE_ENV === 'development',
   minified: process.env.NODE_ENV === 'production',
-  
+
   // Assumptions for better optimization
   assumptions: {
     constantReexports: true,

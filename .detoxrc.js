@@ -52,7 +52,7 @@ module.exports = {
     emulator: {
       type: 'android.emulator',
       device: {
-        avdName: 'Pixel_4_API_30',
+        avdName: 'Pixel_9_Pro_XL_API_35',
       },
     },
     genymotion: {
