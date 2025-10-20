@@ -1,0 +1,86 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+android/
+ios/
+build/
+dist/
+*.build/
+
+# Cache directories
+.metro-cache/
+.cache/
+*.cache/
+coverage/
+
+# Config files
+*.config.js
+.eslintrc.js
+.prettierrc.js
+.releaserc.js
+.lintstagedrc.js
+babel.config.js
+metro.config.js
+jest.config.js
+jest.setup.js
+commitlint.config.js
+dangerfile.js
+react-native.config.js
+
+# Test files
+*.test.js
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.ts
+*.spec.tsx
+
+# Generated files
+*.generated.*
+codegen/
+
+# Storybook
+.storybook/
+storybook-static/
+
+# Detox
+.detoxrc.js
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (optional, but reduces noise)
+*.md
+docs/
+
+# Backup files
+*.backup
+*.bak
+*~

@@ -14,7 +14,6 @@ module.exports = {
     },
     ecmaVersion: 2022,
     sourceType: 'module',
-    project: './tsconfig.json',
   },
   plugins: [
     'react',
@@ -61,13 +60,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      {
-        prefer: 'type-imports',
-        disallowTypeAnnotations: false,
-      },
-    ],
+    '@typescript-eslint/consistent-type-imports': 'off',
 
     // General Rules
     'no-console': ['warn', { allow: ['warn', 'error'] }],
@@ -92,6 +85,41 @@ module.exports = {
     ],
   },
   overrides: [
+    // TypeScript files - enable type-aware rules
+    {
+      files: ['*.ts', '*.tsx'],
+      parserOptions: {
+        project: './tsconfig.json',
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          {
+            prefer: 'type-imports',
+            disallowTypeAnnotations: false,
+          },
+        ],
+      },
+    },
+    // JavaScript config files - use default parser
+    {
+      files: ['*.js', '*.jsx'],
+      parser: 'espree',
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/consistent-type-imports': 'off',
+        'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      },
+    },
+    // Test files
     {
       files: ['*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx'],
       extends: ['plugin:testing-library/react'],
@@ -100,6 +128,7 @@ module.exports = {
         'react-native/no-inline-styles': 'off',
       },
     },
+    // Storybook files
     {
       files: ['*.stories.ts', '*.stories.tsx'],
       rules: {
@@ -116,8 +145,12 @@ module.exports = {
     'coverage/',
     'dist/',
     'build/',
+    'vendor/',
+    '**/*.config.js',
+    '.eslintrc.js',
     'babel.config.js',
     'metro.config.js',
-    'eslint.config.js',
+    'jest.config.js',
+    'jest.setup.js',
   ],
 };
