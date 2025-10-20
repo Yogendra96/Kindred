@@ -8,6 +8,24 @@
 *.swp
 *.swo
 
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*.full_backup
+*~
+
+# Temp files
+temp.json
+test-index.js
+*.tmp
+*.temp
+
+# Screenshots and images (root level)
+kindred_*.png
+screenshot_*.png
+
 # Git and CI
 .git/
 .github/
