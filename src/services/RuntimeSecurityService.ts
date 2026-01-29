@@ -1,4 +1,4 @@
-import type { AppStateStatus , AppStateStatus } from 'react-native';
+import type { AppStateStatus, AppStateStatus } from 'react-native';
 import { Platform, Alert, AppState } from 'react-native';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
 import { loggingService } from './LoggingService';

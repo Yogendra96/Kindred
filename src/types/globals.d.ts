@@ -8,21 +8,21 @@ declare module '@react-native-firebase/analytics' {
   export interface Currency {
     [key: string]: string;
   }
-  
+
   export interface Promotion {
     [key: string]: unknown;
   }
-  
+
   export type ConsentStatusString = 'granted' | 'denied';
-  
+
   export interface MultiFactorError {
     [key: string]: unknown;
   }
-  
+
   export interface PasswordPolicy {
     [key: string]: unknown;
   }
-  
+
   export interface ActionCodeURL {
     [key: string]: unknown;
   }
@@ -32,11 +32,11 @@ declare module '@react-native-firebase/auth' {
   export interface MultiFactorError {
     [key: string]: unknown;
   }
-  
+
   export interface PasswordPolicy {
     [key: string]: unknown;
   }
-  
+
   export interface ActionCodeURL {
     [key: string]: unknown;
   }
@@ -52,7 +52,7 @@ declare module '@react-native-firebase/firestore' {
   export interface FirestoreBlob {
     [key: string]: unknown;
   }
-  
+
   export interface DocumentData {
     [key: string]: unknown;
   }
@@ -63,7 +63,7 @@ declare module '@expo/vector-icons/build/createIconSet' {
   export default function createIconSet(
     glyphMap: Record<string, unknown>,
     fontFamily: string,
-    fontFile?: string
+    fontFile?: string,
   ): React.ComponentType<unknown>;
 }
 
@@ -71,7 +71,7 @@ declare module '@expo/vector-icons/build/vendor/react-native-vector-icons/lib/cr
   export default function createIconSet(
     glyphMap: Record<string, unknown>,
     fontFamily: string,
-    fontFile?: string
+    fontFile?: string,
   ): React.ComponentType<unknown>;
 }
 
@@ -85,7 +85,7 @@ declare module 'react-native-chart-kit' {
     style?: Record<string, unknown>;
     [key: string]: unknown;
   }
-  
+
   export interface ChartData {
     name: string;
     population: number;
@@ -93,7 +93,7 @@ declare module 'react-native-chart-kit' {
     legendFontColor: string;
     [key: string]: unknown;
   }
-  
+
   export interface PieChartProps {
     data: ChartData[];
     width: number;
@@ -105,7 +105,7 @@ declare module 'react-native-chart-kit' {
     absolute?: boolean;
     [key: string]: unknown;
   }
-  
+
   export const PieChart: React.ComponentType<PieChartProps>;
 }
 
@@ -114,7 +114,7 @@ declare global {
   interface Window {
     __DEV__: boolean;
   }
-  
+
   // Extend console for development
   namespace Console {
     interface Console {
@@ -132,11 +132,11 @@ declare module 'react-native' {
   interface ViewStyle {
     [key: string]: unknown;
   }
-  
+
   interface TextStyle {
     [key: string]: unknown;
   }
-  
+
   interface ImageStyle {
     [key: string]: unknown;
   }

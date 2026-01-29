@@ -1,9 +1,9 @@
 /**
  * @fileoverview Shared Logging Utilities
- * 
+ *
  * Common logging patterns to eliminate code duplication across services.
  * Follows DRY principles and provides consistent logging interface.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -43,17 +43,23 @@ export const createLogger = (config: LogConfig) => {
   const { prefix, enableTimestamps = true, enableDetails = true } = config;
   const logPrefix = LOG_PREFIXES[prefix];
 
-  const formatMessage = (level: string, message: string, context?: LogContext) => {
+  const formatMessage = (
+    level: string,
+    message: string,
+    context?: LogContext,
+  ) => {
     const timestamp = enableTimestamps ? new Date().toISOString() : '';
     const contextStr = context && enableDetails ? JSON.stringify(context) : '';
-    
+
     return [
       logPrefix,
       timestamp && `[${timestamp}]`,
       `${level.toUpperCase()}:`,
       message,
       contextStr,
-    ].filter(Boolean).join(' ');
+    ]
+      .filter(Boolean)
+      .join(' ');
   };
 
   return {
@@ -72,11 +78,13 @@ export const createLogger = (config: LogConfig) => {
       console.warn(formatMessage('warn', message, context));
     },
     error: (message: string, context?: LogContext, error?: Error) => {
-      const errorContext = error ? { 
-        ...context, 
-        error: error.message, 
-        stack: error.stack 
-      } : context;
+      const errorContext = error
+        ? {
+            ...context,
+            error: error.message,
+            stack: error.stack,
+          }
+        : context;
       console.error(formatMessage('error', message, errorContext));
     },
     success: (message: string, context?: LogContext) => {
@@ -106,7 +114,7 @@ export class PerformanceLogger {
   startTimer(operation: string, context?: LogContext): void {
     const startTime = performance.now();
     this.timers.set(operation, startTime);
-    
+
     this.logger.debug(`Starting operation: ${operation}`, {
       ...context,
       startTime,
@@ -138,20 +146,20 @@ export class PerformanceLogger {
   measureAsync<T>(
     operation: string,
     asyncFn: () => Promise<T>,
-    context?: LogContext
+    context?: LogContext,
   ): Promise<T> {
     this.startTimer(operation, context);
-    
+
     return asyncFn()
-      .then((result) => {
+      .then(result => {
         this.endTimer(operation, { ...context, success: true });
         return result;
       })
-      .catch((error) => {
-        this.endTimer(operation, { 
-          ...context, 
-          success: false, 
-          error: error.message 
+      .catch(error => {
+        this.endTimer(operation, {
+          ...context,
+          success: false,
+          error: error.message,
         });
         throw error;
       });
@@ -170,7 +178,7 @@ export const logAPIRequest = (
   method: string,
   url: string,
   requestId?: string,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   logger.info(`API Request: ${method.toUpperCase()} ${url}`, {
     method,
@@ -188,7 +196,7 @@ export const logAPIResponse = (
   status: number,
   duration: number,
   requestId?: string,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   const logMethod = status >= 400 ? logger.error : logger.success;
   logMethod(`API Response: ${method.toUpperCase()} ${url}`, {
@@ -208,16 +216,20 @@ export const logAPIError = (
   url: string,
   error: Error,
   requestId?: string,
-  context?: LogContext
+  context?: LogContext,
 ) => {
-  logger.error(`API Error: ${method.toUpperCase()} ${url}`, {
-    method,
-    url,
-    requestId,
-    error: error.message,
-    stack: error.stack,
-    ...context,
-  }, error);
+  logger.error(
+    `API Error: ${method.toUpperCase()} ${url}`,
+    {
+      method,
+      url,
+      requestId,
+      error: error.message,
+      stack: error.stack,
+      ...context,
+    },
+    error,
+  );
 };
 
 // ===================================================================
@@ -234,7 +246,7 @@ export const logCarbonCalculation = (
   emissions: number,
   method: 'api' | 'offline',
   duration: number,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   logger.success(`Carbon calculation completed`, {
     activityType,
@@ -252,7 +264,7 @@ export const logFormValidation = (
   formName: string,
   isValid: boolean,
   errors: string[],
-  context?: LogContext
+  context?: LogContext,
 ) => {
   const logMethod = isValid ? logger.success : logger.warn;
   logMethod(`Form validation: ${formName}`, {
@@ -269,7 +281,7 @@ export const logUserAction = (
   action: string,
   component: string,
   success: boolean = true,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   const logMethod = success ? logger.info : logger.warn;
   logMethod(`User action: ${action}`, {
@@ -291,7 +303,7 @@ export const logCacheOperation = (
   key: string,
   hit: boolean = true,
   ttl?: number,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   const logMethod = hit ? logger.debug : logger.info;
   logMethod(`Cache ${operation}: ${key}`, {
@@ -315,17 +327,21 @@ export const logStructuredError = (
   error: Error,
   component: string,
   action: string,
-  context?: LogContext
+  context?: LogContext,
 ) => {
-  logger.error(`Error in ${component}`, {
-    component,
-    action,
-    errorName: error.name,
-    errorMessage: error.message,
-    stack: error.stack,
-    timestamp: new Date().toISOString(),
-    ...context,
-  }, error);
+  logger.error(
+    `Error in ${component}`,
+    {
+      component,
+      action,
+      errorName: error.name,
+      errorMessage: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+      ...context,
+    },
+    error,
+  );
 };
 
 export const logRecoveryAttempt = (
@@ -333,7 +349,7 @@ export const logRecoveryAttempt = (
   error: Error,
   recoveryMethod: string,
   success: boolean,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   const logMethod = success ? logger.success : logger.error;
   logMethod(`Error recovery attempt: ${recoveryMethod}`, {
@@ -350,9 +366,13 @@ export const logRecoveryAttempt = (
 
 export const logSecurityEvent = (
   logger: ReturnType<typeof createLogger>,
-  event: 'auth_success' | 'auth_failure' | 'permission_denied' | 'token_expired',
+  event:
+    | 'auth_success'
+    | 'auth_failure'
+    | 'permission_denied'
+    | 'token_expired',
   userId?: string,
-  context?: LogContext
+  context?: LogContext,
 ) => {
   const logMethod = event.includes('success') ? logger.info : logger.warn;
   logMethod(`Security event: ${event}`, {
@@ -377,16 +397,16 @@ export class BatchLogger {
     context?: LogContext;
     timestamp: number;
   }> = [];
-  
+
   private batchSize: number;
   private flushInterval: number;
   private logger: ReturnType<typeof createLogger>;
   private flushTimer?: NodeJS.Timeout;
 
   constructor(
-    logPrefix: LogPrefix, 
-    batchSize: number = 10, 
-    flushInterval: number = 5000
+    logPrefix: LogPrefix,
+    batchSize: number = 10,
+    flushInterval: number = 5000,
   ) {
     this.logger = createLogger({ prefix: logPrefix });
     this.batchSize = batchSize;

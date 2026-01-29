@@ -1,11 +1,11 @@
 /**
  * @fileoverview Carbon API Adapter Service
- * 
+ *
  * Focused service responsible for external API integrations
  * with multiple carbon calculation providers and fallback logic.
- * 
+ *
  * Follows SRP - single responsibility for API communication.
- * 
+ *
  * @version 2.0.0
  */
 
@@ -14,16 +14,16 @@ import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
 
 import { API_CONFIG, API_ENDPOINTS, LOG_PREFIXES } from '../../utils/constants';
-import { 
-  createLogger, 
+import {
+  createLogger,
   PerformanceLogger,
   logAPIRequest,
   logAPIResponse,
   logAPIError,
 } from '../../utils/loggingUtils';
 
-import type { 
-  CarbonCalculationRequest, 
+import type {
+  CarbonCalculationRequest,
   CarbonCalculationResponse,
   CarbonEmissionFactor,
 } from './CarbonCalculatorCore';
@@ -60,7 +60,8 @@ export class CarbonAPIAdapter {
   private logger = createLogger({ prefix: 'CARBON_API' });
   private performanceLogger = new PerformanceLogger('CARBON_API');
   private apis: Map<string, AxiosInstance> = new Map();
-  private rateLimitTracker: Map<string, { count: number; resetTime: number }> = new Map();
+  private rateLimitTracker: Map<string, { count: number; resetTime: number }> =
+    new Map();
 
   // API provider configuration
   private providers: APIProvider[] = [
@@ -99,9 +100,11 @@ export class CarbonAPIAdapter {
   /**
    * Calculate emissions using external APIs with fallback
    */
-  async calculateEmissions(request: CarbonCalculationRequest): Promise<CarbonCalculationResponse | null> {
+  async calculateEmissions(
+    request: CarbonCalculationRequest,
+  ): Promise<CarbonCalculationResponse | null> {
     const requestId = this.generateRequestId();
-    
+
     this.logger.info('Starting external API calculation', {
       requestId,
       activityType: request.activityType,
@@ -109,33 +112,44 @@ export class CarbonAPIAdapter {
     });
 
     // Try each provider in order of priority
-    const sortedProviders = [...this.providers].sort((a, b) => a.priority - b.priority);
-    
+    const sortedProviders = [...this.providers].sort(
+      (a, b) => a.priority - b.priority,
+    );
+
     for (const provider of sortedProviders) {
       try {
-        this.logger.debug(`Attempting API call with ${provider.name}`, { requestId });
-        
+        this.logger.debug(`Attempting API call with ${provider.name}`, {
+          requestId,
+        });
+
         const result = await this.performanceLogger.measureAsync(
           `api_call_${provider.name}`,
-          () => this.calculateWithProvider(provider.name, request, requestId)
+          () => this.calculateWithProvider(provider.name, request, requestId),
         );
-        
+
         if (result) {
-          this.logger.success(`API calculation successful with ${provider.name}`, {
-            requestId,
-            activityType: request.activityType,
-            emissions: result.emissions,
-            provider: provider.name,
-          });
+          this.logger.success(
+            `API calculation successful with ${provider.name}`,
+            {
+              requestId,
+              activityType: request.activityType,
+              emissions: result.emissions,
+              provider: provider.name,
+            },
+          );
           return result;
         }
       } catch (error) {
-        this.logger.error(`API call failed with ${provider.name}`, {
-          requestId,
-          provider: provider.name,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }, error as Error);
-        
+        this.logger.error(
+          `API call failed with ${provider.name}`,
+          {
+            requestId,
+            provider: provider.name,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+          error as Error,
+        );
+
         // Continue to next provider
         continue;
       }
@@ -150,10 +164,10 @@ export class CarbonAPIAdapter {
    */
   async getEmissionFactors(
     category?: string,
-    region?: string
+    region?: string,
   ): Promise<CarbonEmissionFactor[]> {
     const requestId = this.generateRequestId();
-    
+
     for (const provider of this.providers) {
       try {
         const api = this.apis.get(provider.name);
@@ -163,13 +177,22 @@ export class CarbonAPIAdapter {
         if (category) params.category = category;
         if (region) params.region = region;
 
-        logAPIRequest(this.logger, 'GET', '/emission-factors', requestId, { provider: provider.name });
-        
+        logAPIRequest(this.logger, 'GET', '/emission-factors', requestId, {
+          provider: provider.name,
+        });
+
         const startTime = performance.now();
         const response = await api.get('/emission-factors', { params });
         const duration = performance.now() - startTime;
 
-        logAPIResponse(this.logger, 'GET', '/emission-factors', response.status, duration, requestId);
+        logAPIResponse(
+          this.logger,
+          'GET',
+          '/emission-factors',
+          response.status,
+          duration,
+          requestId,
+        );
 
         const factors = response.data.map((factor: any) => ({
           ...factor,
@@ -178,7 +201,13 @@ export class CarbonAPIAdapter {
 
         return factors;
       } catch (error) {
-        logAPIError(this.logger, 'GET', '/emission-factors', error as Error, requestId);
+        logAPIError(
+          this.logger,
+          'GET',
+          '/emission-factors',
+          error as Error,
+          requestId,
+        );
         continue;
       }
     }
@@ -189,17 +218,22 @@ export class CarbonAPIAdapter {
   /**
    * Health check for all API providers
    */
-  async healthCheck(): Promise<Record<string, {
-    status: 'healthy' | 'degraded' | 'unhealthy';
-    latency: number;
-    error?: string;
-  }>> {
+  async healthCheck(): Promise<
+    Record<
+      string,
+      {
+        status: 'healthy' | 'degraded' | 'unhealthy';
+        latency: number;
+        error?: string;
+      }
+    >
+  > {
     const results: Record<string, any> = {};
 
     await Promise.all(
-      this.providers.map(async (provider) => {
+      this.providers.map(async provider => {
         const startTime = performance.now();
-        
+
         try {
           const api = this.apis.get(provider.name);
           if (!api) {
@@ -226,7 +260,7 @@ export class CarbonAPIAdapter {
             error: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      })
+      }),
     );
 
     return results;
@@ -241,7 +275,7 @@ export class CarbonAPIAdapter {
    */
   private initializeAPIs(): void {
     for (const provider of this.providers) {
-      let headers: Record<string, string> = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'User-Agent': 'Kindred-App/2.0',
       };
@@ -267,9 +301,9 @@ export class CarbonAPIAdapter {
 
       // Add request/response interceptors
       this.setupInterceptors(api, provider.name);
-      
+
       this.apis.set(provider.name, api);
-      
+
       this.logger.debug(`Initialized API client for ${provider.name}`, {
         baseURL: provider.baseURL,
         timeout: provider.timeout,
@@ -283,7 +317,7 @@ export class CarbonAPIAdapter {
   private async calculateWithProvider(
     providerName: string,
     request: CarbonCalculationRequest,
-    requestId: string
+    requestId: string,
   ): Promise<CarbonCalculationResponse | null> {
     const api = this.apis.get(providerName);
     if (!api) return null;
@@ -309,11 +343,11 @@ export class CarbonAPIAdapter {
   private async calculateWithCarbonInterface(
     api: AxiosInstance,
     request: CarbonCalculationRequest,
-    requestId: string
+    requestId: string,
   ): Promise<CarbonCalculationResponse> {
     const { activityType, amount, unit, additionalParams = {} } = request;
-    
-    let endpoint = '/estimates';
+
+    const endpoint = '/estimates';
     let data: any = {};
 
     switch (activityType) {
@@ -325,7 +359,7 @@ export class CarbonAPIAdapter {
           vehicle_model_id: additionalParams.vehicleType || 'default',
         };
         break;
-      
+
       case 'energy':
         data = {
           type: 'electricity',
@@ -335,22 +369,31 @@ export class CarbonAPIAdapter {
           state: additionalParams.state || 'ca',
         };
         break;
-        
+
       case 'food':
         // CarbonInterface doesn't support food calculations
         throw new Error('Food calculations not supported by CarbonInterface');
-        
+
       default:
         throw new Error(`Unsupported activity type: ${activityType}`);
     }
 
-    logAPIRequest(this.logger, 'POST', endpoint, requestId, { provider: 'carboninterface' });
-    
+    logAPIRequest(this.logger, 'POST', endpoint, requestId, {
+      provider: 'carboninterface',
+    });
+
     const startTime = performance.now();
     const response = await api.post(endpoint, data);
     const duration = performance.now() - startTime;
 
-    logAPIResponse(this.logger, 'POST', endpoint, response.status, duration, requestId);
+    logAPIResponse(
+      this.logger,
+      'POST',
+      endpoint,
+      response.status,
+      duration,
+      requestId,
+    );
 
     const result = response.data.data.attributes;
 
@@ -380,20 +423,23 @@ export class CarbonAPIAdapter {
   private async calculateWithClimatiq(
     api: AxiosInstance,
     request: CarbonCalculationRequest,
-    requestId: string
+    requestId: string,
   ): Promise<CarbonCalculationResponse> {
     const { activityType, amount, unit } = request;
-    
+
     // Map to Climatiq emission factor IDs
     const emissionFactorMap: Record<string, string> = {
-      'transport-car': 'passenger_vehicle-vehicle_type_car-fuel_source_petrol-engine_size_na-vehicle_age_na-vehicle_weight_na',
+      'transport-car':
+        'passenger_vehicle-vehicle_type_car-fuel_source_petrol-engine_size_na-vehicle_age_na-vehicle_weight_na',
       'energy-electricity': 'electricity-energy_source_grid_mix',
       'food-beef': 'consumer_goods-type_food_products-food_type_beef',
     };
 
-    const factorKey = `${activityType}-${request.additionalParams?.subtype || 'default'}`;
+    const factorKey = `${activityType}-${
+      request.additionalParams?.subtype || 'default'
+    }`;
     const factorId = emissionFactorMap[factorKey];
-    
+
     if (!factorId) {
       throw new Error(`No emission factor found for ${activityType}`);
     }
@@ -407,13 +453,22 @@ export class CarbonAPIAdapter {
       },
     };
 
-    logAPIRequest(this.logger, 'POST', '/estimate', requestId, { provider: 'climatiq' });
-    
+    logAPIRequest(this.logger, 'POST', '/estimate', requestId, {
+      provider: 'climatiq',
+    });
+
     const startTime = performance.now();
     const response = await api.post('/estimate', data);
     const duration = performance.now() - startTime;
 
-    logAPIResponse(this.logger, 'POST', '/estimate', response.status, duration, requestId);
+    logAPIResponse(
+      this.logger,
+      'POST',
+      '/estimate',
+      response.status,
+      duration,
+      requestId,
+    );
 
     const result = response.data;
 
@@ -443,10 +498,10 @@ export class CarbonAPIAdapter {
   private async calculateWithCarbonFootprint(
     api: AxiosInstance,
     request: CarbonCalculationRequest,
-    requestId: string
+    requestId: string,
   ): Promise<CarbonCalculationResponse> {
     const { activityType, amount } = request;
-    
+
     let endpoint = '';
     const params: any = {};
 
@@ -456,24 +511,33 @@ export class CarbonAPIAdapter {
         params.distance = amount;
         params.fuelType = request.additionalParams?.fuelType || 'petrol';
         break;
-        
+
       case 'energy':
         endpoint = '/electricity';
         params.consumption = amount;
         params.location = request.additionalParams?.location || 'US';
         break;
-        
+
       default:
         throw new Error(`Unsupported activity type: ${activityType}`);
     }
 
-    logAPIRequest(this.logger, 'GET', endpoint, requestId, { provider: 'carbonfootprint' });
-    
+    logAPIRequest(this.logger, 'GET', endpoint, requestId, {
+      provider: 'carbonfootprint',
+    });
+
     const startTime = performance.now();
     const response = await api.get(endpoint, { params });
     const duration = performance.now() - startTime;
 
-    logAPIResponse(this.logger, 'GET', endpoint, response.status, duration, requestId);
+    logAPIResponse(
+      this.logger,
+      'GET',
+      endpoint,
+      response.status,
+      duration,
+      requestId,
+    );
 
     const result = response.data;
 
@@ -503,7 +567,7 @@ export class CarbonAPIAdapter {
   private setupInterceptors(api: AxiosInstance, providerName: string): void {
     // Request interceptor
     api.interceptors.request.use(
-      (config) => {
+      config => {
         config.metadata = {
           requestId: this.generateRequestId(),
           startTime: Date.now(),
@@ -511,17 +575,17 @@ export class CarbonAPIAdapter {
         };
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error),
     );
 
     // Response interceptor
     api.interceptors.response.use(
-      (response) => {
+      response => {
         const duration = Date.now() - response.config.metadata.startTime;
         this.updateRateLimit(providerName, response);
         return response;
       },
-      (error) => {
+      error => {
         const apiError: APIError = {
           code: error.response?.data?.code ?? 'UNKNOWN_ERROR',
           message: error.response?.data?.message ?? error.message,
@@ -529,9 +593,9 @@ export class CarbonAPIAdapter {
           timestamp: new Date(),
           provider: providerName,
         };
-        
+
         return Promise.reject(apiError);
-      }
+      },
     );
   }
 

@@ -321,7 +321,8 @@ When working with this codebase, follow these architectural principles:
 
 - **Unit tests**: Jest + React Native Testing Library
 - **Integration tests**: Redux and navigation testing
-- **E2E tests**: Detox with iOS Simulator (iPhone 15 Pro) and Android Emulator (Pixel 9 Pro XL API 35)
+- **E2E tests**: Detox with iOS Simulator (iPhone 15 Pro) and Android Emulator (Pixel 9 Pro XL
+  API 35)
 - **Performance tests**: Custom performance monitoring
 - **Accessibility tests**: Screen reader and contrast testing
 

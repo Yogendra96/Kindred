@@ -12,7 +12,12 @@ export interface SimulationTimeframe {
 
 export interface SimulationAssumption {
   readonly assumptionId: string;
-  readonly category: 'economic' | 'behavioral' | 'technological' | 'environmental' | 'social';
+  readonly category:
+    | 'economic'
+    | 'behavioral'
+    | 'technological'
+    | 'environmental'
+    | 'social';
   readonly description: string;
   readonly confidence: number;
   readonly impact: 'low' | 'medium' | 'high';
@@ -60,7 +65,11 @@ export interface UncertaintyRange {
 export interface ScenarioRecommendation {
   readonly recommendationId: string;
   readonly priority: 'low' | 'medium' | 'high' | 'critical';
-  readonly category: 'implementation' | 'risk_mitigation' | 'optimization' | 'monitoring';
+  readonly category:
+    | 'implementation'
+    | 'risk_mitigation'
+    | 'optimization'
+    | 'monitoring';
   readonly title: string;
   readonly description: string;
   readonly rationale: string;
@@ -221,7 +230,12 @@ export interface ImpactMagnitude {
 }
 
 export interface LifestyleChangeAssessment {
-  readonly adaptationDifficulty: 'minimal' | 'low' | 'moderate' | 'high' | 'extreme';
+  readonly adaptationDifficulty:
+    | 'minimal'
+    | 'low'
+    | 'moderate'
+    | 'high'
+    | 'extreme';
   readonly adaptationTime: number; // months
   readonly sustainabilityRisk: 'low' | 'medium' | 'high';
   readonly supportNeeded: string[];
@@ -257,7 +271,11 @@ export interface TimelineDependency {
   readonly dependencyId: string;
   readonly predecessor: string;
   readonly successor: string;
-  readonly type: 'finish_to_start' | 'start_to_start' | 'finish_to_finish' | 'start_to_finish';
+  readonly type:
+    | 'finish_to_start'
+    | 'start_to_start'
+    | 'finish_to_finish'
+    | 'start_to_finish';
   readonly lag: number; // days
 }
 
@@ -272,7 +290,12 @@ export interface TimelineRisk {
 
 export interface RiskAssessment {
   readonly riskId: string;
-  readonly category: 'implementation' | 'adoption' | 'technical' | 'financial' | 'social';
+  readonly category:
+    | 'implementation'
+    | 'adoption'
+    | 'technical'
+    | 'financial'
+    | 'social';
   readonly description: string;
   readonly probability: number;
   readonly impact: ImpactMagnitude;
@@ -299,7 +322,11 @@ export interface ContingencyPlan {
 
 export interface OpportunityAssessment {
   readonly opportunityId: string;
-  readonly category: 'cost_savings' | 'carbon_reduction' | 'innovation' | 'social_benefit';
+  readonly category:
+    | 'cost_savings'
+    | 'carbon_reduction'
+    | 'innovation'
+    | 'social_benefit';
   readonly description: string;
   readonly potential: ImpactMagnitude;
   readonly feasibility: number;
@@ -319,7 +346,12 @@ export interface EmissionMilestone {
 
 export interface ExternalFactor {
   readonly factorId: string;
-  readonly type: 'economic' | 'technological' | 'regulatory' | 'social' | 'environmental';
+  readonly type:
+    | 'economic'
+    | 'technological'
+    | 'regulatory'
+    | 'social'
+    | 'environmental';
   readonly description: string;
   readonly impact: ImpactTrajectory;
   readonly uncertainty: UncertaintyRange;
@@ -396,7 +428,11 @@ export interface OffsetRequirement {
 
 export interface OffsetSource {
   readonly sourceId: string;
-  readonly type: 'forestry' | 'renewable_energy' | 'direct_air_capture' | 'other';
+  readonly type:
+    | 'forestry'
+    | 'renewable_energy'
+    | 'direct_air_capture'
+    | 'other';
   readonly quantity: number;
   readonly costPerTon: number;
   readonly verification: string;
@@ -406,7 +442,11 @@ export interface OffsetSource {
 // Testing and Experimentation Types
 export interface TestingFramework {
   readonly frameworkId: string;
-  readonly methodology: 'ab_testing' | 'multivariate' | 'factorial' | 'sequential';
+  readonly methodology:
+    | 'ab_testing'
+    | 'multivariate'
+    | 'factorial'
+    | 'sequential';
   readonly sampleSize: number;
   readonly powerAnalysis: PowerAnalysis;
   readonly statisticalSignificance: number;
@@ -510,7 +550,10 @@ export interface FamilyRelationship {
   readonly relationshipId: string;
   readonly member1: string;
   readonly member2: string;
-  readonly influence_direction: 'bidirectional' | 'member1_to_member2' | 'member2_to_member1';
+  readonly influence_direction:
+    | 'bidirectional'
+    | 'member1_to_member2'
+    | 'member2_to_member1';
   readonly influence_strength: number;
 }
 
@@ -530,7 +573,12 @@ export interface DecisionMakingPattern {
 }
 
 export interface DecisionInfluence {
-  readonly factor: 'cost' | 'convenience' | 'social_pressure' | 'environmental_concern' | 'health';
+  readonly factor:
+    | 'cost'
+    | 'convenience'
+    | 'social_pressure'
+    | 'environmental_concern'
+    | 'health';
   readonly weight: number;
   readonly variability: number;
 }
@@ -607,7 +655,12 @@ export interface CommunityType {
 
 export interface InfluenceMechanism {
   readonly mechanismId: string;
-  readonly type: 'social_proof' | 'peer_pressure' | 'education' | 'incentives' | 'competition';
+  readonly type:
+    | 'social_proof'
+    | 'peer_pressure'
+    | 'education'
+    | 'incentives'
+    | 'competition';
   readonly effectiveness: number;
   readonly scalability: number;
   readonly cost: number;
@@ -687,7 +740,11 @@ export interface EnvironmentalContext {
 
 export interface ClimateCondition {
   readonly conditionId: string;
-  readonly type: 'temperature' | 'precipitation' | 'extreme_events' | 'sea_level';
+  readonly type:
+    | 'temperature'
+    | 'precipitation'
+    | 'extreme_events'
+    | 'sea_level';
   readonly projected_change: number;
   readonly uncertainty: number;
   readonly adaptation_needs: string[];
@@ -703,7 +760,11 @@ export interface TechnologyLandscape {
 export interface EmergingTechnology {
   readonly technologyId: string;
   readonly name: string;
-  readonly maturity_level: 'research' | 'development' | 'demonstration' | 'deployment';
+  readonly maturity_level:
+    | 'research'
+    | 'development'
+    | 'demonstration'
+    | 'deployment';
   readonly carbon_impact: number;
   readonly adoption_timeline: number; // years
 }
@@ -788,7 +849,12 @@ export interface DataQualityMetric {
   readonly overall: number;
 }
 
-type PrivacyLevel = 'public' | 'community' | 'family' | 'personal' | 'encrypted';
+type PrivacyLevel =
+  | 'public'
+  | 'community'
+  | 'family'
+  | 'personal'
+  | 'encrypted';
 
 // AI and Prediction Types
 export interface TrainingDataSummary {
@@ -880,7 +946,12 @@ export interface BenchmarkComparison {
   readonly user_value: number;
   readonly benchmark_value: number;
   readonly gap: number;
-  readonly gap_significance: 'negligible' | 'small' | 'moderate' | 'large' | 'extreme';
+  readonly gap_significance:
+    | 'negligible'
+    | 'small'
+    | 'moderate'
+    | 'large'
+    | 'extreme';
 }
 
 export interface BestPracticeGap {
@@ -905,7 +976,11 @@ export interface ImprovementRanking {
 
 export interface OpportunityInsight {
   readonly insightId: string;
-  readonly category: 'quick_win' | 'major_project' | 'long_term' | 'experimental';
+  readonly category:
+    | 'quick_win'
+    | 'major_project'
+    | 'long_term'
+    | 'experimental';
   readonly description: string;
   readonly potential_impact: ImpactMagnitude;
   readonly implementation: ImplementationPlan;
@@ -935,7 +1010,12 @@ export interface CarbonAchievement {
   readonly achievementId: string;
   readonly name: string;
   readonly description: string;
-  readonly category: 'reduction' | 'efficiency' | 'milestone' | 'behavior' | 'innovation';
+  readonly category:
+    | 'reduction'
+    | 'efficiency'
+    | 'milestone'
+    | 'behavior'
+    | 'innovation';
   readonly level: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
   readonly earned_at: number;
   readonly carbon_impact: number;

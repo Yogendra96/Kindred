@@ -1,4 +1,4 @@
-import type { AxiosInstance , AxiosInstance } from 'axios';
+import type { AxiosInstance, AxiosInstance } from 'axios';
 import axios from 'axios';
 import { queryClient, queryKeys } from './QueryService';
 import axios from 'axios';

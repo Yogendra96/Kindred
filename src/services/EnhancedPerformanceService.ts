@@ -1,12 +1,7 @@
-/**
- * Enhanced Performance Service
- * Advanced performance monitoring with real-time analytics, memory leak detection,
- * and predictive performance optimization for React Native
- */
-
+import { loggingService } from './LoggingService';
 import { Platform, Dimensions } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import {
   EnhancedPerformanceMetric,
   NativeMemoryMetrics,
@@ -16,491 +11,691 @@ import {
   PerformanceAlertRule,
   PerformanceAlert,
   UserJourneyEvent,
+  JourneyPerformanceInsight,
+  MemoryLeak,
   ComponentLifecycleEvent,
   DeviceContext,
   SessionPerformanceData,
   PerformanceConfig,
   DEFAULT_PERFORMANCE_CONFIG,
+  DEFAULT_CORE_VITAL_THRESHOLDS,
+  CircularBuffer as ICircularBuffer,
 } from '../types/performance';
-import { loggingService } from './LoggingService';
+import { CircularBuffer } from '../utils/CircularBuffer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-class EnhancedPerformanceService {
+// Global type declarations
+declare global {
+  var __DEV__: boolean;
+  namespace NodeJS {
+    interface Timeout {}
+  }
+}
+
+interface PerformanceMetric {
+  name: string;
+  value: number;
+  unit: string;
+  timestamp: number;
+  context?: Record<string, any>;
+}
+
+interface MemoryMetrics {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+  timestamp: number;
+}
+
+interface RenderMetrics {
+  componentName: string;
+  renderTime: number;
+  propsCount: number;
+  childrenCount: number;
+  timestamp: number;
+}
+
+interface NetworkMetrics {
+  url: string;
+  method: string;
+  duration: number;
+  responseSize: number;
+  statusCode: number;
+  timestamp: number;
+}
+
+interface BundleMetrics {
+  totalSize: number;
+  jsSize: number;
+  assetsSize: number;
+  loadTime: number;
+  timestamp: number;
+}
+
+/**
+ * Enhanced Performance Service with Modern APM Capabilities
+ * Implements Core Web Vitals, Real-time Alerting, Memory Leak Detection
+ * User Journey Correlation, and Predictive Analytics
+ */
+export class EnhancedPerformanceService {
   private static instance: EnhancedPerformanceService;
-  private logger = loggingService;
+  
+  // Core dependencies
+  private logger: typeof loggingService;
   private config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG;
-  private sessionId: string;
-  private userId?: string;
-  private deviceContext: DeviceContext | null = null;
-
-  // Monitoring state
+  
+  // Enhanced data storage with circular buffers for high-frequency data
+  private metrics: Map<string, EnhancedPerformanceMetric[]> = new Map();
+  private metricsBuffer: CircularBuffer<EnhancedPerformanceMetric>;
+  private memoryMetrics: CircularBuffer<NativeMemoryMetrics>;
+  private networkMetrics: CircularBuffer<EnhancedNetworkMetrics>;
+  private coreVitals: Map<string, CoreVitalMetric[]> = new Map();
+  
+  // Legacy compatibility
+  private renderMetrics: RenderMetrics[] = [];
+  private bundleMetrics: BundleMetrics | null = null;
+  
+  // Real-time monitoring state
   private isMonitoring: boolean = false;
-  private memoryInterval: ReturnType<typeof setInterval> | null = null;
-
-  // Data storage
-  private metrics: EnhancedPerformanceMetric[] = [];
-  private coreVitals: CoreVitalMetric[] = [];
-  private networkMetrics: EnhancedNetworkMetrics[] = [];
-  private memorySnapshots: NativeMemoryMetrics[] = [];
-  private componentEvents: ComponentLifecycleEvent[] = [];
+  private memoryInterval: ReturnType<typeof setTimeout> | null = null;
+  private performanceObserver: PerformanceObserver | null = null;
+  
+  // Session and user tracking
+  private currentSessionId: string = '';
+  private currentUserId?: string;
+  private deviceContext: DeviceContext | null = null;
+  
+  // Alert system
+  private alertRules: Map<string, PerformanceAlertRule> = new Map();
+  private activeAlerts: Map<string, PerformanceAlert> = new Map();
+  
+  // Memory leak detection
+  private componentLifecycles: Map<string, ComponentLifecycleEvent[]> = new Map();
+  private memoryLeaks: MemoryLeak[] = [];
+  
+  // User journey correlation
   private journeyEvents: UserJourneyEvent[] = [];
-  private alerts: PerformanceAlert[] = [];
-  private alertRules: PerformanceAlertRule[] = [];
-
+  private screenStartTimes: Map<string, number> = new Map();
+  
+  // Network interception
+  private originalFetch: typeof fetch;
+  private originalXMLHttpRequest: typeof XMLHttpRequest;
+  
   // Performance tracking
-  private screenRenderTimes: Map<string, number> = new Map();
-  private componentMountTimes: Map<string, number> = new Map();
+  private screenRenderStartTime: number = 0;
+  private interactionStartTime: number = 0;
+  
+  // Connection state
+  private connectionType: string = 'unknown';
 
   private constructor() {
-    this.sessionId = this.generateSessionId();
-    this.initializeDefaultAlertRules();
+    this.logger = loggingService;
+    
+    // Initialize circular buffers with optimal capacity
+    this.metricsBuffer = new CircularBuffer<EnhancedPerformanceMetric>(1000);
+    this.memoryMetrics = new CircularBuffer<NativeMemoryMetrics>(500);
+    this.networkMetrics = new CircularBuffer<EnhancedNetworkMetrics>(500);
+    
+    // Generate unique session ID
+    this.currentSessionId = this.generateSessionId();
+    
+    // Store original network functions for interception
+    this.originalFetch = global.fetch;
+    this.originalXMLHttpRequest = global.XMLHttpRequest;
+    
+    // Set up default alert rules
+    this.setupDefaultAlertRules();
   }
 
-  public static getInstance(): EnhancedPerformanceService {
+  static getInstance(): EnhancedPerformanceService {
     if (!EnhancedPerformanceService.instance) {
       EnhancedPerformanceService.instance = new EnhancedPerformanceService();
     }
     return EnhancedPerformanceService.instance;
   }
 
-  public async initialize(config?: Partial<PerformanceConfig>): Promise<void> {
+  /**
+   * Initialize enhanced performance monitoring with modern APM capabilities
+   */
+  async initialize(config?: Partial<PerformanceConfig>): Promise<void> {
     try {
+      // Merge custom config with defaults
       if (config) {
         this.config = { ...this.config, ...config };
       }
-
-      this.deviceContext = await this.collectDeviceContext();
-
-      this.logger.info('EnhancedPerformanceService initialized', {
-        sessionId: this.sessionId,
-        platform: Platform.OS,
+      
+      // Initialize device context
+      await this.initializeDeviceContext();
+      
+      // Set up monitoring systems
+      this.setupPerformanceObservers();
+      this.startMemoryMonitoring();
+      this.setupNetworkMonitoring();
+      
+      // Initialize features based on config
+      if (this.config.features.networkInterception) {
+        this.setupNetworkInterception();
+      }
+      
+      if (this.config.features.memoryLeakDetection) {
+        this.startMemoryLeakDetection();
+      }
+      
+      // Start session tracking
+      this.startSession();
+      
+      this.isMonitoring = true;
+      
+      this.logger.info('Enhanced performance monitoring initialized', {
+        sessionId: this.currentSessionId,
+        features: this.config.features,
+        deviceContext: this.deviceContext,
       });
+      
+      // Record initialization metric
+      this.recordEnhancedMetric({
+        name: 'apm_initialization',
+        value: performance.now(),
+        unit: 'ms',
+        severity: 'low',
+        context: {
+          version: '2.0.0',
+          features: this.config.features,
+        },
+      });
+      
     } catch (error) {
-      this.logger.error('Failed to initialize EnhancedPerformanceService', {
+      this.logger.error('Failed to initialize enhanced performance monitoring', {
         error: error instanceof Error ? error.message : 'Unknown error',
+        sessionId: this.currentSessionId,
       });
       throw error;
     }
   }
 
-  public setCurrentUser(userId: string): void {
-    this.userId = userId;
-  }
-
-  public async startMonitoring(): Promise<void> {
-    if (this.isMonitoring) {
-      this.logger.warn('Performance monitoring already started');
-      return;
+  /**
+   * Stop enhanced performance monitoring and clean up resources
+   */
+  async stop(): Promise<void> {
+    try {
+      this.isMonitoring = false;
+      
+      // End current session
+      await this.endSession();
+      
+      // Clean up intervals and observers
+      if (this.memoryInterval) {
+        clearInterval(this.memoryInterval);
+        this.memoryInterval = null;
+      }
+      
+      if (this.performanceObserver) {
+        this.performanceObserver.disconnect();
+        this.performanceObserver = null;
+      }
+      
+      // Restore original network functions
+      if (this.config.features.networkInterception) {
+        this.restoreNetworkFunctions();
+      }
+      
+      // Save final session data
+      await this.saveSessionData();
+      
+      this.logger.info('Enhanced performance monitoring stopped', {
+        sessionId: this.currentSessionId,
+        metricsCollected: this.metricsBuffer.size,
+        alertsTriggered: this.activeAlerts.size,
+      });
+      
+    } catch (error) {
+      this.logger.error('Error stopping performance monitoring', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
-
-    this.isMonitoring = true;
-
-    // Start memory monitoring
-    if (this.config.features.memoryLeakDetection) {
-      this.memoryInterval = setInterval(async () => {
-        await this.captureMemorySnapshot();
-      }, 5000); // Every 5 seconds
-    }
-
-    this.logger.info('Performance monitoring started');
   }
-
-  public stopMonitoring(): void {
-    this.isMonitoring = false;
-
     if (this.memoryInterval) {
       clearInterval(this.memoryInterval);
       this.memoryInterval = null;
     }
-
     this.logger.info('Performance monitoring stopped');
   }
 
-  public recordMetric(
-    metric: Omit<EnhancedPerformanceMetric, 'id' | 'timestamp' | 'sessionId'>
-  ): void {
-    const enhancedMetric: EnhancedPerformanceMetric = {
-      ...metric,
-      id: this.generateMetricId(),
-      timestamp: Date.now(),
-      sessionId: this.sessionId,
-      userId: this.userId,
-    };
-
-    this.metrics.push(enhancedMetric);
-    this.checkAlertRules(enhancedMetric);
-
-    // Keep only recent metrics (last hour)
-    const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    this.metrics = this.metrics.filter(m => m.timestamp > oneHourAgo);
-  }
-
-  public recordCoreVital(
-    type: CoreVitalType,
+  /**
+   * Record a custom performance metric
+   */
+  recordMetric(
+    name: string,
     value: number,
-    screenName: string,
-    _context?: Record<string, unknown>
+    unit: string = 'ms',
+    context?: Record<string, any>,
   ): void {
-    if (!this.deviceContext) {
-      this.logger.warn('Device context not initialized');
-      return;
-    }
-
-    const coreVital: CoreVitalMetric = {
-      type,
+    const metric: PerformanceMetric = {
+      name,
       value,
+      unit,
       timestamp: Date.now(),
-      screenName,
-      deviceInfo: this.deviceContext,
-      isGoodScore: this.evaluateCoreVital(type, value),
-      threshold: this.config.thresholds.coreVitals[type],
+      context,
     };
 
-    this.coreVitals.push(coreVital);
-  }
+    if (!this.metrics.has(name)) {
+      this.metrics.set(name, []);
+    }
 
-  public startScreenRender(screenName: string): void {
-    this.screenRenderTimes.set(screenName, performance.now());
-  }
+    const metricArray = this.metrics.get(name)!;
+    metricArray.push(metric);
 
-  public endScreenRender(screenName: string, context?: Record<string, unknown>): void {
-    const startTime = this.screenRenderTimes.get(screenName);
-    if (!startTime) return;
+    // Keep only last 100 metrics per type
+    if (metricArray.length > 100) {
+      metricArray.shift();
+    }
 
-    const renderTime = performance.now() - startTime;
-    this.screenRenderTimes.delete(screenName);
-
-    this.recordMetric({
-      name: 'screen_render',
-      value: renderTime,
-      unit: 'ms',
-      screenName,
-      severity: renderTime > 1000 ? 'high' : renderTime > 500 ? 'medium' : 'low',
-      context: { ...context, screenName },
-    });
-
-    this.recordCoreVital('FCP', renderTime, screenName, context);
-  }
-
-  public trackComponentLifecycle(
-    componentName: string,
-    event: 'mount' | 'unmount' | 'update',
-    props?: Record<string, unknown>
-  ): void {
-    const lifecycleEvent: ComponentLifecycleEvent = {
-      componentName,
-      event,
-      timestamp: Date.now(),
-      props,
-      memoryUsage: 0, // Would get from memory tracking
-    };
-
-    this.componentEvents.push(lifecycleEvent);
-
-    if (event === 'mount') {
-      this.componentMountTimes.set(componentName, Date.now());
-    } else if (event === 'unmount') {
-      const mountTime = this.componentMountTimes.get(componentName);
-      if (mountTime) {
-        const lifetime = Date.now() - mountTime;
-        this.componentMountTimes.delete(componentName);
-
-        this.recordMetric({
-          name: 'component_lifetime',
-          value: lifetime,
-          unit: 'ms',
-          screenName: componentName,
-          severity: 'low',
-          context: { componentName, lifetime },
-        });
-      }
+    if (__DEV__) {
+      this.logger.debug(
+        `Performance metric recorded: ${name} = ${value}${unit}`,
+        context,
+      );
     }
   }
 
-  public async trackNativeMemory(): Promise<NativeMemoryMetrics> {
-    try {
-      const totalMemory = await DeviceInfo.getTotalMemory();
-      const usedMemory = await DeviceInfo.getUsedMemory();
-      const freeMemory = totalMemory - usedMemory;
-
-      const memoryPressure = this.determineMemoryPressure(usedMemory);
-
-      const memoryMetrics: NativeMemoryMetrics = {
-        totalMemory,
-        freeMemory,
-        usedMemory,
-        availableMemory: freeMemory,
-        memoryPressure,
-        jsHeapSize: (performance as any).memory?.usedJSHeapSize || 0,
-        nativeHeapSize: usedMemory,
-        imageMemory: 0,
-        timestamp: Date.now(),
-        platform: Platform.OS as 'ios' | 'android',
-      };
-
-      this.memorySnapshots.push(memoryMetrics);
-      return memoryMetrics;
-    } catch (error) {
-      this.logger.error('Failed to track native memory', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-      throw error;
-    }
-  }
-
-  public async measureAsync<T>(
+  /**
+   * Measure execution time of a function
+   */
+  async measureAsync<T>(
     name: string,
     fn: () => Promise<T>,
-    screenName: string = 'unknown'
-  ): Promise<T> {
+    context?: Record<string, any>,
+  ): Promise<{ result: T; duration: number }> {
     const startTime = performance.now();
-
     try {
       const result = await fn();
       const duration = performance.now() - startTime;
-
-      this.recordMetric({
-        name,
-        value: duration,
-        unit: 'ms',
-        screenName,
-        severity: duration > 1000 ? 'high' : duration > 500 ? 'medium' : 'low',
-        context: { operationType: 'async', success: true },
-      });
-
-      return result;
+      this.recordMetric(name, duration, 'ms', context);
+      return { result, duration };
     } catch (error) {
       const duration = performance.now() - startTime;
-
-      this.recordMetric({
-        name: `${name}_error`,
-        value: duration,
-        unit: 'ms',
-        screenName,
-        severity: 'critical',
-        context: {
-          operationType: 'async',
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        },
+      this.recordMetric(`${name}_error`, duration, 'ms', {
+        ...context,
+        error: error.message,
       });
-
       throw error;
     }
   }
 
-  public getSessionSummary() {
-    return {
-      sessionId: this.sessionId,
-      userId: this.userId,
-      metricsCollected: this.metrics.length,
-      coreVitalsCount: this.coreVitals.length,
-      alertsTriggered: this.alerts.length,
-      performanceScore: this.calculatePerformanceScore(),
-      averageRenderTime: this.calculateAverageMetric('screen_render'),
-      memoryPressure: this.memorySnapshots.length > 0
-        ? this.memorySnapshots[this.memorySnapshots.length - 1].memoryPressure
-        : 'low',
-    };
-  }
-
-  public getRealTimeMetrics() {
-    return {
-      coreVitals: this.coreVitals.slice(-10),
-      recentMetrics: this.metrics.slice(-20),
-      activeAlerts: this.alerts.filter(a => !a.acknowledged),
-      memoryTrend: this.memorySnapshots.slice(-20),
-      networkTrend: this.networkMetrics.slice(-20),
-    };
-  }
-
-  public exportSessionData(): SessionPerformanceData {
-    if (!this.deviceContext) {
-      throw new Error('Device context not initialized');
-    }
-
-    return {
-      sessionId: this.sessionId,
-      userId: this.userId,
-      startTime: Date.now(), // Would track from initialization
-      endTime: Date.now(),
-      screenViews: Array.from(this.screenRenderTimes.keys()),
-      coreVitals: this.coreVitals,
-      performanceMetrics: this.metrics,
-      networkMetrics: this.networkMetrics,
-      memoryMetrics: this.memorySnapshots,
-      alerts: this.alerts,
-      performanceScore: this.calculatePerformanceScore(),
-      deviceContext: this.deviceContext,
-    };
-  }
-
-  private async captureMemorySnapshot(): Promise<void> {
+  /**
+   * Measure execution time of a synchronous function
+   */
+  measure<T>(
+    name: string,
+    fn: () => T,
+    context?: Record<string, any>,
+  ): { result: T; duration: number } {
+    const startTime = performance.now();
     try {
-      const memoryMetrics = await this.trackNativeMemory();
-
-      // Detect potential memory leaks
-      if (this.config.features.memoryLeakDetection) {
-        this.detectMemoryLeaks(memoryMetrics);
-      }
+      const result = fn();
+      const duration = performance.now() - startTime;
+      this.recordMetric(name, duration, 'ms', context);
+      return { result, duration };
     } catch (error) {
-      this.logger.error('Failed to capture memory snapshot', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+      const duration = performance.now() - startTime;
+      this.recordMetric(`${name}_error`, duration, 'ms', {
+        ...context,
+        error: error.message,
       });
+      throw error;
     }
   }
 
-  private detectMemoryLeaks(currentMemory: NativeMemoryMetrics): void {
-    if (this.memorySnapshots.length < 5) return; // Need history
+  /**
+   * Record render performance for a component
+   */
+  recordRenderMetric(
+    componentName: string,
+    renderTime: number,
+    propsCount: number = 0,
+    childrenCount: number = 0,
+  ): void {
+    const metric: RenderMetrics = {
+      componentName,
+      renderTime,
+      propsCount,
+      childrenCount,
+      timestamp: Date.now(),
+    };
 
-    const recentSnapshots = this.memorySnapshots.slice(-5);
-    const memoryGrowth = currentMemory.usedMemory - recentSnapshots[0].usedMemory;
-    const growthRate = memoryGrowth / recentSnapshots[0].usedMemory;
+    this.renderMetrics.push(metric);
 
-    if (growthRate > 0.2) { // 20% growth
-      this.recordMetric({
-        name: 'potential_memory_leak',
-        value: memoryGrowth,
-        unit: 'bytes',
-        screenName: 'system',
-        severity: growthRate > 0.5 ? 'critical' : 'high',
-        context: {
-          growthRate,
-          currentUsage: currentMemory.usedMemory,
-          memoryPressure: currentMemory.memoryPressure,
-        },
-      });
+    // Keep only last 50 render metrics
+    if (this.renderMetrics.length > 50) {
+      this.renderMetrics.shift();
+    }
+
+    // Log slow renders in development
+    if (__DEV__ && renderTime > 16) {
+      // 16ms = 60fps threshold
+      this.logger.warn(
+        `Slow render detected: ${componentName} took ${renderTime.toFixed(
+          2,
+        )}ms`,
+      );
     }
   }
 
-  private async collectDeviceContext(): Promise<DeviceContext> {
-    const [model, osVersion, appVersion, totalMemory, batteryLevel] = await Promise.all([
-      DeviceInfo.getModel(),
-      DeviceInfo.getSystemVersion(),
-      DeviceInfo.getVersion(),
-      DeviceInfo.getTotalMemory(),
-      DeviceInfo.getBatteryLevel(),
-    ]);
+  /**
+   * Record network request performance
+   */
+  recordNetworkMetric(
+    url: string,
+    method: string,
+    duration: number,
+    responseSize: number,
+    statusCode: number,
+  ): void {
+    const metric: NetworkMetrics = {
+      url,
+      method,
+      duration,
+      responseSize,
+      statusCode,
+      timestamp: Date.now(),
+    };
 
-    const connectionInfo = await NetInfo.fetch();
-    const { width, height } = Dimensions.get('window');
+    this.networkMetrics.push(metric);
+
+    // Keep only last 100 network metrics
+    if (this.networkMetrics.length > 100) {
+      this.networkMetrics.shift();
+    }
+
+    // Log slow network requests
+    if (__DEV__ && duration > 3000) {
+      // 3 seconds threshold
+      this.logger.warn(
+        `Slow network request: ${method} ${url} took ${duration}ms`,
+      );
+    }
+  }
+
+  /**
+   * Record bundle metrics
+   */
+  recordBundleMetrics(metrics: Partial<BundleMetrics>): void {
+    this.bundleMetrics = {
+      totalSize: 0,
+      jsSize: 0,
+      assetsSize: 0,
+      loadTime: 0,
+      timestamp: Date.now(),
+      ...metrics,
+    };
+
+    if (__DEV__) {
+      this.logger.info('Bundle metrics recorded:', this.bundleMetrics);
+    }
+  }
+
+  /**
+   * Get performance summary
+   */
+  getPerformanceSummary(): any {
+    const summary = {
+      overview: {
+        isMonitoring: this.isMonitoring,
+        totalMetrics: Array.from(this.metrics.values()).reduce(
+          (sum, arr) => sum + arr.length,
+          0,
+        ),
+        memorySnapshots: this.memoryMetrics.length,
+        renderMetrics: this.renderMetrics.length,
+        networkRequests: this.networkMetrics.length,
+      },
+      memory: this.getMemorySummary(),
+      rendering: this.getRenderingSummary(),
+      network: this.getNetworkSummary(),
+      bundle: this.bundleMetrics,
+      customMetrics: this.getCustomMetricsSummary(),
+    };
+
+    return summary;
+  }
+
+  /**
+   * Get memory usage summary
+   */
+  private getMemorySummary(): any {
+    if (this.memoryMetrics.length === 0) return null;
+
+    const latest = this.memoryMetrics[this.memoryMetrics.length - 1];
+    const peak = this.memoryMetrics.reduce(
+      (max, metric) =>
+        metric.usedJSHeapSize > max.usedJSHeapSize ? metric : max,
+      this.memoryMetrics[0],
+    );
 
     return {
-      platform: Platform.OS as 'ios' | 'android',
-      osVersion,
-      deviceModel: model,
-      appVersion,
-      connectionType: connectionInfo.type || 'unknown',
-      batteryLevel,
-      isLowPowerMode: await DeviceInfo.isPowerSaveMode(),
-      availableMemory: totalMemory,
-      screenResolution: { width, height },
+      current: {
+        used: this.formatBytes(latest.usedJSHeapSize),
+        total: this.formatBytes(latest.totalJSHeapSize),
+        limit: this.formatBytes(latest.jsHeapSizeLimit),
+        utilization:
+          ((latest.usedJSHeapSize / latest.jsHeapSizeLimit) * 100).toFixed(2) +
+          '%',
+      },
+      peak: {
+        used: this.formatBytes(peak.usedJSHeapSize),
+        timestamp: new Date(peak.timestamp).toISOString(),
+      },
     };
   }
 
-  private checkAlertRules(metric: EnhancedPerformanceMetric): void {
-    for (const rule of this.alertRules) {
-      if (!rule.enabled) continue;
-      if (rule.metricType !== metric.name) continue;
+  /**
+   * Get rendering performance summary
+   */
+  private getRenderingSummary(): any {
+    if (this.renderMetrics.length === 0) return null;
 
-      const shouldAlert = this.evaluateAlertRule(rule, metric.value);
+    const totalRenderTime = this.renderMetrics.reduce(
+      (sum, metric) => sum + metric.renderTime,
+      0,
+    );
+    const averageRenderTime = totalRenderTime / this.renderMetrics.length;
+    const slowRenders = this.renderMetrics.filter(
+      metric => metric.renderTime > 16,
+    );
 
-      if (shouldAlert) {
-        const alert: PerformanceAlert = {
-          id: this.generateMetricId(),
-          ruleId: rule.id,
-          metricType: metric.name,
-          value: metric.value,
-          threshold: rule.threshold,
-          severity: rule.severity,
-          timestamp: Date.now(),
-          sessionId: this.sessionId,
-          acknowledged: false,
-          context: metric.context || {},
-        };
+    return {
+      totalRenders: this.renderMetrics.length,
+      averageRenderTime: averageRenderTime.toFixed(2) + 'ms',
+      slowRenders: slowRenders.length,
+      slowestRender: this.renderMetrics.reduce(
+        (max, metric) => (metric.renderTime > max.renderTime ? metric : max),
+        this.renderMetrics[0],
+      ),
+    };
+  }
 
-        this.alerts.push(alert);
-        this.logger.warn('Performance alert triggered', alert);
+  /**
+   * Get network performance summary
+   */
+  private getNetworkSummary(): any {
+    if (this.networkMetrics.length === 0) return null;
+
+    const totalRequests = this.networkMetrics.length;
+    const averageDuration =
+      this.networkMetrics.reduce((sum, metric) => sum + metric.duration, 0) /
+      totalRequests;
+    const slowRequests = this.networkMetrics.filter(
+      metric => metric.duration > 3000,
+    );
+    const errorRequests = this.networkMetrics.filter(
+      metric => metric.statusCode >= 400,
+    );
+
+    return {
+      totalRequests,
+      averageDuration: averageDuration.toFixed(2) + 'ms',
+      slowRequests: slowRequests.length,
+      errorRequests: errorRequests.length,
+      totalDataTransferred: this.formatBytes(
+        this.networkMetrics.reduce(
+          (sum, metric) => sum + metric.responseSize,
+          0,
+        ),
+      ),
+    };
+  }
+
+  /**
+   * Get custom metrics summary
+   */
+  private getCustomMetricsSummary(): any {
+    const summary: Record<string, any> = {};
+
+    for (const [name, metrics] of this.metrics.entries()) {
+      if (metrics.length === 0) continue;
+
+      const values = metrics.map(m => m.value);
+      const average = values.reduce((sum, val) => sum + val, 0) / values.length;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const latest = metrics[metrics.length - 1];
+
+      summary[name] = {
+        count: metrics.length,
+        average: average.toFixed(2),
+        min,
+        max,
+        latest: latest.value,
+        unit: latest.unit,
+      };
+    }
+
+    return summary;
+  }
+
+  /**
+   * Setup performance observers
+   */
+  private setupPerformanceObservers(): void {
+    if (typeof PerformanceObserver !== 'undefined') {
+      try {
+        // Observe navigation timing
+        const navigationObserver = new PerformanceObserver(list => {
+          for (const entry of list.getEntries()) {
+            if (entry.entryType === 'navigation') {
+              this.recordMetric('navigation_load_time', entry.duration, 'ms');
+            }
+          }
+        });
+        navigationObserver.observe({ entryTypes: ['navigation'] });
+
+        // Observe resource timing
+        const resourceObserver = new PerformanceObserver(list => {
+          for (const entry of list.getEntries()) {
+            if (entry.entryType === 'resource') {
+              this.recordMetric('resource_load_time', entry.duration, 'ms', {
+                name: entry.name,
+                size: entry.transferSize,
+              });
+            }
+          }
+        });
+        resourceObserver.observe({ entryTypes: ['resource'] });
+      } catch (error) {
+        this.logger.warn('Performance observers not supported:', error);
       }
     }
   }
 
-  private evaluateAlertRule(rule: PerformanceAlertRule, value: number): boolean {
-    switch (rule.comparison) {
-      case 'greater':
-        return value > rule.threshold;
-      case 'less':
-        return value < rule.threshold;
-      case 'equal':
-        return value === rule.threshold;
-      default:
-        return false;
+  /**
+   * Start memory monitoring
+   */
+  private startMemoryMonitoring(): void {
+    if (Platform.OS === 'web' || typeof performance !== 'undefined') {
+      this.memoryInterval = setInterval(() => {
+        try {
+          // @ts-ignore
+          if (performance.memory) {
+            // @ts-ignore
+            const memory = performance.memory;
+            const metric: MemoryMetrics = {
+              usedJSHeapSize: memory.usedJSHeapSize,
+              totalJSHeapSize: memory.totalJSHeapSize,
+              jsHeapSizeLimit: memory.jsHeapSizeLimit,
+              timestamp: Date.now(),
+            };
+
+            this.memoryMetrics.push(metric);
+
+            // Keep only last 100 memory snapshots
+            if (this.memoryMetrics.length > 100) {
+              this.memoryMetrics.shift();
+            }
+          }
+        } catch (error) {
+          this.logger.warn('Memory monitoring error:', error);
+        }
+      }, 10000); // Every 10 seconds
     }
   }
 
-  private evaluateCoreVital(type: CoreVitalType, value: number): boolean {
-    const threshold = this.config.thresholds.coreVitals[type];
-    return value <= threshold.good;
+  /**
+   * Setup network monitoring
+   */
+  private setupNetworkMonitoring(): void {
+    // This would typically intercept fetch/XMLHttpRequest
+    // For now, it's a placeholder for manual network metric recording
+    if (__DEV__) {
+      this.logger.info('Network monitoring setup (manual recording required)');
+    }
   }
 
-  private determineMemoryPressure(usedMemory: number): 'low' | 'medium' | 'high' | 'critical' {
-    const { warning, critical } = this.config.thresholds.memory;
-
-    if (usedMemory > critical) return 'critical';
-    if (usedMemory > warning) return 'high';
-    if (usedMemory > warning * 0.7) return 'medium';
-    return 'low';
+  /**
+   * Format bytes to human readable format
+   */
+  private formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  private calculatePerformanceScore(): number {
-    const goodVitals = this.coreVitals.filter(v => v.isGoodScore).length;
-    const totalVitals = this.coreVitals.length;
-
-    if (totalVitals === 0) return 100;
-
-    return Math.round((goodVitals / totalVitals) * 100);
-  }
-
-  private calculateAverageMetric(metricName: string): number {
-    const relevantMetrics = this.metrics.filter(m => m.name === metricName);
-    if (relevantMetrics.length === 0) return 0;
-
-    const sum = relevantMetrics.reduce((acc, m) => acc + m.value, 0);
-    return sum / relevantMetrics.length;
-  }
-
-  private initializeDefaultAlertRules(): void {
-    this.alertRules = [
-      {
-        id: 'slow_render',
-        name: 'Slow Screen Render',
-        metricType: 'screen_render',
-        threshold: 1000,
-        comparison: 'greater',
-        severity: 'high',
-        cooldownMinutes: 5,
-        enabled: true,
+  /**
+   * Export performance data for analysis
+   */
+  exportPerformanceData(): any {
+    return {
+      summary: this.getPerformanceSummary(),
+      rawData: {
+        metrics: Object.fromEntries(this.metrics),
+        memory: this.memoryMetrics,
+        rendering: this.renderMetrics,
+        network: this.networkMetrics,
+        bundle: this.bundleMetrics,
       },
-      {
-        id: 'high_memory',
-        name: 'High Memory Usage',
-        metricType: 'memory_usage',
-        threshold: this.config.thresholds.memory.warning,
-        comparison: 'greater',
-        severity: 'medium',
-        cooldownMinutes: 10,
-        enabled: true,
+      metadata: {
+        platform: Platform.OS,
+        timestamp: new Date().toISOString(),
+        monitoringDuration: this.isMonitoring ? 'active' : 'stopped',
       },
-    ];
+    };
   }
 
-  private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-  }
-
-  private generateMetricId(): string {
-    return `metric_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  /**
+   * Clear all performance data
+   */
+  clearData(): void {
+    this.metrics.clear();
+    this.memoryMetrics = [];
+    this.renderMetrics = [];
+    this.networkMetrics = [];
+    this.bundleMetrics = null;
+    this.logger.info('Performance data cleared');
   }
 }
 
-export const enhancedPerformanceService = EnhancedPerformanceService.getInstance();
-export default EnhancedPerformanceService;
+// Create and export singleton instance
+export const enhancedPerformanceService =
+  EnhancedPerformanceService.getInstance();
+export default enhancedPerformanceService;

@@ -391,3 +391,9 @@ kindred_*.png
 # Development documentation and logs
 BOOTUP_ISSUE_RESOLUTION_LOG.md
 *_RESOLUTION_LOG.md
+
+# Broken/Restored Service Artifacts
+*.broken
+*.backup
+*.old
+

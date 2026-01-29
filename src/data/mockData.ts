@@ -232,7 +232,8 @@ export const mockRecommendations = [
   {
     id: 'rec-001',
     title: 'Switch to LED Bulbs',
-    description: 'Replace your remaining incandescent bulbs with energy-efficient LEDs',
+    description:
+      'Replace your remaining incandescent bulbs with energy-efficient LEDs',
     category: 'energy',
     impact: 'high',
     potentialSaving: 45.2,
@@ -293,7 +294,8 @@ export const mockInsights = [
     id: 'ins-002',
     type: 'tip',
     title: '💡 Energy Tip',
-    message: 'Your energy usage peaks at 7 PM. Consider using appliances during off-peak hours.',
+    message:
+      'Your energy usage peaks at 7 PM. Consider using appliances during off-peak hours.',
     date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     priority: 'medium',
   },
@@ -364,7 +366,8 @@ export const mockCommunityPosts = [
       avatar: 'https://i.pravatar.cc/150?img=5',
       level: 18,
     },
-    content: 'Just completed my first car-free week! Biking everywhere has been amazing 🚴‍♀️',
+    content:
+      'Just completed my first car-free week! Biking everywhere has been amazing 🚴‍♀️',
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     likes: 124,
     comments: 23,
@@ -378,7 +381,8 @@ export const mockCommunityPosts = [
       avatar: 'https://i.pravatar.cc/150?img=7',
       level: 16,
     },
-    content: 'My rooftop solar panels just got installed! Feeling great about this investment 🌞',
+    content:
+      'My rooftop solar panels just got installed! Feeling great about this investment 🌞',
     timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     likes: 89,
     comments: 15,
@@ -408,7 +412,7 @@ export const mockMapLocations = [
     id: 'loc-001',
     name: 'Green Market',
     type: 'market',
-    description: 'Organic farmer\'s market',
+    description: "Organic farmer's market",
     coordinates: { latitude: 37.7749, longitude: -122.4194 },
     distance: 0.8,
     rating: 4.8,
@@ -461,7 +465,8 @@ export const mockEcoTips = [
   {
     id: 'tip-001',
     title: 'Unplug Electronics',
-    description: 'Devices in standby mode still consume power. Unplug when not in use.',
+    description:
+      'Devices in standby mode still consume power. Unplug when not in use.',
     category: 'energy',
     impact: 'Save up to 10% on electricity',
     icon: '🔌',
@@ -469,7 +474,8 @@ export const mockEcoTips = [
   {
     id: 'tip-002',
     title: 'Cold Water Washing',
-    description: 'Washing clothes in cold water saves energy and is gentler on fabrics.',
+    description:
+      'Washing clothes in cold water saves energy and is gentler on fabrics.',
     category: 'energy',
     impact: 'Reduce washing emissions by 90%',
     icon: '🧺',
@@ -485,7 +491,8 @@ export const mockEcoTips = [
   {
     id: 'tip-004',
     title: 'Seasonal Produce',
-    description: 'Buy seasonal, local produce to reduce transportation emissions.',
+    description:
+      'Buy seasonal, local produce to reduce transportation emissions.',
     category: 'food',
     impact: 'Lower food carbon by 30%',
     icon: '🍎',
@@ -493,7 +500,8 @@ export const mockEcoTips = [
   {
     id: 'tip-005',
     title: 'Smart Thermostat',
-    description: 'Adjust temperature by 2°C to significantly reduce energy use.',
+    description:
+      'Adjust temperature by 2°C to significantly reduce energy use.',
     category: 'energy',
     impact: 'Save 10-15% on heating/cooling',
     icon: '🌡️',
@@ -551,7 +559,7 @@ export const mockNotifications = [
     id: 'notif-002',
     type: 'challenge',
     title: 'Challenge Update 📊',
-    message: 'You\'re 42% through the Zero Car Week challenge!',
+    message: "You're 42% through the Zero Car Week challenge!",
     timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     read: false,
   },

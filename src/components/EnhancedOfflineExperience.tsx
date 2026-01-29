@@ -1,6 +1,6 @@
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
-import type { NetInfoState , NetInfoState } from '@react-native-netinfo/netinfo';
+import type { NetInfoState, NetInfoState } from '@react-native-netinfo/netinfo';
 import NetInfo from '@react-native-netinfo/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-netinfo/netinfo';

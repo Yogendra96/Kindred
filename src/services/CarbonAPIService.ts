@@ -2,7 +2,6 @@ import axios, {
   type AxiosInstance,
   type AxiosResponse,
   type AxiosError,
-  AxiosRequestConfig,
 } from 'axios';
 import { CARBON_API_KEY, CARBON_API_BASE_URL } from '@env';
 import { loggingService } from './LoggingService';
@@ -651,7 +650,7 @@ class CarbonAPIService {
         latency,
         features: response.data.features,
       };
-    } catch (error) {
+    } catch (_error) {
       const latency = Date.now() - startTime;
 
       return {

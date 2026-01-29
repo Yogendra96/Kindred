@@ -1,7 +1,8 @@
 import { HapticFeedbackService } from '../services/HapticFeedbackService';
 import type {
   PanGestureHandlerGestureEvent,
-  PanGestureHandlerGestureEvent} from 'react-native';
+  PanGestureHandlerGestureEvent,
+} from 'react-native';
 import {
   View,
   Text,

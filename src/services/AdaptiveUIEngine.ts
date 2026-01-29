@@ -430,7 +430,15 @@ interface ThemeAdaptationRule {
 }
 
 interface AdaptationTrigger {
-  readonly type: 'time' | 'location' | 'activity' | 'carbon_level' | 'mood' | 'achievement' | 'weather' | 'context';
+  readonly type:
+    | 'time'
+    | 'location'
+    | 'activity'
+    | 'carbon_level'
+    | 'mood'
+    | 'achievement'
+    | 'weather'
+    | 'context';
   readonly condition: string;
   readonly threshold?: number;
   readonly duration?: number;
@@ -569,14 +577,23 @@ interface EngagementDesignElements {
 }
 
 interface MotivationalDesign {
-  readonly framework: 'self_determination' | 'flow' | 'gamification' | 'behavioral_economics';
+  readonly framework:
+    | 'self_determination'
+    | 'flow'
+    | 'gamification'
+    | 'behavioral_economics';
   readonly elements: MotivationalElement[];
   readonly triggers: MotivationalTrigger[];
   readonly rewards: MotivationalReward[];
 }
 
 interface MotivationalElement {
-  readonly type: 'progress' | 'mastery' | 'purpose' | 'autonomy' | 'relatedness';
+  readonly type:
+    | 'progress'
+    | 'mastery'
+    | 'purpose'
+    | 'autonomy'
+    | 'relatedness';
   readonly implementation: string;
   readonly strength: number;
   readonly context: string[];
@@ -897,7 +914,12 @@ interface AccessibilityPreferences {
 }
 
 interface ColorBlindnessSupport {
-  readonly type: 'none' | 'protanomaly' | 'deuteranomaly' | 'tritanomaly' | 'monochromacy';
+  readonly type:
+    | 'none'
+    | 'protanomaly'
+    | 'deuteranomaly'
+    | 'tritanomaly'
+    | 'monochromacy';
   readonly severity: 'mild' | 'moderate' | 'severe';
   readonly compensation: ColorCompensationStrategy;
 }
@@ -1107,7 +1129,14 @@ export interface ContextualThemingEngine {
 
 interface ContextSensor {
   readonly sensorId: string;
-  readonly type: 'time' | 'location' | 'weather' | 'activity' | 'carbon' | 'mood' | 'social';
+  readonly type:
+    | 'time'
+    | 'location'
+    | 'weather'
+    | 'activity'
+    | 'carbon'
+    | 'mood'
+    | 'social';
   readonly data: ContextData;
   readonly reliability: number;
   readonly updateFrequency: number;
@@ -3236,25 +3265,24 @@ export class AdaptiveUIEngineService {
 
     try {
       console.log('🎨 Initializing Adaptive UI Engine...');
-      
+
       // Load default themes
       await this.loadDefaultThemes();
-      
+
       // Initialize context sensors
       await this.initializeContextSensors();
-      
+
       // Load user preferences
       await this.loadUserPreferences();
-      
+
       // Setup adaptation rules
       await this.setupAdaptationRules();
-      
+
       // Initialize AI theming system
       await this.initializeAITheming();
-      
+
       this.isInitialized = true;
       console.log('✅ Adaptive UI Engine initialized successfully');
-      
     } catch (error) {
       console.error('❌ Failed to initialize Adaptive UI Engine:', error);
       throw error;
@@ -3263,29 +3291,37 @@ export class AdaptiveUIEngineService {
 
   async adaptTheme(
     userId: string,
-    context: ContextSnapshot
+    context: ContextSnapshot,
   ): Promise<AdaptiveTheme> {
     console.log(`🎨 Adapting theme for user: ${userId}`);
-    
+
     try {
       // Get user preferences
-      const preferences = this.userPreferences.get(userId) || await this.createDefaultPreferences(userId);
-      
+      const preferences =
+        this.userPreferences.get(userId) ||
+        (await this.createDefaultPreferences(userId));
+
       // Analyze current context
       const contextAnalysis = await this.analyzeContext(context);
-      
+
       // Generate theme recommendations
-      const recommendations = await this.generateThemeRecommendations(preferences, contextAnalysis);
-      
+      const recommendations = await this.generateThemeRecommendations(
+        preferences,
+        contextAnalysis,
+      );
+
       // Select optimal theme
       const selectedTheme = await this.selectOptimalTheme(recommendations);
-      
+
       // Apply contextual adaptations
-      const adaptedTheme = await this.applyContextualAdaptations(selectedTheme, context);
-      
+      const adaptedTheme = await this.applyContextualAdaptations(
+        selectedTheme,
+        context,
+      );
+
       // Learn from adaptation
       await this.learnFromAdaptation(userId, context, adaptedTheme);
-      
+
       // Track adaptation
       observabilityService.trackBusinessEvent({
         eventName: 'theme_adaptation',
@@ -3293,13 +3329,14 @@ export class AdaptiveUIEngineService {
           userId,
           themeId: adaptedTheme.id,
           context: contextAnalysis.type,
-          carbonLevel: context.sensors.find(s => s.sensorId === 'carbon')?.data.value || 'unknown',
+          carbonLevel:
+            context.sensors.find(s => s.sensorId === 'carbon')?.data.value ||
+            'unknown',
         },
       });
-      
+
       this.currentTheme = adaptedTheme;
       return adaptedTheme;
-      
     } catch (error) {
       console.error('Theme adaptation failed:', error);
       throw error;
@@ -3307,23 +3344,25 @@ export class AdaptiveUIEngineService {
   }
 
   async createCarbonVisualization(
-    carbonData: CarbonVisualizationData
+    carbonData: CarbonVisualizationData,
   ): Promise<CarbonVisualizationTheme> {
     console.log('🌱 Creating carbon visualization theme...');
-    
+
     try {
       // Analyze carbon data
       const analysis = await this.analyzeCarbonData(carbonData);
-      
+
       // Generate color mappings
       const colorMappings = await this.generateCarbonColorMappings(analysis);
-      
+
       // Create immersive visualizations
       const visualizations = await this.createImmersiveVisualizations(analysis);
-      
+
       // Generate emotional resonance
-      const emotionalResonance = await this.generateEmotionalResonance(analysis);
-      
+      const emotionalResonance = await this.generateEmotionalResonance(
+        analysis,
+      );
+
       const theme: CarbonVisualizationTheme = {
         themeId: `carbon_viz_${Date.now()}`,
         carbonData: analysis,
@@ -3332,9 +3371,11 @@ export class AdaptiveUIEngineService {
         emotionalResonance,
         adaptiveElements: await this.generateAdaptiveElements(analysis),
         interactionPatterns: await this.generateInteractionPatterns(analysis),
-        performance: await this.optimizeVisualizationPerformance(visualizations),
+        performance: await this.optimizeVisualizationPerformance(
+          visualizations,
+        ),
       };
-      
+
       // Track visualization creation
       observabilityService.trackBusinessEvent({
         eventName: 'carbon_visualization_created',
@@ -3345,9 +3386,8 @@ export class AdaptiveUIEngineService {
           visualizationTypes: visualizations.map(v => v.type),
         },
       });
-      
+
       return theme;
-      
     } catch (error) {
       console.error('Carbon visualization creation failed:', error);
       throw error;
@@ -3359,7 +3399,7 @@ export class AdaptiveUIEngineService {
     if (theme) {
       return theme;
     }
-    
+
     // Try loading from storage
     try {
       const stored = await AsyncStorage.getItem(`adaptive_theme_${themeId}`);
@@ -3371,32 +3411,37 @@ export class AdaptiveUIEngineService {
     } catch (error) {
       console.error('Failed to load adaptive theme from storage:', error);
     }
-    
+
     return null;
   }
 
   async updateUserPreferences(
     userId: string,
-    preferences: Partial<UserThemePreferences>
+    preferences: Partial<UserThemePreferences>,
   ): Promise<UserThemePreferences> {
-    const currentPreferences = this.userPreferences.get(userId) || await this.createDefaultPreferences(userId);
-    
+    const currentPreferences =
+      this.userPreferences.get(userId) ||
+      (await this.createDefaultPreferences(userId));
+
     const updatedPreferences = {
       ...currentPreferences,
       ...preferences,
-      preferences: [...currentPreferences.preferences, ...(preferences.preferences || [])],
+      preferences: [
+        ...currentPreferences.preferences,
+        ...(preferences.preferences || []),
+      ],
     };
-    
+
     this.userPreferences.set(userId, updatedPreferences);
     await this.persistUserPreferences(updatedPreferences);
-    
+
     return updatedPreferences;
   }
 
   // Private implementation methods
   private async loadDefaultThemes(): Promise<void> {
     console.log('🎨 Loading default adaptive themes...');
-    
+
     // Create comprehensive default themes
     const defaultThemes: AdaptiveTheme[] = [
       await this.createDefaultTheme('sustainable_harmony'),
@@ -3405,7 +3450,7 @@ export class AdaptiveUIEngineService {
       await this.createDefaultTheme('nature_inspired'),
       await this.createDefaultTheme('achievement_focused'),
     ];
-    
+
     for (const theme of defaultThemes) {
       this.themes.set(theme.id, theme);
     }
@@ -3414,7 +3459,7 @@ export class AdaptiveUIEngineService {
   private async createDefaultTheme(themeType: string): Promise<AdaptiveTheme> {
     // Create sophisticated default themes based on type
     const baseConfig = await this.generateBaseThemeConfig(themeType);
-    
+
     return {
       id: `default_${themeType}`,
       name: this.getThemeName(themeType),
@@ -3436,12 +3481,14 @@ export class AdaptiveUIEngineService {
       nature_inspired: 'Nature Inspired',
       achievement_focused: 'Achievement Focused',
     };
-    
+
     return names[themeType as keyof typeof names] || 'Adaptive Theme';
   }
 
   // Placeholder implementations for complex theme generation
-  private async generateBaseThemeConfig(themeType: string): Promise<BaseThemeConfig> {
+  private async generateBaseThemeConfig(
+    themeType: string,
+  ): Promise<BaseThemeConfig> {
     // Complex theme configuration generation would go here
     return {
       colors: await this.generateColorScheme(themeType),

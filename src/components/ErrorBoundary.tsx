@@ -1,4 +1,4 @@
-import type { ErrorInfo, ReactNode , ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode, ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';

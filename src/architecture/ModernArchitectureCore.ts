@@ -109,9 +109,11 @@ export class AdvancedServiceContainer implements ServiceContainer {
   }
 
   private hasService(token: string): boolean {
-    return this.services.has(token) || 
-           this.factories.has(token) || 
-           this.scopedFactories.has(token);
+    return (
+      this.services.has(token) ||
+      this.factories.has(token) ||
+      this.scopedFactories.has(token)
+    );
   }
 
   dispose(): void {
@@ -125,7 +127,7 @@ export class AdvancedServiceContainer implements ServiceContainer {
         }
       }
     }
-    
+
     this.services.clear();
     this.singletons.clear();
     this.factories.clear();
@@ -138,14 +140,17 @@ export class AdvancedServiceContainer implements ServiceContainer {
 export class EventStore {
   private readonly events: Event[] = [];
   private readonly snapshots = new Map<string, any>();
-  private readonly eventHandlers = new Map<string, Array<(event: Event) => void>>();
+  private readonly eventHandlers = new Map<
+    string,
+    Array<(event: Event) => void>
+  >();
 
   async appendEvent(event: Event): Promise<void> {
     this.events.push(event);
-    
+
     // Persist to storage
     await this.persistEvent(event);
-    
+
     // Trigger handlers
     const handlers = this.eventHandlers.get(event.type) || [];
     for (const handler of handlers) {
@@ -168,8 +173,8 @@ export class EventStore {
   }
 
   async getEvents(aggregateId: string, fromVersion = 0): Promise<Event[]> {
-    return this.events.filter(event => 
-      event.source === aggregateId && event.version >= fromVersion
+    return this.events.filter(
+      event => event.source === aggregateId && event.version >= fromVersion,
     );
   }
 
@@ -177,21 +182,28 @@ export class EventStore {
     return this.events.filter(event => event.type === eventType);
   }
 
-  async createSnapshot(aggregateId: string, state: any, version: number): Promise<void> {
+  async createSnapshot(
+    aggregateId: string,
+    state: any,
+    version: number,
+  ): Promise<void> {
     const snapshot = {
       aggregateId,
       state,
       version,
       timestamp: Date.now(),
     };
-    
+
     this.snapshots.set(aggregateId, snapshot);
-    await AsyncStorage.setItem(`snapshot_${aggregateId}`, JSON.stringify(snapshot));
+    await AsyncStorage.setItem(
+      `snapshot_${aggregateId}`,
+      JSON.stringify(snapshot),
+    );
   }
 
   async getSnapshot(aggregateId: string): Promise<any> {
     let snapshot = this.snapshots.get(aggregateId);
-    
+
     if (!snapshot) {
       try {
         const stored = await AsyncStorage.getItem(`snapshot_${aggregateId}`);
@@ -203,7 +215,7 @@ export class EventStore {
         console.error(`Error loading snapshot for ${aggregateId}:`, error);
       }
     }
-    
+
     return snapshot;
   }
 
@@ -211,7 +223,7 @@ export class EventStore {
     const handlers = this.eventHandlers.get(eventType) || [];
     handlers.push(handler);
     this.eventHandlers.set(eventType, handlers);
-    
+
     // Return unsubscribe function
     return () => {
       const currentHandlers = this.eventHandlers.get(eventType) || [];
@@ -235,16 +247,16 @@ export class EventStore {
   async replay(aggregateId: string): Promise<any> {
     const snapshot = await this.getSnapshot(aggregateId);
     const events = await this.getEvents(
-      aggregateId, 
-      snapshot ? snapshot.version + 1 : 0
+      aggregateId,
+      snapshot ? snapshot.version + 1 : 0,
     );
-    
+
     return {
       snapshot: snapshot?.state,
       events,
       currentVersion: Math.max(
         snapshot?.version || 0,
-        events.length > 0 ? events[events.length - 1].version : 0
+        events.length > 0 ? events[events.length - 1].version : 0,
       ),
     };
   }
@@ -253,7 +265,7 @@ export class EventStore {
 // CQRS Implementation
 export abstract class CommandHandler<T extends Command> {
   abstract handle(command: T): Promise<void>;
-  
+
   protected async validate(command: T): Promise<boolean> {
     // Override in specific handlers
     return true;
@@ -262,7 +274,7 @@ export abstract class CommandHandler<T extends Command> {
 
 export abstract class QueryHandler<T extends Query, R> {
   abstract handle(query: T): Promise<R>;
-  
+
   protected async authorize(query: T): Promise<boolean> {
     // Override in specific handlers
     return true;
@@ -271,13 +283,20 @@ export abstract class QueryHandler<T extends Query, R> {
 
 export class CommandBus {
   private readonly handlers = new Map<string, CommandHandler<any>>();
-  private readonly middleware: Array<(command: Command, next: () => Promise<void>) => Promise<void>> = [];
+  private readonly middleware: Array<
+    (command: Command, next: () => Promise<void>) => Promise<void>
+  > = [];
 
-  register<T extends Command>(commandType: string, handler: CommandHandler<T>): void {
+  register<T extends Command>(
+    commandType: string,
+    handler: CommandHandler<T>,
+  ): void {
     this.handlers.set(commandType, handler);
   }
 
-  addMiddleware(middleware: (command: Command, next: () => Promise<void>) => Promise<void>): void {
+  addMiddleware(
+    middleware: (command: Command, next: () => Promise<void>) => Promise<void>,
+  ): void {
     this.middleware.push(middleware);
   }
 
@@ -304,9 +323,15 @@ export class CommandBus {
 
 export class QueryBus {
   private readonly handlers = new Map<string, QueryHandler<any, any>>();
-  private readonly cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private readonly cache = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
 
-  register<T extends Query, R>(queryType: string, handler: QueryHandler<T, R>): void {
+  register<T extends Query, R>(
+    queryType: string,
+    handler: QueryHandler<T, R>,
+  ): void {
     this.handlers.set(queryType, handler);
   }
 
@@ -315,7 +340,7 @@ export class QueryBus {
     if (cacheTtl > 0) {
       const cacheKey = this.generateCacheKey(query);
       const cached = this.cache.get(cacheKey);
-      
+
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
         return cached.data;
       }
@@ -406,14 +431,14 @@ export abstract class AggregateRoot {
 
   static fromHistory<T extends AggregateRoot>(
     constructor: new (id: string) => T,
-    events: Event[]
+    events: Event[],
   ): T {
     if (events.length === 0) {
       throw new Error('Cannot create aggregate from empty event history');
     }
 
     const aggregate = new constructor(events[0].source);
-    
+
     for (const event of events) {
       aggregate.apply(event);
     }
@@ -427,24 +452,24 @@ export abstract class AggregateRoot {
 export abstract class Repository<T extends AggregateRoot> {
   constructor(
     protected readonly eventStore: EventStore,
-    protected readonly aggregateConstructor: new (id: string) => T
+    protected readonly aggregateConstructor: new (id: string) => T,
   ) {}
 
   async save(aggregate: T): Promise<void> {
     const events = aggregate.getUncommittedEvents();
-    
+
     for (const event of events) {
       await this.eventStore.appendEvent(event);
     }
-    
+
     aggregate.markEventsAsCommitted();
-    
+
     // Create snapshot periodically
     if (aggregate.getVersion() % 10 === 0) {
       await this.eventStore.createSnapshot(
         aggregate.getId(),
         this.serializeAggregate(aggregate),
-        aggregate.getVersion()
+        aggregate.getVersion(),
       );
     }
   }
@@ -452,13 +477,13 @@ export abstract class Repository<T extends AggregateRoot> {
   async findById(id: string): Promise<T | null> {
     try {
       const { snapshot, events } = await this.eventStore.replay(id);
-      
+
       if (!snapshot && events.length === 0) {
         return null;
       }
 
       let aggregate: T;
-      
+
       if (snapshot) {
         aggregate = this.deserializeAggregate(id, snapshot);
       } else {
@@ -497,12 +522,12 @@ export abstract class Saga {
   protected async executeStep(
     stepName: string,
     action: () => Promise<void>,
-    compensation?: () => Promise<void>
+    compensation?: () => Promise<void>,
   ): Promise<void> {
     try {
       await action();
       this.steps.set(stepName, true);
-      
+
       if (compensation) {
         this.compensations.push(compensation);
       }
@@ -515,7 +540,7 @@ export abstract class Saga {
 
   protected async compensate(): Promise<void> {
     console.log(`Compensating saga ${this.id}...`);
-    
+
     // Execute compensations in reverse order
     for (let i = this.compensations.length - 1; i >= 0; i--) {
       try {
@@ -556,10 +581,10 @@ export class ModernArchitectureCore {
 
       // Register core services
       this.registerCoreServices();
-      
+
       // Setup middleware
       this.setupMiddleware();
-      
+
       // Validate dependencies
       if (!this.container.validateDependencies()) {
         throw new Error('Dependency validation failed');
@@ -567,7 +592,6 @@ export class ModernArchitectureCore {
 
       this.isInitialized = true;
       console.log('✅ Modern Architecture Core initialized successfully');
-
     } catch (error) {
       console.error('❌ Failed to initialize Modern Architecture Core:', error);
       throw error;
@@ -586,7 +610,7 @@ export class ModernArchitectureCore {
     this.commandBus.addMiddleware(async (command, next) => {
       console.log(`Executing command: ${command.type}`);
       const start = Date.now();
-      
+
       try {
         await next();
         const duration = Date.now() - start;
@@ -602,7 +626,7 @@ export class ModernArchitectureCore {
       const start = Date.now();
       await next();
       const duration = Date.now() - start;
-      
+
       observabilityService.trackPerformance({
         metricType: 'custom',
         name: 'command_execution_time',
@@ -675,13 +699,17 @@ export class ModernArchitectureCore {
         handlersCount: this.eventStore['eventHandlers'].size,
       };
 
-      const status = details.container.dependenciesValid ? 'healthy' : 'degraded';
+      const status = details.container.dependenciesValid
+        ? 'healthy'
+        : 'degraded';
 
       return { status, details };
     } catch (error) {
       return {
         status: 'unhealthy',
-        details: { error: error instanceof Error ? error.message : String(error) },
+        details: {
+          error: error instanceof Error ? error.message : String(error),
+        },
       };
     }
   }

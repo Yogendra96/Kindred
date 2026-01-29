@@ -1,18 +1,21 @@
 /**
  * @fileoverview Carbon Cache Manager Service
- * 
+ *
  * Focused service responsible for caching carbon calculation results
  * and emission factors to improve performance and reduce API calls.
- * 
+ *
  * Follows SRP - single responsibility for cache management.
- * 
+ *
  * @version 2.0.0
  */
 
 import { API_CONFIG, STORAGE_KEYS } from '../../utils/constants';
 import { createLogger, logCacheOperation } from '../../utils/loggingUtils';
 
-import type { CarbonCalculationRequest, CarbonCalculationResponse } from './CarbonCalculatorCore';
+import type {
+  CarbonCalculationRequest,
+  CarbonCalculationResponse,
+} from './CarbonCalculatorCore';
 
 // ===================================================================
 // TYPES
@@ -87,7 +90,7 @@ export class CarbonCacheManager {
     });
 
     this.startCleanupTimer();
-    
+
     if (this.config.enablePersistence) {
       this.loadFromPersistence();
     }
@@ -96,7 +99,9 @@ export class CarbonCacheManager {
   /**
    * Get calculation result from cache
    */
-  getCachedCalculation(request: CarbonCalculationRequest): CarbonCalculationResponse | null {
+  getCachedCalculation(
+    request: CarbonCalculationRequest,
+  ): CarbonCalculationResponse | null {
     const key = this.generateCacheKey(request);
     return this.get<CarbonCalculationResponse>(key);
   }
@@ -105,9 +110,9 @@ export class CarbonCacheManager {
    * Cache calculation result
    */
   cacheCalculation(
-    request: CarbonCalculationRequest, 
+    request: CarbonCalculationRequest,
     response: CarbonCalculationResponse,
-    ttl?: number
+    ttl?: number,
   ): void {
     const key = this.generateCacheKey(request);
     this.set(key, response, ttl ?? API_CONFIG.CACHE_TTL_MEDIUM);
@@ -128,7 +133,7 @@ export class CarbonCacheManager {
     factors: any[],
     category?: string,
     region?: string,
-    ttl?: number
+    ttl?: number,
   ): void {
     const key = `emission-factors-${category ?? 'all'}-${region ?? 'global'}`;
     this.set(key, factors, ttl ?? API_CONFIG.CACHE_TTL_LONG);
@@ -164,7 +169,7 @@ export class CarbonCacheManager {
 
     this.metrics.totalHits++;
     this.updateMetrics();
-    
+
     logCacheOperation(this.logger, 'get', key, true, item.ttl, {
       accessCount: item.accessCount,
       age: now - item.timestamp,
@@ -201,7 +206,7 @@ export class CarbonCacheManager {
     }
 
     this.cache.set(key, item);
-    
+
     logCacheOperation(this.logger, 'set', key, true, ttl, {
       size: `${(size / 1024).toFixed(1)}KB`,
       totalItems: this.cache.size,
@@ -216,7 +221,7 @@ export class CarbonCacheManager {
    */
   delete(key: string): boolean {
     const existed = this.cache.delete(key);
-    
+
     if (existed) {
       logCacheOperation(this.logger, 'delete', key, true);
       this.updateMetrics();
@@ -231,10 +236,10 @@ export class CarbonCacheManager {
   clear(): void {
     const itemCount = this.cache.size;
     const size = this.getCurrentSize();
-    
+
     this.cache.clear();
     this.updateMetrics();
-    
+
     logCacheOperation(this.logger, 'clear', 'all_items', true, undefined, {
       clearedItems: itemCount,
       freedBytes: size,
@@ -265,7 +270,7 @@ export class CarbonCacheManager {
   } {
     const items = Array.from(this.cache.entries());
     const now = Date.now();
-    
+
     // Find oldest item
     let oldestAge: number | undefined;
     if (items.length > 0) {
@@ -332,7 +337,7 @@ export class CarbonCacheManager {
     }
 
     this.clear();
-    
+
     this.logger.info('Cache manager destroyed');
   }
 
@@ -377,10 +382,10 @@ export class CarbonCacheManager {
    */
   private evictLRU(neededSpace: number): void {
     const items = Array.from(this.cache.entries());
-    
+
     // Sort by last accessed time (oldest first)
     items.sort(([_, a], [__, b]) => a.lastAccessed - b.lastAccessed);
-    
+
     let freedSpace = 0;
     let evictedCount = 0;
 
@@ -388,7 +393,7 @@ export class CarbonCacheManager {
       this.cache.delete(key);
       freedSpace += item.size;
       evictedCount++;
-      
+
       if (freedSpace >= neededSpace) {
         break;
       }
@@ -407,15 +412,19 @@ export class CarbonCacheManager {
   private updateMetrics(): void {
     this.metrics.itemCount = this.cache.size;
     this.metrics.size = this.getCurrentSize();
-    
+
     if (this.metrics.totalRequests > 0) {
-      this.metrics.hitRate = this.metrics.totalHits / this.metrics.totalRequests;
-      this.metrics.missRate = this.metrics.totalMisses / this.metrics.totalRequests;
+      this.metrics.hitRate =
+        this.metrics.totalHits / this.metrics.totalRequests;
+      this.metrics.missRate =
+        this.metrics.totalMisses / this.metrics.totalRequests;
     }
 
     // Update oldest/newest item timestamps
     if (this.cache.size > 0) {
-      const timestamps = Array.from(this.cache.values()).map(item => item.timestamp);
+      const timestamps = Array.from(this.cache.values()).map(
+        item => item.timestamp,
+      );
       this.metrics.oldestItem = Math.min(...timestamps);
       this.metrics.newestItem = Math.max(...timestamps);
     }
@@ -438,7 +447,7 @@ export class CarbonCacheManager {
       // Save only non-expired items
       const now = Date.now();
       const persistentData: Record<string, any> = {};
-      
+
       for (const [key, item] of this.cache.entries()) {
         if (now <= item.timestamp + item.ttl) {
           persistentData[key] = {
@@ -457,7 +466,11 @@ export class CarbonCacheManager {
         size: JSON.stringify(persistentData).length,
       });
     } catch (error) {
-      this.logger.error('Failed to save cache to persistence', {}, error as Error);
+      this.logger.error(
+        'Failed to save cache to persistence',
+        {},
+        error as Error,
+      );
     }
   }
 
@@ -470,7 +483,11 @@ export class CarbonCacheManager {
       // For now, we'll just log the operation
       this.logger.debug('Cache loaded from persistence');
     } catch (error) {
-      this.logger.error('Failed to load cache from persistence', {}, error as Error);
+      this.logger.error(
+        'Failed to load cache from persistence',
+        {},
+        error as Error,
+      );
     }
   }
 }

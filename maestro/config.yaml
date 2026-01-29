@@ -43,7 +43,7 @@ testData:
       email: "admin@example.com"
       password: "admin123"
       name: "Admin User"
-  
+
   activities:
     walking:
       type: "walking"
@@ -67,14 +67,14 @@ commands:
     - inputText: "${TEST_PASSWORD}"
     - tapOn: "login-button"
     - assertVisible: "home-screen"
-  
+
   logout:
     - tapOn: "profile-tab"
     - assertVisible: "profile-screen"
     - tapOn: "logout-button"
     - tapOn: "confirm-logout"
     - assertVisible: "login-screen"
-  
+
   addActivity:
     - tapOn: "carbon-tab"
     - assertVisible: "carbon-screen"
@@ -143,7 +143,7 @@ hooks:
         - "location"
         - "notifications"
         - "photos"
-  
+
   beforeEach:
     - launchApp:
         clearState: false
@@ -151,10 +151,10 @@ hooks:
           camera: "allow"
           location: "allow"
           notifications: "allow"
-  
+
   afterEach:
     - takeScreenshot: "test-end"
-  
+
   afterAll:
     - terminateApp: true
 
@@ -163,11 +163,11 @@ assertions:
   carbonFootprintReduced:
     description: "Assert that carbon footprint has been reduced"
     condition: "element('carbon-footprint').text < previousValue"
-  
+
   achievementUnlocked:
     description: "Assert that an achievement has been unlocked"
     condition: "element('achievement-notification').isVisible"
-  
+
   dataSync:
     description: "Assert that data has been synced"
     condition: "element('sync-indicator').text == 'Synced'"
@@ -180,7 +180,7 @@ suites:
       - "app-launch"
       - "login"
       - "navigation"
-  
+
   regression:
     description: "Full regression test suite"
     flows:
@@ -189,14 +189,14 @@ suites:
       - "social-features"
       - "achievements"
       - "barcode-scanner"
-  
+
   performance:
     description: "Performance test suite"
     flows:
       - "app-launch-performance"
       - "navigation-performance"
       - "data-loading-performance"
-  
+
   accessibility:
     description: "Accessibility test suite"
     flows:

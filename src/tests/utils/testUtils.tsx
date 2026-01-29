@@ -1,6 +1,9 @@
-import type { ReactElement , ReactElement } from 'react';
+import type { ReactElement, ReactElement } from 'react';
 import React from 'react';
-import type { RenderOptions , RenderOptions } from '@testing-library/react-native';
+import type {
+  RenderOptions,
+  RenderOptions,
+} from '@testing-library/react-native';
 import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { configureStore } from '@reduxjs/toolkit';

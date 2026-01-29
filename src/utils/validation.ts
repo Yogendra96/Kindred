@@ -1,9 +1,9 @@
 /**
  * @fileoverview Form Validation Utilities
- * 
+ *
  * Centralized form validation logic to eliminate code duplication
  * and provide consistent validation across all forms.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -38,16 +38,22 @@ export type Validator = (value: any, formData?: any) => string | null;
 // ===================================================================
 
 export const validators = {
-  required: (message: string = VALIDATION_MESSAGES.REQUIRED): Validator => 
+  required:
+    (message: string = VALIDATION_MESSAGES.REQUIRED): Validator =>
     (value: any) => {
-      if (value === null || value === undefined || value === '' || 
-          (Array.isArray(value) && value.length === 0)) {
+      if (
+        value === null ||
+        value === undefined ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
         return message;
       }
       return null;
     },
 
-  minLength: (min: number, message?: string): Validator => 
+  minLength:
+    (min: number, message?: string): Validator =>
     (value: any) => {
       const str = String(value || '');
       if (str.length < min) {
@@ -56,7 +62,8 @@ export const validators = {
       return null;
     },
 
-  maxLength: (max: number, message?: string): Validator => 
+  maxLength:
+    (max: number, message?: string): Validator =>
     (value: any) => {
       const str = String(value || '');
       if (str.length > max) {
@@ -65,7 +72,8 @@ export const validators = {
       return null;
     },
 
-  minValue: (min: number, message?: string): Validator => 
+  minValue:
+    (min: number, message?: string): Validator =>
     (value: any) => {
       const num = Number(value);
       if (isNaN(num) || num < min) {
@@ -74,7 +82,8 @@ export const validators = {
       return null;
     },
 
-  maxValue: (max: number, message?: string): Validator => 
+  maxValue:
+    (max: number, message?: string): Validator =>
     (value: any) => {
       const num = Number(value);
       if (isNaN(num) || num > max) {
@@ -83,7 +92,8 @@ export const validators = {
       return null;
     },
 
-  positiveNumber: (message?: string): Validator => 
+  positiveNumber:
+    (message?: string): Validator =>
     (value: any) => {
       const num = Number(value);
       if (isNaN(num) || num <= 0) {
@@ -92,7 +102,8 @@ export const validators = {
       return null;
     },
 
-  integer: (message?: string): Validator => 
+  integer:
+    (message?: string): Validator =>
     (value: any) => {
       const num = Number(value);
       if (isNaN(num) || !Number.isInteger(num)) {
@@ -101,7 +112,8 @@ export const validators = {
       return null;
     },
 
-  email: (message?: string): Validator => 
+  email:
+    (message?: string): Validator =>
     (value: any) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (value && !emailRegex.test(String(value))) {
@@ -110,7 +122,8 @@ export const validators = {
       return null;
     },
 
-  pattern: (regex: RegExp, message: string): Validator => 
+  pattern:
+    (regex: RegExp, message: string): Validator =>
     (value: any) => {
       if (value && !regex.test(String(value))) {
         return message;
@@ -118,7 +131,8 @@ export const validators = {
       return null;
     },
 
-  oneOf: (options: any[], message?: string): Validator => 
+  oneOf:
+    (options: any[], message?: string): Validator =>
     (value: any) => {
       if (value && !options.includes(value)) {
         return message || `Must be one of: ${options.join(', ')}`;
@@ -133,52 +147,63 @@ export const validators = {
 
 export const carbonValidators = {
   distance: validators.minValue(0.1, VALIDATION_MESSAGES.INVALID_DISTANCE),
-  
+
   maxDistance: validators.maxValue(
-    VALIDATION_LIMITS.DISTANCE_MAX_KM, 
-    VALIDATION_MESSAGES.DISTANCE_TOO_HIGH
+    VALIDATION_LIMITS.DISTANCE_MAX_KM,
+    VALIDATION_MESSAGES.DISTANCE_TOO_HIGH,
   ),
 
   passengers: (value: any) => {
     const num = Number(value);
-    if (isNaN(num) || num < VALIDATION_LIMITS.PASSENGERS_MIN || num > VALIDATION_LIMITS.PASSENGERS_MAX) {
+    if (
+      isNaN(num) ||
+      num < VALIDATION_LIMITS.PASSENGERS_MIN ||
+      num > VALIDATION_LIMITS.PASSENGERS_MAX
+    ) {
       return VALIDATION_MESSAGES.INVALID_PASSENGERS;
     }
     return null;
   },
 
   energy: validators.positiveNumber(VALIDATION_MESSAGES.INVALID_ENERGY),
-  
+
   maxEnergy: validators.maxValue(
     VALIDATION_LIMITS.ENERGY_MAX_KWH,
-    'Energy consumption seems unusually high. Please verify.'
+    'Energy consumption seems unusually high. Please verify.',
   ),
 
   food: validators.positiveNumber(VALIDATION_MESSAGES.INVALID_FOOD),
-  
+
   maxFood: validators.maxValue(
     VALIDATION_LIMITS.FOOD_MAX_KG,
-    'Food amount seems unusually high. Please verify.'
+    'Food amount seems unusually high. Please verify.',
   ),
 
   description: validators.minLength(
     VALIDATION_LIMITS.DESCRIPTION_MIN_LENGTH,
-    VALIDATION_MESSAGES.DESCRIPTION_REQUIRED
+    VALIDATION_MESSAGES.DESCRIPTION_REQUIRED,
   ),
 
   maxDescription: validators.maxLength(
     VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH,
-    VALIDATION_MESSAGES.DESCRIPTION_TOO_LONG
+    VALIDATION_MESSAGES.DESCRIPTION_TOO_LONG,
   ),
 
   transportMode: validators.oneOf(
     ['car', 'bus', 'train', 'plane', 'bike', 'walk', 'scooter', 'motorcycle'],
-    'Please select a valid transportation mode'
+    'Please select a valid transportation mode',
   ),
 
   fuelType: validators.oneOf(
-    ['gasoline', 'diesel', 'electric', 'hybrid', 'plugin-hybrid', 'natural-gas'],
-    'Please select a valid fuel type'
+    [
+      'gasoline',
+      'diesel',
+      'electric',
+      'hybrid',
+      'plugin-hybrid',
+      'natural-gas',
+    ],
+    'Please select a valid fuel type',
   ),
 };
 
@@ -301,22 +326,22 @@ export const foodSchema = {
  * Create a validator function from a schema
  */
 export const createValidator = <T extends Record<string, any>>(
-  schema: ValidationSchema<T>
+  schema: ValidationSchema<T>,
 ) => {
   return {
     validate: (data: T): ValidationResult<T> => {
       const errors: Partial<Record<keyof T, string>> = {};
-      
+
       // Apply schema rules
       for (const rule of schema.rules) {
         const value = data[rule.field];
         const error = rule.validator(value, data);
-        
+
         if (error && !errors[rule.field]) {
           errors[rule.field] = error;
         }
       }
-      
+
       // Apply custom validators
       if (schema.customValidators) {
         for (const customValidator of schema.customValidators) {
@@ -324,10 +349,10 @@ export const createValidator = <T extends Record<string, any>>(
           Object.assign(errors, customErrors);
         }
       }
-      
+
       const errorCount = Object.keys(errors).length;
       const firstError = errorCount > 0 ? Object.values(errors)[0] : undefined;
-      
+
       return {
         isValid: errorCount === 0,
         errors,
@@ -336,23 +361,25 @@ export const createValidator = <T extends Record<string, any>>(
       };
     },
 
-    validateField: (field: keyof T, value: any, formData?: T): string | null => {
+    validateField: (
+      field: keyof T,
+      value: any,
+      formData?: T,
+    ): string | null => {
       const fieldRules = schema.rules.filter(rule => rule.field === field);
-      
+
       for (const rule of fieldRules) {
         const error = rule.validator(value, formData);
         if (error) {
           return error;
         }
       }
-      
+
       return null;
     },
 
     getRequiredFields: (): Array<keyof T> => {
-      return schema.rules
-        .filter(rule => rule.required)
-        .map(rule => rule.field);
+      return schema.rules.filter(rule => rule.required).map(rule => rule.field);
     },
   };
 };
@@ -388,7 +415,7 @@ export interface UseValidationResult<T> {
  */
 export const createValidationState = <T extends Record<string, any>>(
   validator: ReturnType<typeof createValidator<T>>,
-  initialData: T
+  initialData: T,
 ) => {
   let errors: Partial<Record<keyof T, string>> = {};
   let formData = initialData;
@@ -449,20 +476,23 @@ export const createValidationState = <T extends Record<string, any>>(
 /**
  * Combine multiple validation results
  */
-export const combineValidationResults = <T>(...results: ValidationResult<T>[]): ValidationResult<T> => {
+export const combineValidationResults = <T>(
+  ...results: ValidationResult<T>[]
+): ValidationResult<T> => {
   const combinedErrors: Partial<Record<keyof T, string>> = {};
   let isValid = true;
-  
+
   for (const result of results) {
     if (!result.isValid) {
       isValid = false;
     }
     Object.assign(combinedErrors, result.errors);
   }
-  
+
   const errorCount = Object.keys(combinedErrors).length;
-  const firstError = errorCount > 0 ? Object.values(combinedErrors)[0] : undefined;
-  
+  const firstError =
+    errorCount > 0 ? Object.values(combinedErrors)[0] : undefined;
+
   return {
     isValid,
     errors: combinedErrors,
@@ -476,7 +506,7 @@ export const combineValidationResults = <T>(...results: ValidationResult<T>[]): 
  */
 export const conditionalValidator = <T>(
   condition: (formData: T) => boolean,
-  validator: Validator
+  validator: Validator,
 ): Validator => {
   return (value: any, formData: T) => {
     if (condition(formData)) {

@@ -40,15 +40,28 @@ export const ModernDonutChart: React.FC<BaseChartProps> = ({
 
   return (
     <View style={[styles.chartContainer, { height }]}>
-      {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
-      {subtitle && <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>}
-      
+      {title && (
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          {title}
+        </Text>
+      )}
+      {subtitle && (
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+          {subtitle}
+        </Text>
+      )}
+
       <View style={styles.legendContainer}>
         {data.map((item, index) => {
           const percentage = ((item.value / total) * 100).toFixed(1);
           return (
             <View key={index} style={styles.legendItem}>
-              <View style={[styles.colorIndicator, { backgroundColor: item.color || theme.colors.primary }]} />
+              <View
+                style={[
+                  styles.colorIndicator,
+                  { backgroundColor: item.color || theme.colors.primary },
+                ]}
+              />
               <Text style={[styles.legendText, { color: theme.colors.text }]}>
                 {item.label}: {percentage}%
               </Text>
@@ -71,9 +84,17 @@ export const ModernBarChart: React.FC<BaseChartProps> = ({
 
   return (
     <View style={[styles.chartContainer, { height }]}>
-      {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
-      {subtitle && <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>}
-      
+      {title && (
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          {title}
+        </Text>
+      )}
+      {subtitle && (
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+          {subtitle}
+        </Text>
+      )}
+
       <View style={styles.barContainer}>
         {data.map((item, index) => {
           const barHeight = (item.value / maxValue) * 160; // max 160px
@@ -90,10 +111,15 @@ export const ModernBarChart: React.FC<BaseChartProps> = ({
                   ]}
                 />
               </View>
-              <Text style={[styles.barLabel, { color: theme.colors.text }]} numberOfLines={2}>
+              <Text
+                style={[styles.barLabel, { color: theme.colors.text }]}
+                numberOfLines={2}
+              >
                 {item.label}
               </Text>
-              <Text style={[styles.barValue, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.barValue, { color: theme.colors.textSecondary }]}
+              >
                 {item.value}
               </Text>
             </View>
@@ -113,11 +139,24 @@ export const ModernLineChart: React.FC<BaseChartProps> = ({
 }) => {
   return (
     <View style={[styles.chartContainer, { height }]}>
-      {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
-      {subtitle && <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>}
-      
+      {title && (
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          {title}
+        </Text>
+      )}
+      {subtitle && (
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+          {subtitle}
+        </Text>
+      )}
+
       <View style={styles.lineChartPlaceholder}>
-        <Text style={[styles.placeholderText, { color: theme.colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.placeholderText,
+            { color: theme.colors.textSecondary },
+          ]}
+        >
           Line Chart: {data.length} data points
         </Text>
         {data.map((item, index) => (
@@ -183,14 +222,25 @@ export const ModernMetricCard: React.FC<{
   const Component = onPress ? TouchableOpacity : View;
 
   return (
-    <Component style={[styles.metricCard, { backgroundColor: theme.colors.surface }]} onPress={onPress}>
+    <Component
+      style={[styles.metricCard, { backgroundColor: theme.colors.surface }]}
+      onPress={onPress}
+    >
       <View style={styles.metricHeader}>
         {icon && <View style={styles.metricIcon}>{icon}</View>}
-        <Text style={[styles.metricTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
+        <Text
+          style={[styles.metricTitle, { color: theme.colors.textSecondary }]}
+        >
+          {title}
+        </Text>
       </View>
-      <Text style={[styles.metricValue, { color: color || theme.colors.text }]}>{value}</Text>
+      <Text style={[styles.metricValue, { color: color || theme.colors.text }]}>
+        {value}
+      </Text>
       {trend && (
-        <Text style={[styles.metricTrend, { color: getTrendColor(trend, theme) }]}>
+        <Text
+          style={[styles.metricTrend, { color: getTrendColor(trend, theme) }]}
+        >
           {getTrendSymbol(trend)} {trend}
         </Text>
       )}

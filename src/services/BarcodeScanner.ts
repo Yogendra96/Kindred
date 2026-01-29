@@ -143,7 +143,9 @@ class BarcodeScannerService {
           config.url || '',
           config.method?.toUpperCase() || 'GET',
         );
-        (config as InternalAxiosRequestConfig & { metadata?: unknown }).metadata = { trace, startTime: performance.now() };
+        (
+          config as InternalAxiosRequestConfig & { metadata?: unknown }
+        ).metadata = { trace, startTime: performance.now() };
         return config;
       },
       error => Promise.reject(error),
@@ -151,14 +153,26 @@ class BarcodeScannerService {
 
     this.apiClient.interceptors.response.use(
       response => {
-        const { trace } = (response.config as InternalAxiosRequestConfig & { metadata?: { trace?: { stop: (status: number, size?: number) => void } } }).metadata || {};
+        const { trace } =
+          (
+            response.config as InternalAxiosRequestConfig & {
+              metadata?: {
+                trace?: { stop: (status: number, size?: number) => void };
+              };
+            }
+          ).metadata || {};
         if (trace) {
           trace.stop(response.status, JSON.stringify(response.data).length);
         }
         return response;
       },
       error => {
-        const { trace } = (error.config as InternalAxiosRequestConfig & { metadata?: { trace?: { stop: (status: number) => void } } })?.metadata || {};
+        const { trace } =
+          (
+            error.config as InternalAxiosRequestConfig & {
+              metadata?: { trace?: { stop: (status: number) => void } };
+            }
+          )?.metadata || {};
         if (trace) {
           trace.stop(error.response?.status || 0);
         }

@@ -1,11 +1,11 @@
 /**
  * @fileoverview Carbon Service - Main Orchestrator
- * 
+ *
  * Main service that orchestrates carbon calculations using focused
  * sub-services following the composition pattern and SRP principles.
- * 
+ *
  * Replaces the monolithic CarbonAPIService with a clean, modular architecture.
- * 
+ *
  * @version 2.0.0
  */
 
@@ -60,12 +60,12 @@ export interface ServiceHealthCheck {
 
 /**
  * Main Carbon Service that orchestrates calculations using focused sub-services
- * 
+ *
  * Architecture:
  * - CarbonCalculatorCore: Offline calculations
  * - CarbonAPIAdapter: External API calls
  * - CarbonCacheManager: Caching and performance
- * 
+ *
  * This service follows the orchestrator pattern and handles:
  * - API vs offline calculation decisions
  * - Cache management
@@ -75,12 +75,12 @@ export interface ServiceHealthCheck {
 export class CarbonService {
   private logger = createLogger({ prefix: 'CARBON_API' });
   private performanceLogger = new PerformanceLogger('CARBON_API');
-  
+
   // Focused sub-services
   private calculator: CarbonCalculatorCore;
   private apiAdapter: CarbonAPIAdapter;
   private cacheManager: CarbonCacheManager;
-  
+
   private config: CarbonServiceConfig;
   private metrics = {
     totalCalculations: 0,
@@ -122,9 +122,11 @@ export class CarbonService {
   /**
    * Calculate carbon emissions with intelligent fallback strategy
    */
-  async calculateEmissions(request: CarbonCalculationRequest): Promise<CarbonCalculationResponse> {
+  async calculateEmissions(
+    request: CarbonCalculationRequest,
+  ): Promise<CarbonCalculationResponse> {
     this.metrics.totalCalculations++;
-    
+
     return this.performanceLogger.measureAsync(
       'calculate_emissions',
       async () => {
@@ -158,7 +160,7 @@ export class CarbonService {
             if (apiResult) {
               this.metrics.apiCalls++;
               result = apiResult;
-              
+
               this.logger.success('API calculation successful', {
                 activityType: request.activityType,
                 emissions: result.emissions,
@@ -173,17 +175,20 @@ export class CarbonService {
               return result;
             }
           } catch (error) {
-            this.logger.warn('API calculation failed, falling back to offline', {
-              activityType: request.activityType,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            });
+            this.logger.warn(
+              'API calculation failed, falling back to offline',
+              {
+                activityType: request.activityType,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              },
+            );
           }
         }
 
         // Step 3: Fallback to offline calculation
         this.metrics.offlineCalculations++;
         result = await this.calculator.calculate(request);
-        
+
         this.logger.success('Offline calculation successful', {
           activityType: request.activityType,
           emissions: result.emissions,
@@ -192,19 +197,25 @@ export class CarbonService {
 
         // Cache the offline result (with shorter TTL)
         if (this.config.enableCaching) {
-          this.cacheManager.cacheCalculation(request, result, API_CONFIG.CACHE_TTL_SHORT);
+          this.cacheManager.cacheCalculation(
+            request,
+            result,
+            API_CONFIG.CACHE_TTL_SHORT,
+          );
         }
 
         return result;
       },
-      { activityType: request.activityType }
+      { activityType: request.activityType },
     );
   }
 
   /**
    * Batch calculate multiple emissions
    */
-  async batchCalculateEmissions(requests: CarbonCalculationRequest[]): Promise<CarbonCalculationResponse[]> {
+  async batchCalculateEmissions(
+    requests: CarbonCalculationRequest[],
+  ): Promise<CarbonCalculationResponse[]> {
     this.logger.info('Batch calculation requested', {
       batchSize: requests.length,
     });
@@ -214,7 +225,7 @@ export class CarbonService {
       async () => {
         // Process requests in parallel
         const results = await Promise.all(
-          requests.map(request => this.calculateEmissions(request))
+          requests.map(request => this.calculateEmissions(request)),
         );
 
         this.logger.success('Batch calculation completed', {
@@ -224,7 +235,7 @@ export class CarbonService {
 
         return results;
       },
-      { batchSize: requests.length }
+      { batchSize: requests.length },
     );
   }
 
@@ -233,11 +244,14 @@ export class CarbonService {
    */
   async getEmissionFactors(
     category?: string,
-    region?: string
+    region?: string,
   ): Promise<CarbonEmissionFactor[]> {
     // Check cache first
     if (this.config.enableCaching) {
-      const cached = this.cacheManager.getCachedEmissionFactors(category, region);
+      const cached = this.cacheManager.getCachedEmissionFactors(
+        category,
+        region,
+      );
       if (cached) {
         return cached;
       }
@@ -246,13 +260,16 @@ export class CarbonService {
     try {
       // Try API first
       if (this.config.enableAPIFallback && !this.config.enableMocking) {
-        const factors = await this.apiAdapter.getEmissionFactors(category, region);
-        
+        const factors = await this.apiAdapter.getEmissionFactors(
+          category,
+          region,
+        );
+
         // Cache the results
         if (this.config.enableCaching) {
           this.cacheManager.cacheEmissionFactors(factors, category, region);
         }
-        
+
         return factors;
       }
     } catch (error) {
@@ -270,7 +287,9 @@ export class CarbonService {
   /**
    * Convert calculation response to form-friendly format
    */
-  convertToFormCalculation(response: CarbonCalculationResponse): CarbonEmissionCalculation {
+  convertToFormCalculation(
+    response: CarbonCalculationResponse,
+  ): CarbonEmissionCalculation {
     return CarbonCalculatorCore.convertToFormCalculation(response);
   }
 
@@ -279,15 +298,15 @@ export class CarbonService {
    */
   async getHealthCheck(): Promise<ServiceHealthCheck> {
     const cacheMetrics = this.cacheManager.getMetrics();
-    
+
     // Check API adapter health
     const apiHealth = await this.apiAdapter.healthCheck();
     const apiStatuses = Object.values(apiHealth).map(h => h.status);
-    const apiOverallStatus = apiStatuses.includes('healthy') 
-      ? 'healthy' 
-      : apiStatuses.includes('degraded') 
-        ? 'degraded' 
-        : 'unhealthy';
+    const apiOverallStatus = apiStatuses.includes('healthy')
+      ? 'healthy'
+      : apiStatuses.includes('degraded')
+      ? 'degraded'
+      : 'unhealthy';
 
     // Calculate metrics
     const totalRequests = this.metrics.totalCalculations;
@@ -303,8 +322,8 @@ export class CarbonService {
     const overallStatus = Object.values(services).includes('unhealthy')
       ? 'unhealthy'
       : Object.values(services).includes('degraded')
-        ? 'degraded'
-        : 'healthy';
+      ? 'degraded'
+      : 'healthy';
 
     return {
       status: overallStatus,
@@ -370,25 +389,25 @@ export const carbonService = new CarbonService();
 // Export legacy interface for backward compatibility
 export const carbonAPIService = {
   // Main calculation method
-  calculateEmissions: (request: CarbonCalculationRequest) => 
+  calculateEmissions: (request: CarbonCalculationRequest) =>
     carbonService.calculateEmissions(request),
-    
+
   // Batch calculation
   batchCalculateEmissions: (requests: CarbonCalculationRequest[]) =>
     carbonService.batchCalculateEmissions(requests),
-    
+
   // Form calculation conversion
   convertToFormCalculation: (response: CarbonCalculationResponse) =>
     carbonService.convertToFormCalculation(response),
-    
+
   // Emission factors
   getEmissionFactors: (category?: string, region?: string) =>
     carbonService.getEmissionFactors(category, region),
-    
+
   // Health and stats
   healthCheck: () => carbonService.getHealthCheck(),
   clearCache: () => carbonService.clearCache(),
-  
+
   // Static method for form conversion
   static: {
     convertToFormCalculation: CarbonCalculatorCore.convertToFormCalculation,

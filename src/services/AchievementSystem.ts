@@ -16,7 +16,8 @@ export interface Badge {
     | 'streak'
     | 'challenge'
     | 'milestone'
-    | 'special';
+    | 'special'
+    | 'climate'; // NEW: Climate intelligence badges
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   requirements: {
     type:
@@ -399,6 +400,317 @@ class AchievementSystemService {
           difficulty: 10,
           estimatedTime: '6 months',
           tips: ['This is the ultimate achievement - keep pushing!'],
+        },
+      },
+      // =========================================================================
+      // CLIMATE INTELLIGENCE BADGES (NEW)
+      // Powered by Climate TRACE, WattTime, OpenAQ integrations
+      // =========================================================================
+      {
+        id: 'world_citizen',
+        name: 'World Citizen',
+        description: 'Reduce footprint below the global average (4.7t/year)',
+        icon: '🌍',
+        category: 'carbon',
+        rarity: 'epic',
+        requirements: {
+          type: 'custom',
+          value: 1,
+          additionalCriteria: {
+            footprintBelowWorldAverage: true,
+            sustainedWeeks: 4,
+          },
+        },
+        rewards: {
+          points: 1500,
+          carbonCredits: 75,
+          unlocks: ['global_leaderboard_access'],
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 8,
+          estimatedTime: '2 months',
+          tips: [
+            'Focus on transportation and home energy',
+            'Track your progress with the Global Context dashboard',
+          ],
+        },
+      },
+      {
+        id: 'grid_whisperer',
+        name: 'Grid Whisperer',
+        description:
+          'Use optimal charging windows 10 times based on grid carbon intensity',
+        icon: '⚡',
+        category: 'carbon',
+        rarity: 'rare',
+        requirements: {
+          type: 'custom',
+          value: 10,
+          additionalCriteria: {
+            optimalWindowsUsed: 10,
+          },
+        },
+        rewards: {
+          points: 800,
+          carbonCredits: 30,
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 6,
+          estimatedTime: '3 weeks',
+          tips: [
+            'Check grid carbon before charging EV or running appliances',
+            'Enable notifications for optimal charging windows',
+          ],
+        },
+      },
+      {
+        id: 'air_aware',
+        name: 'Air Aware',
+        description: 'Check air quality before outdoor activities 15 times',
+        icon: '💨',
+        category: 'milestone',
+        rarity: 'uncommon',
+        requirements: {
+          type: 'custom',
+          value: 15,
+          additionalCriteria: {
+            airQualityChecks: 15,
+          },
+        },
+        rewards: {
+          points: 400,
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 3,
+          estimatedTime: '2 weeks',
+          tips: [
+            'Build a habit of checking AQI before exercise',
+            'Air quality data helps you avoid pollution peaks',
+          ],
+        },
+      },
+      {
+        id: 'know_your_neighbor',
+        name: 'Know Your Neighbor',
+        description: 'Explore 25 nearby emission sources on the map',
+        icon: '🔍',
+        category: 'milestone',
+        rarity: 'rare',
+        requirements: {
+          type: 'custom',
+          value: 25,
+          additionalCriteria: {
+            sourcesExplored: 25,
+          },
+        },
+        rewards: {
+          points: 600,
+          unlocks: ['emission_map_layers'],
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 5,
+          estimatedTime: '1 month',
+          tips: [
+            'Tap on emission sources in the map to learn more',
+            "Discover what industries contribute to your area's emissions",
+          ],
+        },
+      },
+      {
+        id: 'sector_specialist',
+        name: 'Sector Specialist',
+        description: 'Learn about emissions from 10 different industry sectors',
+        icon: '📊',
+        category: 'milestone',
+        rarity: 'uncommon',
+        requirements: {
+          type: 'custom',
+          value: 10,
+          additionalCriteria: {
+            sectorsExplored: 10,
+          },
+        },
+        rewards: {
+          points: 350,
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 4,
+          estimatedTime: '2 weeks',
+          tips: [
+            'Browse the sector breakdown in your emissions dashboard',
+            'Each sector has unique reduction opportunities',
+          ],
+        },
+      },
+      {
+        id: 'country_champion',
+        name: 'Country Champion',
+        description:
+          "Beat your country's average emissions for 3 consecutive months",
+        icon: '🏅',
+        category: 'carbon',
+        rarity: 'epic',
+        requirements: {
+          type: 'custom',
+          value: 1,
+          additionalCriteria: {
+            belowCountryAverage: true,
+            consecutiveMonths: 3,
+          },
+        },
+        rewards: {
+          points: 2000,
+          carbonCredits: 100,
+          unlocks: ['country_leaderboard_featured'],
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 8,
+          estimatedTime: '3 months',
+          tips: [
+            'Compare your footprint to national averages in Global Context',
+            'Focus on your highest-impact categories',
+          ],
+        },
+      },
+      {
+        id: 'paris_aligned',
+        name: 'Paris Aligned',
+        description:
+          'Achieve a footprint below the 2030 Paris Agreement target (2.5t/year)',
+        icon: '🌡️',
+        category: 'carbon',
+        rarity: 'legendary',
+        requirements: {
+          type: 'custom',
+          value: 1,
+          additionalCriteria: {
+            footprintBelow: 2.5,
+            sustainedMonths: 1,
+          },
+        },
+        rewards: {
+          points: 3000,
+          carbonCredits: 150,
+          unlocks: ['paris_badge_frame', 'climate_leader_title'],
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 10,
+          estimatedTime: '6 months',
+          tips: [
+            "This is the gold standard - you're a true climate leader!",
+            'Requires lifestyle changes across all categories',
+          ],
+        },
+      },
+      {
+        id: 'renewable_scout',
+        name: 'Renewable Scout',
+        description: 'Charge devices 5 times when grid is 50%+ renewable',
+        icon: '☀️',
+        category: 'carbon',
+        rarity: 'uncommon',
+        requirements: {
+          type: 'custom',
+          value: 5,
+          additionalCriteria: {
+            renewableCharges: 5,
+            minRenewablePercent: 50,
+          },
+        },
+        rewards: {
+          points: 300,
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 4,
+          estimatedTime: '2 weeks',
+          tips: [
+            'Check the power breakdown before charging',
+            'Solar peaks are usually midday',
+          ],
+        },
+      },
+      {
+        id: 'emission_historian',
+        name: 'Emission Historian',
+        description:
+          'Compare your footprint to 5 different historical country averages',
+        icon: '📜',
+        category: 'milestone',
+        rarity: 'rare',
+        requirements: {
+          type: 'custom',
+          value: 5,
+          additionalCriteria: {
+            historicalComparisons: 5,
+          },
+        },
+        rewards: {
+          points: 500,
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 3,
+          estimatedTime: '1 week',
+          tips: [
+            'Explore the "Time Travel" feature to see historical comparisons',
+            'Learn how emissions have changed over decades',
+          ],
+        },
+      },
+      {
+        id: 'corporate_investigator',
+        name: 'Corporate Investigator',
+        description: 'Check emissions data for 10 companies via product scans',
+        icon: '🔬',
+        category: 'milestone',
+        rarity: 'rare',
+        requirements: {
+          type: 'custom',
+          value: 10,
+          additionalCriteria: {
+            corporateScans: 10,
+          },
+        },
+        rewards: {
+          points: 700,
+          unlocks: ['corporate_comparison_tool'],
+        },
+        isHidden: false,
+        isActive: true,
+        createdDate: new Date().toISOString(),
+        metadata: {
+          difficulty: 5,
+          estimatedTime: '3 weeks',
+          tips: [
+            'Scan product barcodes to see manufacturer emissions',
+            'Make informed purchasing decisions',
+          ],
         },
       },
     ];
@@ -891,6 +1203,7 @@ class AchievementSystemService {
         challenge: 0,
         milestone: 0,
         special: 0,
+        climate: 0,
       },
       badgesByRarity: {
         common: 0,
@@ -942,6 +1255,7 @@ class AchievementSystemService {
         challenge: 0,
         milestone: 0,
         special: 0,
+        climate: 0,
       };
       const badgesByRarity = {
         common: 0,

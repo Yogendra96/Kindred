@@ -33,7 +33,12 @@ export interface CommunityChecks {
 
 interface DataPointToValidate {
   readonly dataId: string;
-  readonly type: 'carbon_calculation' | 'product_footprint' | 'transport_emission' | 'energy_usage' | 'behavior_pattern';
+  readonly type:
+    | 'carbon_calculation'
+    | 'product_footprint'
+    | 'transport_emission'
+    | 'energy_usage'
+    | 'behavior_pattern';
   readonly submittedBy: string;
   readonly timestamp: number;
   readonly data: any;
@@ -62,7 +67,13 @@ interface ExpertiseProfile {
 }
 
 interface ExpertiseDomain {
-  readonly domain: 'carbon_accounting' | 'life_cycle_assessment' | 'energy_systems' | 'transportation' | 'agriculture' | 'manufacturing';
+  readonly domain:
+    | 'carbon_accounting'
+    | 'life_cycle_assessment'
+    | 'energy_systems'
+    | 'transportation'
+    | 'agriculture'
+    | 'manufacturing';
   readonly proficiencyLevel: number; // 0-100
   readonly certifications: string[];
   readonly lastAssessment: number;
@@ -150,7 +161,11 @@ interface ValidationConsensus {
 interface ValidationOpinion {
   readonly opinionId: string;
   readonly validatorId: string;
-  readonly stance: 'approve' | 'reject' | 'needs_revision' | 'insufficient_data';
+  readonly stance:
+    | 'approve'
+    | 'reject'
+    | 'needs_revision'
+    | 'insufficient_data';
   readonly confidence: number;
   readonly reasoning: string;
   readonly supportingEvidence: Evidence[];
@@ -159,7 +174,12 @@ interface ValidationOpinion {
 
 interface Evidence {
   readonly evidenceId: string;
-  readonly type: 'research_paper' | 'dataset' | 'calculation' | 'industry_standard' | 'personal_experience';
+  readonly type:
+    | 'research_paper'
+    | 'dataset'
+    | 'calculation'
+    | 'industry_standard'
+    | 'personal_experience';
   readonly source: string;
   readonly reliability: number;
   readonly relevance: number;
@@ -168,7 +188,11 @@ interface Evidence {
 
 interface ConflictResolution {
   readonly resolutionId: string;
-  readonly method: 'expert_panel' | 'weighted_voting' | 'scientific_review' | 'community_discussion';
+  readonly method:
+    | 'expert_panel'
+    | 'weighted_voting'
+    | 'scientific_review'
+    | 'community_discussion';
   readonly participants: string[];
   readonly timeline: number; // days
   readonly outcome: string;
@@ -176,7 +200,11 @@ interface ConflictResolution {
 
 interface FinalDecision {
   readonly decisionId: string;
-  readonly result: 'validated' | 'rejected' | 'needs_improvement' | 'pending_review';
+  readonly result:
+    | 'validated'
+    | 'rejected'
+    | 'needs_improvement'
+    | 'pending_review';
   readonly confidence: number;
   readonly reasoning: string;
   readonly recommendations: string[];
@@ -254,7 +282,11 @@ interface ScientificReview {
 }
 
 interface ReviewMethodology {
-  readonly approach: 'systematic_review' | 'meta_analysis' | 'expert_panel' | 'delphi_method';
+  readonly approach:
+    | 'systematic_review'
+    | 'meta_analysis'
+    | 'expert_panel'
+    | 'delphi_method';
   readonly criteria: ReviewCriteria[];
   readonly timeline: number; // weeks
   readonly quality_standards: QualityStandard[];
@@ -509,7 +541,11 @@ interface ExpertConsensusProcess {
 }
 
 interface ConsensusMethodology {
-  readonly method: 'delphi' | 'nominal_group' | 'consensus_development' | 'structured_voting';
+  readonly method:
+    | 'delphi'
+    | 'nominal_group'
+    | 'consensus_development'
+    | 'structured_voting';
   readonly rounds_planned: number;
   readonly convergence_criteria: number;
   readonly anonymity: boolean;
@@ -656,7 +692,11 @@ interface BlockchainRecord {
 }
 
 interface VerificationData {
-  readonly dataType: 'carbon_footprint' | 'validation_result' | 'expert_review' | 'user_contribution';
+  readonly dataType:
+    | 'carbon_footprint'
+    | 'validation_result'
+    | 'expert_review'
+    | 'user_contribution';
   readonly content: any;
   readonly metadata: DataMetadata;
   readonly provenance: DataProvenance;
@@ -695,7 +735,12 @@ interface DataTransformation {
 }
 
 interface DataQualityMetric {
-  readonly metric: 'completeness' | 'accuracy' | 'consistency' | 'timeliness' | 'validity';
+  readonly metric:
+    | 'completeness'
+    | 'accuracy'
+    | 'consistency'
+    | 'timeliness'
+    | 'validity';
   readonly score: number;
   readonly benchmark: number;
   readonly assessment_method: string;
@@ -712,7 +757,10 @@ interface DigitalSignature {
 
 interface ConsensusProtocol {
   readonly protocolId: string;
-  readonly mechanism: 'proof_of_stake' | 'proof_of_authority' | 'delegated_proof_of_stake';
+  readonly mechanism:
+    | 'proof_of_stake'
+    | 'proof_of_authority'
+    | 'delegated_proof_of_stake';
   readonly validators: BlockchainValidator[];
   readonly consensus_threshold: number;
   readonly finality_time: number; // seconds
@@ -845,7 +893,12 @@ interface TokenSupply {
 }
 
 interface TokenDistribution {
-  readonly category: 'validators' | 'contributors' | 'researchers' | 'community' | 'reserve';
+  readonly category:
+    | 'validators'
+    | 'contributors'
+    | 'researchers'
+    | 'community'
+    | 'reserve';
   readonly percentage: number;
   readonly vesting: VestingSchedule;
   readonly conditions: string[];
@@ -928,7 +981,12 @@ interface UserTrustMetric {
 }
 
 interface TrustComponent {
-  readonly component: 'accuracy' | 'consistency' | 'timeliness' | 'expertise' | 'community_standing';
+  readonly component:
+    | 'accuracy'
+    | 'consistency'
+    | 'timeliness'
+    | 'expertise'
+    | 'community_standing';
   readonly score: number;
   readonly weight: number;
   readonly trend: 'improving' | 'stable' | 'declining';
@@ -1143,7 +1201,11 @@ interface SocialFeature {
 }
 
 interface SocialMechanic {
-  readonly mechanic: 'collaboration' | 'competition' | 'mentorship' | 'community_building';
+  readonly mechanic:
+    | 'collaboration'
+    | 'competition'
+    | 'mentorship'
+    | 'community_building';
   readonly implementation: string;
   readonly incentives: string[];
 }
@@ -1352,7 +1414,12 @@ interface CollaborationMilestone {
 
 interface ProjectOutcome {
   readonly outcomeId: string;
-  readonly type: 'methodology' | 'dataset' | 'tool' | 'validation' | 'publication';
+  readonly type:
+    | 'methodology'
+    | 'dataset'
+    | 'tool'
+    | 'validation'
+    | 'publication';
   readonly description: string;
   readonly impact: number;
   readonly accessibility: 'public' | 'community' | 'restricted';
@@ -1383,7 +1450,12 @@ interface MemberContribution {
 
 interface WorkgroupActivity {
   readonly activityId: string;
-  readonly type: 'research' | 'validation' | 'methodology' | 'review' | 'education';
+  readonly type:
+    | 'research'
+    | 'validation'
+    | 'methodology'
+    | 'review'
+    | 'education';
   readonly description: string;
   readonly timeline: ActivityTimeline;
   readonly resources: ActivityResource[];
@@ -1462,7 +1534,12 @@ interface KnowledgeResource {
 
 interface KnowledgeEvent {
   readonly eventId: string;
-  readonly type: 'webinar' | 'workshop' | 'conference' | 'training' | 'hackathon';
+  readonly type:
+    | 'webinar'
+    | 'workshop'
+    | 'conference'
+    | 'training'
+    | 'hackathon';
   readonly title: string;
   readonly date: number;
   readonly duration: number; // hours
@@ -1524,7 +1601,11 @@ interface ProgramSupport {
 
 interface MentorshipOutcome {
   readonly outcomeId: string;
-  readonly category: 'skill_development' | 'network_expansion' | 'career_advancement' | 'contribution_quality';
+  readonly category:
+    | 'skill_development'
+    | 'network_expansion'
+    | 'career_advancement'
+    | 'contribution_quality';
   readonly measurement: string;
   readonly baseline: number;
   readonly target: number;
@@ -1545,41 +1626,50 @@ export class CommunityVerificationNetworkEngine {
 
     try {
       console.log('🌐 Initializing Community Verification Network...');
-      
+
       // Load existing validators and trust scores
       await this.loadValidators();
       await this.loadTrustScores();
-      
+
       // Initialize blockchain infrastructure
       await this.initializeBlockchain();
-      
+
       // Setup expert network
       await this.setupExpertNetwork();
-      
+
       // Initialize gamification system
       await this.initializeGamification();
-      
+
       this.isInitialized = true;
       console.log('✅ Community Verification Network initialized successfully');
-      
     } catch (error) {
-      console.error('❌ Failed to initialize Community Verification Network:', error);
+      console.error(
+        '❌ Failed to initialize Community Verification Network:',
+        error,
+      );
       throw error;
     }
   }
 
   async submitForValidation(
     dataPoint: DataPointToValidate,
-    requiredValidators = 5
+    requiredValidators = 5,
   ): Promise<CommunityChecks> {
-    console.log(`🔍 Submitting data point for community validation: ${dataPoint.dataId}`);
-    
-    const validationId = `validation_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-    
+    console.log(
+      `🔍 Submitting data point for community validation: ${dataPoint.dataId}`,
+    );
+
+    const validationId = `validation_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2)}`;
+
     try {
       // Select appropriate validators
-      const selectedValidators = await this.selectValidators(dataPoint, requiredValidators);
-      
+      const selectedValidators = await this.selectValidators(
+        dataPoint,
+        requiredValidators,
+      );
+
       // Create validation process
       const validation: CommunityChecks = {
         validationId,
@@ -1597,13 +1687,13 @@ export class CommunityVerificationNetworkEngine {
         validationHistory: [],
         disputeResolution: {} as DisputeResolution,
       };
-      
+
       // Store validation
       this.validations.set(validationId, validation);
-      
+
       // Notify validators
       await this.notifyValidators(selectedValidators, validationId);
-      
+
       // Track submission
       observabilityService.trackBusinessEvent({
         eventName: 'validation_submitted',
@@ -1614,10 +1704,9 @@ export class CommunityVerificationNetworkEngine {
           submittedBy: dataPoint.submittedBy,
         },
       });
-      
+
       console.log(`✅ Validation process started: ${validationId}`);
       return validation;
-      
     } catch (error) {
       console.error('Validation submission failed:', error);
       throw error;
@@ -1627,29 +1716,35 @@ export class CommunityVerificationNetworkEngine {
   async submitValidation(
     validationId: string,
     validatorId: string,
-    opinion: ValidationOpinion
+    opinion: ValidationOpinion,
   ): Promise<void> {
     const validation = this.validations.get(validationId);
     if (!validation) {
       throw new Error(`Validation not found: ${validationId}`);
     }
 
-    console.log(`📝 Validator ${validatorId} submitting opinion for ${validationId}`);
-    
+    console.log(
+      `📝 Validator ${validatorId} submitting opinion for ${validationId}`,
+    );
+
     try {
       // Update validator's opinion
-      const updatedValidation = await this.processValidatorOpinion(validation, validatorId, opinion);
-      
+      const updatedValidation = await this.processValidatorOpinion(
+        validation,
+        validatorId,
+        opinion,
+      );
+
       // Check for consensus
       const consensus = await this.checkConsensus(updatedValidation);
-      
+
       if (consensus.consensusReached) {
         await this.finalizeValidation(updatedValidation, consensus);
       }
-      
+
       // Update validator reputation
       await this.updateValidatorReputation(validatorId, opinion);
-      
+
       // Track validation
       observabilityService.trackBusinessEvent({
         eventName: 'validation_opinion_submitted',
@@ -1661,7 +1756,6 @@ export class CommunityVerificationNetworkEngine {
           consensusReached: consensus.consensusReached,
         },
       });
-      
     } catch (error) {
       console.error('Validation opinion submission failed:', error);
       throw error;
@@ -1670,16 +1764,16 @@ export class CommunityVerificationNetworkEngine {
 
   async requestExpertReview(
     dataPoint: DataPointToValidate,
-    urgency: 'low' | 'medium' | 'high' = 'medium'
+    urgency: 'low' | 'medium' | 'high' = 'medium',
   ): Promise<ScientificReview> {
     console.log(`🎓 Requesting expert review for: ${dataPoint.dataId}`);
-    
+
     const reviewId = `expert_review_${Date.now()}`;
-    
+
     try {
       // Select expert reviewers
       const experts = await this.selectExpertReviewers(dataPoint, urgency);
-      
+
       // Create review process
       const review: ScientificReview = {
         reviewId,
@@ -1706,13 +1800,13 @@ export class CommunityVerificationNetworkEngine {
           embargo_period: 0,
         },
       };
-      
+
       // Store review
       this.expertReviews.set(reviewId, review);
-      
+
       // Notify experts
       await this.notifyExpertReviewers(experts, reviewId);
-      
+
       // Track review request
       observabilityService.trackBusinessEvent({
         eventName: 'expert_review_requested',
@@ -1723,9 +1817,8 @@ export class CommunityVerificationNetworkEngine {
           expertsAssigned: experts.length,
         },
       });
-      
+
       return review;
-      
     } catch (error) {
       console.error('Expert review request failed:', error);
       throw error;
@@ -1734,12 +1827,14 @@ export class CommunityVerificationNetworkEngine {
 
   async recordOnBlockchain(
     data: VerificationData,
-    signatures: DigitalSignature[]
+    signatures: DigitalSignature[],
   ): Promise<BlockchainRecord> {
     console.log('⛓️ Recording verification data on blockchain...');
-    
-    const recordId = `record_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-    
+
+    const recordId = `record_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2)}`;
+
     try {
       // Create blockchain record
       const record: BlockchainRecord = {
@@ -1752,14 +1847,14 @@ export class CommunityVerificationNetworkEngine {
         merkleRoot: await this.calculateMerkleRoot(data),
         nonce: await this.findValidNonce(),
       };
-      
+
       // Validate and store record
       await this.validateBlockchainRecord(record);
       this.blockchainRecords.set(recordId, record);
-      
+
       // Persist to storage
       await this.persistBlockchainRecord(record);
-      
+
       // Track blockchain recording
       observabilityService.trackBusinessEvent({
         eventName: 'blockchain_record_created',
@@ -1770,10 +1865,9 @@ export class CommunityVerificationNetworkEngine {
           signatures: signatures.length,
         },
       });
-      
+
       console.log(`✅ Blockchain record created: ${recordId}`);
       return record;
-      
     } catch (error) {
       console.error('Blockchain recording failed:', error);
       throw error;
@@ -1782,21 +1876,27 @@ export class CommunityVerificationNetworkEngine {
 
   async updateTrustScore(
     userId: string,
-    action: 'validation_accurate' | 'validation_inaccurate' | 'expert_endorsement' | 'penalty',
-    impact: number
+    action:
+      | 'validation_accurate'
+      | 'validation_inaccurate'
+      | 'expert_endorsement'
+      | 'penalty',
+    impact: number,
   ): Promise<UserTrustMetric> {
     let trustMetric = this.trustScores.get(userId);
-    
+
     if (!trustMetric) {
       trustMetric = await this.createInitialTrustScore(userId);
     }
-    
-    console.log(`📊 Updating trust score for user ${userId}: ${action} (${impact})`);
-    
+
+    console.log(
+      `📊 Updating trust score for user ${userId}: ${action} (${impact})`,
+    );
+
     try {
       // Calculate impact on different components
       const componentUpdates = await this.calculateTrustImpact(action, impact);
-      
+
       // Update trust components
       const updatedComponents = trustMetric.components.map(component => {
         const update = componentUpdates[component.component];
@@ -1804,15 +1904,21 @@ export class CommunityVerificationNetworkEngine {
           return {
             ...component,
             score: Math.max(0, Math.min(1000, component.score + update)),
-            trend: update > 0 ? 'improving' as const : update < 0 ? 'declining' as const : component.trend,
+            trend:
+              update > 0
+                ? ('improving' as const)
+                : update < 0
+                ? ('declining' as const)
+                : component.trend,
           };
         }
         return component;
       });
-      
+
       // Calculate new overall score
-      const newOverallScore = this.calculateOverallTrustScore(updatedComponents);
-      
+      const newOverallScore =
+        this.calculateOverallTrustScore(updatedComponents);
+
       // Create updated trust metric
       const updatedTrustMetric: UserTrustMetric = {
         ...trustMetric,
@@ -1828,11 +1934,11 @@ export class CommunityVerificationNetworkEngine {
           },
         ],
       };
-      
+
       // Store updated metric
       this.trustScores.set(userId, updatedTrustMetric);
       await this.persistTrustScore(userId, updatedTrustMetric);
-      
+
       // Track trust score update
       observabilityService.trackBusinessEvent({
         eventName: 'trust_score_updated',
@@ -1844,22 +1950,23 @@ export class CommunityVerificationNetworkEngine {
           newScore: newOverallScore,
         },
       });
-      
+
       return updatedTrustMetric;
-      
     } catch (error) {
       console.error('Trust score update failed:', error);
       throw error;
     }
   }
 
-  async getValidationStatus(validationId: string): Promise<CommunityChecks | null> {
+  async getValidationStatus(
+    validationId: string,
+  ): Promise<CommunityChecks | null> {
     return this.validations.get(validationId) || null;
   }
 
   async getUserTrustScore(userId: string): Promise<UserTrustMetric | null> {
     let trustScore = this.trustScores.get(userId);
-    
+
     if (!trustScore) {
       try {
         const stored = await AsyncStorage.getItem(`trust_score_${userId}`);
@@ -1871,7 +1978,7 @@ export class CommunityVerificationNetworkEngine {
         console.error('Failed to load trust score:', error);
       }
     }
-    
+
     return trustScore || null;
   }
 
@@ -1880,7 +1987,7 @@ export class CommunityVerificationNetworkEngine {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const validatorKeys = keys.filter(key => key.startsWith('validator_'));
-      
+
       for (const key of validatorKeys) {
         const stored = await AsyncStorage.getItem(key);
         if (stored) {
@@ -1888,7 +1995,7 @@ export class CommunityVerificationNetworkEngine {
           this.validators.set(validator.validatorId, validator);
         }
       }
-      
+
       console.log(`📚 Loaded ${this.validators.size} validators`);
     } catch (error) {
       console.warn('Failed to load validators:', error);
@@ -1899,7 +2006,7 @@ export class CommunityVerificationNetworkEngine {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const trustKeys = keys.filter(key => key.startsWith('trust_score_'));
-      
+
       for (const key of trustKeys) {
         const stored = await AsyncStorage.getItem(key);
         if (stored) {
@@ -1907,7 +2014,7 @@ export class CommunityVerificationNetworkEngine {
           this.trustScores.set(trustScore.userId, trustScore);
         }
       }
-      
+
       console.log(`📊 Loaded ${this.trustScores.size} trust scores`);
     } catch (error) {
       console.warn('Failed to load trust scores:', error);
@@ -1931,38 +2038,46 @@ export class CommunityVerificationNetworkEngine {
 
   private async selectValidators(
     dataPoint: DataPointToValidate,
-    count: number
+    count: number,
   ): Promise<CommunityValidator[]> {
     // Select validators based on expertise, reputation, and availability
     const availableValidators = Array.from(this.validators.values())
       .filter(validator => this.isValidatorSuitable(validator, dataPoint))
       .sort((a, b) => b.reputation.overall - a.reputation.overall)
       .slice(0, count);
-    
+
     return availableValidators;
   }
 
-  private isValidatorSuitable(validator: CommunityValidator, dataPoint: DataPointToValidate): boolean {
+  private isValidatorSuitable(
+    validator: CommunityValidator,
+    dataPoint: DataPointToValidate,
+  ): boolean {
     // Check if validator has relevant expertise
     const relevantDomains = this.getRelevantDomains(dataPoint.type);
-    return validator.expertise.domains.some(domain => 
-      relevantDomains.includes(domain.domain) && domain.proficiencyLevel > 60
+    return validator.expertise.domains.some(
+      domain =>
+        relevantDomains.includes(domain.domain) && domain.proficiencyLevel > 60,
     );
   }
 
-  private getRelevantDomains(dataType: string): Array<ExpertiseDomain['domain']> {
+  private getRelevantDomains(
+    dataType: string,
+  ): Array<ExpertiseDomain['domain']> {
     const domainMap: Record<string, Array<ExpertiseDomain['domain']>> = {
-      'carbon_calculation': ['carbon_accounting', 'life_cycle_assessment'],
-      'product_footprint': ['life_cycle_assessment', 'manufacturing'],
-      'transport_emission': ['transportation', 'energy_systems'],
-      'energy_usage': ['energy_systems'],
-      'behavior_pattern': ['carbon_accounting'],
+      carbon_calculation: ['carbon_accounting', 'life_cycle_assessment'],
+      product_footprint: ['life_cycle_assessment', 'manufacturing'],
+      transport_emission: ['transportation', 'energy_systems'],
+      energy_usage: ['energy_systems'],
+      behavior_pattern: ['carbon_accounting'],
     };
-    
+
     return domainMap[dataType] || ['carbon_accounting'];
   }
 
-  private async createInitialTrustScore(userId: string): Promise<UserTrustMetric> {
+  private async createInitialTrustScore(
+    userId: string,
+  ): Promise<UserTrustMetric> {
     const initialScore: UserTrustMetric = {
       userId,
       overallScore: 500, // Start at middle
@@ -1971,35 +2086,46 @@ export class CommunityVerificationNetworkEngine {
         { component: 'consistency', score: 500, weight: 0.2, trend: 'stable' },
         { component: 'timeliness', score: 500, weight: 0.15, trend: 'stable' },
         { component: 'expertise', score: 500, weight: 0.2, trend: 'stable' },
-        { component: 'community_standing', score: 500, weight: 0.15, trend: 'stable' },
+        {
+          component: 'community_standing',
+          score: 500,
+          weight: 0.15,
+          trend: 'stable',
+        },
       ],
-      history: [{
-        timestamp: Date.now(),
-        score: 500,
-        event: 'initial_score',
-        impact: 0,
-      }],
+      history: [
+        {
+          timestamp: Date.now(),
+          score: 500,
+          event: 'initial_score',
+          impact: 0,
+        },
+      ],
       endorsements: [],
       penalties: [],
     };
-    
+
     this.trustScores.set(userId, initialScore);
     await this.persistTrustScore(userId, initialScore);
-    
+
     return initialScore;
   }
 
   private calculateOverallTrustScore(components: TrustComponent[]): number {
-    return components.reduce((sum, component) => 
-      sum + (component.score * component.weight), 0
+    return components.reduce(
+      (sum, component) => sum + component.score * component.weight,
+      0,
     );
   }
 
-  private async persistTrustScore(userId: string, trustScore: UserTrustMetric): Promise<void> {
+  private async persistTrustScore(
+    userId: string,
+    trustScore: UserTrustMetric,
+  ): Promise<void> {
     try {
       await AsyncStorage.setItem(
         `trust_score_${userId}`,
-        JSON.stringify(trustScore)
+        JSON.stringify(trustScore),
       );
     } catch (error) {
       console.error('Failed to persist trust score:', error);
@@ -2025,5 +2151,6 @@ interface DataSource {
 }
 
 // Export singleton instance
-export const communityVerificationNetwork = new CommunityVerificationNetworkEngine();
+export const communityVerificationNetwork =
+  new CommunityVerificationNetworkEngine();
 export default communityVerificationNetwork;

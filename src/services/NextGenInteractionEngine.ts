@@ -48,7 +48,7 @@ interface GestureRecognizer {
   readonly carbonContext: CarbonGestureContext;
 }
 
-type GestureType = 
+type GestureType =
   | 'tap'
   | 'double_tap'
   | 'long_press'
@@ -355,7 +355,11 @@ interface CarbonGestureContext {
 }
 
 interface CarbonGestureAction {
-  readonly action: 'log_activity' | 'view_impact' | 'set_goal' | 'compare_alternatives';
+  readonly action:
+    | 'log_activity'
+    | 'view_impact'
+    | 'set_goal'
+    | 'compare_alternatives';
   readonly gesture: string;
   readonly efficiency: number;
   readonly learning_curve: number;
@@ -369,7 +373,11 @@ interface ImpactGesture {
 }
 
 interface AchievementGesture {
-  readonly achievement_type: 'milestone' | 'streak' | 'improvement' | 'community';
+  readonly achievement_type:
+    | 'milestone'
+    | 'streak'
+    | 'improvement'
+    | 'community';
   readonly gesture: string;
   readonly celebration: CelebrationConfig;
 }
@@ -1509,53 +1517,63 @@ export class NextGenInteractionEngineService {
 
     try {
       console.log('🧙 Initializing Next-Generation Interaction Engine...');
-      
+
       // Initialize gesture recognition systems
       await this.initializeGestureRecognition();
-      
+
       // Setup voice interface
       await this.initializeVoiceInterface();
-      
+
       // Initialize adaptive interface
       await this.initializeAdaptiveInterface();
-      
+
       // Setup haptic feedback
       await this.initializeHapticFeedback();
-      
+
       // Initialize learning systems
       await this.initializeLearningSystem();
-      
+
       this.isInitialized = true;
-      console.log('✅ Next-Generation Interaction Engine initialized successfully');
-      
+      console.log(
+        '✅ Next-Generation Interaction Engine initialized successfully',
+      );
     } catch (error) {
-      console.error('❌ Failed to initialize Next-Generation Interaction Engine:', error);
+      console.error(
+        '❌ Failed to initialize Next-Generation Interaction Engine:',
+        error,
+      );
       throw error;
     }
   }
 
   async recognizeGesture(
     gestureData: GestureInputData,
-    context: InteractionContext
+    context: InteractionContext,
   ): Promise<GestureRecognitionResult> {
     console.log('👋 Recognizing gesture...');
-    
+
     try {
       // Preprocess gesture data
       const processedData = await this.preprocessGestureData(gestureData);
-      
+
       // Extract features
       const features = await this.extractGestureFeatures(processedData);
-      
+
       // Run recognition algorithms
-      const recognitionResults = await this.runGestureRecognition(features, context);
-      
+      const recognitionResults = await this.runGestureRecognition(
+        features,
+        context,
+      );
+
       // Post-process and validate
-      const result = await this.postProcessRecognition(recognitionResults, context);
-      
+      const result = await this.postProcessRecognition(
+        recognitionResults,
+        context,
+      );
+
       // Learn from recognition
       await this.learnFromGestureRecognition(gestureData, result, context);
-      
+
       // Track recognition
       observabilityService.trackBusinessEvent({
         eventName: 'gesture_recognized',
@@ -1566,9 +1584,8 @@ export class NextGenInteractionEngineService {
           context: context.type,
         },
       });
-      
+
       return result;
-      
     } catch (error) {
       console.error('Gesture recognition failed:', error);
       throw error;
@@ -1578,20 +1595,20 @@ export class NextGenInteractionEngineService {
   async createCustomGesture(
     userId: string,
     gestureName: string,
-    trainingData: GestureTrainingData[]
+    trainingData: GestureTrainingData[],
   ): Promise<UserGesture> {
     console.log(`🎨 Creating custom gesture: ${gestureName}`);
-    
+
     try {
       // Validate training data
       const validatedData = await this.validateTrainingData(trainingData);
-      
+
       // Extract gesture pattern
       const pattern = await this.extractGesturePattern(validatedData);
-      
+
       // Train recognition model
       const model = await this.trainCustomGestureModel(pattern, validatedData);
-      
+
       // Create user gesture
       const userGesture: UserGesture = {
         gestureId: `custom_${userId}_${Date.now()}`,
@@ -1599,12 +1616,15 @@ export class NextGenInteractionEngineService {
         description: `Custom gesture created by user ${userId}`,
         pattern,
         training_data: validatedData,
-        performance: await this.evaluateGesturePerformance(model, validatedData),
+        performance: await this.evaluateGesturePerformance(
+          model,
+          validatedData,
+        ),
       };
-      
+
       // Store gesture
       await this.storeUserGesture(userId, userGesture);
-      
+
       // Track creation
       observabilityService.trackBusinessEvent({
         eventName: 'custom_gesture_created',
@@ -1616,9 +1636,8 @@ export class NextGenInteractionEngineService {
           performance: userGesture.performance.accuracy,
         },
       });
-      
+
       return userGesture;
-      
     } catch (error) {
       console.error('Custom gesture creation failed:', error);
       throw error;
@@ -1628,28 +1647,32 @@ export class NextGenInteractionEngineService {
   async adaptInterface(
     userId: string,
     interactionHistory: InteractionHistory[],
-    currentContext: InteractionContext
+    currentContext: InteractionContext,
   ): Promise<AdaptiveInterfaceConfiguration> {
     console.log(`🧠 Adapting interface for user: ${userId}`);
-    
+
     try {
       // Analyze user behavior
-      const behaviorAnalysis = await this.analyzeUserBehavior(interactionHistory);
-      
+      const behaviorAnalysis = await this.analyzeUserBehavior(
+        interactionHistory,
+      );
+
       // Assess current context
       const contextAnalysis = await this.analyzeCurrentContext(currentContext);
-      
+
       // Generate adaptation recommendations
-      const adaptations = await this.generateInterfaceAdaptations(behaviorAnalysis, contextAnalysis);
-      
+      const adaptations = await this.generateInterfaceAdaptations(
+        behaviorAnalysis,
+        contextAnalysis,
+      );
+
       // Apply adaptations
       const configuration = await this.applyInterfaceAdaptations(adaptations);
-      
+
       // Learn from adaptation
       await this.learnFromInterfaceAdaptation(userId, configuration);
-      
+
       return configuration;
-      
     } catch (error) {
       console.error('Interface adaptation failed:', error);
       throw error;
@@ -1659,7 +1682,7 @@ export class NextGenInteractionEngineService {
   // Private implementation methods
   private async initializeGestureRecognition(): Promise<void> {
     console.log('👋 Initializing gesture recognition systems...');
-    
+
     // Load default gesture recognizers
     const defaultGestures = await this.loadDefaultGestures();
     for (const gesture of defaultGestures) {
@@ -1687,7 +1710,12 @@ export class NextGenInteractionEngineService {
         timing: [{ minDuration: 100, maxDuration: 500 }],
         spatial: [{ minDistance: 50, maxDistance: 300 }],
         force: [{ minForce: 0.1, maxForce: 1.0 }],
-        variability: { spatial: 0.2, temporal: 0.3, force: 0.4, adaptation: true },
+        variability: {
+          spatial: 0.2,
+          temporal: 0.3,
+          force: 0.4,
+          adaptation: true,
+        },
       },
       recognition: {
         confidence_threshold: 0.8,
@@ -1701,12 +1729,14 @@ export class NextGenInteractionEngineService {
       },
       feedback: await this.createCarbonFeedback(),
       carbonContext: {
-        carbon_actions: [{
-          action: 'view_impact',
-          gesture: 'carbon_swipe',
-          efficiency: 0.9,
-          learning_curve: 0.8,
-        }],
+        carbon_actions: [
+          {
+            action: 'view_impact',
+            gesture: 'carbon_swipe',
+            efficiency: 0.9,
+            learning_curve: 0.8,
+          },
+        ],
         impact_gestures: [],
         achievement_gestures: [],
       },

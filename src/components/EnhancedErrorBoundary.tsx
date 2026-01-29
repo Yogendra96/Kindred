@@ -1,6 +1,13 @@
-import type { ErrorInfo, ReactNode , ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode, ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { CrashReportingService } from '../services/CrashReportingService';
 import { loggingService } from '../services/LoggingService';
 import React, { Component } from 'react';

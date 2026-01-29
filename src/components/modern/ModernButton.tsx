@@ -5,6 +5,12 @@
  */
 
 import React, { useCallback, useRef, useState, useEffect } from 'react';
+import type {
+  AccessibilityRole,
+  AccessibilityState,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import {
   TouchableOpacity,
   Text,
@@ -12,13 +18,10 @@ import {
   Animated,
   StyleSheet,
   Platform,
-  AccessibilityRole,
-  AccessibilityState,
-  ViewStyle,
-  TextStyle,
   ActivityIndicator,
 } from 'react-native';
-import { ModernDesignSystem, Theme } from '../../design-system/ModernDesignSystem';
+import type { Theme } from '../../design-system/ModernDesignSystem';
+import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
 import { hapticFeedbackService } from '../../services/HapticFeedbackService';
 import { observabilityService } from '../../services/ObservabilityService';
 
@@ -31,36 +34,43 @@ export interface ModernButtonProps {
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right' | 'top' | 'bottom';
   badge?: string | number;
-  
+
   // Behavior
   onPress: () => void | Promise<void>;
   onLongPress?: () => void;
   disabled?: boolean;
   loading?: boolean;
   loadingText?: string;
-  
+
   // Styling
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'success' | 'warning';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'tertiary'
+    | 'ghost'
+    | 'danger'
+    | 'success'
+    | 'warning';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
   rounded?: boolean;
   elevated?: boolean;
   gradient?: boolean;
-  
+
   // Advanced Features
   hapticFeedback?: boolean;
   pressAnimation?: 'scale' | 'opacity' | 'bounce' | 'none';
   rippleEffect?: boolean;
   glowEffect?: boolean;
   shimmerEffect?: boolean;
-  
+
   // Accessibility
   accessibilityLabel?: string;
   accessibilityHint?: string;
   accessibilityRole?: AccessibilityRole;
   accessibilityState?: AccessibilityState;
   testID?: string;
-  
+
   // Responsive
   responsiveSize?: {
     sm?: ModernButtonProps['size'];
@@ -68,23 +78,31 @@ export interface ModernButtonProps {
     lg?: ModernButtonProps['size'];
     xl?: ModernButtonProps['size'];
   };
-  
+
   // Custom Styling
   style?: ViewStyle;
   textStyle?: TextStyle;
   iconStyle?: ViewStyle;
-  
+
   // Theme
   theme?: Theme;
 }
 
 // Button Variants Configuration
-const getVariantStyles = (variant: NonNullable<ModernButtonProps['variant']>, theme: Theme, disabled: boolean) => {
+const getVariantStyles = (
+  variant: NonNullable<ModernButtonProps['variant']>,
+  theme: Theme,
+  disabled: boolean,
+) => {
   const variants = {
     primary: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.primary,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.primary,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.primary,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.primary,
     },
     secondary: {
@@ -94,7 +112,9 @@ const getVariantStyles = (variant: NonNullable<ModernButtonProps['variant']>, th
       shadowColor: theme.colors.primary,
     },
     tertiary: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.backgroundSecondary,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.backgroundSecondary,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.border,
       textColor: disabled ? theme.colors.textTertiary : theme.colors.text,
       shadowColor: theme.colors.text,
@@ -108,28 +128,41 @@ const getVariantStyles = (variant: NonNullable<ModernButtonProps['variant']>, th
     danger: {
       backgroundColor: disabled ? theme.colors.borderLight : theme.colors.error,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.error,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.error,
     },
     success: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.success,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.success,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.success,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.success,
     },
     warning: {
-      backgroundColor: disabled ? theme.colors.borderLight : theme.colors.warning,
+      backgroundColor: disabled
+        ? theme.colors.borderLight
+        : theme.colors.warning,
       borderColor: disabled ? theme.colors.borderLight : theme.colors.warning,
-      textColor: disabled ? theme.colors.textTertiary : theme.colors.textInverse,
+      textColor: disabled
+        ? theme.colors.textTertiary
+        : theme.colors.textInverse,
       shadowColor: theme.colors.warning,
     },
   };
-  
+
   return variants[variant];
 };
 
 // Size Configuration
-const getSizeStyles = (size: NonNullable<ModernButtonProps['size']>, theme: Theme) => {
+const getSizeStyles = (
+  size: NonNullable<ModernButtonProps['size']>,
+  theme: Theme,
+) => {
   const sizes = {
     xs: {
       paddingVertical: theme.spacing[1],
@@ -172,7 +205,7 @@ const getSizeStyles = (size: NonNullable<ModernButtonProps['size']>, theme: Them
       borderRadius: theme.borderRadius.lg,
     },
   };
-  
+
   return sizes[size];
 };
 
@@ -214,29 +247,30 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const [isPressed, setIsPressed] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(loading);
-  
+
   // Animation references
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const rippleAnim = useRef(new Animated.Value(0)).current;
-  
+
   // Responsive size calculation
-  const responsiveActualSize = ModernDesignSystem.ResponsiveUtils.getResponsiveValue(
-    responsiveSize || {},
-    size
-  );
-  
+  const responsiveActualSize =
+    ModernDesignSystem.ResponsiveUtils.getResponsiveValue(
+      responsiveSize || {},
+      size,
+    );
+
   // Style calculations
   const variantStyles = getVariantStyles(variant, theme, disabled || isLoading);
   const sizeStyles = getSizeStyles(responsiveActualSize, theme);
-  
+
   // Update loading state when prop changes
   useEffect(() => {
     setIsLoading(loading);
   }, [loading]);
-  
+
   // Initialize animations
   useEffect(() => {
     if (glowEffect) {
@@ -252,41 +286,41 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
             duration: theme.motion.duration.slow,
             useNativeDriver: false,
           }),
-        ])
+        ]),
       ).start();
     }
-    
+
     if (shimmerEffect) {
       Animated.loop(
         Animated.timing(shimmerAnim, {
           toValue: 1,
           duration: theme.motion.duration.slower,
           useNativeDriver: true,
-        })
+        }),
       ).start();
     }
   }, [glowEffect, shimmerEffect, glowAnim, shimmerAnim, theme.motion.duration]);
-  
+
   // Handle press with comprehensive feedback
   const handlePress = useCallback(async () => {
     if (disabled || isLoading) return;
-    
+
     // Haptic feedback
     if (hapticFeedback) {
       hapticFeedbackService.impact('light');
     }
-    
+
     // Press animation
     if (pressAnimation !== 'none') {
       const animations = [];
-      
+
       if (pressAnimation === 'scale') {
         animations.push(
           Animated.timing(scaleAnim, {
             toValue: 0.95,
             duration: theme.motion.duration.fast,
             useNativeDriver: true,
-          })
+          }),
         );
       } else if (pressAnimation === 'opacity') {
         animations.push(
@@ -294,7 +328,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
             toValue: 0.7,
             duration: theme.motion.duration.fast,
             useNativeDriver: true,
-          })
+          }),
         );
       } else if (pressAnimation === 'bounce') {
         animations.push(
@@ -302,20 +336,20 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
             toValue: 1.05,
             duration: theme.motion.duration.fast,
             useNativeDriver: true,
-          })
+          }),
         );
       }
-      
+
       if (rippleEffect) {
         animations.push(
           Animated.timing(rippleAnim, {
             toValue: 1,
             duration: theme.motion.duration.normal,
             useNativeDriver: true,
-          })
+          }),
         );
       }
-      
+
       Animated.parallel(animations).start(() => {
         // Reset animations
         Animated.parallel([
@@ -337,7 +371,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
         ]).start();
       });
     }
-    
+
     // Track button interaction
     observabilityService.trackUserAction('button_press', 'current', {
       variant,
@@ -345,7 +379,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       disabled,
       loading: isLoading,
     });
-    
+
     try {
       // Handle async operations
       if (onPress.constructor.name === 'AsyncFunction') {
@@ -373,38 +407,41 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     variant,
     responsiveActualSize,
   ]);
-  
+
   const handleLongPress = useCallback(() => {
     if (disabled || isLoading || !onLongPress) return;
-    
+
     if (hapticFeedback) {
       hapticFeedbackService.impact('medium');
     }
-    
+
     onLongPress();
   }, [disabled, isLoading, onLongPress, hapticFeedback]);
-  
+
   const handlePressIn = useCallback(() => {
     setIsPressed(true);
   }, []);
-  
+
   const handlePressOut = useCallback(() => {
     setIsPressed(false);
   }, []);
-  
+
   const handleFocus = useCallback(() => {
     setIsFocused(true);
   }, []);
-  
+
   const handleBlur = useCallback(() => {
     setIsFocused(false);
   }, []);
-  
+
   // Accessibility props
   const accessibilityProps = {
     accessible: true,
     accessibilityRole,
-    accessibilityLabel: accessibilityLabel || title || (typeof children === 'string' ? children : 'Button'),
+    accessibilityLabel:
+      accessibilityLabel ||
+      title ||
+      (typeof children === 'string' ? children : 'Button'),
     accessibilityHint,
     accessibilityState: {
       disabled: disabled || isLoading,
@@ -413,7 +450,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     },
     testID,
   };
-  
+
   // Dynamic styles
   const buttonStyle: ViewStyle = {
     backgroundColor: variantStyles.backgroundColor,
@@ -425,7 +462,8 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     minHeight: sizeStyles.minHeight,
     opacity: disabled ? 0.6 : 1,
     width: fullWidth ? '100%' : 'auto',
-    flexDirection: iconPosition === 'top' || iconPosition === 'bottom' ? 'column' : 'row',
+    flexDirection:
+      iconPosition === 'top' || iconPosition === 'bottom' ? 'column' : 'row',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -443,7 +481,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       elevation: 8,
     }),
   };
-  
+
   const textStyles: TextStyle = {
     color: variantStyles.textColor,
     fontSize: sizeStyles.fontSize,
@@ -452,7 +490,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     textAlign: 'center',
     ...(subtitle && { marginBottom: theme.spacing[1] }),
   };
-  
+
   const subtitleStyles: TextStyle = {
     color: variantStyles.textColor,
     fontSize: sizeStyles.fontSize * 0.8,
@@ -461,18 +499,23 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     opacity: 0.8,
     textAlign: 'center',
   };
-  
+
   // Content rendering
   const renderIcon = () => {
     if (!icon) return null;
-    
+
     return (
       <View
         style={[
           {
             marginRight: iconPosition === 'right' ? 0 : theme.spacing[2],
             marginLeft: iconPosition === 'right' ? theme.spacing[2] : 0,
-            marginBottom: iconPosition === 'bottom' ? 0 : iconPosition === 'top' ? theme.spacing[1] : 0,
+            marginBottom:
+              iconPosition === 'bottom'
+                ? 0
+                : iconPosition === 'top'
+                ? theme.spacing[1]
+                : 0,
             marginTop: iconPosition === 'bottom' ? theme.spacing[1] : 0,
           },
           iconStyle,
@@ -482,10 +525,10 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       </View>
     );
   };
-  
+
   const renderBadge = () => {
     if (!badge) return null;
-    
+
     return (
       <View
         style={{
@@ -513,26 +556,24 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       </View>
     );
   };
-  
+
   const renderContent = () => {
     if (isLoading) {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <ActivityIndicator
-            size="small"
+            size='small'
             color={variantStyles.textColor}
             style={{ marginRight: theme.spacing[2] }}
           />
-          <Text style={[textStyles, textStyle]}>
-            {loadingText}
-          </Text>
+          <Text style={[textStyles, textStyle]}>{loadingText}</Text>
         </View>
       );
     }
-    
+
     const isVertical = iconPosition === 'top' || iconPosition === 'bottom';
     const isIconFirst = iconPosition === 'left' || iconPosition === 'top';
-    
+
     return (
       <View
         style={{
@@ -542,7 +583,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
         }}
       >
         {isIconFirst && renderIcon()}
-        
+
         <View style={{ alignItems: 'center' }}>
           {title && (
             <Text style={[textStyles, textStyle]} numberOfLines={1}>
@@ -560,15 +601,15 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
             </Text>
           )}
         </View>
-        
+
         {!isIconFirst && renderIcon()}
       </View>
     );
   };
-  
+
   const renderShimmer = () => {
     if (!shimmerEffect) return null;
-    
+
     return (
       <Animated.View
         style={[
@@ -588,17 +629,19 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       />
     );
   };
-  
+
   const renderRipple = () => {
     if (!rippleEffect || !isPressed) return null;
-    
+
     return (
       <Animated.View
         style={[
           StyleSheet.absoluteFillObject,
           {
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: rounded ? theme.borderRadius.full : sizeStyles.borderRadius,
+            borderRadius: rounded
+              ? theme.borderRadius.full
+              : sizeStyles.borderRadius,
             transform: [
               {
                 scale: rippleAnim.interpolate({
@@ -616,14 +659,12 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       />
     );
   };
-  
+
   return (
     <Animated.View
       style={[
         {
-          transform: [
-            { scale: scaleAnim },
-          ],
+          transform: [{ scale: scaleAnim }],
           opacity: opacityAnim,
         },
         fullWidth && { width: '100%' },
