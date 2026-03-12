@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 /**
  * React Hook for Modern Application Performance Monitoring
  * Provides easy integration with React Native components

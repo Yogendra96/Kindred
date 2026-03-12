@@ -1,4 +1,4 @@
-import { HapticFeedbackService } from '../../services/HapticFeedbackService';
+import HapticFeedbackService from '../../services/HapticFeedbackService';
 import React from 'react';
 import type { ViewStyle, TextStyle } from 'react-native';
 import {

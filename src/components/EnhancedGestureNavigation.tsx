@@ -1,30 +1,17 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import type {
-  PanGestureHandlerGestureEvent,
-  PanGestureHandlerGestureEvent,
-} from 'react-native';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  PanGestureHandler,
-  State,
-  GestureHandlerRootView,
-} from 'react-native';
+import HapticFeedbackService from '../services/HapticFeedbackService';
+import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import React, { useRef, useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, Dimensions, Animated } from 'react-native';
 import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Animated,
   PanGestureHandler,
   State,
   GestureHandlerRootView,
-} from 'react-native';
+} from 'react-native-gesture-handler';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -109,12 +96,12 @@ export const EnhancedGestureNavigation: React.FC<
   testID,
 }) => {
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const _navigation = useNavigation();
   const [config, setConfig] = useState<GestureConfig>({
     ...defaultConfig,
     ...userConfig,
   });
-  const [isGestureActive, setIsGestureActive] = useState(false);
+  const [_isGestureActive, setIsGestureActive] = useState(false);
   const [activeDirection, setActiveDirection] = useState<string | null>(null);
 
   // Animation values
@@ -150,7 +137,7 @@ export const EnhancedGestureNavigation: React.FC<
     }
   };
 
-  const saveGestureSettings = async (newConfig: Partial<GestureConfig>) => {
+  const _saveGestureSettings = async (newConfig: Partial<GestureConfig>) => {
     try {
       const updatedConfig = { ...config, ...newConfig };
       await AsyncStorage.setItem(
@@ -323,7 +310,7 @@ export const EnhancedGestureNavigation: React.FC<
         break;
 
       case State.END:
-      case State.CANCELLED:
+      case State.CANCELLED: {
         const direction = getSwipeDirection(translationX, translationY);
         const action = getActionForDirection(direction || '');
         const distance = Math.sqrt(
@@ -378,6 +365,7 @@ export const EnhancedGestureNavigation: React.FC<
         gestureState.direction = null;
         gestureState.hasTriggeredHaptic = false;
         break;
+      }
     }
   };
 
@@ -439,7 +427,7 @@ export const EnhancedGestureNavigation: React.FC<
                   backgroundColor: getIndicatorColor(),
                   borderColor: theme.colors.surface,
                 },
-                indicatorStyle,
+                indicatorStyle as any,
               ]}
               accessible={true}
               accessibilityLabel={`Gesture indicator: ${activeDirection}`}
@@ -499,7 +487,7 @@ export const useGestureNavigation = () => {
     ];
   }, [navigation]);
 
-  const createTabActions = useCallback((tabNames: string[]): SwipeAction[] => {
+  const createTabActions = useCallback((_tabNames: string[]): SwipeAction[] => {
     return [
       {
         direction: 'left',

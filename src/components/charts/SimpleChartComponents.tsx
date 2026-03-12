@@ -9,7 +9,7 @@ import {
 
 import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: _screenWidth } = Dimensions.get('window');
 
 export interface ChartDataPoint {
   label: string;

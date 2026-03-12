@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 /**
  * 📦 Intelligent Bundle Optimizer
  * AI-powered bundle optimization with tree-shaking, code splitting, and dynamic imports

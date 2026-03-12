@@ -1,10 +1,10 @@
 import { performanceService } from '@services/PerformanceService';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Text, Dimensions, Platform } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 
-interface CarbonData {
+export interface CarbonData {
   transport: number;
   energy: number;
   food: number;

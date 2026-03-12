@@ -4,10 +4,10 @@ import React from 'react';
 
 describe('CarbonFootprintCard', () => {
   const mockProps = {
-    total: 100,
+    totalEmissions: 100,
     target: 200,
-    categories: {
-      transportation: 30,
+    data: {
+      transport: 30,
       food: 25,
       energy: 35,
       waste: 10,
@@ -18,11 +18,12 @@ describe('CarbonFootprintCard', () => {
     render(<CarbonFootprintCard {...mockProps} />);
 
     // Check if main elements are rendered
-    expect(screen.getByText('Your Carbon Footprint')).toBeTruthy();
-    expect(screen.getByText('100.0 kg CO₂')).toBeTruthy();
+    expect(screen.getByText('Carbon Footprint Overview')).toBeTruthy();
+    expect(screen.getByText('100.0')).toBeTruthy();
+    expect(screen.getByText('tonnes CO₂e/year')).toBeTruthy();
 
     // Check if categories are rendered
-    expect(screen.getByText('Transportation')).toBeTruthy();
+    expect(screen.getByText('Transport')).toBeTruthy();
     expect(screen.getByText('Food')).toBeTruthy();
     expect(screen.getByText('Energy')).toBeTruthy();
     expect(screen.getByText('Waste')).toBeTruthy();
@@ -31,16 +32,15 @@ describe('CarbonFootprintCard', () => {
   it('displays correct values for each category', () => {
     render(<CarbonFootprintCard {...mockProps} />);
 
-    expect(screen.getByText('30 kg')).toBeTruthy();
-    expect(screen.getByText('25 kg')).toBeTruthy();
-    expect(screen.getByText('35 kg')).toBeTruthy();
-    expect(screen.getByText('10 kg')).toBeTruthy();
+    expect(screen.getByText('30.0t')).toBeTruthy();
+    expect(screen.getByText('25.0t')).toBeTruthy();
+    expect(screen.getByText('35.0t')).toBeTruthy();
+    expect(screen.getByText('10.0t')).toBeTruthy();
   });
 
-  it('shows correct progress percentage', () => {
+  it('shows correct impact level', () => {
     render(<CarbonFootprintCard {...mockProps} />);
 
-    // 100/200 = 50%
-    expect(screen.getByText('50% of target')).toBeTruthy();
+    expect(screen.getByText('High Impact')).toBeTruthy();
   });
 });

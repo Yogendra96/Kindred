@@ -1,37 +1,23 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
-import type {
-  PanGestureHandlerGestureEvent,
-  PanGestureHandlerGestureEvent,
-} from 'react-native';
+import HapticFeedbackService from '../services/HapticFeedbackService';
+import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import {
   View,
   Text,
   StyleSheet,
   Animated,
   Dimensions,
-  PanGestureHandler,
-  State,
   TouchableOpacity,
   Platform,
 } from 'react-native';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import { BlurView } from 'expo-blur';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  PanGestureHandler,
-  State,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { AnimatedTouchable } from './MicroInteractions';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 export interface NotificationData {
   id: string;
@@ -140,7 +126,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
   const onGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
-    { useNativeDriver: true },
+    {
+      useNativeDriver: true,
+    },
   );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {
@@ -446,7 +434,7 @@ export const EnhancedNotificationSystem: React.FC<
     }
   };
 
-  const saveSettings = async (newSettings: typeof settings) => {
+  const _saveSettings = async (newSettings: typeof settings) => {
     try {
       await AsyncStorage.setItem(
         'notification_settings',
@@ -458,7 +446,7 @@ export const EnhancedNotificationSystem: React.FC<
     }
   };
 
-  const addNotification = useCallback(
+  const _addNotification = useCallback(
     (notification: Omit<NotificationData, 'id' | 'timestamp'>) => {
       const newNotification: NotificationData = {
         ...notification,

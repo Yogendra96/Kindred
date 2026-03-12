@@ -79,7 +79,13 @@ export interface EnhancedNetworkMetrics {
 
 // Memory Leak Detection
 export interface MemoryLeak {
-  type: 'component' | 'event-listener' | 'image' | 'network' | 'timer';
+  type:
+    | 'component'
+    | 'event-listener'
+    | 'image'
+    | 'network'
+    | 'timer'
+    | 'memory';
   componentName?: string;
   description: string;
   severity: 'low' | 'medium' | 'high' | 'critical';

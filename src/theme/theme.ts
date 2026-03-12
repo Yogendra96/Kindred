@@ -245,6 +245,9 @@ export const getTheme = (
   };
 };
 
+export const lightTheme = getTheme('light');
+export const darkTheme = getTheme('dark');
+
 const theme = {
   metrics,
   colors,

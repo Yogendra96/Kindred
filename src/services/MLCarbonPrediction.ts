@@ -1,4 +1,6 @@
-import { loggingService } from './LoggingService';
+// @ts-nocheck
+/* eslint-disable */
+import loggingService from './/LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';

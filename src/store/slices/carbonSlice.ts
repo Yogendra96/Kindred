@@ -14,6 +14,15 @@ interface HistoryEntry {
   footprint: CarbonFootprint;
 }
 
+export interface EcosystemState {
+  health: number; // 0.0 to 1.0
+  treeCount: number;
+  biodiversity: number; // 0.0 to 1.0
+  waterClarity: number; // 0.0 to 1.0
+  airQuality: number; // 0.0 to 1.0
+  lastUpdated: string;
+}
+
 interface CarbonState {
   footprint: CarbonFootprint;
   history: HistoryEntry[];
@@ -21,6 +30,7 @@ interface CarbonState {
     target: number;
     deadline: string;
   };
+  ecosystem: EcosystemState;
   loading: {
     footprint: boolean;
     history: boolean;
@@ -41,6 +51,14 @@ const initialState: CarbonState = {
   goals: {
     target: 0,
     deadline: '',
+  },
+  ecosystem: {
+    health: 0.5,
+    treeCount: 0,
+    biodiversity: 0.3,
+    waterClarity: 0.5,
+    airQuality: 0.5,
+    lastUpdated: new Date().toISOString(),
   },
   loading: {
     footprint: false,
@@ -88,6 +106,16 @@ const carbonSlice = createSlice({
     ) => {
       state.goals = action.payload;
     },
+    updateEcosystem: (
+      state,
+      action: PayloadAction<Partial<EcosystemState>>,
+    ) => {
+      state.ecosystem = {
+        ...state.ecosystem,
+        ...action.payload,
+        lastUpdated: new Date().toISOString(),
+      };
+    },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
@@ -105,6 +133,7 @@ export const {
   setHistory,
   addHistoryEntry,
   setGoals,
+  updateEcosystem,
   setError,
   resetState,
 } = carbonSlice.actions;

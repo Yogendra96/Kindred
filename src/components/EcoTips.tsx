@@ -1,8 +1,8 @@
-import type { CarbonData } from '@components/CarbonFootprintCard';
+import type { CarbonData } from './CarbonFootprintCard';
 import { Ionicons } from '@expo/vector-icons';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import { useEffect, useState, useMemo } from 'react';
 import React from 'react';
 import {
@@ -42,7 +42,7 @@ interface Props {
 
 const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
   const { theme } = useTheme();
-  const [tips, setTips] = useState<EcoTip[]>([]);
+  const [_tips, setTips] = useState<EcoTip[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
     return () => unsubscribe();
   }, []);
 
-  const handleTipCompletion = async (tip: EcoTip) => {
+  const _handleTipCompletion = async (tip: EcoTip) => {
     const user = auth().currentUser;
     if (!user) return;
 
@@ -105,7 +105,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
     }
   };
 
-  const getCategoryIcon = (category: string) => {
+  const _getCategoryIcon = (category: string) => {
     switch (category) {
       case 'transportation':
         return 'car';

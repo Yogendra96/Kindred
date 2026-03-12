@@ -138,27 +138,10 @@ export const VALIDATION_MESSAGES = {
 // UI CONSTANTS
 // ===================================================================
 
-export const COLORS = {
-  PRIMARY: '#007AFF',
-  SECONDARY: '#6c757d',
-  SUCCESS: '#28a745',
-  DANGER: '#dc3545',
-  WARNING: '#ffc107',
-  INFO: '#17a2b8',
-  LIGHT: '#f8f9fa',
-  DARK: '#343a40',
-  WHITE: '#ffffff',
-  BLACK: '#000000',
-  GRAY_100: '#f8f9fa',
-  GRAY_200: '#e9ecef',
-  GRAY_300: '#dee2e6',
-  GRAY_400: '#ced4da',
-  GRAY_500: '#adb5bd',
-  GRAY_600: '#6c757d',
-  GRAY_700: '#495057',
-  GRAY_800: '#343a40',
-  GRAY_900: '#212529',
-} as const;
+import { colors } from '../theme/theme';
+
+/** @deprecated Use colors from theme instead: import { colors } from '../theme/theme' */
+export const COLORS = colors;
 
 export const TRANSPORT_MODE_COLORS = {
   CAR: '#FF6B6B',

@@ -8,10 +8,19 @@ import AchievementsScreen from '../screens/main/AchievementsScreen';
 import CarbonTwinScreen from '../screens/main/CarbonTwinScreen';
 import VisionCameraScreen from '../screens/main/VisionCameraScreen';
 import VerificationCenterScreen from '../screens/main/VerificationCenterScreen';
+import VeganCalculatorScreen from '../screens/main/VeganCalculatorScreen';
+import AnalyticsDashboardScreen from '../screens/main/AnalyticsDashboardScreen';
+import LearningCenterScreen from '../screens/main/LearningCenterScreen';
+import SmartDevicesScreen from '../screens/main/SmartDevicesScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AppErrorBoundary from '../components/ui/AppErrorBoundary';
+import logger from '../services/LoggerService';
+import { ErrorHandler } from '../utils/errorHandler';
+
+const log = logger.withTag('AppNavigator');
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -54,17 +63,35 @@ const MainTabs = () => {
 };
 
 const AppNavigator = () => {
+  useEffect(() => {
+    ErrorHandler.installGlobalHandlers();
+    log.info('AppNavigator mounted — global error handlers installed');
+    return () => log.info('AppNavigator unmounted');
+  }, []);
+
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name='MainTabs' component={MainTabs} />
-      <Stack.Screen name='CarbonTwin' component={CarbonTwinScreen} />
-      <Stack.Screen name='VisionCamera' component={VisionCameraScreen} />
-      <Stack.Screen name='Verification' component={VerificationCenterScreen} />
-    </Stack.Navigator>
+    <AppErrorBoundary tag='AppNavigator'>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name='MainTabs' component={MainTabs} />
+        <Stack.Screen name='CarbonTwin' component={CarbonTwinScreen} />
+        <Stack.Screen name='VisionCamera' component={VisionCameraScreen} />
+        <Stack.Screen
+          name='Verification'
+          component={VerificationCenterScreen}
+        />
+        <Stack.Screen
+          name='VeganCalculator'
+          component={VeganCalculatorScreen}
+        />
+        <Stack.Screen name='Analytics' component={AnalyticsDashboardScreen} />
+        <Stack.Screen name='LearningCenter' component={LearningCenterScreen} />
+        <Stack.Screen name='SmartDevices' component={SmartDevicesScreen} />
+      </Stack.Navigator>
+    </AppErrorBoundary>
   );
 };
 

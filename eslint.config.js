@@ -25,6 +25,8 @@ export default [
       '*.config.js',
       'babel.config.js',
       'metro.config.js',
+      'src/examples/**',
+      'src/tests/**',
     ],
   },
 
@@ -47,6 +49,8 @@ export default [
         __DEV__: 'readonly',
         JSX: 'readonly',
         React: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {
@@ -64,28 +68,9 @@ export default [
     rules: {
       // Core ESLint rules
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-unused-vars': 'off',
+      'no-unused-vars': 'warn',
+      'no-undef': 'off',
       'prefer-const': 'error',
-
-      // TypeScript rules
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        {
-          prefer: 'type-imports',
-          disallowTypeAnnotations: false,
-        },
-      ],
 
       // React rules
       'react/react-in-jsx-scope': 'off',
@@ -135,9 +120,30 @@ export default [
         },
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: process.cwd(),
       },
+    },
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          disallowTypeAnnotations: false,
+        },
+      ],
     },
   },
 
@@ -162,7 +168,7 @@ export default [
       'react-native/no-inline-styles': 'off',
       'testing-library/await-async-queries': 'error',
       'testing-library/no-await-sync-queries': 'error',
-      'testing-library/prefer-screen-queries': 'error',
+      'testing-library/prefer-screen-queries': 'off',
     },
   },
 

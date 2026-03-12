@@ -66,24 +66,24 @@ const CarbonTrackingScreen: React.FC = () => {
 
     const loadCarbonData = async () => {
       const loadStartTime = performance.now();
-      
+
       try {
         setIsLoading(true);
-        
+
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 800));
-        
+
         // Mock carbon data
         const mockData = [
           { id: 1, type: 'transport', value: 2.5, date: '2024-01-15' },
           { id: 2, type: 'energy', value: 1.8, date: '2024-01-15' },
           { id: 3, type: 'food', value: 3.2, date: '2024-01-15' },
         ];
-        
+
         setCarbonData(mockData);
-        
+
         const loadTime = performance.now() - loadStartTime;
-        
+
         // Record data loading performance
         recordMetric({
           name: 'carbon_data_load',
@@ -96,13 +96,12 @@ const CarbonTrackingScreen: React.FC = () => {
             screenName: 'CarbonTrackingScreen',
           },
         });
-        
+
         // Record as Core Web Vital (LCP - largest content loaded)
         recordCoreVital('LCP', loadTime, {
           contentType: 'carbon_data',
           itemCount: mockData.length,
         });
-        
       } catch (error) {
         recordMetric({
           name: 'carbon_data_load_error',
@@ -125,7 +124,7 @@ const CarbonTrackingScreen: React.FC = () => {
   // Handle carbon calculation with interaction tracking
   const handleCarbonCalculation = async () => {
     if (!isInitialized) return;
-    
+
     const interaction = trackInteraction('carbon_calculation', 'touch', {
       carbonDataCount: carbonData.length,
     });
@@ -135,10 +134,10 @@ const CarbonTrackingScreen: React.FC = () => {
     try {
       // Simulate carbon calculation
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const totalCarbon = carbonData.reduce((sum, item) => sum + item.value, 0);
       const calculationTime = performance.now() - calculationStartTime;
-      
+
       setCalculationResults({
         total: totalCarbon,
         calculationTime,
@@ -160,16 +159,15 @@ const CarbonTrackingScreen: React.FC = () => {
 
       // Complete interaction tracking
       interaction.end('success');
-      
+
       Alert.alert(
         'Calculation Complete',
         `Total Carbon Footprint: ${totalCarbon.toFixed(2)} kg CO₂\
 Calculation Time: ${calculationTime.toFixed(0)}ms`,
       );
-      
     } catch (error) {
       const calculationTime = performance.now() - calculationStartTime;
-      
+
       recordMetric({
         name: 'carbon_calculation_error',
         value: calculationTime,
@@ -180,9 +178,9 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
           dataPoints: carbonData.length,
         },
       });
-      
+
       interaction.end('error');
-      
+
       Alert.alert('Calculation Error', 'Failed to calculate carbon footprint');
     }
   };
@@ -190,9 +188,9 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
   // Handle navigation to details screen
   const navigateToDetails = () => {
     if (!isInitialized) return;
-    
+
     const navigation = trackNavigation('CarbonTrackingScreen', 'CarbonDetailsScreen', 'push');
-    
+
     // Simulate navigation
     setTimeout(() => {
       navigation.complete({
@@ -200,26 +198,26 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
         dataCount: carbonData.length,
       });
     }, 300);
-    
+
     Alert.alert('Navigation', 'Would navigate to Carbon Details Screen');
   };
 
   // Handle memory check
   const checkMemoryUsage = async () => {
     if (!isInitialized) return;
-    
+
     try {
       const memoryMetrics = await trackMemory();
-      
+
       Alert.alert(
         'Memory Usage',
         `Used: ${(memoryMetrics.usedMemory / 1024 / 1024).toFixed(1)}MB\
 ` +
-        `Available: ${(memoryMetrics.availableMemory / 1024 / 1024).toFixed(1)}MB\
+          `Available: ${(memoryMetrics.availableMemory / 1024 / 1024).toFixed(1)}MB\
 ` +
-        `Pressure: ${memoryMetrics.memoryPressure}\
+          `Pressure: ${memoryMetrics.memoryPressure}\
 ` +
-        `JS Heap: ${(memoryMetrics.jsHeapSize / 1024 / 1024).toFixed(1)}MB`,
+          `JS Heap: ${(memoryMetrics.jsHeapSize / 1024 / 1024).toFixed(1)}MB`,
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to check memory usage');
@@ -250,23 +248,15 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
       {/* APM Status */}
       <View style={styles.statusCard}>
         <Text style={styles.statusTitle}>APM Status</Text>
-        <Text style={styles.statusText}>
-          Initialized: {isInitialized ? '✅' : '❌'}
-        </Text>
+        <Text style={styles.statusText}>Initialized: {isInitialized ? '✅' : '❌'}</Text>
         {sessionSummary && (
           <View>
-            <Text style={styles.statusText}>
-              Session ID: {sessionSummary.sessionId.slice(-8)}
-            </Text>
+            <Text style={styles.statusText}>Session ID: {sessionSummary.sessionId.slice(-8)}</Text>
             <Text style={styles.statusText}>
               Performance Score: {sessionSummary.performanceScore}/100
             </Text>
-            <Text style={styles.statusText}>
-              Metrics: {sessionSummary.metricsCollected}
-            </Text>
-            <Text style={styles.statusText}>
-              Alerts: {sessionSummary.alertsTriggered}
-            </Text>
+            <Text style={styles.statusText}>Metrics: {sessionSummary.metricsCollected}</Text>
+            <Text style={styles.statusText}>Alerts: {sessionSummary.alertsTriggered}</Text>
           </View>
         )}
       </View>
@@ -275,14 +265,12 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
       {activeAlerts.length > 0 && (
         <View style={styles.alertsCard}>
           <Text style={styles.alertsTitle}>🚨 Active Performance Alerts</Text>
-          {activeAlerts.map((alert) => (
+          {activeAlerts.map(alert => (
             <View key={alert.id} style={styles.alertItem}>
               <Text style={styles.alertText}>
-                {alert.metricType}: {alert.value} > {alert.threshold}
+                {alert.metricType}: {alert.value} &gt; {alert.threshold}
               </Text>
-              <Text style={styles.alertSeverity}>
-                Severity: {alert.severity}
-              </Text>
+              <Text style={styles.alertSeverity}>Severity: {alert.severity}</Text>
             </View>
           ))}
         </View>
@@ -291,21 +279,21 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
       {/* Carbon Data Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Carbon Footprint Data</Text>
-        
+
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size=\"large\" color=\"#007AFF\" />
+            <ActivityIndicator size='large' color='#007AFF' />
             <Text style={styles.loadingText}>Loading carbon data...</Text>
           </View>
         ) : (
           <View>
-            {carbonData.map((item) => (
+            {carbonData.map(item => (
               <View key={item.id} style={styles.dataItem}>
                 <Text style={styles.dataType}>{item.type}</Text>
                 <Text style={styles.dataValue}>{item.value} kg CO₂</Text>
               </View>
             ))}
-            
+
             <TouchableOpacity
               style={styles.calculateButton}
               onPress={handleCarbonCalculation}
@@ -321,17 +309,12 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
       {calculationResults && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Calculation Results</Text>
-          <Text style={styles.resultText}>
-            Total: {calculationResults.total.toFixed(2)} kg CO₂
-          </Text>
+          <Text style={styles.resultText}>Total: {calculationResults.total.toFixed(2)} kg CO₂</Text>
           <Text style={styles.timeText}>
             Calculated in {calculationResults.calculationTime.toFixed(0)}ms
           </Text>
-          
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={navigateToDetails}
-          >
+
+          <TouchableOpacity style={styles.detailsButton} onPress={navigateToDetails}>
             <Text style={styles.buttonText}>View Details</Text>
           </TouchableOpacity>
         </View>
@@ -340,14 +323,11 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
       {/* Performance Tools */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Performance Tools</Text>
-        
-        <TouchableOpacity
-          style={styles.toolButton}
-          onPress={checkMemoryUsage}
-        >
+
+        <TouchableOpacity style={styles.toolButton} onPress={checkMemoryUsage}>
           <Text style={styles.buttonText}>Check Memory Usage</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.toolButton}
           onPress={() => {
@@ -361,7 +341,7 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
         >
           <Text style={styles.buttonText}>Simulate Layout Shift</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.toolButton}
           onPress={() => {
@@ -387,9 +367,7 @@ Calculation Time: ${calculationTime.toFixed(0)}ms`,
       {realTimeMetrics && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Real-time Metrics</Text>
-          <Text style={styles.metricsText}>
-            Core Vitals: {realTimeMetrics.coreVitals.length}
-          </Text>
+          <Text style={styles.metricsText}>Core Vitals: {realTimeMetrics.coreVitals.length}</Text>
           <Text style={styles.metricsText}>
             Recent Metrics: {realTimeMetrics.recentMetrics.length}
           </Text>
@@ -564,34 +542,34 @@ export const withAPMTracking = <P extends object>(
     trackRender?: boolean;
     trackMemory?: boolean;
     trackInteractions?: boolean;
-  } = {}
+  } = {},
 ) => {
-  const WithAPMComponent: React.FC<P> = (props) => {
+  const WithAPMComponent: React.FC<P> = props => {
     const { trackRender = true, trackMemory = true, trackInteractions = true } = options;
-    
+
     const { recordMetric, isInitialized } = useModernAPM({
       autoTrackRender: trackRender,
       trackMemory,
       trackInteractions,
     });
-    
+
     const { trackUpdate } = useComponentPerformance(componentName, {
       trackMemory,
       trackRender,
     });
-    
+
     // Track component render on prop changes
     useEffect(() => {
       if (isInitialized) {
         trackUpdate({ propsChanged: true });
       }
     }, [props, isInitialized, trackUpdate]);
-    
+
     return <WrappedComponent {...props} />;
   };
-  
+
   WithAPMComponent.displayName = `withAPM(${componentName})`;
-  
+
   return WithAPMComponent;
 };
 

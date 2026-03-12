@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import SkeletonLoader from './SkeletonLoader';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';

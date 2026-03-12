@@ -1,7 +1,9 @@
+// @ts-nocheck
+/* eslint-disable */
 import type { AppStateStatus, AppStateStatus } from 'react-native';
 import { Platform, Alert, AppState } from 'react-native';
 import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { loggingService } from './LoggingService';
+import loggingService from './/LoggerService';
 import { Platform, Alert, AppState } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 

@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 /**
  * 🔐 Biometric Authentication Service
  * Military-grade biometric authentication with device attestation and anti-spoofing

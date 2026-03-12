@@ -4,64 +4,120 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import logger from '../services/LoggerService';
+import { ErrorHandler } from '../utils/errorHandler';
 
 // Mock API functions (replace with real API calls)
 const api = {
   // Carbon API
   fetchCarbonData: async () => {
-    // Replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      total: 12.5,
-      transportation: 4.2,
-      food: 3.1,
-      energy: 3.8,
-      waste: 1.4,
-    };
+    const log = logger.withTag('api:fetchCarbonData');
+    const stopPerf = log.perf('fetch');
+    try {
+      // Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      log.info('Carbon data fetched successfully');
+      return {
+        total: 12.5,
+        transportation: 4.2,
+        food: 3.1,
+        energy: 3.8,
+        waste: 1.4,
+      };
+    } catch (err) {
+      throw ErrorHandler.handle(err, 'api:fetchCarbonData', true);
+    } finally {
+      stopPerf();
+    }
   },
 
   calculateEmissions: async (activity: { type: string; amount: number }) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return {
-      emissions: activity.amount * 2.5,
-      category: activity.type,
-    };
+    const log = logger.withTag('api:calculateEmissions');
+    const stopPerf = log.perf('calculate');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      log.info('Emissions calculated successfully');
+      return {
+        emissions: activity.amount * 2.5,
+        category: activity.type,
+      };
+    } catch (err) {
+      throw ErrorHandler.handle(err, 'api:calculateEmissions', true);
+    } finally {
+      stopPerf();
+    }
   },
 
   // User API
   fetchUserProfile: async (userId: string) => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return {
-      id: userId,
-      name: 'Alex Green',
-      email: 'alex@kindred.app',
-      avatar: 'https://i.pravatar.cc/150?img=12',
-    };
+    const log = logger.withTag('api:fetchUserProfile');
+    const stopPerf = log.perf('fetch');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      log.info('User profile fetched successfully');
+      return {
+        id: userId,
+        name: 'Alex Green',
+        email: 'alex@kindred.app',
+        avatar: 'https://i.pravatar.cc/150?img=12',
+      };
+    } catch (err) {
+      throw ErrorHandler.handle(err, 'api:fetchUserProfile', true);
+    } finally {
+      stopPerf();
+    }
   },
 
   updateUserProfile: async (updates: any) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { ...updates, updatedAt: new Date().toISOString() };
+    const log = logger.withTag('api:updateUserProfile');
+    const stopPerf = log.perf('update');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      log.info('User profile updated successfully');
+      return { ...updates, updatedAt: new Date().toISOString() };
+    } catch (err) {
+      throw ErrorHandler.handle(err, 'api:updateUserProfile', true);
+    } finally {
+      stopPerf();
+    }
   },
 
   // Achievements API
   fetchAchievements: async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [
-      { id: '1', title: 'First Steps', unlocked: true },
-      { id: '2', title: 'Week Warrior', unlocked: true },
-      { id: '3', title: 'Carbon Reducer', unlocked: false },
-    ];
+    const log = logger.withTag('api:fetchAchievements');
+    const stopPerf = log.perf('fetch');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      log.info('Achievements fetched successfully');
+      return [
+        { id: '1', title: 'First Steps', unlocked: true },
+        { id: '2', title: 'Week Warrior', unlocked: true },
+        { id: '3', title: 'Carbon Reducer', unlocked: false },
+      ];
+    } catch (err) {
+      throw ErrorHandler.handle(err, 'api:fetchAchievements', true);
+    } finally {
+      stopPerf();
+    }
   },
 
   // Leaderboard API
   fetchLeaderboard: async () => {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return [
-      { rank: 1, name: 'Emma Thompson', emissions: 145.2 },
-      { rank: 2, name: 'Michael Chen', emissions: 152.8 },
-      { rank: 3, name: 'Alex Green', emissions: 158.3 },
-    ];
+    const log = logger.withTag('api:fetchLeaderboard');
+    const stopPerf = log.perf('fetch');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 600));
+      log.info('Leaderboard fetched successfully');
+      return [
+        { rank: 1, name: 'Emma Thompson', emissions: 145.2 },
+        { rank: 2, name: 'Michael Chen', emissions: 152.8 },
+        { rank: 3, name: 'Alex Green', emissions: 158.3 },
+      ];
+    } catch (err) {
+      throw ErrorHandler.handle(err, 'api:fetchLeaderboard', true);
+    } finally {
+      stopPerf();
+    }
   },
 };
 
@@ -99,7 +155,7 @@ export const useCalculateEmissions = () => {
 
   return useMutation({
     mutationFn: api.calculateEmissions,
-    onSuccess: data => {
+    onSuccess: _data => {
       // Invalidate carbon data to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.carbon });
     },
@@ -130,7 +186,7 @@ export const useUpdateProfile = () => {
 
   return useMutation({
     mutationFn: api.updateUserProfile,
-    onSuccess: (data, variables) => {
+    onSuccess: (data, _variables) => {
       // Update the cache optimistically
       queryClient.setQueryData(queryKeys.user(data.id), data);
     },

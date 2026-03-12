@@ -204,7 +204,9 @@ const environmentConfigs = {
 
 // Merge base config with environment-specific config
 const currentEnvironment = getEnvironment();
-const environmentConfig = environmentConfigs[currentEnvironment] || {};
+const environmentConfig: Partial<typeof baseConfig> = (environmentConfigs[
+  currentEnvironment
+] || {}) as Partial<typeof baseConfig>;
 
 export const config = {
   ...baseConfig,

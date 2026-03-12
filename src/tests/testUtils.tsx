@@ -64,9 +64,7 @@ export function renderWithProviders(
     );
 
     if (navigation) {
-      wrappedChildren = (
-        <NavigationContainer>{wrappedChildren}</NavigationContainer>
-      );
+      wrappedChildren = <NavigationContainer>{wrappedChildren}</NavigationContainer>;
     }
 
     return wrappedChildren;
@@ -142,10 +140,7 @@ export class PerformanceTestUtils {
     return { result, duration };
   }
 
-  static measure<T>(
-    name: string,
-    fn: () => T,
-  ): { result: T; duration: number } {
+  static measure<T>(name: string, fn: () => T): { result: T; duration: number } {
     this.startMeasurement(name);
     const result = fn();
     const duration = this.endMeasurement(name);
@@ -172,13 +167,8 @@ export class AccessibilityTestUtils {
     });
 
     interactiveElements.forEach((element: any, index: number) => {
-      if (
-        !element.props.accessibilityLabel &&
-        !element.props.accessibilityHint
-      ) {
-        issues.push(
-          `Interactive element at index ${index} missing accessibility label`,
-        );
+      if (!element.props.accessibilityLabel && !element.props.accessibilityHint) {
+        issues.push(`Interactive element at index ${index} missing accessibility label`);
       }
     });
 

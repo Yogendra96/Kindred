@@ -1,4 +1,3 @@
-import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
 import { useTheme } from '../theme/ThemeProvider';
 import SkeletonLoader from './SkeletonLoader';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,16 +12,10 @@ import {
   Platform,
   RefreshControl,
 } from 'react-native';
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-} from 'react-native-chart-kit';
+import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
   withSpring,
   interpolate,
 } from 'react-native-reanimated';
@@ -105,7 +98,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const { theme } = useTheme();
   const [selectedPeriod, setSelectedPeriod] = useState(comparisonPeriod);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const [animationProgress] = useState(() => useSharedValue(0));
+  const animationProgress = useSharedValue(0);
 
   // Animation for dashboard entrance
   useEffect(() => {
@@ -121,6 +114,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       const interval = setInterval(onRefresh, refreshInterval);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [refreshInterval, onRefresh]);
 
   // Process time series data for charts
@@ -175,6 +169,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   };
 
   // Animated styles
+
   const containerAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: interpolate(animationProgress.value, [0, 1], [0, 1]),
@@ -186,7 +181,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     };
   });
 
-  const renderMetricCard = (metric: MetricCard, index: number) => {
+  const MetricCardComponent = ({
+    metric,
+    index,
+    animationProgress,
+    onMetricPress,
+    theme,
+  }: {
+    metric: MetricCard;
+    index: number;
+    animationProgress: Animated.SharedValue<number>;
+    onMetricPress?: (metric: MetricCard) => void;
+    theme: any;
+  }) => {
     const cardAnimatedStyle = useAnimatedStyle(() => {
       return {
         opacity: interpolate(animationProgress.value, [0, 1], [0, 1]),
@@ -227,7 +234,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     };
 
     return (
-      <Animated.View key={metric.id} style={cardAnimatedStyle}>
+      <Animated.View style={cardAnimatedStyle}>
         <TouchableOpacity
           style={[
             styles.metricCard,
@@ -380,9 +387,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           {title}
         </Text>
 
-        {chartType === 'line' && data && (
+        {chartType === 'line' && !!data && (
           <LineChart
-            data={data}
+            data={data as any}
             width={chartWidth - 32}
             height={200}
             chartConfig={chartConfig}
@@ -392,18 +399,22 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             withShadow={false}
             withVerticalLabels={true}
             withHorizontalLabels={true}
+            yAxisLabel=''
+            yAxisSuffix=''
           />
         )}
 
-        {chartType === 'bar' && data && (
+        {chartType === 'bar' && !!data && (
           <BarChart
-            data={data}
+            data={data as any}
             width={chartWidth - 32}
             height={200}
             chartConfig={chartConfig}
             style={styles.chart}
             showValuesOnTopOfBars={true}
             withHorizontalLabels={true}
+            yAxisLabel=''
+            yAxisSuffix=''
           />
         )}
 
@@ -502,7 +513,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         {/* Metrics Grid */}
         {metrics.length > 0 && (
           <View style={styles.metricsGrid}>
-            {metrics.map((metric, index) => renderMetricCard(metric, index))}
+            {metrics.map((metric, index) => (
+              <MetricCardComponent
+                key={metric.id}
+                metric={metric}
+                index={index}
+                animationProgress={animationProgress}
+                onMetricPress={onMetricPress}
+                theme={theme}
+              />
+            ))}
           </View>
         )}
 

@@ -2,7 +2,7 @@
  * Fully accessible button component compliant with WCAG 2.1 AA standards
  * Supports screen readers, keyboard navigation, and high contrast modes
  */
-import { hapticFeedbackService } from '../../services/HapticFeedbackService';
+import hapticFeedbackService from '../../services/HapticFeedbackService';
 import { useTheme } from '../../theme/ThemeProvider';
 import {
   accessibilityService,
@@ -88,7 +88,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   announcePress = false,
   minimumTouchTarget = true,
 }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [focused, setFocused] = useState(false);
   const [pressed, setPressed] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -108,7 +108,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
     // Provide haptic feedback
     if (hapticFeedback) {
-      hapticFeedbackService.impact('light');
+      hapticFeedbackService.triggerButtonPress();
     }
 
     // Announce button press for screen readers
@@ -150,7 +150,9 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
     if (disabled || loading || !onLongPress) return;
 
     if (hapticFeedback) {
-      hapticFeedbackService.impact('medium');
+      hapticFeedbackService.triggerHaptic('impact', undefined, {
+        priority: 'medium',
+      });
     }
 
     onLongPress();
@@ -158,7 +160,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
   // Get variant-specific styles
   const getVariantStyles = useCallback(() => {
-    const colors = accessibilityService.getContrastColors(theme.isDark);
+    const colors = accessibilityService.getContrastColors(isDark);
 
     switch (variant) {
       case 'primary':
@@ -198,7 +200,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
           textColor: colors.background,
         };
     }
-  }, [variant, disabled, theme.isDark]);
+  }, [variant, disabled, isDark]);
 
   // Get size-specific styles
   const getSizeStyles = useCallback(() => {

@@ -6,7 +6,7 @@ module.exports = {
   trailingComma: 'all',
   tabWidth: 2,
   useTabs: false,
-  printWidth: 80,
+  printWidth: 100,
 
   // JSX formatting
   jsxSingleQuote: true,
@@ -77,7 +77,7 @@ module.exports = {
       files: ['*.ts', '*.tsx'],
       options: {
         parser: 'typescript',
-        printWidth: 80,
+        printWidth: 100,
         tabWidth: 2,
         semi: true,
         singleQuote: true,
@@ -90,7 +90,7 @@ module.exports = {
       files: ['*.js', '*.jsx'],
       options: {
         parser: 'babel',
-        printWidth: 80,
+        printWidth: 100,
         tabWidth: 2,
         semi: true,
         singleQuote: true,

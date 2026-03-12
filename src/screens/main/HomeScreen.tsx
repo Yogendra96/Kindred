@@ -9,6 +9,10 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store';
 import { updateFootprint } from '../../store/slices/carbonSlice';
+import { useClimateNotifications } from '../../hooks/useClimateNotifications';
+import _FeatureButton from '../../components/ui/FeatureButton';
+import _SectionHeader from '../../components/ui/SectionHeader';
+import _StatCard from '../../components/ui/StatCard';
 
 const HomeScreen = ({ navigation }: any) => {
   const dispatch = useDispatch();
@@ -34,6 +38,9 @@ const HomeScreen = ({ navigation }: any) => {
   const handleAddWaste = () => {
     dispatch(updateFootprint({ waste: footprint.waste + 0.8 }));
   };
+
+  // Poll climate alerts every 30 min and show in-app banners
+  useClimateNotifications({ lat: 40.7128, lng: -74.006 });
 
   return (
     <ScrollView style={styles.container}>
@@ -117,6 +124,20 @@ const HomeScreen = ({ navigation }: any) => {
               <Text style={styles.featureEmoji}>🛡️</Text>
               <Text style={styles.featureText}>Verify</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.featureBtn}
+              onPress={() => navigation.navigate('VeganCalculator')}
+            >
+              <Text style={styles.featureEmoji}>🌱</Text>
+              <Text style={styles.featureText}>Vegan Calc</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.featureBtn}
+              onPress={() => navigation.navigate('SmartDevices')}
+            >
+              <Text style={styles.featureEmoji}>🔌</Text>
+              <Text style={styles.featureText}>Smart Home</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -145,6 +166,34 @@ const HomeScreen = ({ navigation }: any) => {
             <Text style={styles.breakdownValue}>
               {footprint.waste.toFixed(1)} kg
             </Text>
+          </View>
+        </View>
+
+        {/* Quick links row 2 */}
+        <View style={styles.categoriesContainer}>
+          <Text style={styles.sectionTitle}>Explore</Text>
+          <View style={styles.featureGrid}>
+            <TouchableOpacity
+              style={styles.featureBtn}
+              onPress={() => navigation.navigate('Analytics')}
+            >
+              <Text style={styles.featureEmoji}>📊</Text>
+              <Text style={styles.featureText}>Analytics</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.featureBtn}
+              onPress={() => navigation.navigate('LearningCenter')}
+            >
+              <Text style={styles.featureEmoji}>🎓</Text>
+              <Text style={styles.featureText}>Learn</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.featureBtn}
+              onPress={() => navigation.navigate('VeganCalculator')}
+            >
+              <Text style={styles.featureEmoji}>🌱</Text>
+              <Text style={styles.featureText}>Vegan Calc</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -279,10 +328,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginTop: 16,
-  },
-  errorText: {
-    color: '#d32f2f',
-    textAlign: 'center',
   },
   errorText: {
     color: '#d32f2f',

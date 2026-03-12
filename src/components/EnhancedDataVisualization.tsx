@@ -1,8 +1,8 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
+import HapticFeedbackService from '../services/HapticFeedbackService';
 import EnhancedSkeletonLoader from './EnhancedSkeletonLoader';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -243,7 +243,7 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
       datasets: [
         {
           data: (data as LineDataPoint[]).map(point => point.y),
-          color: (opacity = 1) => colors[0],
+          color: (_opacity = 1) => colors[0],
           strokeWidth: 3,
         },
       ],
@@ -316,6 +316,8 @@ export const EnhancedDataVisualization: React.FC<EnhancedChartProps> = ({
     return (
       <View style={styles.chartContainer}>
         <BarChart
+          yAxisLabel=''
+          yAxisSuffix=''
           data={barData}
           width={chartWidth}
           height={height}

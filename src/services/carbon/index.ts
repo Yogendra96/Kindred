@@ -17,6 +17,8 @@
  * @version 2.0.0
  */
 
+import { carbonService as _carbonServiceLocal } from './CarbonService';
+
 // ===================================================================
 // CORE EXPORTS
 // ===================================================================
@@ -68,19 +70,19 @@ export type {
  * Usage: import { calculateEmissions } from '@services/carbon';
  */
 export const calculateEmissions = (request: any) =>
-  carbonService.calculateEmissions(request);
+  _carbonServiceLocal.calculateEmissions(request);
 
 /**
  * Quick access to batch calculation
  */
 export const batchCalculateEmissions = (requests: any[]) =>
-  carbonService.batchCalculateEmissions(requests);
+  _carbonServiceLocal.batchCalculateEmissions(requests);
 
 /**
  * Quick access to form conversion
  */
 export const convertToFormCalculation = (response: any) =>
-  carbonService.convertToFormCalculation(response);
+  _carbonServiceLocal.convertToFormCalculation(response);
 
 // ===================================================================
 // MIGRATION GUIDE

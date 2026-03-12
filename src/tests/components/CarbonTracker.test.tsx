@@ -1,8 +1,8 @@
 import CarbonTracker from '../../components/CarbonTracker';
 import { render, TestDataFactory, TestHelpers } from '../utils/testUtils';
-import { fireEvent, waitFor, screen } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, View, Text, TextInput, TouchableOpacity } from 'react-native';
 
 // Mock the CarbonTracker component (since it doesn't exist yet)
 const MockCarbonTracker = ({ onActivityAdd, activities = [] }: any) => {
@@ -31,22 +31,22 @@ const MockCarbonTracker = ({ onActivityAdd, activities = [] }: any) => {
   };
 
   return (
-    <>
-      <text testID='carbon-saved-display'>
+    <View>
+      <Text testID='carbon-saved-display'>
         {carbonSaved.toFixed(1)} kg CO₂ saved
-      </text>
-      <text testID='activity-count'>{activities.length} activities logged</text>
+      </Text>
+      <Text testID='activity-count'>{activities.length} activities logged</Text>
 
-      <text testID='activity-type-label'>Activity Type</text>
-      <textinput
+      <Text testID='activity-type-label'>Activity Type</Text>
+      <TextInput
         testID='activity-type-input'
         value={activityType}
         onChangeText={setActivityType}
         placeholder='Select activity type'
       />
 
-      <text testID='distance-label'>Distance (km)</text>
-      <textinput
+      <Text testID='distance-label'>Distance (km)</Text>
+      <TextInput
         testID='distance-input'
         value={distance}
         onChangeText={setDistance}
@@ -54,27 +54,26 @@ const MockCarbonTracker = ({ onActivityAdd, activities = [] }: any) => {
         keyboardType='numeric'
       />
 
-      <button testID='add-activity-button' onPress={handleAddActivity}>
-        <text>Add Activity</text>
-      </button>
+      <TouchableOpacity testID='add-activity-button' onPress={handleAddActivity}>
+        <Text>Add Activity</Text>
+      </TouchableOpacity>
 
       {activities.map((activity: any, index: number) => (
-        <view key={activity.id} testID={`activity-item-${index}`}>
-          <text testID={`activity-type-${index}`}>{activity.type}</text>
-          <text testID={`activity-distance-${index}`}>
+        <View key={activity.id} testID={`activity-item-${index}`}>
+          <Text testID={`activity-type-${index}`}>{activity.type}</Text>
+          <Text testID={`activity-distance-${index}`}>
             {activity.distance} km
-          </text>
-          <text testID={`activity-carbon-${index}`}>
+          </Text>
+          <Text testID={`activity-carbon-${index}`}>
             {activity.carbonSaved} kg CO₂
-          </text>
-        </view>
+          </Text>
+        </View>
       ))}
-    </>
+    </View>
   );
 };
 
-// Mock Alert
-jest.spyOn(Alert, 'alert');
+// Mock Alert is handled in setup.ts
 
 describe('CarbonTracker Component', () => {
   const mockOnActivityAdd = jest.fn();
@@ -89,17 +88,17 @@ describe('CarbonTracker Component', () => {
 
   describe('Rendering', () => {
     it('should render carbon tracker with initial state', () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      expect(screen.getByTestId('carbon-saved-display')).toHaveTextContent(
+      expect(getByTestId('carbon-saved-display')).toHaveTextContent(
         '0.0 kg CO₂ saved',
       );
-      expect(screen.getByTestId('activity-count')).toHaveTextContent(
+      expect(getByTestId('activity-count')).toHaveTextContent(
         '0 activities logged',
       );
-      expect(screen.getByTestId('activity-type-input')).toBeTruthy();
-      expect(screen.getByTestId('distance-input')).toBeTruthy();
-      expect(screen.getByTestId('add-activity-button')).toBeTruthy();
+      expect(getByTestId('activity-type-input')).toBeTruthy();
+      expect(getByTestId('distance-input')).toBeTruthy();
+      expect(getByTestId('add-activity-button')).toBeTruthy();
     });
 
     it('should render existing activities', () => {
@@ -118,27 +117,25 @@ describe('CarbonTracker Component', () => {
         }),
       ];
 
-      render(<MockCarbonTracker {...defaultProps} activities={activities} />);
+      const { getByTestId } = render(
+        <MockCarbonTracker {...defaultProps} activities={activities} />,
+      );
 
-      expect(screen.getByTestId('activity-count')).toHaveTextContent(
+      expect(getByTestId('activity-count')).toHaveTextContent(
         '2 activities logged',
       );
-      expect(screen.getByTestId('activity-item-0')).toBeTruthy();
-      expect(screen.getByTestId('activity-item-1')).toBeTruthy();
-      expect(screen.getByTestId('activity-type-0')).toHaveTextContent(
-        'walking',
-      );
-      expect(screen.getByTestId('activity-type-1')).toHaveTextContent(
-        'cycling',
-      );
+      expect(getByTestId('activity-item-0')).toBeTruthy();
+      expect(getByTestId('activity-item-1')).toBeTruthy();
+      expect(getByTestId('activity-type-0')).toHaveTextContent('walking');
+      expect(getByTestId('activity-type-1')).toHaveTextContent('cycling');
     });
 
     it('should have proper accessibility labels', () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       // Check if elements have accessibility properties
       expect(activityTypeInput.props.placeholder).toBe('Select activity type');
@@ -149,29 +146,29 @@ describe('CarbonTracker Component', () => {
 
   describe('User Interactions', () => {
     it('should update activity type when input changes', () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
+      const activityTypeInput = getByTestId('activity-type-input');
       fireEvent.changeText(activityTypeInput, 'walking');
 
       expect(activityTypeInput.props.value).toBe('walking');
     });
 
     it('should update distance when input changes', () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const distanceInput = screen.getByTestId('distance-input');
+      const distanceInput = getByTestId('distance-input');
       fireEvent.changeText(distanceInput, '5');
 
       expect(distanceInput.props.value).toBe('5');
     });
 
     it('should add activity when form is submitted with valid data', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.changeText(distanceInput, '5');
@@ -187,7 +184,7 @@ describe('CarbonTracker Component', () => {
         );
       });
 
-      expect(screen.getByTestId('carbon-saved-display')).toHaveTextContent(
+      expect(getByTestId('carbon-saved-display')).toHaveTextContent(
         '2.5 kg CO₂ saved',
       );
       expect(activityTypeInput.props.value).toBe('');
@@ -195,10 +192,10 @@ describe('CarbonTracker Component', () => {
     });
 
     it('should show error when trying to add activity without activity type', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       fireEvent.changeText(distanceInput, '5');
       fireEvent.press(addButton);
@@ -214,10 +211,10 @@ describe('CarbonTracker Component', () => {
     });
 
     it('should show error when trying to add activity without distance', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const addButton = getByTestId('add-activity-button');
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.press(addButton);
@@ -235,11 +232,11 @@ describe('CarbonTracker Component', () => {
 
   describe('Carbon Calculation', () => {
     it('should calculate carbon savings correctly', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       // Add first activity
       fireEvent.changeText(activityTypeInput, 'walking');
@@ -247,10 +244,11 @@ describe('CarbonTracker Component', () => {
       fireEvent.press(addButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('carbon-saved-display')).toHaveTextContent(
+        expect(getByTestId('carbon-saved-display')).toHaveTextContent(
           '2.5 kg CO₂ saved',
         );
       });
+
 
       // Add second activity
       fireEvent.changeText(activityTypeInput, 'cycling');
@@ -258,18 +256,19 @@ describe('CarbonTracker Component', () => {
       fireEvent.press(addButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('carbon-saved-display')).toHaveTextContent(
+        expect(getByTestId('carbon-saved-display')).toHaveTextContent(
           '7.5 kg CO₂ saved',
         );
       });
     });
 
     it('should handle decimal distances correctly', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
+
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.changeText(distanceInput, '2.5');
@@ -332,11 +331,11 @@ describe('CarbonTracker Component', () => {
 
   describe('Edge Cases', () => {
     it('should handle invalid distance input gracefully', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.changeText(distanceInput, 'invalid');
@@ -353,11 +352,11 @@ describe('CarbonTracker Component', () => {
     });
 
     it('should handle negative distance input', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.changeText(distanceInput, '-5');
@@ -374,11 +373,11 @@ describe('CarbonTracker Component', () => {
     });
 
     it('should handle very large numbers', async () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.changeText(distanceInput, '999999');
@@ -397,11 +396,11 @@ describe('CarbonTracker Component', () => {
 
   describe('Accessibility', () => {
     it('should be accessible to screen readers', () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      const activityTypeInput = screen.getByTestId('activity-type-input');
-      const distanceInput = screen.getByTestId('distance-input');
-      const addButton = screen.getByTestId('add-activity-button');
+      const activityTypeInput = getByTestId('activity-type-input');
+      const distanceInput = getByTestId('distance-input');
+      const addButton = getByTestId('add-activity-button');
 
       expect(activityTypeInput).toBeTruthy();
       expect(distanceInput).toBeTruthy();
@@ -409,12 +408,12 @@ describe('CarbonTracker Component', () => {
     });
 
     it('should have proper labels for form fields', () => {
-      render(<MockCarbonTracker {...defaultProps} />);
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      expect(screen.getByTestId('activity-type-label')).toHaveTextContent(
+      expect(getByTestId('activity-type-label')).toHaveTextContent(
         'Activity Type',
       );
-      expect(screen.getByTestId('distance-label')).toHaveTextContent(
+      expect(getByTestId('distance-label')).toHaveTextContent(
         'Distance (km)',
       );
     });
@@ -429,19 +428,23 @@ describe('CarbonTracker Component', () => {
         },
       };
 
-      render(<MockCarbonTracker {...defaultProps} />, { initialState });
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />, {
+        initialState,
+      });
 
       // Component should integrate with Redux state
-      expect(screen.getByTestId('carbon-saved-display')).toBeTruthy();
+      expect(getByTestId('carbon-saved-display')).toBeTruthy();
     });
 
     it('should work with React Query', async () => {
       const queryClient = TestHelpers.createMockQueryClient();
 
-      render(<MockCarbonTracker {...defaultProps} />, { queryClient });
+      const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />, {
+        queryClient,
+      });
 
       // Component should work with React Query
-      expect(screen.getByTestId('add-activity-button')).toBeTruthy();
+      expect(getByTestId('add-activity-button')).toBeTruthy();
     });
   });
 });

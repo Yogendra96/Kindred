@@ -31,19 +31,19 @@ import {
 // import { BarCodeScanner } from 'expo-barcode-scanner';
 
 // Placeholder objects for expo modules
-const BarCodeScanner = {
+const _BarCodeScanner = {
   requestPermissionsAsync: () => Promise.resolve({ status: 'granted' }),
 };
-const Camera = {
+const _Camera = {
   requestCameraPermissionsAsync: () => Promise.resolve({ status: 'granted' }),
 };
-const Speech = {
+const _Speech = {
   speak: () => {},
   isSpeakingAsync: () => Promise.resolve(false),
   stop: () => {},
 };
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 interface InputField {
   id: string;

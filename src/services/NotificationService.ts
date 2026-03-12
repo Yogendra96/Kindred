@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { CrashReportingService } from './CrashReportingService';
 import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';

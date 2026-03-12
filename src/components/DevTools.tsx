@@ -1,7 +1,7 @@
 import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
 import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
 import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
-import { loggingService } from '../services/LoggingService';
+import _loggingService from '../services/LoggingService';
 import React, { useState, useEffect } from 'react';
 import { useCallback } from 'react';
 import {
@@ -17,10 +17,7 @@ import {
 } from 'react-native';
 import { Dimensions } from 'react-native';
 
-// Global type declarations
-declare global {
-  var __DEV__: boolean;
-}
+// __DEV__ is globally provided by React Native
 
 interface DevToolsProps {
   visible: boolean;
@@ -125,7 +122,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   /**
    * Format bytes to human readable
    */
-  const formatBytes = (bytes: number): string => {
+  const _formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];

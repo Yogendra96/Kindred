@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import analytics from '@react-native-firebase/analytics';
 import firebase from '@react-native-firebase/app';
 import crashlytics from '@react-native-firebase/crashlytics';

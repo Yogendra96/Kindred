@@ -849,7 +849,7 @@ export interface DataQualityMetric {
   readonly overall: number;
 }
 
-type PrivacyLevel =
+type _PrivacyLevel =
   | 'public'
   | 'community'
   | 'family'

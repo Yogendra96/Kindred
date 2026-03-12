@@ -43,6 +43,30 @@ export type MainTabParamList = {
   ProfileTab: { userId?: string };
 };
 
+// ─── App Navigator (AppNavigator.tsx) param lists ─────────────────────────────
+
+/** Bottom tab bar screens */
+export type AppTabParamList = {
+  Home: undefined;
+  Map: undefined;
+  Profile: undefined;
+  Social: undefined;
+  Market: undefined;
+  Awards: undefined;
+};
+
+/** Stack screens reachable from Home */
+export type AppStackParamList = {
+  MainTabs: NavigatorScreenParams<AppTabParamList>;
+  CarbonTwin: undefined;
+  VisionCamera: undefined;
+  Verification: undefined;
+  VeganCalculator: undefined;
+  Analytics: undefined;
+  LearningCenter: undefined;
+  SmartDevices: undefined;
+};
+
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}

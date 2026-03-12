@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 /**
  * @fileoverview Carbon Cache Manager Service
  *

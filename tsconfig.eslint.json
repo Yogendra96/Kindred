@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "metro.config.js",
+    "jest.config.js",
+    "vendor",
+    "coverage",
+    "dist",
+    "src/examples/**/*",
+    "e2e/**/*",
+    "src/services/*.broken"
+  ]
+}

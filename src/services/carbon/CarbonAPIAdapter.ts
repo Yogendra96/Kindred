@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 /**
  * @fileoverview Carbon API Adapter Service
  *

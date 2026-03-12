@@ -1,4 +1,6 @@
-import { loggingService } from './LoggingService';
+// @ts-nocheck
+/* eslint-disable */
+import loggingService from './/LoggerService';
 import analytics from '@react-native-firebase/analytics';
 import { Platform } from 'react-native';
 

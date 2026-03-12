@@ -10,7 +10,8 @@
 
 **Enterprise-grade React Native app for carbon footprint tracking with AI/ML innovations**
 
-[Quick Start](#-quick-start) • [Features](#-breakthrough-features) • [Architecture](#-architecture) • [Documentation](#-documentation)
+[Quick Start](#-quick-start) • [Features](#-breakthrough-features) • [Architecture](#-architecture)
+• [Documentation](#-documentation)
 
 </div>
 
@@ -18,7 +19,10 @@
 
 ## 🌍 What is Kindred?
 
-**Kindred** is a revolutionary mobile application that helps individuals track, understand, and reduce their carbon footprint through cutting-edge AI/ML technology and behavioral psychology. With over **93,000 lines of production-ready code**, Kindred represents the most sophisticated personal carbon tracking platform in the market.
+**Kindred** is a revolutionary mobile application that helps individuals track, understand, and
+reduce their carbon footprint through cutting-edge AI/ML technology and behavioral psychology. With
+over **93,000 lines of production-ready code**, Kindred represents the most sophisticated personal
+carbon tracking platform in the market.
 
 ### 🎯 Project Status
 
@@ -36,6 +40,7 @@
 ### Prerequisites
 
 Ensure you have the following installed:
+
 - **Node.js** 18+ ([Download](https://nodejs.org/))
 - **Bun** latest ([Install](https://bun.sh/))
 - **Xcode** (for iOS) or **Android Studio** (for Android)
@@ -62,6 +67,7 @@ cp .env.example .env
 ### Running the App
 
 #### iOS (macOS only)
+
 ```bash
 # Start Metro bundler
 bun start
@@ -74,6 +80,7 @@ bun ios --simulator="iPhone 15 Pro"
 ```
 
 #### Android
+
 ```bash
 # Start Metro bundler
 bun start
@@ -115,37 +122,59 @@ bun run validate       # Full validation (lint + type + test)
 
 ---
 
-## 🌟 Breakthrough Features
+## 🌟 App Screens & Features
 
-### 1. 🔮 Carbon Twin Technology (World First)
-Create a digital twin of your carbon lifestyle with real-time simulations, what-if scenarios, and lifetime trajectory projections.
+### Navigation Structure
 
-**Innovation:** First app to model complete carbon lifestyle with AI predictions
+- **Bottom Tab Bar:** Home · Map · Profile · Social · Market · Awards
+- **Stack Screens (from Home):** Carbon Twin · AI Vision · Verification · Vegan Calculator ·
+  Analytics · Learning Center
 
-### 2. 📸 Computer Vision Carbon Tracking
-Point your camera at products for instant carbon footprint analysis. Zero-friction tracking with 85% accuracy.
+---
 
-**Innovation:** First CV-based carbon tracking in the market
+### 📱 Implemented Screens
 
-### 3. 🧠 Emotional Engagement Engine
-Psychology-based gamification that adapts to your emotional state for 3x higher retention than traditional apps.
+| Screen                  | Tab        | Key Features                                                                                                |
+| ----------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **Home**                | 🏠 Home    | Carbon footprint tracker, daily breakdown, quick-access to all stack screens                                |
+| **Local Impact Map**    | 🗺️ Map     | Eco-location listings (recycling, organic, EV charging, thrift, green space), impact stats, category filter |
+| **Profile**             | 👤 Profile | Avatar, stats (CO₂ saved, streak, points), badges, notification/privacy/theme settings                      |
+| **Community**           | 👥 Social  | Leaderboard (friends/global), Challenges (daily/weekly/monthly/global), Accountability Groups with nudge    |
+| **Kindred Market**      | 🛍️ Market  | Sustainable Thrift Store (search, category filter, CO₂ saved per item) + Carbon Offset Marketplace          |
+| **Achievements**        | 🏆 Awards  | Badge gallery, points display, unlock progress                                                              |
+| **Carbon Twin**         | Stack      | Bio-Digital Twin visualization powered by `ImmersiveDashboard` and Redux ecosystem state                    |
+| **AI Vision**           | Stack      | Camera-based product carbon scanning                                                                        |
+| **Verification Center** | Stack      | Community verification and trust network                                                                    |
+| **Vegan Calculator**    | Stack      | Live ticking counters (animals/CO₂/water), global vs personal mode, ad-reward credits, tree planting        |
+| **Analytics Dashboard** | Stack      | Weekly chart, category breakdown bars, AI predictions, personal reduction goals                             |
+| **Learning Center**     | Stack      | Articles, videos, quizzes — filterable by topic (Diet/Energy/Transport/Waste/Nature)                        |
 
-**Innovation:** Most sophisticated engagement system with flow state optimization
+---
 
-### 4. 🎨 Adaptive UI Engine
-AI-powered interface that changes based on your behavior, carbon footprint, and preferences.
+### 🔮 Breakthrough Innovation Services
 
-**Innovation:** Carbon-aware theming with cognitive load management
+1. **Bio-Digital Twin** — `ImmersiveCarbonVisualizationEngine` + `ImmersiveDashboard`: real-time
+   ecosystem visualization driven by user activity
+2. **Computer Vision** — `ComputerVisionCarbonEngine`: camera-based product carbon scanning
+3. **Emotional Engagement Engine** — psychology-based gamification
+4. **Adaptive UI Engine** — carbon-aware theming
+5. **Community Verification Network** — decentralized trust with peer validation
+6. **ML Carbon Prediction** — TensorFlow.js neural network predictions
 
-### 5. 🌐 Community Verification Network
-Decentralized trust ecosystem with blockchain-based verification and peer validation.
+---
 
-**Innovation:** First decentralized carbon verification network
+### 🎨 UI Library Upgrade Path
 
-### 6. 🛡️ Military-Grade Security
-Zero-trust architecture with quantum-resistant encryption and multi-factor biometric authentication.
+The app uses vanilla React Native styling. Three recommended upgrades (no breaking changes):
 
-**Innovation:** Most secure personal carbon tracking platform
+| Library                | Install                              | Best For                                               | Resources                                                                                                                                              |
+| ---------------------- | ------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Moti**               | `bun add moti`                       | Declarative animations on top of existing `reanimated` | [moti.fyi](https://moti.fyi), [Expo Snack](https://snack.expo.dev/@evanbacon/moti)                                                                     |
+| **React Native Paper** | `bun add react-native-paper`         | Material Design 3 cards, FABs, dialogs, chips          | [callstack.github.io/react-native-paper](https://callstack.github.io/react-native-paper/docs/components/ActivityIndicator)                             |
+| **React Native Skia**  | `bun add @shopify/react-native-skia` | GPU-accelerated Bio-Digital Twin rendering             | [shopify.github.io/react-native-skia](https://shopify.github.io/react-native-skia/docs/), [William Candillon YouTube](https://youtube.com/@wcandillon) |
+
+Enable via `.env` feature flags: `FEATURE_SKIA_DASHBOARD`, `FEATURE_MOTI_ANIMATIONS`,
+`FEATURE_RN_PAPER`
 
 ---
 
@@ -219,17 +248,20 @@ Zero-trust architecture with quantum-resistant encryption and multi-factor biome
 ## 📚 Documentation
 
 ### Core Documentation
+
 - **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Current project state and metrics
 - **[PROJECT_UNDERSTANDING.md](./PROJECT_UNDERSTANDING.md)** - Complete codebase guide
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Architecture details with diagrams
 - **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidelines
 
 ### Development Guides
+
 - **[DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)** - Extended development practices
 - **[PERFORMANCE_GUIDE.md](./PERFORMANCE_GUIDE.md)** - Performance optimization
 - **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
 
 ### Project Management
+
 - **[CURRENT_TODOS.json](./CURRENT_TODOS.json)** - Prioritized task list
 - **[INTEGRATION_ISSUES.md](./INTEGRATION_ISSUES.md)** - Known issues and solutions
 - **[ENHANCEMENT_ROADMAP.md](./ENHANCEMENT_ROADMAP.md)** - Feature roadmap
@@ -273,6 +305,7 @@ KindredFixed/
 ## 🚀 Key Services
 
 ### 🌟 Breakthrough Innovation Services
+
 1. **AdaptiveUIEngine** (3,557 lines) - AI-powered adaptive theming
 2. **EmotionalEngagementEngine** (2,164 lines) - Psychology-based gamification
 3. **CarbonTwinEngine** (1,300+ lines) - Digital carbon lifestyle modeling
@@ -281,16 +314,19 @@ KindredFixed/
 6. **NextGenInteractionEngine** (1,949 lines) - Multi-modal interactions
 
 ### 🛡️ Security Services
+
 - **ZeroTrustSecurityService** - Multi-layered behavioral analysis
 - **BiometricAuthenticationService** (1,351 lines) - Multi-modal biometrics
 - **VulnerabilityScanner** (1,503 lines) - AI-powered penetration testing
 
 ### 📊 Analytics & Intelligence
+
 - **EnhancedAnalyticsService** - Advanced user analytics
 - **MLCarbonPrediction** - TensorFlow.js neural networks
 - **SmartRecommendationsEngine** - AI-powered recommendations
 
 ### ⚡ Performance Services
+
 - **EnhancedPerformanceService** (700+ lines) - Real-time APM
 - **AdvancedPerformanceEngine** - AI-powered optimization
 - **PredictiveMemoryManager** - ML-based leak prevention
@@ -320,6 +356,7 @@ bun run test:watch
 ```
 
 ### Test Structure
+
 - **Unit Tests:** Service logic, utilities, hooks
 - **Component Tests:** UI components with React Testing Library
 - **Integration Tests:** Redux, navigation, service integration
@@ -332,12 +369,14 @@ bun run test:watch
 ## 📱 Platform Support
 
 ### iOS
+
 - **Minimum Version:** iOS 13.0
 - **Simulator:** iPhone 15 Pro (recommended)
 - **Build System:** Xcode
 - **Dependencies:** CocoaPods
 
 ### Android
+
 - **Minimum SDK:** API 24 (Android 7.0)
 - **Target SDK:** API 34 (Android 14)
 - **Emulator:** Pixel 9 Pro XL API 35 (recommended)
@@ -380,6 +419,7 @@ ENABLE_COMMUNITY_VERIFICATION=true
 4. **Code Review:** Required for all changes
 
 ### Quality Gates
+
 - ✅ TypeScript compilation (`bun run typecheck`)
 - ✅ ESLint passing (`bun run lint`)
 - ✅ Prettier formatted (`bun run format`)
@@ -387,7 +427,9 @@ ENABLE_COMMUNITY_VERIFICATION=true
 - ✅ No security vulnerabilities
 
 ### Pre-commit Hooks
+
 Husky automatically runs on commit:
+
 - Lint staged files
 - Type checking
 - Auto-formatting
@@ -397,6 +439,7 @@ Husky automatically runs on commit:
 ## 📈 Performance
 
 ### Targets
+
 - **Startup Time:** <2 seconds
 - **Frame Rate:** 60 FPS (16ms per frame)
 - **Service Overhead:** <100ms
@@ -404,6 +447,7 @@ Husky automatically runs on commit:
 - **Memory Usage:** <200MB average
 
 ### Monitoring
+
 - Built-in performance monitoring service
 - Real-time metrics dashboard
 - Memory leak detection
@@ -414,6 +458,7 @@ Husky automatically runs on commit:
 ## 🛡️ Security
 
 ### Features
+
 - **Zero-Trust Architecture** with behavioral analysis
 - **AES-256-GCM Encryption** for data at rest
 - **Biometric Authentication** (fingerprint, face, iris)
@@ -422,6 +467,7 @@ Husky automatically runs on commit:
 - **Automated Penetration Testing** with AI
 
 ### Best Practices
+
 - No hardcoded secrets
 - Environment variables for configuration
 - Input sanitization and validation
@@ -435,12 +481,14 @@ Husky automatically runs on commit:
 ### Common Issues
 
 **Metro bundler won't start:**
+
 ```bash
 bun run clean:metro
 bun start --reset-cache
 ```
 
 **iOS build fails:**
+
 ```bash
 cd ios && pod install && cd ..
 bun run clean:pods
@@ -448,6 +496,7 @@ bun ios
 ```
 
 **Android build fails:**
+
 ```bash
 bun run clean:gradle
 cd android && ./gradlew clean && cd ..
@@ -455,6 +504,7 @@ bun android
 ```
 
 **TypeScript errors:**
+
 ```bash
 bun run typecheck
 # Fix errors, then retry
@@ -467,11 +517,13 @@ See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more solutions.
 ## 📞 Support
 
 ### Documentation
+
 - Read comprehensive docs in `/docs` folder
 - Check `PROJECT_STATUS.md` for current state
 - Review `INTEGRATION_ISSUES.md` for known problems
 
 ### Development Help
+
 - Run `bun run doctor` for environment check
 - Check `TROUBLESHOOTING.md` for solutions
 - Review service documentation in `src/services/README.md`
@@ -482,13 +534,15 @@ See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more solutions.
 
 **Private - All Rights Reserved**
 
-This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly
+prohibited.
 
 ---
 
 ## 🎖️ Credits
 
 ### Built With
+
 - **React Native** - Mobile framework
 - **TypeScript** - Type safety
 - **Redux Toolkit** - State management
@@ -497,6 +551,7 @@ This project is proprietary and confidential. Unauthorized copying, distribution
 - **Bun** - Package manager
 
 ### Special Thanks
+
 - React Native community
 - Open source contributors
 - Climate science researchers
@@ -507,6 +562,7 @@ This project is proprietary and confidential. Unauthorized copying, distribution
 ## 🚀 Roadmap
 
 ### Current: Phase 1.6 - MASTERPIECE Features
+
 - ✅ Carbon Twin Engine
 - ✅ Computer Vision Tracking
 - ✅ Community Verification Network
@@ -515,6 +571,7 @@ This project is proprietary and confidential. Unauthorized copying, distribution
 - 🔄 Integration testing and polish
 
 ### Next: Phase 2 - User Experience Excellence
+
 - Multi-language support
 - Offline-first architecture
 - Advanced onboarding journey
@@ -522,6 +579,7 @@ This project is proprietary and confidential. Unauthorized copying, distribution
 - Voice commands
 
 ### Future: Phase 3 - Market Leadership
+
 - Smart home integration
 - Corporate B2B solutions
 - Financial institution partnerships

@@ -35,48 +35,52 @@ jest.mock('../../services/SocialFeaturesService', () => ({
 
 describe('AchievementSystemService', () => {
   let achievementService: typeof AchievementSystemService;
-  let mockFirestore: jest.Mocked<any>;
-  let mockAuth: jest.Mocked<any>;
+  let mockFirestore: any;
+  let mockAuth: any;
   let mockAsyncStorage: jest.Mocked<typeof AsyncStorage>;
 
-  beforeEach(() => {
+  const mockUpdate = jest.fn(() => Promise.resolve());
+  const mockSet = jest.fn(() => Promise.resolve());
+  const mockGet = jest.fn(() =>
+    Promise.resolve({ exists: true, data: () => ({}) }),
+  );
+  const mockAdd = jest.fn(() => Promise.resolve({ id: 'test-doc-id' }));
+  const mockDoc = jest.fn(() => ({
+    get: mockGet,
+    set: mockSet,
+    update: mockUpdate,
+    onSnapshot: jest.fn(),
+  }));
+  const mockOrderBy = jest.fn(() => ({
+    get: mockGet,
+  }));
+  const mockWhere = jest.fn(() => ({
+    get: mockGet,
+    orderBy: mockOrderBy,
+  }));
+  const mockCollection = jest.fn(() => ({
+    doc: mockDoc,
+    add: mockAdd,
+    where: mockWhere,
+    orderBy: mockOrderBy,
+  }));
+
+  beforeEach(async () => {
     jest.clearAllMocks();
 
-    // Reset singleton instance
-    (AchievementSystemService as any).instance = undefined;
-    achievementService = AchievementSystemService;
-
-    // Setup Firebase mocks
-    mockFirestore = firestore as jest.Mocked<any>;
-    mockAuth = auth as jest.Mocked<any>;
+    // Setup Firebase mocks first
+    mockFirestore = firestore as any;
+    mockAuth = auth as any;
     mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
 
-    // Setup default mock implementations
     mockFirestore.mockReturnValue({
-      collection: jest.fn(() => ({
-        doc: jest.fn(() => ({
-          get: jest.fn(() =>
-            Promise.resolve({ exists: true, data: () => ({}) }),
-          ),
-          set: jest.fn(() => Promise.resolve()),
-          update: jest.fn(() => Promise.resolve()),
-          onSnapshot: jest.fn(),
-        })),
-        add: jest.fn(() => Promise.resolve({ id: 'test-doc-id' })),
-        where: jest.fn(() => ({
-          get: jest.fn(() => Promise.resolve({ docs: [] })),
-          orderBy: jest.fn(() => ({
-            get: jest.fn(() => Promise.resolve({ docs: [] })),
-          })),
-        })),
-        orderBy: jest.fn(() => ({
-          get: jest.fn(() => Promise.resolve({ docs: [] })),
-        })),
-      })),
-      FieldValue: {
-        increment: jest.fn(),
-      },
+      collection: mockCollection,
     });
+
+    mockFirestore.FieldValue = {
+      increment: jest.fn((val) => `incremented-${val}`),
+      serverTimestamp: jest.fn(() => 'mock-timestamp'),
+    };
 
     mockAuth.mockReturnValue({
       currentUser: {
@@ -89,6 +93,14 @@ describe('AchievementSystemService', () => {
     mockAsyncStorage.getItem.mockResolvedValue(null);
     mockAsyncStorage.setItem.mockResolvedValue();
     mockAsyncStorage.removeItem.mockResolvedValue();
+
+    // Now reset and get instance
+    const ServiceClass = AchievementSystemService.constructor as any;
+    ServiceClass.instance = undefined;
+    achievementService = ServiceClass.getInstance();
+    
+    // Achievement system init is async, wait a bit
+    await new Promise(resolve => setTimeout(resolve, 0));
   });
 
   describe('Initialization', () => {
@@ -185,16 +197,12 @@ describe('AchievementSystemService', () => {
         },
       ];
 
-      mockFirestore()
-        .collection()
-        .where()
-        .orderBy()
-        .get.mockResolvedValue({
-          docs: mockAchievements.map(achievement => ({
-            id: achievement.id,
-            data: () => achievement,
-          })),
-        });
+      mockGet.mockResolvedValue({
+        docs: mockAchievements.map(achievement => ({
+          id: achievement.id,
+          data: () => achievement,
+        })),
+      });
 
       const achievements = await achievementService.loadUserAchievements(
         'test-user-id',
@@ -317,7 +325,7 @@ describe('AchievementSystemService', () => {
 
       await achievementService.markNotificationAsRead('test-notification-id');
 
-      expect(mockFirestore().collection().doc().update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         isRead: true,
       });
     });

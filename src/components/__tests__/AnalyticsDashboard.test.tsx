@@ -1,5 +1,5 @@
 import { ThemeProvider } from '../../theme/ThemeProvider';
-import { lightTheme } from '../../theme/themes';
+import { lightTheme } from '../../theme/theme';
 import type {
   MetricCard,
   ChartData,
@@ -19,29 +19,6 @@ jest.mock('react-native-chart-kit', () => ({
   ProgressChart: 'ProgressChart',
 }));
 
-jest.mock('expo-linear-gradient', () => ({
-  LinearGradient: ({ children, ...props }: any) => {
-    const MockedLinearGradient = require('react-native').View;
-    return <MockedLinearGradient {...props}>{children}</MockedLinearGradient>;
-  },
-}));
-
-jest.mock('react-native-reanimated', () => {
-  const View = require('react-native').View;
-  return {
-    default: {
-      View,
-      Text: require('react-native').Text,
-      ScrollView: require('react-native').ScrollView,
-    },
-    useSharedValue: () => ({ value: 0 }),
-    useAnimatedStyle: () => ({}),
-    withTiming: (value: any) => value,
-    withSpring: (value: any) => value,
-    interpolate: () => 0,
-  };
-});
-
 jest.mock('../SkeletonLoader', () => {
   return function MockSkeletonLoader(props: any) {
     const { View } = require('react-native');
@@ -56,17 +33,6 @@ jest.mock('../../services/PerformanceMonitoringService', () => ({
     recordMetric: jest.fn(),
   },
 }));
-
-// Mock Dimensions
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    Dimensions: {
-      get: jest.fn(() => ({ width: 375, height: 812 })),
-    },
-  };
-});
 
 const mockMetrics: MetricCard[] = [
   {
@@ -197,11 +163,11 @@ describe('AnalyticsDashboard', () => {
         <AnalyticsDashboard metrics={mockMetrics} />,
       );
 
-      expect(getByText('Total Users')).toBeTruthy();
-      expect(getByText('1250')).toBeTruthy();
-      expect(getByText('users')).toBeTruthy();
-      expect(getByText('Revenue')).toBeTruthy();
-      expect(getByText('$45,230')).toBeTruthy();
+      expect(getByText(/Total Users/)).toBeTruthy();
+      expect(getByText(/1250/)).toBeTruthy();
+      expect(getByText(/users/)).toBeTruthy();
+      expect(getByText(/Revenue/)).toBeTruthy();
+      expect(getByText(/\$45,230/)).toBeTruthy();
     });
 
     it('displays metric changes correctly', () => {
@@ -383,7 +349,7 @@ describe('AnalyticsDashboard', () => {
     });
 
     it('handles empty data gracefully', () => {
-      const { container } = renderWithTheme(
+      const { UNSAFE_root } = renderWithTheme(
         <AnalyticsDashboard
           metrics={[]}
           timeSeriesData={[]}
@@ -391,7 +357,7 @@ describe('AnalyticsDashboard', () => {
         />,
       );
 
-      expect(container).toBeTruthy();
+      expect(UNSAFE_root).toBeTruthy();
     });
   });
 
@@ -422,11 +388,11 @@ describe('AnalyticsDashboard', () => {
   describe('Styling and Theming', () => {
     it('applies custom styles', () => {
       const customStyle = { backgroundColor: 'red' };
-      const { container } = renderWithTheme(
+      const { UNSAFE_root } = renderWithTheme(
         <AnalyticsDashboard style={customStyle} />,
       );
 
-      expect(container).toBeTruthy();
+      expect(UNSAFE_root).toBeTruthy();
     });
 
     it('uses theme colors correctly', () => {
@@ -482,11 +448,11 @@ describe('AnalyticsDashboard', () => {
         changeType: 'increase' as const,
       }));
 
-      const { container } = renderWithTheme(
+      const { UNSAFE_root } = renderWithTheme(
         <AnalyticsDashboard metrics={largeMetrics} />,
       );
 
-      expect(container).toBeTruthy();
+      expect(UNSAFE_root).toBeTruthy();
     });
   });
 

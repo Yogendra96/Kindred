@@ -1,6 +1,5 @@
-import { updateFootprint } from '../store/slices/carbonSlice';
+import { updateFootprint, updateEcosystem } from '../store/slices/carbonSlice';
 import { useTheme } from '../theme/ThemeProvider';
-import { saveActivityData } from '../utils/carbonCalculator';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import DateTimePicker from '@react-native-community/datetimepicker';
@@ -127,74 +126,6 @@ const ActivityTracker: React.FC = () => {
     };
   }, [activities, dateRange, selectedCategory, theme]);
 
-  // Load cached data and check connectivity
-  useEffect(() => {
-    const loadCachedData = async () => {
-      try {
-        const cached = await AsyncStorage.getItem(CACHE_KEY);
-        if (cached) {
-          setActivities(JSON.parse(cached));
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error('Error loading cached data:', err);
-      }
-    };
-
-    const unsubscribeNetInfo = NetInfo.addEventListener(state => {
-      setIsOnline(!!state.isConnected);
-      if (state.isConnected) {
-        syncOfflineActions();
-      }
-    });
-
-    loadCachedData();
-    fetchActivities();
-
-    return () => {
-      unsubscribeNetInfo();
-    };
-  }, []);
-
-  const syncOfflineActions = useCallback(async () => {
-    try {
-      const offlineActions = await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY);
-      if (offlineActions) {
-        const actions = JSON.parse(offlineActions);
-        for (const action of actions) {
-          await handleActivityCompletion(action.activity, true);
-        }
-        await AsyncStorage.removeItem(OFFLINE_ACTIONS_KEY);
-      }
-    } catch (err) {
-      console.error('Error syncing offline actions:', err);
-    }
-  }, [handleActivityCompletion]);
-
-  const fetchActivities = async () => {
-    const user = auth().currentUser;
-    if (!user) return;
-
-    try {
-      const snapshot = await firestore()
-        .collection('daily_activities')
-        .doc(user.uid)
-        .get();
-
-      if (snapshot.exists) {
-        const data = snapshot.data()?.activities || [];
-        setActivities(data);
-        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      }
-      setError(null);
-    } catch (err) {
-      setError('Failed to load activities');
-      console.error('Error fetching activities:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleActivityCompletion = useCallback(
     async (activity: Activity, isSync = false) => {
       const user = auth().currentUser;
@@ -233,11 +164,43 @@ const ActivityTracker: React.FC = () => {
 
         // Update carbon footprint if completing activity
         if (!activity.completed) {
-          const impactData = {
-            [activity.type]: activity.impact,
-          };
-          await saveActivityData(impactData);
           dispatch(updateFootprint({ [activity.type]: activity.impact }));
+
+          // Update Ecosystem State (Bio-Digital Twin)
+          // Logic: Different activities impact different ecosystem aspects
+          let ecosystemUpdates: Partial<
+            import('../store/slices/carbonSlice').EcosystemState
+          > = {};
+
+          switch (activity.type) {
+            case 'transportation':
+              ecosystemUpdates = {
+                airQuality: Math.min(1.0, 0.05), // Improve air quality
+                health: Math.min(1.0, 0.02),
+              };
+              break;
+            case 'food':
+              ecosystemUpdates = {
+                biodiversity: Math.min(1.0, 0.03),
+                health: Math.min(1.0, 0.02),
+              };
+              break;
+            case 'energy':
+              ecosystemUpdates = {
+                treeCount: 1, // "Plant" a virtual tree
+                health: Math.min(1.0, 0.02),
+              };
+              break;
+            case 'waste':
+              ecosystemUpdates = {
+                waterClarity: Math.min(1.0, 0.05),
+                health: Math.min(1.0, 0.02),
+              };
+              break;
+          }
+
+          // Apply updates via Redux
+          dispatch(updateEcosystem(ecosystemUpdates));
         }
 
         setActivities(updatedActivities);
@@ -253,6 +216,74 @@ const ActivityTracker: React.FC = () => {
     },
     [activities, isOnline, dispatch],
   );
+
+  const syncOfflineActions = useCallback(async () => {
+    try {
+      const offlineActions = await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY);
+      if (offlineActions) {
+        const actions = JSON.parse(offlineActions);
+        for (const action of actions) {
+          await handleActivityCompletion(action.activity, true);
+        }
+        await AsyncStorage.removeItem(OFFLINE_ACTIONS_KEY);
+      }
+    } catch (err) {
+      console.error('Error syncing offline actions:', err);
+    }
+  }, [handleActivityCompletion]);
+
+  const fetchActivities = useCallback(async () => {
+    const user = auth().currentUser;
+    if (!user) return;
+
+    try {
+      const snapshot = await firestore()
+        .collection('daily_activities')
+        .doc(user.uid)
+        .get();
+
+      const data = snapshot.data()?.activities;
+      if (data) {
+        setActivities(data);
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to load activities');
+      console.error('Error fetching activities:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load cached data and check connectivity
+  useEffect(() => {
+    const loadCachedData = async () => {
+      try {
+        const cached = await AsyncStorage.getItem(CACHE_KEY);
+        if (cached) {
+          setActivities(JSON.parse(cached));
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error loading cached data:', err);
+      }
+    };
+
+    const unsubscribeNetInfo = NetInfo.addEventListener(state => {
+      setIsOnline(!!state.isConnected);
+      if (state.isConnected) {
+        syncOfflineActions();
+      }
+    });
+
+    loadCachedData();
+    fetchActivities();
+
+    return () => {
+      unsubscribeNetInfo();
+    };
+  }, [syncOfflineActions, fetchActivities]);
 
   const calculateStreak = (filteredActivities: Activity[]): number => {
     let streak = 0;
@@ -352,7 +383,6 @@ const ActivityTracker: React.FC = () => {
       <Text
         style={[styles.cardTitle, { color: theme.colors.text.primary }]}
         accessibilityRole='header'
-        accessibilityLevel={2}
       >
         Activity Summary
       </Text>
@@ -412,7 +442,8 @@ const ActivityTracker: React.FC = () => {
           height={220}
           chartConfig={{
             backgroundColor: theme.colors.surface,
-            backgroundGradient: theme.colors.surface,
+            backgroundGradientFrom: theme.colors.surface,
+            backgroundGradientTo: theme.colors.surface,
             decimalPlaces: 1,
             color: (_opacity = 1) => theme.colors.primary,
             labelColor: (_opacity = 1) => theme.colors.text.primary,
@@ -461,18 +492,20 @@ const ActivityTracker: React.FC = () => {
               },
             ],
           }}
+          yAxisLabel=''
+          yAxisSuffix=''
           width={screenWidth - 40}
           height={220}
           chartConfig={{
             backgroundColor: theme.colors.surface,
-            backgroundGradient: theme.colors.surface,
+            backgroundGradientFrom: theme.colors.surface,
+            backgroundGradientTo: theme.colors.surface,
             decimalPlaces: 0,
             color: (_opacity = 1) => theme.colors.secondary,
             labelColor: (_opacity = 1) => theme.colors.text.primary,
           }}
           style={styles.chart}
           showValuesOnTopOfBars
-          accessibilityLabel='Activity breakdown by category bar chart'
         />
       </View>
     </View>
@@ -515,11 +548,7 @@ const ActivityTracker: React.FC = () => {
         </View>
       )}
       {!isOnline && (
-        <View
-          style={styles.offlineContainer}
-          accessibilityLiveRegion='polite'
-          accessibilityRole='status'
-        >
+        <View style={styles.offlineContainer} accessibilityLiveRegion='polite'>
           <Text style={styles.offlineText} accessibilityRole='text'>
             📱 You're offline - changes will sync when back online
           </Text>

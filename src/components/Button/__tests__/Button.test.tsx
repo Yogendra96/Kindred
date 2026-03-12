@@ -1,11 +1,13 @@
-import { HapticFeedbackService } from '../../../services/HapticFeedbackService';
+import HapticFeedbackService from '../../../services/HapticFeedbackService';
 import { Button } from '../Button';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
+import { View, Text } from 'react-native';
 
 // Mock the HapticFeedbackService
 jest.mock('../../../services/HapticFeedbackService', () => ({
-  HapticFeedbackService: {
+  __esModule: true,
+  default: {
     triggerSuccess: jest.fn(),
   },
 }));
@@ -50,38 +52,58 @@ describe('Button Component', () => {
 
   describe('Variants', () => {
     it('renders primary variant correctly', () => {
-      const { getByText } = render(
-        <Button title='Primary' onPress={mockOnPress} variant='primary' />,
+      const { getByTestId } = render(
+        <Button
+          title='Primary'
+          onPress={mockOnPress}
+          variant='primary'
+          testID='primary-button'
+        />,
       );
 
-      const button = getByText('Primary').parent;
+      const button = getByTestId('primary-button');
       expect(button).toHaveStyle({ backgroundColor: '#4CAF50' });
     });
 
     it('renders secondary variant correctly', () => {
-      const { getByText } = render(
-        <Button title='Secondary' onPress={mockOnPress} variant='secondary' />,
+      const { getByTestId } = render(
+        <Button
+          title='Secondary'
+          onPress={mockOnPress}
+          variant='secondary'
+          testID='secondary-button'
+        />,
       );
 
-      const button = getByText('Secondary').parent;
+      const button = getByTestId('secondary-button');
       expect(button).toHaveStyle({ backgroundColor: '#2196F3' });
     });
 
     it('renders danger variant correctly', () => {
-      const { getByText } = render(
-        <Button title='Danger' onPress={mockOnPress} variant='danger' />,
+      const { getByTestId } = render(
+        <Button
+          title='Danger'
+          onPress={mockOnPress}
+          variant='danger'
+          testID='danger-button'
+        />,
       );
 
-      const button = getByText('Danger').parent;
+      const button = getByTestId('danger-button');
       expect(button).toHaveStyle({ backgroundColor: '#F44336' });
     });
 
     it('renders ghost variant correctly', () => {
-      const { getByText } = render(
-        <Button title='Ghost' onPress={mockOnPress} variant='ghost' />,
+      const { getByTestId } = render(
+        <Button
+          title='Ghost'
+          onPress={mockOnPress}
+          variant='ghost'
+          testID='ghost-button'
+        />,
       );
 
-      const button = getByText('Ghost').parent;
+      const button = getByTestId('ghost-button');
       expect(button).toHaveStyle({
         backgroundColor: 'transparent',
         borderWidth: 1,
@@ -90,11 +112,16 @@ describe('Button Component', () => {
     });
 
     it('renders outline variant correctly', () => {
-      const { getByText } = render(
-        <Button title='Outline' onPress={mockOnPress} variant='outline' />,
+      const { getByTestId } = render(
+        <Button
+          title='Outline'
+          onPress={mockOnPress}
+          variant='outline'
+          testID='outline-button'
+        />,
       );
 
-      const button = getByText('Outline').parent;
+      const button = getByTestId('outline-button');
       expect(button).toHaveStyle({
         backgroundColor: 'transparent',
         borderWidth: 2,
@@ -105,11 +132,16 @@ describe('Button Component', () => {
 
   describe('Sizes', () => {
     it('renders small size correctly', () => {
-      const { getByText } = render(
-        <Button title='Small' onPress={mockOnPress} size='small' />,
+      const { getByTestId } = render(
+        <Button
+          title='Small'
+          onPress={mockOnPress}
+          size='small'
+          testID='small-button'
+        />,
       );
 
-      const button = getByText('Small').parent;
+      const button = getByTestId('small-button');
       expect(button).toHaveStyle({
         paddingHorizontal: 16,
         paddingVertical: 8,
@@ -118,11 +150,16 @@ describe('Button Component', () => {
     });
 
     it('renders medium size correctly', () => {
-      const { getByText } = render(
-        <Button title='Medium' onPress={mockOnPress} size='medium' />,
+      const { getByTestId } = render(
+        <Button
+          title='Medium'
+          onPress={mockOnPress}
+          size='medium'
+          testID='medium-button'
+        />,
       );
 
-      const button = getByText('Medium').parent;
+      const button = getByTestId('medium-button');
       expect(button).toHaveStyle({
         paddingHorizontal: 24,
         paddingVertical: 12,
@@ -131,11 +168,16 @@ describe('Button Component', () => {
     });
 
     it('renders large size correctly', () => {
-      const { getByText } = render(
-        <Button title='Large' onPress={mockOnPress} size='large' />,
+      const { getByTestId } = render(
+        <Button
+          title='Large'
+          onPress={mockOnPress}
+          size='large'
+          testID='large-button'
+        />,
       );
 
-      const button = getByText('Large').parent;
+      const button = getByTestId('large-button');
       expect(button).toHaveStyle({
         paddingHorizontal: 32,
         paddingVertical: 16,
@@ -146,16 +188,21 @@ describe('Button Component', () => {
 
   describe('States', () => {
     it('renders disabled state correctly', () => {
-      const { getByText } = render(
-        <Button title='Disabled' onPress={mockOnPress} disabled />,
+      const { getByTestId } = render(
+        <Button
+          title='Disabled'
+          onPress={mockOnPress}
+          disabled
+          testID='disabled-button'
+        />,
       );
 
-      const button = getByText('Disabled').parent;
+      const button = getByTestId('disabled-button');
       expect(button).toHaveStyle({ opacity: 0.6 });
     });
 
     it('renders loading state correctly', () => {
-      const { getByText, getByTestId } = render(
+      const { getByText } = render(
         <Button title='Loading' onPress={mockOnPress} loading />,
       );
 
@@ -166,23 +213,30 @@ describe('Button Component', () => {
     });
 
     it('renders full width correctly', () => {
-      const { getByText } = render(
-        <Button title='Full Width' onPress={mockOnPress} fullWidth />,
+      const { getByTestId } = render(
+        <Button
+          title='Full Width'
+          onPress={mockOnPress}
+          fullWidth
+          testID='fullwidth-button'
+        />,
       );
 
-      const button = getByText('Full Width').parent;
+      const button = getByTestId('fullwidth-button');
       expect(button).toHaveStyle({ width: '100%' });
     });
   });
 
   describe('Interactions', () => {
-    it('calls onPress when pressed', () => {
+    it('calls onPress when pressed', async () => {
       const { getByText } = render(
         <Button title='Press Me' onPress={mockOnPress} />,
       );
 
       fireEvent.press(getByText('Press Me'));
-      expect(mockOnPress).toHaveBeenCalledTimes(1);
+      await waitFor(() => {
+        expect(mockOnPress).toHaveBeenCalledTimes(1);
+      });
     });
 
     it('triggers haptic feedback when pressed', async () => {
@@ -197,7 +251,7 @@ describe('Button Component', () => {
       });
     });
 
-    it('does not trigger haptic feedback when disabled', () => {
+    it('does not trigger haptic feedback when disabled', async () => {
       const { getByText } = render(
         <Button
           title='Disabled'
@@ -207,30 +261,37 @@ describe('Button Component', () => {
       );
 
       fireEvent.press(getByText('Disabled'));
+      await new Promise(resolve => setTimeout(resolve, 50));
       expect(mockHapticFeedback).not.toHaveBeenCalled();
     });
 
-    it('does not call onPress when disabled', () => {
+    it('does not call onPress when disabled', async () => {
       const { getByText } = render(
         <Button title='Disabled' onPress={mockOnPress} disabled />,
       );
 
       fireEvent.press(getByText('Disabled'));
+      await new Promise(resolve => setTimeout(resolve, 50));
       expect(mockOnPress).not.toHaveBeenCalled();
     });
 
-    it('does not call onPress when loading', () => {
+    it('does not call onPress when loading', async () => {
       const { getByText } = render(
         <Button title='Loading' onPress={mockOnPress} loading />,
       );
 
       fireEvent.press(getByText('Loading...'));
+      await new Promise(resolve => setTimeout(resolve, 50));
       expect(mockOnPress).not.toHaveBeenCalled();
     });
   });
 
   describe('Icons', () => {
-    const MockIcon = () => <div data-testid='mock-icon'>Icon</div>;
+    const MockIcon = () => (
+      <View testID='mock-icon'>
+        <Text>Icon</Text>
+      </View>
+    );
 
     it('renders icon on the left by default', () => {
       const { getByTestId } = render(
@@ -257,15 +318,16 @@ describe('Button Component', () => {
   describe('Custom Styles', () => {
     it('applies custom button style', () => {
       const customStyle = { backgroundColor: 'red' };
-      const { getByText } = render(
+      const { getByTestId } = render(
         <Button
           title='Custom Style'
           onPress={mockOnPress}
           style={customStyle}
+          testID='custom-button'
         />,
       );
 
-      const button = getByText('Custom Style').parent;
+      const button = getByTestId('custom-button');
       expect(button).toHaveStyle(customStyle);
     });
 
@@ -295,12 +357,17 @@ describe('Button Component', () => {
     });
 
     it('has correct accessibility state when disabled', () => {
-      const { getByText } = render(
-        <Button title='Disabled' onPress={mockOnPress} disabled />,
+      const { getByTestId } = render(
+        <Button
+          title='Disabled'
+          onPress={mockOnPress}
+          disabled
+          testID='acc-disabled-button'
+        />,
       );
 
-      const button = getByText('Disabled').parent;
-      expect(button.props.disabled).toBe(true);
+      const button = getByTestId('acc-disabled-button');
+      expect(button.props.accessibilityState.disabled).toBe(true);
     });
   });
 });

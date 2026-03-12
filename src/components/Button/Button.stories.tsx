@@ -1,5 +1,8 @@
 import { Button } from './Button';
-import { action } from '@storybook/addon-actions';
+const action =
+  (name: string) =>
+  (...args: any[]) =>
+    console.log(name, ...args);
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 

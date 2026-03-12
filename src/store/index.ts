@@ -1,6 +1,6 @@
 // Import services for middleware integration
 import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
-import { loggingService } from '../services/LoggingService';
+import loggingService from '../services/LoggerService';
 import analyticsReducer, {
   addEvent,
   startSession,
@@ -53,10 +53,13 @@ listenerMiddleware.startListening({
         'medium',
       );
 
-      loggingService.info('User logged in', {
-        userId: action.payload.id,
-        email: action.payload.email,
-      });
+      loggingService.info(
+        'User logged in',
+        JSON.stringify({
+          userId: action.payload.id,
+          email: action.payload.email,
+        }),
+      );
     } else if (logout.match(action)) {
       // End analytics session on logout
       await enhancedAnalyticsService.endSession();
@@ -69,7 +72,7 @@ listenerMiddleware.startListening({
         'medium',
       );
 
-      loggingService.info('User logged out');
+      loggingService.info('User logged out', '');
     }
   },
 });

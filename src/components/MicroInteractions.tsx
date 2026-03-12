@@ -10,7 +10,7 @@ import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler
 interface AnimatedTouchableProps extends TouchableOpacityProps {
   scaleValue?: number;
   hapticType?: 'light' | 'medium' | 'heavy' | 'selection' | 'none';
-  animationType?: 'scale' | 'bounce' | 'pulse' | 'lift' | 'ripple';
+  animationType?: 'scale' | 'bounce' | 'pulse' | 'lift' | 'ripple' | 'none';
   rippleColor?: string;
   children: React.ReactNode;
 }
@@ -223,7 +223,9 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const onGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
-    { useNativeDriver: true },
+    {
+      useNativeDriver: true,
+    },
   );
 
   const onHandlerStateChange = (event: PanGestureHandlerGestureEvent) => {

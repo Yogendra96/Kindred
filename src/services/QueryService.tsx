@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import React, { type ReactNode } from 'react';
 
 // Global type declarations

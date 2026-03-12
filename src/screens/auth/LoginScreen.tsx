@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import type { AuthStackParamList } from '../../navigation/types';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';

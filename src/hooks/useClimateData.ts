@@ -17,6 +17,8 @@ import {
   type OptimalWindow,
   type AirQualityData,
 } from '../services/climate';
+import logger from '../services/LoggerService';
+import { ErrorHandler } from '../utils/errorHandler';
 
 // Convert NearbyEmitter to display format
 import type { EmissionSourceDisplay } from '../components/climate';
@@ -120,6 +122,8 @@ export function useClimateData(
   // Refresh global context
   const refreshGlobalContext = useCallback(
     async (userFootprint: number, country: string) => {
+      const log = logger.withTag('useClimateData:globalContext');
+      const stopPerf = log.perf('fetchGlobalContext');
       setState(prev => ({
         ...prev,
         globalContextLoading: true,
@@ -135,15 +139,19 @@ export function useClimateData(
           globalContext: context,
           globalContextLoading: false,
         }));
+        log.info('Global context fetched successfully');
       } catch (err) {
+        const handledError = ErrorHandler.handle(
+          err,
+          'useClimateData:globalContext',
+        );
         setState(prev => ({
           ...prev,
           globalContextLoading: false,
-          globalContextError:
-            err instanceof Error
-              ? err.message
-              : 'Failed to load global context',
+          globalContextError: handledError.message,
         }));
+      } finally {
+        stopPerf();
       }
     },
     [],
@@ -152,6 +160,8 @@ export function useClimateData(
   // Refresh nearby emitters
   const refreshNearbyEmitters = useCallback(
     async (lat: number, lng: number, country: string, radiusKm = 50) => {
+      const log = logger.withTag('useClimateData:nearbyEmitters');
+      const stopPerf = log.perf('fetchNearbyEmitters');
       setState(prev => ({
         ...prev,
         nearbyEmittersLoading: true,
@@ -172,15 +182,21 @@ export function useClimateData(
           ),
           nearbyEmittersLoading: false,
         }));
+        log.info('Nearby emitters fetched successfully', {
+          count: displaySources.length,
+        });
       } catch (err) {
+        const handledError = ErrorHandler.handle(
+          err,
+          'useClimateData:nearbyEmitters',
+        );
         setState(prev => ({
           ...prev,
           nearbyEmittersLoading: false,
-          nearbyEmittersError:
-            err instanceof Error
-              ? err.message
-              : 'Failed to load nearby emitters',
+          nearbyEmittersError: handledError.message,
         }));
+      } finally {
+        stopPerf();
       }
     },
     [],
@@ -188,6 +204,8 @@ export function useClimateData(
 
   // Refresh grid carbon
   const refreshGridCarbon = useCallback(async (lat: number, lng: number) => {
+    const log = logger.withTag('useClimateData:gridCarbon');
+    const stopPerf = log.perf('fetchGridCarbon');
     setState(prev => ({ ...prev, gridLoading: true, gridError: null }));
     try {
       // First find the zone for the location
@@ -204,18 +222,26 @@ export function useClimateData(
         optimalWindow: window,
         gridLoading: false,
       }));
+      log.info('Grid carbon data fetched successfully');
     } catch (err) {
+      const handledError = ErrorHandler.handle(
+        err,
+        'useClimateData:gridCarbon',
+      );
       setState(prev => ({
         ...prev,
         gridLoading: false,
-        gridError:
-          err instanceof Error ? err.message : 'Failed to load grid carbon',
+        gridError: handledError.message,
       }));
+    } finally {
+      stopPerf();
     }
   }, []);
 
   // Refresh air quality
   const refreshAirQuality = useCallback(async (lat: number, lng: number) => {
+    const log = logger.withTag('useClimateData:airQuality');
+    const stopPerf = log.perf('fetchAirQuality');
     setState(prev => ({
       ...prev,
       airQualityLoading: true,
@@ -228,13 +254,19 @@ export function useClimateData(
         airQuality: data,
         airQualityLoading: false,
       }));
+      log.info('Air quality fetched successfully');
     } catch (err) {
+      const handledError = ErrorHandler.handle(
+        err,
+        'useClimateData:airQuality',
+      );
       setState(prev => ({
         ...prev,
         airQualityLoading: false,
-        airQualityError:
-          err instanceof Error ? err.message : 'Failed to load air quality',
+        airQualityError: handledError.message,
       }));
+    } finally {
+      stopPerf();
     }
   }, []);
 
@@ -305,6 +337,8 @@ export function useGridCarbon(lat: number, lng: number, autoRefresh = false) {
 
   const refresh = useCallback(async () => {
     if (!lat || !lng) return;
+    const log = logger.withTag('useGridCarbon');
+    const stopPerf = log.perf('fetchGridCarbonData');
     setLoading(true);
     setError(null);
     try {
@@ -316,9 +350,12 @@ export function useGridCarbon(lat: number, lng: number, autoRefresh = false) {
       ]);
       setIntensity(intensityData);
       setOptimalWindow(windowData);
+      log.info('Grid carbon fetched successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load grid data');
+      const handledError = ErrorHandler.handle(err, 'useGridCarbon');
+      setError(handledError.message);
     } finally {
+      stopPerf();
       setLoading(false);
     }
   }, [lat, lng]);
@@ -346,16 +383,19 @@ export function useAirQuality(lat: number, lng: number) {
 
   const refresh = useCallback(async () => {
     if (!lat || !lng) return;
+    const log = logger.withTag('useAirQualityHook');
+    const stopPerf = log.perf('fetchAirQualityData');
     setLoading(true);
     setError(null);
     try {
       const airData = await airQualityService.getCurrentAirQuality(lat, lng);
       setData(airData);
+      log.info('Air quality hooked fetched successfully');
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load air quality',
-      );
+      const handledError = ErrorHandler.handle(err, 'useAirQualityHook');
+      setError(handledError.message);
     } finally {
+      stopPerf();
       setLoading(false);
     }
   }, [lat, lng]);
@@ -389,6 +429,8 @@ export function useClimateIntelligence(
   useEffect(() => {
     const fetchInsights = async () => {
       if (!lat || !lng) return;
+      const log = logger.withTag('useClimateIntelligence');
+      const stopPerf = log.perf('fetchIntelligence');
       setLoading(true);
       try {
         const summary = await unifiedClimateService.getQuickSummary(
@@ -415,9 +457,12 @@ export function useClimateIntelligence(
             : null,
           overallRecommendation: summary.recommendation,
         });
-      } catch {
-        // Non-critical, fail silently
+        log.info('Climate intelligence fetched successfully');
+      } catch (err) {
+        ErrorHandler.handle(err, 'useClimateIntelligence');
+        // Non-critical, fail silently in UI
       } finally {
+        stopPerf();
         setLoading(false);
       }
     };

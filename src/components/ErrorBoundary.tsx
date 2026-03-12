@@ -1,9 +1,11 @@
-import type { ErrorInfo, ReactNode, ErrorInfo, ReactNode } from 'react';
+/* global window, navigator */
 import React, { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';
 import * as Haptics from 'expo-haptics';
-import React, { Component } from 'react';
+
 import {
   View,
   Text,
@@ -32,7 +34,7 @@ interface State {
   isRetrying: boolean;
 }
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
 class ErrorBoundary extends Component<Props, State> {
   private resetTimeoutId: number | null = null;

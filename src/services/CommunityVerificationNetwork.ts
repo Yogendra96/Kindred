@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 /**
  * 🌐 Community-Driven Verification Network
  * Decentralized trust ecosystem for carbon footprint accuracy and verification

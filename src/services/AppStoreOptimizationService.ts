@@ -1,4 +1,5 @@
 import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { createSingleton } from '../utils/Singleton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Linking } from 'react-native';
 
@@ -356,7 +357,7 @@ class AppStoreOptimizationService {
 
   private analyzeScreenshots(
     screenshots: Screenshot[],
-    deviceType: string,
+    _deviceType: string,
   ): ScreenshotAnalysis {
     return {
       count: screenshots.length,
@@ -537,7 +538,7 @@ class AppStoreOptimizationService {
   }
 
   private generateResponseRecommendations(
-    reviews: any[],
+    _reviews: any[],
   ): ResponseRecommendation[] {
     return [
       {
@@ -606,7 +607,7 @@ class AppStoreOptimizationService {
     };
   }
 
-  private identifyOpportunities(competitors: CompetitorMetrics[]): string[] {
+  private identifyOpportunities(_competitors: CompetitorMetrics[]): string[] {
     return [
       'Target underserved keywords',
       'Improve app rating',
@@ -615,7 +616,7 @@ class AppStoreOptimizationService {
     ];
   }
 
-  private identifyThreats(competitors: CompetitorMetrics[]): string[] {
+  private identifyThreats(_competitors: CompetitorMetrics[]): string[] {
     return [
       'Competitor with higher rating',
       'New entrant with better features',
@@ -919,4 +920,7 @@ interface MarketPosition {
   weaknesses: string[];
 }
 
-export default new AppStoreOptimizationService();
+export const getAppStoreOptimizationService = createSingleton(
+  () => new AppStoreOptimizationService(),
+);
+export default getAppStoreOptimizationService();

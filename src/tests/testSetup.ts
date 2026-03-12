@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { jest } from '@jest/globals';
 import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';

@@ -1,8 +1,9 @@
-import type { ErrorInfo, ReactNode, ErrorInfo, ReactNode } from 'react';
+/* global NodeJS */
+import type { ReactNode } from 'react';
 import React, { Component } from 'react';
+import HapticFeedbackService from '../../services/HapticFeedbackService';
 import { PerformanceMonitoringService } from '../../services/PerformanceMonitoringService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { Component } from 'react';
 import {
   View,
   Text,
@@ -202,7 +203,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       sessionId: this.sessionId,
       platform: Platform.OS,
       deviceInfo: {
-        model: Platform.constants?.Model || 'unknown',
+        model: (Platform.constants as any)?.Model || 'unknown',
         systemVersion: Platform.Version.toString(),
       },
       breadcrumbs: [...this.breadcrumbs],
@@ -224,7 +225,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       await this.sendToReportingService(errorDetails);
 
       // Record performance impact
-      this.performanceMonitor.recordCustomMetric('error_boundary_triggered', 1);
+      this.performanceMonitor.logCustomMetric('error_boundary_triggered', 1);
     } catch (reportingError) {
       console.error('Failed to report error:', reportingError);
     } finally {

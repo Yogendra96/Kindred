@@ -1,5 +1,5 @@
 import SkeletonLoader from '../SkeletonLoader';
-import { render, screen } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import React from 'react';
 import { View } from 'react-native';
 
@@ -39,14 +39,14 @@ jest.mock('expo-linear-gradient', () => {
 describe('SkeletonLoader', () => {
   describe('Base Variant', () => {
     it('renders base skeleton with default props', () => {
-      render(<SkeletonLoader variant='base' />);
+      const { getByTestId } = render(<SkeletonLoader variant='base' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders base skeleton with custom dimensions', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           width={200}
@@ -55,12 +55,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('custom-skeleton');
+      const skeleton = getByTestId('custom-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('applies custom border radius', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           borderRadius={10}
@@ -68,21 +68,21 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('rounded-skeleton');
+      const skeleton = getByTestId('rounded-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Text Variant', () => {
     it('renders text skeleton with default lines', () => {
-      render(<SkeletonLoader variant='text' />);
+      const { getByTestId } = render(<SkeletonLoader variant='text' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders text skeleton with custom number of lines', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='text'
           lines={5}
@@ -90,12 +90,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('multi-line-skeleton');
+      const skeleton = getByTestId('multi-line-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders text skeleton with custom width', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='text'
           width={300}
@@ -103,21 +103,21 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('wide-text-skeleton');
+      const skeleton = getByTestId('wide-text-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Circle Variant', () => {
     it('renders circle skeleton', () => {
-      render(<SkeletonLoader variant='circle' />);
+      const { getByTestId } = render(<SkeletonLoader variant='circle' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders circle skeleton with custom size', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='circle'
           width={80}
@@ -126,21 +126,21 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('large-circle-skeleton');
+      const skeleton = getByTestId('large-circle-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Image Variant', () => {
     it('renders image skeleton', () => {
-      render(<SkeletonLoader variant='image' />);
+      const { getByTestId } = render(<SkeletonLoader variant='image' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders image skeleton with custom dimensions', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='image'
           width={300}
@@ -149,21 +149,21 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('custom-image-skeleton');
+      const skeleton = getByTestId('custom-image-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Card Variant', () => {
     it('renders card skeleton', () => {
-      render(<SkeletonLoader variant='card' />);
+      const { getByTestId } = render(<SkeletonLoader variant='card' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders card skeleton with custom width', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='card'
           width={350}
@@ -171,30 +171,30 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('wide-card-skeleton');
+      const skeleton = getByTestId('wide-card-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('List Variant', () => {
     it('renders list skeleton with default items', () => {
-      render(<SkeletonLoader variant='list' />);
+      const { getByTestId } = render(<SkeletonLoader variant='list' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders list skeleton with custom number of items', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader variant='list' items={8} testID='long-list-skeleton' />,
       );
 
-      const skeleton = screen.getByTestID('long-list-skeleton');
+      const skeleton = getByTestId('long-list-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders list skeleton with custom spacing', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='list'
           spacing={20}
@@ -202,21 +202,21 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('spaced-list-skeleton');
+      const skeleton = getByTestId('spaced-list-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Grid Variant', () => {
     it('renders grid skeleton with default configuration', () => {
-      render(<SkeletonLoader variant='grid' />);
+      const { getByTestId } = render(<SkeletonLoader variant='grid' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders grid skeleton with custom columns and items', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='grid'
           columns={3}
@@ -225,12 +225,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('custom-grid-skeleton');
+      const skeleton = getByTestId('custom-grid-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders grid skeleton with custom spacing', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='grid'
           spacing={15}
@@ -238,21 +238,21 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('spaced-grid-skeleton');
+      const skeleton = getByTestId('spaced-grid-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Chart Variant', () => {
     it('renders chart skeleton', () => {
-      render(<SkeletonLoader variant='chart' />);
+      const { getByTestId } = render(<SkeletonLoader variant='chart' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
     });
 
     it('renders chart skeleton with custom dimensions', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='chart'
           width={400}
@@ -261,14 +261,14 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('large-chart-skeleton');
+      const skeleton = getByTestId('large-chart-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Animation Properties', () => {
     it('accepts custom animation speed', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           animationSpeed={2000}
@@ -276,14 +276,14 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('slow-skeleton');
+      const skeleton = getByTestId('slow-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('accepts custom shimmer colors', () => {
       const customColors = ['#E1E9EE', '#F2F8FC', '#E1E9EE'];
 
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           shimmerColors={customColors}
@@ -291,22 +291,22 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('custom-color-skeleton');
+      const skeleton = getByTestId('custom-color-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Accessibility', () => {
     it('has default accessibility properties', () => {
-      render(<SkeletonLoader variant='base' />);
+      const { getByTestId } = render(<SkeletonLoader variant='base' />);
 
-      const skeleton = screen.getByTestID('skeleton-loader');
+      const skeleton = getByTestId('skeleton-loader');
       expect(skeleton).toBeTruthy();
       expect(skeleton.props.accessibilityRole).toBe('progressbar');
     });
 
     it('accepts custom accessibility label', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           accessibilityLabel='Loading content'
@@ -314,13 +314,13 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('accessible-skeleton');
+      const skeleton = getByTestId('accessible-skeleton');
       expect(skeleton).toBeTruthy();
       expect(skeleton.props.accessibilityLabel).toBe('Loading content');
     });
 
     it('accepts custom accessibility hint', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           accessibilityHint='Please wait while content loads'
@@ -328,7 +328,7 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('hinted-skeleton');
+      const skeleton = getByTestId('hinted-skeleton');
       expect(skeleton).toBeTruthy();
       expect(skeleton.props.accessibilityHint).toBe(
         'Please wait while content loads',
@@ -340,7 +340,7 @@ describe('SkeletonLoader', () => {
     it('accepts custom container style', () => {
       const customStyle = { margin: 10, padding: 5 };
 
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           style={customStyle}
@@ -348,12 +348,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('styled-skeleton');
+      const skeleton = getByTestId('styled-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('merges custom styles with default styles', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           style={{ backgroundColor: 'red' }}
@@ -361,32 +361,32 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('red-skeleton');
+      const skeleton = getByTestId('red-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
 
   describe('Edge Cases', () => {
     it('handles zero lines for text variant', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader variant='text' lines={0} testID='no-lines-skeleton' />,
       );
 
-      const skeleton = screen.getByTestID('no-lines-skeleton');
+      const skeleton = getByTestId('no-lines-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('handles zero items for list variant', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader variant='list' items={0} testID='no-items-skeleton' />,
       );
 
-      const skeleton = screen.getByTestID('no-items-skeleton');
+      const skeleton = getByTestId('no-items-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('handles zero columns for grid variant', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='grid'
           columns={0}
@@ -394,12 +394,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('no-columns-skeleton');
+      const skeleton = getByTestId('no-columns-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('handles very large dimensions', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           width={1000}
@@ -408,12 +408,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('large-skeleton');
+      const skeleton = getByTestId('large-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('handles very small dimensions', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           width={1}
@@ -422,7 +422,7 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('tiny-skeleton');
+      const skeleton = getByTestId('tiny-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
@@ -435,17 +435,17 @@ describe('SkeletonLoader', () => {
         </View>
       );
 
-      render(<TestWrapper />);
+      const { getByTestId } = render(<TestWrapper />);
 
-      const wrapper = screen.getByTestID('wrapper');
-      const skeleton = screen.getByTestID('nested-skeleton');
+      const wrapper = getByTestId('wrapper');
+      const skeleton = getByTestId('nested-skeleton');
 
       expect(wrapper).toBeTruthy();
       expect(skeleton).toBeTruthy();
     });
 
     it('can render multiple skeletons', () => {
-      render(
+      const { getByTestId } = render(
         <View>
           <SkeletonLoader variant='circle' testID='skeleton-1' />
           <SkeletonLoader variant='text' testID='skeleton-2' />
@@ -453,9 +453,9 @@ describe('SkeletonLoader', () => {
         </View>,
       );
 
-      expect(screen.getByTestID('skeleton-1')).toBeTruthy();
-      expect(screen.getByTestID('skeleton-2')).toBeTruthy();
-      expect(screen.getByTestID('skeleton-3')).toBeTruthy();
+      expect(getByTestId('skeleton-1')).toBeTruthy();
+      expect(getByTestId('skeleton-2')).toBeTruthy();
+      expect(getByTestId('skeleton-3')).toBeTruthy();
     });
   });
 
@@ -463,7 +463,7 @@ describe('SkeletonLoader', () => {
     it('renders efficiently with many items', () => {
       const startTime = Date.now();
 
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='list'
           items={100}
@@ -474,7 +474,7 @@ describe('SkeletonLoader', () => {
       const endTime = Date.now();
       const renderTime = endTime - startTime;
 
-      const skeleton = screen.getByTestID('performance-skeleton');
+      const skeleton = getByTestId('performance-skeleton');
       expect(skeleton).toBeTruthy();
 
       // Ensure rendering doesn't take too long (adjust threshold as needed)
@@ -482,7 +482,7 @@ describe('SkeletonLoader', () => {
     });
 
     it('handles rapid re-renders', () => {
-      const { rerender } = render(
+      const { rerender, getByTestId } = render(
         <SkeletonLoader
           variant='base'
           width={100}
@@ -501,7 +501,7 @@ describe('SkeletonLoader', () => {
         );
       }
 
-      const skeleton = screen.getByTestID('rerender-skeleton');
+      const skeleton = getByTestId('rerender-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });
@@ -509,16 +509,16 @@ describe('SkeletonLoader', () => {
   describe('Error Handling', () => {
     it('handles invalid variant gracefully', () => {
       // TypeScript would catch this, but testing runtime behavior
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader variant={'invalid' as any} testID='invalid-skeleton' />,
       );
 
-      const skeleton = screen.getByTestID('invalid-skeleton');
+      const skeleton = getByTestId('invalid-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('handles negative dimensions', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           width={-100}
@@ -527,12 +527,12 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('negative-skeleton');
+      const skeleton = getByTestId('negative-skeleton');
       expect(skeleton).toBeTruthy();
     });
 
     it('handles undefined props gracefully', () => {
-      render(
+      const { getByTestId } = render(
         <SkeletonLoader
           variant='base'
           width={undefined}
@@ -541,7 +541,7 @@ describe('SkeletonLoader', () => {
         />,
       );
 
-      const skeleton = screen.getByTestID('undefined-props-skeleton');
+      const skeleton = getByTestId('undefined-props-skeleton');
       expect(skeleton).toBeTruthy();
     });
   });

@@ -1,10 +1,11 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
+/* global NodeJS */
+import HapticFeedbackService from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
-import type { NetInfoState, NetInfoState } from '@react-native-netinfo/netinfo';
-import NetInfo from '@react-native-netinfo/netinfo';
+import type { NetInfoState } from '@react-native-community/netinfo';
+import NetInfo from '@react-native-community/netinfo';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-netinfo/netinfo';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import React, {
   createContext,
   useContext,
@@ -23,7 +24,7 @@ import {
   Platform,
 } from 'react-native';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: _screenWidth } = Dimensions.get('window');
 
 interface OfflineData {
   id: string;
@@ -222,12 +223,13 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     switch (state.type) {
       case 'wifi':
         return 50; // Mbps estimate
-      case 'cellular':
+      case 'cellular': {
         const details = state.details as any;
         if (details?.cellularGeneration === '5g') return 100;
         if (details?.cellularGeneration === '4g') return 25;
         if (details?.cellularGeneration === '3g') return 5;
         return 1;
+      }
       default:
         return 10;
     }
@@ -414,7 +416,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
     }
   }, [networkStatus.isConnected, offlineQueue, syncProgress.inProgress]);
 
-  const simulateSync = async (item: OfflineData): Promise<void> => {
+  const simulateSync = async (_item: OfflineData): Promise<void> => {
     // Simulate network delay
     await new Promise(resolve =>
       setTimeout(resolve, 500 + Math.random() * 1000),

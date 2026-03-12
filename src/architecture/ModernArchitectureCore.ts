@@ -266,7 +266,7 @@ export class EventStore {
 export abstract class CommandHandler<T extends Command> {
   abstract handle(command: T): Promise<void>;
 
-  protected async validate(command: T): Promise<boolean> {
+  protected async validate(_command: T): Promise<boolean> {
     // Override in specific handlers
     return true;
   }
@@ -275,7 +275,7 @@ export abstract class CommandHandler<T extends Command> {
 export abstract class QueryHandler<T extends Query, R> {
   abstract handle(query: T): Promise<R>;
 
-  protected async authorize(query: T): Promise<boolean> {
+  protected async authorize(_query: T): Promise<boolean> {
     // Override in specific handlers
     return true;
   }

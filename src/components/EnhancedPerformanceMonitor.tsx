@@ -1,8 +1,9 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
+/* global NodeJS */
+import HapticFeedbackService from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import React, {
   useState,
   useEffect,
@@ -157,7 +158,7 @@ export const EnhancedPerformanceMonitor: React.FC<
     useState<keyof PerformanceMetrics>('fps');
   const [thresholds, setThresholds] =
     useState<PerformanceThresholds>(defaultThresholds);
-  const [showDetails, setShowDetails] = useState(false);
+  const [_showDetails, _setShowDetails] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const frameRef = useRef<number>(0);

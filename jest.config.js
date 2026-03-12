@@ -1,9 +1,8 @@
 module.exports = {
   preset: 'react-native',
-  
+
   // Test environment
-  testEnvironment: 'node',
-  
+
   // Module paths
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -22,26 +21,24 @@ module.exports = {
     '^@mocks/(.*)$': '<rootDir>/src/__mocks__/$1',
     '^@theme/(.*)$': '<rootDir>/src/theme/$1',
   },
-  
+
   // Setup files
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js',
-    '<rootDir>/src/tests/setup.ts'
-  ],
-  
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+
   // Test path ignore patterns
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/android/',
     '<rootDir>/ios/',
     '<rootDir>/vendor/',
+    '<rootDir>/e2e/',
   ],
-  
+
   // Transform ignore patterns
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|react-native-vector-icons|react-native-gesture-handler|react-native-reanimated|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-iphone-x-helper|react-native-device-info|react-native-keychain|@react-native-async-storage|react-native-svg|react-native-linear-gradient|react-native-image-picker|react-native-permissions|@react-native-firebase|react-native-google-signin|@shopify/react-native-skia|victory-native|@expo/vector-icons)/)',
+    'node_modules/(?!(jest-)?react-native|@react-native(-community)?|react-native-.*|@react-navigation|@react-native-firebase|@notifee|immer|@reduxjs|victory|lucide-react-native|react-native-chart-kit)/',
   ],
-  
+
   // Coverage
   collectCoverage: true,
   collectCoverageFrom: [
@@ -51,7 +48,7 @@ module.exports = {
     '!src/tests/**',
     '!src/config/development.ts',
   ],
-  
+
   coverageThreshold: {
     global: {
       branches: 75,
@@ -60,25 +57,13 @@ module.exports = {
       statements: 75,
     },
   },
-  
+
   coverageDirectory: '<rootDir>/coverage',
-  coverageReporters: [
-    'text',
-    'lcov',
-    'html',
-    'json-summary',
-  ],
-  
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
+
   // File extensions
-  moduleFileExtensions: [
-    'ts',
-    'tsx',
-    'js',
-    'jsx',
-    'json',
-    'node',
-  ],
-  
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+
   // Additional configurations
   verbose: true,
   clearMocks: true,
@@ -89,10 +74,7 @@ module.exports = {
   cacheDirectory: '<rootDir>/.jest-cache',
   testTimeout: 10000,
   detectOpenHandles: true,
-  
+
   // Watch plugins
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname',
-  ],
+  watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
 };

@@ -1,8 +1,8 @@
-import { HapticFeedbackService } from '../services/HapticFeedbackService';
+import HapticFeedbackService from '../services/HapticFeedbackService';
 import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import React, {
   createContext,
   useContext,
@@ -188,7 +188,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
 
       updateSettings({
         screenReaderEnabled,
-        reducedMotionEnabled,
+        reducedMotionEnabled: reduceMotionEnabled,
         voiceOverEnabled: Platform.OS === 'ios' && screenReaderEnabled,
         talkBackEnabled: Platform.OS === 'android' && screenReaderEnabled,
       });
@@ -461,8 +461,8 @@ export const AccessibleText: React.FC<AccessibleTextProps> = ({
 
   const accessibilityProps = {
     accessible,
-    accessibilityRole:
-      accessibilityRole || (variant === 'heading' ? 'header' : 'text'),
+    accessibilityRole: (accessibilityRole ||
+      (variant === 'heading' ? 'header' : 'text')) as any,
     ...(variant === 'heading' && { accessibilityLevel: level }),
   };
 
@@ -627,7 +627,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
     updateSettings({ [key]: !settings[key] });
   };
 
-  const updateNumericSetting = (
+  const _updateNumericSetting = (
     key: keyof AccessibilitySettings,
     value: number,
   ) => {

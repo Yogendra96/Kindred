@@ -1,3 +1,5 @@
+/* global NodeJS */
+/* global window, navigator */
 /**
  * @fileoverview Unified Error Boundary Component
  *
@@ -38,11 +40,31 @@ import {
   FONT_SIZES,
   LOG_PREFIXES,
 } from '../../utils/constants';
-import {
-  createLogger,
-  logStructuredError,
-  logRecoveryAttempt,
-} from '../../utils/loggingUtils';
+import { createLogger } from '../../utils/loggingUtils';
+
+// Helper logging functions
+const logStructuredError = (
+  logger: any,
+  error: Error,
+  component: string,
+  type: string,
+  extra?: Record<string, any>,
+) => {
+  logger.error(`${type} in ${component}`, { error, extra });
+};
+
+const logRecoveryAttempt = (
+  logger: any,
+  error: Error,
+  attemptType: string,
+  success: boolean,
+  extra?: Record<string, any>,
+) => {
+  logger.info(`Recovery attempt: ${attemptType} (success: ${success})`, {
+    error,
+    extra,
+  });
+};
 
 // ===================================================================
 // TYPES
@@ -84,7 +106,7 @@ export interface ErrorReport {
     stack?: string;
   };
   errorInfo: {
-    componentStack: string;
+    componentStack?: string | null;
   };
   context: {
     component?: string;
@@ -115,7 +137,7 @@ class UnifiedErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
-  private logger = createLogger({ prefix: 'ERROR_BOUNDARY' });
+  private logger = createLogger('ERROR_BOUNDARY');
   private resetTimeoutId: NodeJS.Timeout | null = null;
   private retryTimeoutId: NodeJS.Timeout | null = null;
   private previousResetKeys: Array<string | number> = [];
@@ -255,22 +277,14 @@ class UnifiedErrorBoundary extends Component<
         },
       };
 
-      // In a real implementation, send to error monitoring service
-      this.logger.error('Error report generated', { report }, error);
+      this.logger.error('Error report generated', { report, error });
 
       // You would integrate with services like Sentry here:
       // import { captureException } from '@sentry/react-native';
       // captureException(error, { extra: report });
     } catch (reportingError) {
       this.logger.error(
-        'Failed to report error',
-        {
-          originalError: error.message,
-          reportingError:
-            reportingError instanceof Error
-              ? reportingError.message
-              : 'Unknown error',
-        },
+        `Failed to report error: ${error.message}`,
         reportingError as Error,
       );
     }
@@ -480,7 +494,7 @@ class UnifiedErrorBoundary extends Component<
                 styles.primaryButton,
                 isRetrying && styles.buttonDisabled,
               ]}
-              onPress={this.handleRetry}
+              onPress={() => this.handleRetry()}
               disabled={isRetrying}
               accessibilityRole='button'
               accessibilityLabel={isRetrying ? 'Retrying...' : 'Try again'}
@@ -527,7 +541,7 @@ class UnifiedErrorBoundary extends Component<
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.white,
     padding: SPACING.LG,
   },
   header: {
@@ -538,13 +552,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.H3,
     fontWeight: 'bold',
-    color: COLORS.DANGER,
+    color: COLORS.error,
     textAlign: 'center',
     marginBottom: SPACING.SM,
   },
   subtitle: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.GRAY_600,
+    color: COLORS.gray,
     textAlign: 'center',
   },
   content: {
@@ -553,30 +567,30 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.GRAY_800,
+    color: COLORS.darkGray,
     lineHeight: 22,
     marginBottom: SPACING.MD,
   },
   context: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.GRAY_600,
+    color: COLORS.gray,
     marginBottom: SPACING.SM,
   },
   errorId: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.GRAY_500,
+    color: COLORS.gray,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     marginBottom: SPACING.SM,
   },
   retryInfo: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WARNING,
+    color: COLORS.warning,
     marginBottom: SPACING.MD,
   },
   debugSection: {
     marginTop: SPACING.LG,
     borderTopWidth: 1,
-    borderTopColor: COLORS.GRAY_200,
+    borderTopColor: COLORS.lightGray,
     paddingTop: SPACING.MD,
   },
   debugHeader: {
@@ -585,23 +599,23 @@ const styles = StyleSheet.create({
   debugTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.GRAY_700,
+    color: COLORS.darkGray,
   },
   debugContent: {
-    backgroundColor: COLORS.GRAY_100,
+    backgroundColor: COLORS.lightGray,
     padding: SPACING.MD,
     borderRadius: 8,
   },
   stackTrace: {
     fontSize: FONT_SIZES.XS,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: COLORS.GRAY_700,
+    color: COLORS.darkGray,
     lineHeight: 16,
   },
   componentStack: {
     fontSize: FONT_SIZES.XS,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: COLORS.GRAY_700,
+    color: COLORS.darkGray,
     lineHeight: 16,
     marginTop: SPACING.SM,
   },
@@ -619,15 +633,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: COLORS.primary,
   },
   secondaryButton: {
-    backgroundColor: COLORS.GRAY_200,
+    backgroundColor: COLORS.lightGray,
     borderWidth: 1,
-    borderColor: COLORS.GRAY_300,
+    borderColor: COLORS.gray,
   },
   debugButton: {
-    backgroundColor: COLORS.INFO,
+    backgroundColor: COLORS.info,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -635,13 +649,13 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.WHITE,
+    color: COLORS.white,
   },
   secondaryButtonText: {
-    color: COLORS.GRAY_700,
+    color: COLORS.darkGray,
   },
   debugButtonText: {
-    color: COLORS.WHITE,
+    color: COLORS.white,
   },
 });
 
@@ -703,4 +717,3 @@ export const FormErrorBoundary: React.FC<{
 
 export default UnifiedErrorBoundary;
 export { UnifiedErrorBoundary };
-export type { ErrorBoundaryProps, ErrorBoundaryState, ErrorReport };

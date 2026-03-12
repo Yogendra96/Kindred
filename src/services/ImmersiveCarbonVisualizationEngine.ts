@@ -3,12 +3,7 @@
  * Revolutionary 3D and immersive visualizations for carbon footprint data
  * Features: Real-time 3D environments, emotional engagement, interactive ecosystems
  */
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, Dimensions } from 'react-native';
 import { observabilityService } from './ObservabilityService';
-import { adaptiveUIEngine } from './AdaptiveUIEngine';
-import { carbonTwinEngine } from './CarbonTwinEngine';
 
 // Core Immersive Visualization Types
 export interface ImmersiveCarbonVisualizationEngine {
@@ -20,6 +15,74 @@ export interface ImmersiveCarbonVisualizationEngine {
   readonly socialVisualization: SocialVisualizationEngine;
   readonly temporalVisualization: TemporalVisualizationEngine;
   readonly predictiveVisualization: PredictiveVisualizationEngine;
+}
+
+// Missing Engine Interfaces
+
+export interface EmotionalVisualizationEngine {
+  analyzeEmotion(data: any): Promise<any>;
+}
+
+export interface InteractiveEnvironmentEngine {
+  calculateInteractivity(data: any): Promise<any>;
+}
+
+export interface NarrativeVisualizationEngine {
+  generateStory(data: any): Promise<any>;
+}
+
+export interface SocialVisualizationEngine {
+  visualizeConnections(data: any): Promise<any>;
+}
+
+export interface TemporalVisualizationEngine {
+  visualizeTime(data: any): Promise<any>;
+}
+
+export interface PredictiveVisualizationEngine {
+  predictFuture(data: any): Promise<any>;
+}
+
+export interface PhysicsEngine {
+  simulate(dt: number): void;
+}
+
+export interface RenderingOptimization {
+  optimize(): void;
+}
+
+export interface ImmersionTechniques {
+  apply(): void;
+}
+
+export interface CarbonVisualizationData {
+  carbonFootprint: number;
+  reductionGoals: number;
+  history: any[];
+  sources: any[];
+}
+
+export interface CarbonVisualizationTheme {
+  colors: string[];
+}
+
+export interface EcosystemImpactMapping {
+  mapImpact(data: any): any;
+}
+export interface BiomeEvolutionEngine {
+  evolve(data: any): any;
+}
+export interface SpeciesInteractionVisualization {
+  visualizeInteractions(data: any): any;
+}
+export interface SeasonalCycleVisualization {
+  visualizeCycles(data: any): any;
+}
+export interface ClimateEffectVisualization {
+  visualizeEffects(data: any): any;
+}
+export interface OptimizationTechnique {
+  name: string;
 }
 
 // Ecosystem Visualization Engine
@@ -35,7 +98,14 @@ export interface EcosystemVisualizationEngine {
 
 interface LivingEcosystem {
   readonly ecosystemId: string;
-  readonly type: 'forest' | 'ocean' | 'grassland' | 'desert' | 'urban' | 'arctic' | 'wetland';
+  readonly type:
+    | 'forest'
+    | 'ocean'
+    | 'grassland'
+    | 'desert'
+    | 'urban'
+    | 'arctic'
+    | 'wetland';
   readonly health: EcosystemHealth;
   readonly carbonCapacity: CarbonCapacity;
   readonly biodiversity: BiodiversityMetrics;
@@ -54,7 +124,12 @@ interface EcosystemHealth {
 }
 
 interface HealthComponent {
-  readonly component: 'air_quality' | 'water_quality' | 'soil_health' | 'vegetation' | 'wildlife';
+  readonly component:
+    | 'air_quality'
+    | 'water_quality'
+    | 'soil_health'
+    | 'vegetation'
+    | 'wildlife';
   readonly health: number;
   readonly trend: 'improving' | 'stable' | 'declining';
   readonly factors: HealthFactor[];
@@ -990,18 +1065,53 @@ interface FlowInteraction {
   readonly manipulable: boolean;
 }
 
+interface Interaction3D {
+  readonly gestures: GestureControl;
+  readonly manipulation: ObjectManipulation;
+  readonly feedback: InteractionFeedback;
+  readonly collision: CollisionDetection;
+}
+
+interface GestureControl {
+  readonly enabled: boolean;
+  readonly types: string[];
+  readonly sensitivity: number;
+}
+
+interface ObjectManipulation {
+  readonly rotation: boolean;
+  readonly scaling: boolean;
+  readonly translation: boolean;
+  readonly constraints: {
+    minScale: number;
+    maxScale: number;
+    bounds: { x: number; y: number; z: number };
+  };
+}
+
+interface InteractionFeedback {
+  readonly haptic: boolean;
+  readonly visual: boolean;
+  readonly audio: boolean;
+}
+
+interface CollisionDetection {
+  readonly enabled: boolean;
+  readonly accuracy: 'low' | 'medium' | 'high';
+  readonly layers: string[];
+}
+
 // Real-time 3D Engine
 export interface RealTime3DEngine {
   readonly rendering: RealTime3DRendering;
   readonly physics: PhysicsEngine;
   readonly optimization: RenderingOptimization;
-  readonly interaction: 3DInteraction;
-  readonly immersion: ImmersionTechniques;
+  readonly interaction: Interaction3D;
 }
 
 interface RealTime3DRendering {
   readonly renderer: RendererConfiguration;
-  readonly lighting: 3DLightingSystem;
+  readonly lighting: LightingSystem3D;
   readonly materials: MaterialSystem;
   readonly effects: VisualEffects;
   readonly performance: RenderingPerformance;
@@ -1026,7 +1136,7 @@ interface FallbackRenderer {
   readonly quality_loss: number;
 }
 
-interface 3DLightingSystem {
+interface LightingSystem3D {
   readonly global_illumination: GlobalIllumination;
   readonly dynamic_lighting: DynamicLighting;
   readonly shadows: ShadowSystem;
@@ -1034,7 +1144,11 @@ interface 3DLightingSystem {
 }
 
 interface GlobalIllumination {
-  readonly technique: 'raytracing' | 'lightmaps' | 'spherical_harmonics' | 'voxel_gi';
+  readonly technique:
+    | 'raytracing'
+    | 'lightmaps'
+    | 'spherical_harmonics'
+    | 'voxel_gi';
   readonly quality: 'low' | 'medium' | 'high' | 'ultra';
   readonly performance: IlluminationPerformance;
 }
@@ -1401,56 +1515,81 @@ export class ImmersiveCarbonVisualizationEngineService {
 
     try {
       console.log('🌍 Initializing Immersive Carbon Visualization Engine...');
-      
+
       // Initialize 3D rendering engine
       await this.initialize3DEngine();
-      
+
       // Load ecosystem templates
       await this.loadEcosystemTemplates();
-      
+
       // Initialize visualization systems
       await this.initializeVisualizationSystems();
-      
+
       // Setup performance monitoring
       await this.setupPerformanceMonitoring();
-      
+
       this.isInitialized = true;
-      console.log('✅ Immersive Carbon Visualization Engine initialized successfully');
-      
+      console.log(
+        '✅ Immersive Carbon Visualization Engine initialized successfully',
+      );
     } catch (error) {
-      console.error('❌ Failed to initialize Immersive Carbon Visualization Engine:', error);
+      console.error(
+        '❌ Failed to initialize Immersive Carbon Visualization Engine:',
+        error,
+      );
       throw error;
     }
   }
 
   async createEcosystemVisualization(
     carbonData: CarbonVisualizationData,
-    ecosystemType: LivingEcosystem['type']
+    ecosystemType: LivingEcosystem['type'],
   ): Promise<LivingEcosystem> {
     console.log(`🌱 Creating ${ecosystemType} ecosystem visualization...`);
-    
+
     try {
       // Analyze carbon impact on ecosystem
-      const ecosystemHealth = await this.analyzeEcosystemHealth(carbonData, ecosystemType);
-      
+      const ecosystemHealth = await this.analyzeEcosystemHealth(
+        carbonData,
+        ecosystemType,
+      );
+
       // Calculate carbon capacity
-      const carbonCapacity = await this.calculateCarbonCapacity(ecosystemType, ecosystemHealth);
-      
+      const carbonCapacity = await this.calculateCarbonCapacity(
+        ecosystemType,
+        ecosystemHealth,
+      );
+
       // Generate biodiversity metrics
-      const biodiversity = await this.generateBiodiversityMetrics(ecosystemType, ecosystemHealth);
-      
+      const biodiversity = await this.generateBiodiversityMetrics(
+        ecosystemType,
+        ecosystemHealth,
+      );
+
       // Create user impact analysis
-      const userImpact = await this.analyzeUserEcosystemImpact(carbonData, ecosystemType);
-      
+      const userImpact = await this.analyzeUserEcosystemImpact(
+        carbonData,
+        ecosystemType,
+      );
+
       // Generate ecosystem visualization
-      const visualization = await this.generateEcosystemVisualization(ecosystemType, ecosystemHealth);
-      
+      const visualization = await this.generateEcosystemVisualization(
+        ecosystemType,
+        ecosystemHealth,
+      );
+
       // Create interactivity systems
-      const interactivity = await this.createEcosystemInteractivity(ecosystemType, userImpact);
-      
+      const interactivity = await this.createEcosystemInteractivity(
+        ecosystemType,
+        userImpact,
+      );
+
       // Setup ecosystem evolution
-      const evolution = await this.setupEcosystemEvolution(ecosystemType, carbonData);
-      
+      const evolution = await this.setupEcosystemEvolution(
+        ecosystemType,
+        carbonData,
+      );
+
       const ecosystem: LivingEcosystem = {
         ecosystemId: `ecosystem_${ecosystemType}_${Date.now()}`,
         type: ecosystemType,
@@ -1462,10 +1601,10 @@ export class ImmersiveCarbonVisualizationEngineService {
         interactivity,
         evolution,
       };
-      
+
       // Store ecosystem
       this.ecosystems.set(ecosystem.ecosystemId, ecosystem);
-      
+
       // Track creation
       observabilityService.trackBusinessEvent({
         eventName: 'ecosystem_visualization_created',
@@ -1477,35 +1616,93 @@ export class ImmersiveCarbonVisualizationEngineService {
           userImpact: userImpact.directImpact.carbon_footprint,
         },
       });
-      
-      console.log(`✅ ${ecosystemType} ecosystem created: ${ecosystem.ecosystemId}`);
+
+      console.log(
+        `✅ ${ecosystemType} ecosystem created: ${ecosystem.ecosystemId}`,
+      );
       return ecosystem;
-      
     } catch (error) {
       console.error('Ecosystem visualization creation failed:', error);
       throw error;
     }
   }
+  /**
+   * Updates the 3D world based on the Redux EcosystemState.
+   * Connects abstract data (health, trees) to concrete visual changes.
+   */
+  async updateWorldState(state: {
+    health: number;
+    treeCount: number;
+    biodiversity: number;
+    waterClarity: number;
+    airQuality: number;
+  }): Promise<void> {
+    console.log('🌳 Updating Bio-Digital Twin world state:', state);
+
+    try {
+      // 1. Air Quality -> Fog Density
+      // Lower air quality = denser fog (pollution)
+      const fogDensity = 0.05 * (1.0 - state.airQuality);
+      await this.setEnvironmentFog(fogDensity);
+
+      // 2. Tree Count -> Instance Count
+      // Ensure we have enough visual trees to represent the user's progress
+      await this.updateVegetationDensity(state.treeCount);
+
+      // 3. Water Clarity -> Material Properties
+      // Higher clarity = more transparent/blue water
+      await this.updateWaterMaterial(state.waterClarity);
+
+      // 4. Overall Health -> Post-processing saturation
+      // Better health = vibrant colors
+      await this.setGlobalSaturation(0.5 + 0.5 * state.health);
+
+      console.log('✅ World state updated successfully');
+    } catch (error) {
+      console.error('❌ Failed to update world state:', error);
+    }
+  }
+
+  // Visualization Helpers (Stubs for direct 3D engine manipulation)
+  private async setEnvironmentFog(density: number): Promise<void> {
+    // In a real engine (Three.js/Babylon), this would set scene.fog.density
+    console.log(`☁️ Setting fog density to ${density.toFixed(4)}`);
+  }
+
+  private async updateVegetationDensity(count: number): Promise<void> {
+    // Should add/remove tree instances
+    console.log(`🌲 Updating tree instances to ${count}`);
+  }
+
+  private async updateWaterMaterial(clarity: number): Promise<void> {
+    // Adjust water shader uniforms
+    console.log(`💧 Setting water clarity to ${clarity.toFixed(2)}`);
+  }
+
+  private async setGlobalSaturation(saturation: number): Promise<void> {
+    // Post-processing adjustment
+    console.log(`🎨 Setting global saturation to ${saturation.toFixed(2)}`);
+  }
 
   async createCarbonFlowVisualization(
-    carbonData: CarbonVisualizationData
+    carbonData: CarbonVisualizationData,
   ): Promise<CarbonFlowVisualization> {
     console.log('🌊 Creating carbon flow visualization...');
-    
+
     try {
       // Build flow networks
       const flowNetworks = await this.buildCarbonFlowNetworks(carbonData);
-      
+
       // Identify sources and sinks
       const sources = await this.identifyCarbonSources(carbonData);
       const sinks = await this.identifyCarbonSinks(carbonData);
-      
+
       // Model transformations
       const transformations = await this.modelCarbonTransformations(carbonData);
-      
+
       // Create visualization style
       const visualization = await this.createFlowVisualizationStyle(carbonData);
-      
+
       const flowVisualization: CarbonFlowVisualization = {
         flow_networks: flowNetworks,
         sources,
@@ -1513,7 +1710,7 @@ export class ImmersiveCarbonVisualizationEngineService {
         transformations,
         visualization,
       };
-      
+
       // Track creation
       observabilityService.trackBusinessEvent({
         eventName: 'carbon_flow_visualization_created',
@@ -1524,9 +1721,8 @@ export class ImmersiveCarbonVisualizationEngineService {
           transformations: transformations.length,
         },
       });
-      
+
       return flowVisualization;
-      
     } catch (error) {
       console.error('Carbon flow visualization creation failed:', error);
       throw error;
@@ -1535,32 +1731,31 @@ export class ImmersiveCarbonVisualizationEngineService {
 
   async render3DVisualization(
     visualizationId: string,
-    viewportConfig: ViewportConfiguration
+    viewportConfig: ViewportConfiguration,
   ): Promise<RenderingResult> {
     if (!this.renderingEngine) {
       throw new Error('3D rendering engine not initialized');
     }
 
     console.log(`🎨 Rendering 3D visualization: ${visualizationId}`);
-    
+
     try {
       // Get visualization data
       const visualization = this.visualizations.get(visualizationId);
       if (!visualization) {
         throw new Error(`Visualization not found: ${visualizationId}`);
       }
-      
+
       // Setup rendering context
       const context = await this.setupRenderingContext(viewportConfig);
-      
+
       // Render scene
       const result = await this.renderScene(visualization, context);
-      
+
       // Monitor performance
       await this.monitorRenderingPerformance(result);
-      
+
       return result;
-      
     } catch (error) {
       console.error('3D visualization rendering failed:', error);
       throw error;
@@ -1580,12 +1775,12 @@ export class ImmersiveCarbonVisualizationEngineService {
 
   private async analyzeEcosystemHealth(
     carbonData: CarbonVisualizationData,
-    ecosystemType: LivingEcosystem['type']
+    ecosystemType: LivingEcosystem['type'],
   ): Promise<EcosystemHealth> {
     // Complex ecosystem health analysis based on carbon impact
     const baseHealth = this.getBaseEcosystemHealth(ecosystemType);
     const carbonImpact = this.calculateCarbonHealthImpact(carbonData);
-    
+
     return {
       overall: Math.max(0, baseHealth - carbonImpact),
       components: await this.analyzeHealthComponents(ecosystemType, carbonData),
@@ -1595,7 +1790,9 @@ export class ImmersiveCarbonVisualizationEngineService {
     };
   }
 
-  private getBaseEcosystemHealth(ecosystemType: LivingEcosystem['type']): number {
+  private getBaseEcosystemHealth(
+    ecosystemType: LivingEcosystem['type'],
+  ): number {
     const baseHealthValues = {
       forest: 0.8,
       ocean: 0.7,
@@ -1605,8 +1802,159 @@ export class ImmersiveCarbonVisualizationEngineService {
       arctic: 0.65,
       wetland: 0.85,
     };
-    
+
     return baseHealthValues[ecosystemType] || 0.5;
+  }
+
+  private async calculateCarbonCapacity(
+    type: LivingEcosystem['type'],
+    health: EcosystemHealth,
+  ): Promise<CarbonCapacity> {
+    return {
+      current: 1000 * health.overall,
+      maximum: 2000,
+      sequestrationRate: 50,
+      releases: [],
+      enhancement: [],
+    } as any;
+  }
+
+  private async generateBiodiversityMetrics(
+    _type: LivingEcosystem['type'],
+    _health: EcosystemHealth,
+  ): Promise<BiodiversityMetrics> {
+    return {
+      speciesCount: 100,
+      endemicSpecies: 10,
+      endangeredSpecies: [],
+      keystone: [],
+      connectivity: {
+        connectivity: 0.5,
+        corridors: [],
+        barriers: [],
+        fragmentation: 0.2,
+      },
+    };
+  }
+
+  private async analyzeUserEcosystemImpact(
+    _data: CarbonVisualizationData,
+    _type: LivingEcosystem['type'],
+  ): Promise<UserEcosystemImpact> {
+    return {} as any;
+  }
+
+  private async generateEcosystemVisualization(
+    _type: LivingEcosystem['type'],
+    _health: EcosystemHealth,
+  ): Promise<EcosystemVisualization> {
+    return {} as any;
+  }
+
+  private async createEcosystemInteractivity(
+    _type: LivingEcosystem['type'],
+    _impact: UserEcosystemImpact,
+  ): Promise<EcosystemInteractivity> {
+    return {} as any;
+  }
+
+  private async setupEcosystemEvolution(
+    _type: LivingEcosystem['type'],
+    _data: CarbonVisualizationData,
+  ): Promise<EcosystemEvolution> {
+    return {} as any;
+  }
+
+  private async buildCarbonFlowNetworks(
+    _data: CarbonVisualizationData,
+  ): Promise<CarbonFlowNetwork[]> {
+    return [];
+  }
+
+  private async identifyCarbonSources(
+    _data: CarbonVisualizationData,
+  ): Promise<CarbonSource[]> {
+    return [];
+  }
+
+  private async identifyCarbonSinks(
+    _data: CarbonVisualizationData,
+  ): Promise<CarbonSink[]> {
+    return [];
+  }
+
+  private async modelCarbonTransformations(
+    _data: CarbonVisualizationData,
+  ): Promise<CarbonTransformation[]> {
+    return [];
+  }
+
+  private async createFlowVisualizationStyle(
+    _data: CarbonVisualizationData,
+  ): Promise<FlowVisualizationStyle> {
+    return {} as any;
+  }
+
+  private async setupRenderingContext(
+    _config: ViewportConfiguration,
+  ): Promise<RenderingContext> {
+    return {} as any;
+  }
+
+  private async renderScene(
+    _viz: CarbonVisualizationTheme,
+    _context: RenderingContext,
+  ): Promise<RenderingResult> {
+    return {
+      frameTime: 16,
+      triangleCount: 1000,
+      drawCalls: 10,
+      memoryUsage: 100,
+      quality: 1,
+    };
+  }
+
+  private async monitorRenderingPerformance(
+    _result: RenderingResult,
+  ): Promise<void> {
+    // Monitor
+  }
+
+  private calculateCarbonHealthImpact(_data: CarbonVisualizationData): number {
+    return 0.1;
+  }
+
+  private async analyzeHealthComponents(
+    _type: LivingEcosystem['type'],
+    _data: CarbonVisualizationData,
+  ): Promise<HealthComponent[]> {
+    return [];
+  }
+
+  private async identifyEcosystemThreats(
+    _type: LivingEcosystem['type'],
+    _data: CarbonVisualizationData,
+  ): Promise<EcosystemThreat[]> {
+    return [];
+  }
+
+  private calculateResilience(_type: LivingEcosystem['type']): number {
+    return 0.8;
+  }
+
+  private async assessRecoveryMetrics(
+    _type: LivingEcosystem['type'],
+    _data: CarbonVisualizationData,
+  ): Promise<RecoveryMetrics> {
+    return {} as any;
+  }
+
+  private async initializeVisualizationSystems(): Promise<void> {
+    // Stub
+  }
+
+  private async setupPerformanceMonitoring(): Promise<void> {
+    // Stub
   }
 
   destroy(): void {
@@ -1685,5 +2033,6 @@ interface QualityConfiguration {
 }
 
 // Export singleton instance
-export const immersiveCarbonVisualizationEngine = new ImmersiveCarbonVisualizationEngineService();
+export const immersiveCarbonVisualizationEngine =
+  new ImmersiveCarbonVisualizationEngineService();
 export default immersiveCarbonVisualizationEngine;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import achievementSystem, { Badge } from '../../services/AchievementSystem';
+import type { Badge } from '../../services/AchievementSystem';
+import achievementSystem from '../../services/AchievementSystem';
 
 const AchievementsScreen = () => {
   const [achievements, setAchievements] = useState<Badge[]>([]);
