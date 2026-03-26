@@ -129,18 +129,21 @@ export interface CarbonTrend {
 export interface APIError {
   code: string;
   message: string;
-  details?: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  details?: any;
   timestamp: Date;
 }
 
 interface APIErrorResponse {
   code?: string;
   message?: string;
-  details?: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  details?: any;
 }
 
 class CarbonAPIService {
   private api: AxiosInstance;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cache: Map<string, { data: any; timestamp: number; ttl: number }> =
     new Map();
   private rateLimitTracker: Map<string, { count: number; resetTime: number }> =
@@ -237,11 +240,13 @@ class CarbonAPIService {
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any = {};
     if (category) params.category = category;
     if (region) params.region = region;
 
     const response = await this.api.get('/emission-factors', { params });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const factors = response.data.map((factor: any) => ({
       ...factor,
       lastUpdated: new Date(factor.lastUpdated),
@@ -319,6 +324,7 @@ class CarbonAPIService {
 
     try {
       const response = await this.api.post('/calculate/batch', { requests });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = response.data.map((result: any) => ({
         ...result,
         factor: {
@@ -377,6 +383,7 @@ class CarbonAPIService {
       params: { q: query, category, limit },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return response.data.map((product: any) => ({
       ...product,
       lastUpdated: new Date(product.lastUpdated),
@@ -395,12 +402,14 @@ class CarbonAPIService {
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any = {};
     if (type) params.type = type;
     if (location) params.location = location;
     if (maxPrice) params.maxPrice = maxPrice;
 
     const response = await this.api.get('/offset-projects', { params });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const projects = response.data.map((project: any) => ({
       ...project,
       timeline: {
@@ -471,6 +480,7 @@ class CarbonAPIService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<CarbonTrend[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any = { period };
     if (startDate) params.startDate = startDate.toISOString();
     if (endDate) params.endDate = endDate.toISOString();
@@ -490,6 +500,7 @@ class CarbonAPIService {
     percentiles: Record<string, number>;
     sampleSize: number;
   }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any = { category };
     if (region) params.region = region;
     if (demographic) params.demographic = JSON.stringify(demographic);
@@ -534,6 +545,7 @@ class CarbonAPIService {
       actions: string[];
     }[]
   > {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any = { limit };
     if (category) params.category = category;
 
@@ -612,6 +624,7 @@ class CarbonAPIService {
   }
 
   // Cache Management
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getFromCache(key: string): any | null {
     const cached = this.cache.get(key);
     if (cached && Date.now() < cached.timestamp + cached.ttl) {
@@ -623,6 +636,7 @@ class CarbonAPIService {
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private setCache(key: string, data: any, ttl: number): void {
     this.cache.set(key, {
       data,

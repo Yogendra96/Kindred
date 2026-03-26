@@ -11,8 +11,8 @@ Enhanced Services Layer
 ├── 🧮 CarbonAPIService          # Carbon footprint calculations & external APIs
 ├── 🤖 MLCarbonPrediction        # AI/ML predictions using TensorFlow.js
 ├── 🔒 EnhancedSecurityService   # Security, encryption, and authentication
-├── 📊 EnhancedAnalyticsService  # User analytics and behavior tracking
-├── ⚡ EnhancedPerformanceService # Real-time performance monitoring
+├── 📊 AnalyticsService           # Consolidated user analytics
+├── ⚡ ModernAPMService           # Modern performance monitoring & alerting
 ├── 📍 LocationService           # Location tracking with privacy controls
 ├── 🏆 AchievementSystem         # Gamification and badge management
 └── 💡 SmartRecommendationsEngine # AI-powered personalized suggestions
@@ -30,8 +30,8 @@ Enhanced Services Layer
 ### System & Performance  
 | Service | Purpose | Key Methods |
 |---------|---------|-------------|
-| **EnhancedPerformanceService** | Performance monitoring | `recordMetric()`, `measureAsync()` |
-| **EnhancedAnalyticsService** | User analytics | `trackEvent()`, `trackScreenView()` |
+| **ModernAPMService** | Performance monitoring | `recordMetric()`, `measureAsync()` |
+| **AnalyticsService** | User analytics | `trackEvent()`, `trackScreenView()` |
 | **EnhancedSecurityService** | Security & encryption | `encrypt()`, `secureStore()` |
 
 ### User Experience
@@ -46,14 +46,14 @@ Enhanced Services Layer
 ```
 User Input → CarbonAPIService → MLCarbonPrediction → SmartRecommendationsEngine
                 ↓                       ↓                        ↓
-         EnhancedAnalyticsService → AchievementSystem → User Notification
+         AnalyticsService → AchievementSystem → User Notification
 ```
 
 ### 2. **Cross-Cutting Concerns**
 ```
-All Services → EnhancedPerformanceService (monitoring)
+All Services → ModernAPMService (monitoring)
 All Services → EnhancedSecurityService (data protection)
-All Services → EnhancedAnalyticsService (usage tracking)
+All Services → AnalyticsService (usage tracking)
 ```
 
 ### 3. **Location-Based Features**
@@ -92,10 +92,10 @@ if (!isHealthy) {
 
 ### Performance Monitoring
 ```typescript
-import { EnhancedPerformanceService } from '@services/EnhancedPerformanceService';
+import { ModernAPMService } from '@services/ModernAPMService';
 
 // Monitor async operations
-const result = await EnhancedPerformanceService.measureAsync('carbon_calc', 
+const result = await ModernAPMService.measureAsync('carbon_calc', 
   () => CarbonAPIService.calculateEmissions(data)
 );
 ```
@@ -127,10 +127,10 @@ ML_MODEL_VERSION=2.1.0
 const healthStatus = await Promise.all([
   CarbonAPIService.isHealthy(),
   EnhancedSecurityService.isHealthy(),
-  EnhancedPerformanceService.isHealthy(),
+  ModernAPMService.isHealthy(),
   LocationService.isHealthy(),
   MLCarbonPrediction.isHealthy(),
-  EnhancedAnalyticsService.isHealthy(),
+  AnalyticsService.isHealthy(),
   AchievementSystem.isHealthy(),
   SmartRecommendationsEngine.isHealthy()
 ]);
@@ -145,9 +145,9 @@ console.log('Service Health:', healthStatus.every(Boolean) ? '✅' : '❌');
 | CarbonAPIService | < 20MB | < 200ms | < 0.1% |
 | MLCarbonPrediction | < 50MB | < 500ms | < 0.5% |
 | EnhancedSecurityService | < 10MB | < 100ms | < 0.01% |
-| EnhancedPerformanceService | < 5MB | < 50ms | < 0.05% |
+| ModernAPMService | < 5MB | < 50ms | < 0.05% |
 | LocationService | < 15MB | < 150ms | < 0.2% |
-| EnhancedAnalyticsService | < 15MB | < 100ms | < 0.1% |
+| AnalyticsService | < 15MB | < 100ms | < 0.1% |
 | AchievementSystem | < 10MB | < 200ms | < 0.1% |
 | SmartRecommendationsEngine | < 25MB | < 300ms | < 0.3% |
 
@@ -162,7 +162,7 @@ console.log('Service Health:', healthStatus.every(Boolean) ? '✅' : '❌');
 - **EnhancedSecurityService**: Handles all sensitive data encryption
 - **CarbonAPIService**: Validates and sanitizes all inputs
 - **LocationService**: Implements privacy controls and data anonymization
-- **EnhancedAnalyticsService**: Ensures GDPR compliance and user consent
+- **AnalyticsService**: Ensures GDPR compliance and user consent
 
 ## 📱 Platform-Specific Considerations
 
@@ -198,9 +198,9 @@ jest.mock('@services/CarbonAPIService', () => ({
 - **[CarbonAPIService](./CarbonAPIService.md)** - Carbon calculation and external API integration
 - **[MLCarbonPrediction](./MLCarbonPrediction.md)** - Machine learning and prediction algorithms  
 - **[EnhancedSecurityService](./EnhancedSecurityService.md)** - Security, encryption, and authentication
-- **[EnhancedPerformanceService](./EnhancedPerformanceService.md)** - Performance monitoring and optimization
+- **[ModernAPMService](./ModernAPMService.md)** - Performance monitoring and optimization
 - **[LocationService](./LocationService.md)** - Location tracking and privacy controls
-- **[EnhancedAnalyticsService](./EnhancedAnalyticsService.md)** - User analytics and behavior tracking
+- **[AnalyticsService](./AnalyticsService.md)** - User analytics and behavior tracking
 - **[AchievementSystem](./AchievementSystem.md)** - Gamification and achievement management
 - **[SmartRecommendationsEngine](./SmartRecommendationsEngine.md)** - AI-powered recommendations
 

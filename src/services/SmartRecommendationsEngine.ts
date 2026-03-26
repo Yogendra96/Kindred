@@ -3,7 +3,7 @@
 import CarbonAPIService from './CarbonAPIService';
 import { createSingleton } from '../utils/Singleton';
 import { MLCarbonPredictionService } from './MLCarbonPrediction';
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 
 // Types for Recommendations
 export interface UserProfile {
@@ -138,7 +138,7 @@ export interface LearningModel {
 class SmartRecommendationsEngine {
   private mlService: MLCarbonPredictionService;
   private carbonAPI: typeof CarbonAPIService;
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private userModels: Map<string, LearningModel> = new Map();
   private recommendationCache: Map<string, Recommendation[]> = new Map();
   private feedbackBuffer: RecommendationFeedback[] = [];
@@ -146,7 +146,7 @@ class SmartRecommendationsEngine {
   constructor() {
     this.mlService = new MLCarbonPredictionService();
     this.carbonAPI = CarbonAPIService;
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
 
     // Initialize ML models
     this.initializeModels();

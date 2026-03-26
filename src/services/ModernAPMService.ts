@@ -11,11 +11,12 @@ import DeviceInfo from 'react-native-device-info';
 import type { NetInfoState } from '@react-native-community/netinfo';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import perf from '@react-native-firebase/perf';
 import loggingService from './/LoggerService';
 import type {
-  EnhancedPerformanceMetric,
+  PerformanceMetric,
   NativeMemoryMetrics,
-  EnhancedNetworkMetrics,
+  NetworkMetrics,
   CoreVitalMetric,
   CoreVitalType,
   PerformanceAlertRule,
@@ -44,9 +45,9 @@ export class ModernAPMService {
   private config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG;
 
   // Enhanced data storage with circular buffers
-  private metricsBuffer: CircularBuffer<EnhancedPerformanceMetric>;
+  private metricsBuffer: CircularBuffer<PerformanceMetric>;
   private memoryMetrics: CircularBuffer<NativeMemoryMetrics>;
-  private networkMetrics: CircularBuffer<EnhancedNetworkMetrics>;
+  private networkMetrics: CircularBuffer<NetworkMetrics>;
   private coreVitals: Map<string, CoreVitalMetric[]> = new Map();
 
   // Session and user tracking
@@ -83,13 +84,16 @@ export class ModernAPMService {
   // Connection state
   private connectionType: string = 'unknown';
 
+  // Firebase Performance Traces
+  private firebaseTraces: Map<string, any> = new Map();
+
   private constructor() {
     this.logger = loggingService;
 
     // Initialize circular buffers with optimal capacity for mobile
-    this.metricsBuffer = new CircularBuffer<EnhancedPerformanceMetric>(1000);
+    this.metricsBuffer = new CircularBuffer<PerformanceMetric>(1000);
     this.memoryMetrics = new CircularBuffer<NativeMemoryMetrics>(500);
-    this.networkMetrics = new CircularBuffer<EnhancedNetworkMetrics>(500);
+    this.networkMetrics = new CircularBuffer<NetworkMetrics>(500);
 
     // Generate unique session ID
     this.currentSessionId = this.generateSessionId();
@@ -149,7 +153,7 @@ export class ModernAPMService {
       });
 
       // Record initialization metric
-      this.recordEnhancedMetric({
+      this.recordMetric({
         name: 'apm_initialization',
         value: performance.now(),
         unit: 'ms',
@@ -243,7 +247,7 @@ export class ModernAPMService {
     this.coreVitals.get(screen)!.push(metric);
 
     // Also record as enhanced metric
-    this.recordEnhancedMetric({
+    this.recordMetric({
       name: `core_vital_${type.toLowerCase()}`,
       value,
       unit: type === 'CLS' ? 'score' : 'ms',
@@ -378,43 +382,412 @@ export class ModernAPMService {
     });
   }
 
+  /**
+   * Measure execution time of a function
+   */
+  async measureAsync<T>(
+    name: string,
+    fn: () => Promise<T>,
+    context?: Record<string, any>,
+  ): Promise<{ result: T; duration: number }> {
+    const startTime = performance.now();
+    try {
+      const result = await fn();
+      const duration = performance.now() - startTime;
+      this.recordMetric({
+        name,
+        value: duration,
+        unit: 'ms',
+        severity: 'low',
+        context,
+      });
+      return { result, duration };
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      this.recordMetric({
+        name: `${name}_error`,
+        value: duration,
+        unit: 'ms',
+        severity: 'high',
+        context: {
+          ...context,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Measure execution time of a synchronous function
+   */
+  measure<T>(
+    name: string,
+    fn: () => T,
+    context?: Record<string, any>,
+  ): { result: T; duration: number } {
+    const startTime = performance.now();
+    try {
+      const result = fn();
+      const duration = performance.now() - startTime;
+      this.recordMetric({
+        name,
+        value: duration,
+        unit: 'ms',
+        severity: 'low',
+        context,
+      });
+      return { result, duration };
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      this.recordMetric({
+        name: `${name}_error`,
+        value: duration,
+        unit: 'ms',
+        severity: 'high',
+        context: {
+          ...context,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      throw error;
+    }
+  }
+
+  // ===== FIREBASE PERFORMANCE INTEGRATION =====
+
+  /**
+   * Start a Firebase performance trace
+   */
+  async startTrace(traceName: string): Promise<FirebasePerformance.Trace | undefined> {
+    try {
+      const trace = await perf().startTrace(traceName);
+      this.firebaseTraces.set(traceName, trace);
+
+      // Also record as journey event
+      this.recordJourneyEvent({
+        eventType: 'feature_usage',
+        screenName: this.currentScreenName,
+        action: `trace_start_${traceName}`,
+      });
+      
+      return trace;
+    } catch (error) {
+      this.logger.error('Error starting Firebase trace', { traceName, error });
+      return undefined;
+    }
+  }
+
+  /**
+   * Stop a Firebase performance trace
+   */
+  async stopTrace(
+    traceName: string,
+    customAttributes?: Record<string, string>,
+  ): Promise<void> {
+    try {
+      const trace = this.firebaseTraces.get(traceName);
+      if (trace) {
+        if (customAttributes) {
+          Object.entries(customAttributes).forEach(([key, value]) => {
+            trace.putAttribute(key, value);
+          });
+        }
+        await trace.stop();
+        this.firebaseTraces.delete(traceName);
+      }
+    } catch (error) {
+      this.logger.error('Error stopping Firebase trace', { traceName, error });
+    }
+  }
+
+  /**
+   * Add context metric to an active trace
+   */
+  async addTraceMetric(
+    traceName: string,
+    metricName: string,
+    value: number,
+  ): Promise<void> {
+    try {
+      const trace = this.firebaseTraces.get(traceName);
+      if (trace) {
+        trace.putMetric(metricName, value);
+      }
+    } catch (error) {
+      this.logger.error('Error adding trace metric', { traceName, metricName, error });
+    }
+  }
+
+  /**
+   * Start FPS monitoring
+   */
+  startFPSMonitoring(): () => void {
+    let frameCount = 0;
+    let lastTime = performance.now();
+
+    const measureFPS = () => {
+      frameCount++;
+      const currentTime = performance.now();
+
+      if (currentTime - lastTime >= 1000) {
+        const fps = frameCount;
+        this.recordMetric({
+          name: 'display_fps',
+          value: fps,
+          unit: 'fps',
+          severity: fps < 30 ? 'high' : fps < 45 ? 'medium' : 'low',
+          context: { screen: this.currentScreenName },
+        });
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+
+      this.fpsRequest = requestAnimationFrame(measureFPS);
+    };
+
+    this.fpsRequest = requestAnimationFrame(measureFPS);
+
+    return () => {
+      if (this.fpsRequest) cancelAnimationFrame(this.fpsRequest);
+    };
+  }
+
+  private fpsRequest: number | null = null;
+
+  /**
+   * Track current bundle size (approximate)
+   */
+  trackBundleSize(): void {
+    try {
+      const moduleCount = Object.keys(require.cache || {}).length;
+      this.recordMetric({
+        name: 'app_bundle_modules',
+        value: moduleCount,
+        unit: 'count',
+        severity: 'low',
+        context: { platform: Platform.OS },
+      });
+    } catch (error) {
+      this.logger.warn('Bundle size tracking not available', error);
+    }
+  }
+
+  /**
+   * Clear all recorded metrics
+   */
+  clearMetrics(): void {
+    this.metricsBuffer.clear();
+    this.memoryMetrics.clear();
+    this.networkMetrics.clear();
+    this.coreVitals.clear();
+    this.journeyEvents = [];
+  }
+
+  /**
+   * Export all performance data as JSON
+   */
+  exportPerformanceData(): string {
+    const data = {
+      sessionId: this.currentSessionId,
+      timestamp: new Date().toISOString(),
+      platform: Platform.OS,
+      summary: this.getSessionSummary(),
+      metrics: this.metricsBuffer.toArray(),
+      memory: this.memoryMetrics.toArray(),
+      network: this.networkMetrics.toArray(),
+      vitals: Object.fromEntries(this.coreVitals),
+      journey: this.journeyEvents,
+    };
+
+    return JSON.stringify(data, null, 2);
+  }
+
   // ===== ENHANCED METRICS SYSTEM =====
 
   /**
    * Record enhanced performance metric with full context
    */
-  recordEnhancedMetric(
-    metric: Omit<
-      EnhancedPerformanceMetric,
-      'id' | 'timestamp' | 'sessionId' | 'screenName'
-    >,
+  recordMetric(
+    metricOrName:
+      | Omit<PerformanceMetric, 'id' | 'timestamp' | 'sessionId' | 'screenName'>
+      | string,
+    value?: number,
+    unit: string = 'ms',
+    context?: Record<string, any>,
+    tags?: string[],
+    severity: PerformanceMetric['severity'] = 'low',
   ): void {
     if (!this.isMonitoring) return;
 
-    const enhancedMetric: EnhancedPerformanceMetric = {
-      id: this.generateMetricId(),
-      timestamp: Date.now(),
-      sessionId: this.currentSessionId,
-      userId: this.currentUserId,
-      screenName: this.currentScreenName,
-      ...metric,
-    };
+    let finalMetric: PerformanceMetric;
+
+    if (typeof metricOrName === 'string') {
+      finalMetric = {
+        id: this.generateMetricId(),
+        timestamp: Date.now(),
+        sessionId: this.currentSessionId,
+        userId: this.currentUserId,
+        screenName: this.currentScreenName,
+        name: metricOrName,
+        value: value || 0,
+        unit,
+        context,
+        tags,
+        severity,
+      };
+    } else {
+      finalMetric = {
+        id: this.generateMetricId(),
+        timestamp: Date.now(),
+        sessionId: this.currentSessionId,
+        userId: this.currentUserId,
+        screenName: this.currentScreenName,
+        ...metricOrName,
+      };
+    }
 
     // Add to circular buffer for real-time access
-    this.metricsBuffer.add(enhancedMetric);
+    this.metricsBuffer.add(finalMetric);
 
     // Evaluate alerts
-    this.evaluateAlerts(enhancedMetric);
+    this.evaluateAlerts(finalMetric);
 
     // Log if severity is medium or higher
-    if (metric.severity !== 'low') {
+    if (finalMetric.severity !== 'low') {
       this.logger.info('Performance metric recorded', {
-        name: metric.name,
-        value: metric.value,
-        severity: metric.severity,
+        name: finalMetric.name,
+        value: finalMetric.value,
+        severity: finalMetric.severity,
         sessionId: this.currentSessionId,
       });
     }
+  }
+
+  /**
+   * Log custom metric (backward compatibility for logCustomMetric)
+   */
+  logCustomMetric(
+    metricName: string,
+    value: number,
+    unit: string = 'ms',
+  ): void {
+    this.recordMetric(metricName, value, unit);
+  }
+
+  /**
+   * Measure execution time of a synchronous function (backward compatibility)
+   */
+  measure<T>(
+    name: string,
+    fn: () => T,
+    context?: Record<string, any>,
+  ): { result: T; duration: number } {
+    const startTime = performance.now();
+    try {
+      const result = fn();
+      const duration = performance.now() - startTime;
+      this.recordMetric(name, duration, 'ms', context as Record<string, any>);
+      return { result, duration };
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      this.recordMetric(`${name}_error`, duration, 'ms', {
+        ...(context || {}),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Measure execution time of a function (backward compatibility)
+   */
+  async measureAsync<T>(
+    name: string,
+    fn: () => Promise<T>,
+    context?: Record<string, any>,
+  ): Promise<{ result: T; duration: number }> {
+    const startTime = performance.now();
+    try {
+      const result = await fn();
+      const duration = performance.now() - startTime;
+      this.recordMetric(name, duration, 'ms', context as Record<string, any>);
+      return { result, duration };
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      this.recordMetric(`${name}_error`, duration, 'ms', {
+        ...(context || {}),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Simple start trace for backward compatibility
+   */
+  startTraceSimple(name: string): void {
+    this.startTrace(name);
+  }
+
+  /**
+   * Simple stop trace for backward compatibility
+   */
+  async stopTraceSimple(name: string, attributes?: Record<string, string>): Promise<void> {
+    const trace = this.traces.get(name);
+    if (trace) {
+      if (attributes) {
+        Object.entries(attributes).forEach(([key, value]) => {
+          trace.putAttribute(key, value);
+        });
+      }
+      await trace.stop();
+      this.traces.delete(name);
+    }
+  }
+
+  /**
+   * Track network request performance
+   */
+  async trackNetworkRequest(
+    url: string,
+    method: string = 'GET',
+  ): Promise<{
+    metric: FirebaseHttpMetric;
+    startTime: number;
+    stop: (responseCode?: number, responseSize?: number) => Promise<void>;
+  }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const metric = await perf().newHttpMetric(url, method as any);
+    const startTime = performance.now();
+
+    return {
+      metric,
+      startTime,
+      stop: async (responseCode?: number, responseSize?: number) => {
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+
+        if (responseCode) {
+          metric.setHttpResponseCode(responseCode);
+        }
+        if (responseSize) {
+          metric.setResponseContentType('application/json');
+          metric.setResponsePayloadSize(responseSize);
+        }
+
+        await metric.stop();
+
+        // Also record as enhanced network metric
+        this.recordMetric({
+          name: `network_request_${method}_${url}`,
+          value: duration,
+          unit: 'ms',
+          severity: duration > 2000 ? 'high' : 'low',
+          context: { url, method, responseCode, responseSize },
+        });
+      },
+    };
   }
 
   /**
@@ -473,6 +846,7 @@ export class ModernAPMService {
       ]);
 
       // Get JS heap size from performance API
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const jsHeapSize = (performance as any).memory?.usedJSHeapSize || 0;
 
       // Calculate memory pressure
@@ -499,7 +873,7 @@ export class ModernAPMService {
       this.memoryMetrics.add(memoryMetrics);
 
       // Record as enhanced metric
-      this.recordEnhancedMetric({
+      this.recordMetric({
         name: 'memory_usage',
         value: usedMemory,
         unit: 'bytes',
@@ -624,6 +998,7 @@ export class ModernAPMService {
       } catch (error) {
         const duration = performance.now() - startTime;
 
+        // Record network metric
         this.recordNetworkMetric({
           url: requestUrl,
           method,
@@ -649,11 +1024,11 @@ export class ModernAPMService {
    */
   recordNetworkMetric(
     metric: Omit<
-      EnhancedNetworkMetrics,
+      NetworkMetrics,
       'id' | 'timestamp' | 'sessionId' | 'connectionType'
     >,
   ): void {
-    const networkMetric: EnhancedNetworkMetrics = {
+    const networkMetric: NetworkMetrics = {
       id: this.generateMetricId(),
       timestamp: Date.now(),
       sessionId: this.currentSessionId,
@@ -665,7 +1040,7 @@ export class ModernAPMService {
     this.networkMetrics.add(networkMetric);
 
     // Record as enhanced metric
-    this.recordEnhancedMetric({
+    this.recordMetric({
       name: 'network_request',
       value: metric.duration,
       unit: 'ms',
@@ -731,7 +1106,7 @@ export class ModernAPMService {
       this.memoryLeaks.push(leak);
 
       // Record as metric
-      this.recordEnhancedMetric({
+      this.recordMetric({
         name: 'memory_leak_detected',
         value: memoryGrowth,
         unit: 'bytes',
@@ -768,6 +1143,7 @@ export class ModernAPMService {
       event,
       timestamp: Date.now(),
       props,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
     };
 
@@ -925,7 +1301,7 @@ export class ModernAPMService {
     });
 
     // Record alert as metric
-    this.recordEnhancedMetric({
+    this.recordMetric({
       name: 'performance_alert',
       value: metric.value,
       unit: metric.unit,
@@ -1000,7 +1376,7 @@ export class ModernAPMService {
   setCurrentUser(userId: string): void {
     this.currentUserId = userId;
 
-    this.recordEnhancedMetric({
+    this.recordMetric({
       name: 'user_session_start',
       value: Date.now(),
       unit: 'timestamp',
@@ -1174,7 +1550,7 @@ export class ModernAPMService {
           const entries = list.getEntries();
           entries.forEach(entry => {
             if (entry.entryType === 'measure' || entry.entryType === 'mark') {
-              this.recordEnhancedMetric({
+              this.recordMetric({
                 name: `performance_${entry.entryType}`,
                 value: entry.duration || entry.startTime,
                 unit: 'ms',
@@ -1198,7 +1574,7 @@ export class ModernAPMService {
   }
 
   private startSession(): void {
-    this.recordEnhancedMetric({
+    this.recordMetric({
       name: 'session_start',
       value: Date.now(),
       unit: 'timestamp',
@@ -1214,7 +1590,7 @@ export class ModernAPMService {
     const sessionDuration =
       Date.now() - parseInt(this.currentSessionId.split('_')[1]);
 
-    this.recordEnhancedMetric({
+    this.recordMetric({
       name: 'session_end',
       value: sessionDuration,
       unit: 'ms',
@@ -1322,7 +1698,9 @@ export class ModernAPMService {
     return Math.round((goodScores / vitals.length) * 100);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private identifyBottlenecks(): any[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bottlenecks: any[] = [];
 
     // Identify slow screens
@@ -1374,6 +1752,7 @@ export class ModernAPMService {
     return bottlenecks;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private generateRecommendations(bottlenecks: any[]): string[] {
     const recommendations: string[] = [];
 
@@ -1570,6 +1949,124 @@ export class ModernAPMService {
     };
   }
 
+  /**
+   * Get performance summary (bridging method for DevTools)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getPerformanceSummary(): any {
+    return {
+      overview: {
+        isMonitoring: this.isMonitoring,
+        totalMetrics: this.metricsBuffer.size,
+        memorySnapshots: this.memoryMetrics.size,
+        renderMetrics: Array.from(this.coreVitals.values()).flat().length,
+        networkRequests: this.networkMetrics.size,
+      },
+      memory: this.getMemorySummary(),
+      rendering: this.getRenderingSummary(),
+    };
+  }
+
+  /**
+   * Get memory summary (bridging method)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getMemorySummary(): any {
+    if (this.memoryMetrics.size === 0) return null;
+
+    const latest = this.memoryMetrics.getLatest()!;
+    const peak = this.memoryMetrics
+      .getAll()
+      .reduce(
+        (max, metric) =>
+          metric.usedHeapSize > max.usedHeapSize ? metric : max,
+        latest,
+      );
+
+    return {
+      current: {
+        used: this.formatBytes(latest.usedHeapSize),
+        total: this.formatBytes(latest.totalHeapSize),
+        limit: this.formatBytes(latest.totalHeapSize),
+        utilization:
+          ((latest.usedHeapSize / latest.totalHeapSize) * 100).toFixed(2) + '%',
+      },
+      peak: {
+        used: this.formatBytes(peak.usedHeapSize),
+        timestamp: new Date(peak.timestamp).toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Get rendering summary (bridging method)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getRenderingSummary(): any {
+    const allVitals = Array.from(this.coreVitals.values()).flat();
+    if (allVitals.length === 0) return null;
+
+    const renderTimes = allVitals.map(v => v.value);
+    const averageRenderTime =
+      renderTimes.reduce((a, b) => a + b, 0) / renderTimes.length;
+    const slowRenders = renderTimes.filter(t => t > 16.67).length;
+
+    return {
+      totalRenders: allVitals.length,
+      averageRenderTime: averageRenderTime.toFixed(2) + 'ms',
+      slowRenders: slowRenders,
+      slowestRender: Math.max(...renderTimes).toFixed(2) + 'ms',
+    };
+  }
+
+  /**
+   * Clear performance data (bridging method)
+   */
+  clearData(): void {
+    this.metricsBuffer.clear();
+    this.memoryMetrics.clear();
+    this.networkMetrics.clear();
+    this.coreVitals.clear();
+    this.journeyEvents = [];
+    this.memoryLeaks = [];
+    this.logger.info('APM Data cleared');
+  }
+
+  /**
+   * Export performance data (bridging method)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  exportPerformanceData(): any {
+    return this.exportSessionData();
+  }
+
+  /**
+   * Record render metric (bridging method)
+   */
+  recordRenderMetric(
+    componentName: string,
+    renderTime: number,
+    propsCount?: number,
+    childrenCount?: number,
+  ): void {
+    this.recordCoreVital('FID', renderTime, {
+      component: componentName,
+      propsCount,
+      childrenCount,
+    });
+  }
+
+  /**
+   * Format bytes to readable string
+   */
+  private formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  }
+
   private generateMemoryLeakRecommendations(): string[] {
     const recommendations = [
       'Implement proper cleanup in useEffect hooks',
@@ -1588,3 +2085,36 @@ export class ModernAPMService {
 // Create and export singleton instance
 export const modernAPMService = ModernAPMService.getInstance();
 export default modernAPMService;
+
+/**
+ * Convenience hooks and utilities for Performance Monitoring
+ */
+export const usePerformanceTrace = (traceName: string) => {
+  const startTrace = () => modernAPMService.startTrace(traceName);
+  const stopTrace = (attributes?: Record<string, string>) =>
+    modernAPMService.stopTrace(traceName, attributes);
+
+  return { startTrace, stopTrace };
+};
+
+export const withPerformanceTracking = <T extends any[]>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fn: (...args: T) => Promise<any>,
+  traceName: string,
+) => {
+  return async (...args: T) => {
+    await modernAPMService.startTrace(traceName);
+
+    try {
+      const result = await fn(...args);
+      await modernAPMService.stopTrace(traceName, { status: 'success' });
+      return result;
+    } catch (error) {
+      await modernAPMService.stopTrace(traceName, {
+        status: 'error',
+        error: String(error),
+      });
+      throw error;
+    }
+  };
+};

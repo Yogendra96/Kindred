@@ -68,15 +68,15 @@ export interface AnalyticsDashboardProps {
   refreshInterval?: number;
   onRefresh?: () => void;
   onMetricPress?: (metric: MetricCard) => void;
-  onChartPress?: (chartType: string, data: unknown) => void;
+  onChartPress?: (chartType: string, data: any) => void;
   showComparison?: boolean;
   comparisonPeriod?: 'day' | 'week' | 'month' | 'year';
   customFilters?: Array<{
     id: string;
     label: string;
-    value: unknown;
+    value: any;
   }>;
-  style?: Record<string, unknown>;
+  style?: Record<string, any>;
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
@@ -362,7 +362,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     );
   };
 
-  const renderChart = (chartType: string, data: unknown, title: string) => {
+  const renderChart = (chartType: string, data: any, title: string) => {
     if (isLoading) {
       return (
         <View style={styles.chartContainer}>

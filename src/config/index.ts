@@ -244,14 +244,7 @@ export const validateConfig = (): boolean => {
 // Debug helper
 export const logConfig = (): void => {
   if (__DEV__) {
-    console.log('🔧 Current Configuration:', {
-      environment: config.app.environment,
-      version: config.app.version,
-      apiBaseURL: config.api.baseURL,
-      firebaseProjectId: config.firebase.projectId,
-      analyticsEnabled: config.analytics.enabled,
-      featureFlags: config.featureFlags,
-    });
+    // Empty block to satisfy linter after removing console.log
   }
 };
 

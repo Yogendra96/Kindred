@@ -6,8 +6,7 @@
  * Features: Predictive optimization, intelligent caching, adaptive performance tuning
  */
 
-import { observabilityService } from './ObservabilityService';
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, DeviceEventEmitter, NativeModules } from 'react-native';
 import type {
@@ -565,12 +564,11 @@ export class AdvancedPerformanceEngine {
       console.log('✅ Advanced Performance Engine initialized successfully');
 
       // Track initialization
-      observabilityService.trackPerformance({
-        metricType: 'custom',
+      modernAPMService.recordMetric({
         name: 'advanced_performance_engine_init',
         value: Date.now(),
+        unit: 'timestamp',
         severity: 'info',
-        context: { engineVersion: '2.0.0' },
       });
     } catch (error) {
       console.error(

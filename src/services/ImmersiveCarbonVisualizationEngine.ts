@@ -3,7 +3,7 @@
  * Revolutionary 3D and immersive visualizations for carbon footprint data
  * Features: Real-time 3D environments, emotional engagement, interactive ecosystems
  */
-import { observabilityService } from './ObservabilityService';
+import analyticsService from './AnalyticsService';
 
 // Core Immersive Visualization Types
 export interface ImmersiveCarbonVisualizationEngine {
@@ -1514,8 +1514,6 @@ export class ImmersiveCarbonVisualizationEngineService {
     if (this.isInitialized) return;
 
     try {
-      console.log('🌍 Initializing Immersive Carbon Visualization Engine...');
-
       // Initialize 3D rendering engine
       await this.initialize3DEngine();
 
@@ -1529,9 +1527,6 @@ export class ImmersiveCarbonVisualizationEngineService {
       await this.setupPerformanceMonitoring();
 
       this.isInitialized = true;
-      console.log(
-        '✅ Immersive Carbon Visualization Engine initialized successfully',
-      );
     } catch (error) {
       console.error(
         '❌ Failed to initialize Immersive Carbon Visualization Engine:',
@@ -1545,8 +1540,6 @@ export class ImmersiveCarbonVisualizationEngineService {
     carbonData: CarbonVisualizationData,
     ecosystemType: LivingEcosystem['type'],
   ): Promise<LivingEcosystem> {
-    console.log(`🌱 Creating ${ecosystemType} ecosystem visualization...`);
-
     try {
       // Analyze carbon impact on ecosystem
       const ecosystemHealth = await this.analyzeEcosystemHealth(
@@ -1606,20 +1599,14 @@ export class ImmersiveCarbonVisualizationEngineService {
       this.ecosystems.set(ecosystem.ecosystemId, ecosystem);
 
       // Track creation
-      observabilityService.trackBusinessEvent({
-        eventName: 'ecosystem_visualization_created',
-        properties: {
-          ecosystemId: ecosystem.ecosystemId,
-          type: ecosystemType,
-          health: ecosystemHealth.overall,
-          carbonCapacity: carbonCapacity.current,
-          userImpact: userImpact.directImpact.carbon_footprint,
-        },
+      analyticsService.trackEvent('ecosystem_visualization_created', {
+        ecosystemId: ecosystem.ecosystemId,
+        type: ecosystemType,
+        health: ecosystemHealth.overall,
+        carbonCapacity: carbonCapacity.current,
+        userImpact: userImpact.directImpact.carbon_footprint,
       });
 
-      console.log(
-        `✅ ${ecosystemType} ecosystem created: ${ecosystem.ecosystemId}`,
-      );
       return ecosystem;
     } catch (error) {
       console.error('Ecosystem visualization creation failed:', error);
@@ -1637,8 +1624,6 @@ export class ImmersiveCarbonVisualizationEngineService {
     waterClarity: number;
     airQuality: number;
   }): Promise<void> {
-    console.log('🌳 Updating Bio-Digital Twin world state:', state);
-
     try {
       // 1. Air Quality -> Fog Density
       // Lower air quality = denser fog (pollution)
@@ -1656,8 +1641,6 @@ export class ImmersiveCarbonVisualizationEngineService {
       // 4. Overall Health -> Post-processing saturation
       // Better health = vibrant colors
       await this.setGlobalSaturation(0.5 + 0.5 * state.health);
-
-      console.log('✅ World state updated successfully');
     } catch (error) {
       console.error('❌ Failed to update world state:', error);
     }
@@ -1666,29 +1649,23 @@ export class ImmersiveCarbonVisualizationEngineService {
   // Visualization Helpers (Stubs for direct 3D engine manipulation)
   private async setEnvironmentFog(density: number): Promise<void> {
     // In a real engine (Three.js/Babylon), this would set scene.fog.density
-    console.log(`☁️ Setting fog density to ${density.toFixed(4)}`);
   }
 
   private async updateVegetationDensity(count: number): Promise<void> {
     // Should add/remove tree instances
-    console.log(`🌲 Updating tree instances to ${count}`);
   }
 
   private async updateWaterMaterial(clarity: number): Promise<void> {
     // Adjust water shader uniforms
-    console.log(`💧 Setting water clarity to ${clarity.toFixed(2)}`);
   }
 
   private async setGlobalSaturation(saturation: number): Promise<void> {
     // Post-processing adjustment
-    console.log(`🎨 Setting global saturation to ${saturation.toFixed(2)}`);
   }
 
   async createCarbonFlowVisualization(
     carbonData: CarbonVisualizationData,
   ): Promise<CarbonFlowVisualization> {
-    console.log('🌊 Creating carbon flow visualization...');
-
     try {
       // Build flow networks
       const flowNetworks = await this.buildCarbonFlowNetworks(carbonData);
@@ -1712,14 +1689,11 @@ export class ImmersiveCarbonVisualizationEngineService {
       };
 
       // Track creation
-      observabilityService.trackBusinessEvent({
-        eventName: 'carbon_flow_visualization_created',
-        properties: {
-          networks: flowNetworks.length,
-          sources: sources.length,
-          sinks: sinks.length,
-          transformations: transformations.length,
-        },
+      analyticsService.trackEvent('carbon_flow_visualization_created', {
+        networks: flowNetworks.length,
+        sources: sources.length,
+        sinks: sinks.length,
+        transformations: transformations.length,
       });
 
       return flowVisualization;
@@ -1736,8 +1710,6 @@ export class ImmersiveCarbonVisualizationEngineService {
     if (!this.renderingEngine) {
       throw new Error('3D rendering engine not initialized');
     }
-
-    console.log(`🎨 Rendering 3D visualization: ${visualizationId}`);
 
     try {
       // Get visualization data
@@ -1764,12 +1736,10 @@ export class ImmersiveCarbonVisualizationEngineService {
 
   // Private implementation methods
   private async initialize3DEngine(): Promise<void> {
-    console.log('🎮 Initializing 3D rendering engine...');
     // Complex 3D engine initialization would go here
   }
 
   private async loadEcosystemTemplates(): Promise<void> {
-    console.log('🌳 Loading ecosystem templates...');
     // Load predefined ecosystem configurations
   }
 
@@ -1960,7 +1930,6 @@ export class ImmersiveCarbonVisualizationEngineService {
   destroy(): void {
     this.ecosystems.clear();
     this.visualizations.clear();
-    console.log('🛑 Immersive Carbon Visualization Engine destroyed');
   }
 }
 

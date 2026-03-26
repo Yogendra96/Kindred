@@ -8,7 +8,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import { observabilityService } from './ObservabilityService';
+import { modernAPMService } from './ModernAPMService';
 import { carbonTwinEngine } from './CarbonTwinEngine';
 
 // Quantum Neural Computing Core Types
@@ -281,10 +281,7 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
 
       const executionTime = performance.now() - startTime;
 
-      await observabilityService.trackMetric(
-        'quantum_prediction_time',
-        executionTime,
-      );
+      modernAPMService.recordMetric('quantum_prediction_time', executionTime, 'ms');
 
       return {
         prediction: enhancedPrediction,

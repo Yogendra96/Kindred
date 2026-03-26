@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import PerformanceMonitoringService from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import SocialFeaturesService from './SocialFeaturesService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
@@ -137,7 +137,7 @@ export interface AchievementNotification {
 
 class AchievementSystemService {
   private static instance: AchievementSystemService;
-  private performanceService = PerformanceMonitoringService;
+  private performanceService = modernAPMService;
   private socialService = SocialFeaturesService;
   private availableBadges: Badge[] = [];
   private userAchievements: Achievement[] = [];

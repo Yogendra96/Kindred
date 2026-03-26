@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable */
 /**
  * 🎨 Adaptive UI Engine - Revolutionary Design System
  * AI-powered adaptive theming with emotional engagement and immersive carbon visualization
@@ -7,19 +5,23 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, Dimensions, PixelRatio } from 'react-native';
-import { observabilityService } from './ObservabilityService';
-import { carbonTwinEngine } from './CarbonTwinEngine';
+import { analyticsService } from './AnalyticsService';
+import { type EmotionalEngagementEngine } from './EmotionalEngagementEngine';
+import { type ImmersiveCarbonVisualizationEngine } from './ImmersiveCarbonVisualizationEngine';
 
 // Core Adaptive UI Types
 export interface AdaptiveUIEngine {
   readonly aiTheming: AIAdaptiveThemingSystem;
   readonly emotionalDesign: EmotionalEngagementEngine;
-  readonly immersiveVisualization: CarbonVisualizationEngine;
-  readonly adaptiveLayouts: ResponsiveLayoutEngine;
-  readonly accessibilityIntelligence: AccessibilityAIEngine;
-  readonly personalizedExperience: PersonalizationEngine;
-  readonly gamificationSystem: GamifiedInteractionEngine;
+  readonly immersiveVisualization: ImmersiveCarbonVisualizationEngine;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly adaptiveLayouts: any; // ResponsiveLayoutEngine - to be defined or found
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly accessibilityIntelligence: any; // AccessibilityAIEngine - to be defined or found
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly personalizedExperience: any; // PersonalizationEngine - to be defined or found
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly gamificationSystem: any; // GamifiedInteractionEngine - to be defined or found
 }
 
 // AI Adaptive Theming System
@@ -43,6 +45,16 @@ interface AdaptiveTheme {
   readonly personalizations: ThemePersonalization[];
   readonly accessibility: AccessibilityThemeConfig;
   readonly performance: ThemePerformanceConfig;
+}
+
+interface AccessibilityThemeConfig {
+  readonly highContrast: boolean;
+  readonly reducedMotion: boolean;
+  readonly screenReaderOptimized: boolean;
+  readonly dyslexiaFriendly: boolean;
+  readonly fontSizeMultiplier: number;
+  readonly targetSizeMinimum: number;
+  readonly colorCompensation: string;
 }
 
 interface BaseThemeConfig {
@@ -455,6 +467,7 @@ interface ThemeAdaptation {
 
 interface ThemeChange {
   readonly type: 'color' | 'typography' | 'spacing' | 'animation' | 'layout';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly intensity: number; // 0-1
   readonly blend?: 'replace' | 'overlay' | 'multiply';
@@ -475,6 +488,7 @@ interface RevertCondition {
 interface AdaptationCondition {
   readonly type: string;
   readonly operator: '==' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'not_in';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly weight: number;
 }
@@ -769,7 +783,11 @@ interface FocusDesignElements {
 
 interface DistractionReduction {
   readonly notifications: NotificationStrategy;
-  readonly visual: VisualSimplification;
+  readonly visual: {
+    readonly elements: number;
+    readonly colors: number;
+    readonly contrast: number;
+  };
   readonly interaction: InteractionSimplification;
 }
 
@@ -779,7 +797,7 @@ interface NotificationStrategy {
   readonly batching: boolean;
 }
 
-interface VisualSimplification {
+interface _VisualSimplification {
   readonly elements: number;
   readonly colors: number;
   readonly contrast: number;
@@ -1145,6 +1163,7 @@ interface ContextSensor {
 }
 
 interface ContextData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly timestamp: number;
   readonly confidence: number;
@@ -1168,6 +1187,7 @@ interface ContextCondition {
 interface ContextThreshold {
   readonly sensor: string;
   readonly operator: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly weight: number;
 }
@@ -1186,6 +1206,7 @@ interface LearningModel {
 }
 
 interface ModelParameters {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly [key: string]: any;
 }
 
@@ -1198,7 +1219,7 @@ interface ContextTrainingData {
 }
 
 interface ContextSnapshot {
-  readonly sensors: ContextData[];
+  readonly sensors: ContextSensor[];
   readonly theme: string;
   readonly userState: UserState;
 }
@@ -1545,7 +1566,7 @@ interface TermVisualization {
 
 interface GoalMotivationTheme {
   readonly approach: 'achievement' | 'mastery' | 'contribution' | 'exploration';
-  readonly elements: MotivationElement[];
+  readonly elements: MotivationalElement[];
   readonly reinforcement: ReinforcementScheme;
 }
 
@@ -2352,7 +2373,7 @@ interface DistractionMinimizationTheming {
 interface VisualClutterReduction {
   readonly strategies: ClutterReductionStrategy[];
   readonly hierarchies: VisualHierarchy[];
-  readonly simplification: VisualSimplification;
+  readonly simplification: ContentVisualSimplification;
 }
 
 interface ClutterReductionStrategy {
@@ -2367,7 +2388,7 @@ interface VisualHierarchy {
   readonly emphasis: number;
 }
 
-interface VisualSimplification {
+interface ContentVisualSimplification {
   readonly level: number;
   readonly maintained: string[];
   readonly removed: string[];
@@ -3053,7 +3074,9 @@ export interface ThemePersonalization {
 interface ThemeCustomization {
   readonly customizationId: string;
   readonly element: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly originalValue: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly customValue: any;
   readonly reason: string;
   readonly timestamp: number;
@@ -3126,6 +3149,7 @@ interface UserCreatedTheme {
 
 interface ThemeModification {
   readonly element: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly change: any;
   readonly rationale: string;
 }
@@ -3266,8 +3290,6 @@ export class AdaptiveUIEngineService {
     if (this.isInitialized) return;
 
     try {
-      console.log('🎨 Initializing Adaptive UI Engine...');
-
       // Load default themes
       await this.loadDefaultThemes();
 
@@ -3284,7 +3306,6 @@ export class AdaptiveUIEngineService {
       await this.initializeAITheming();
 
       this.isInitialized = true;
-      console.log('✅ Adaptive UI Engine initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize Adaptive UI Engine:', error);
       throw error;
@@ -3295,8 +3316,6 @@ export class AdaptiveUIEngineService {
     userId: string,
     context: ContextSnapshot,
   ): Promise<AdaptiveTheme> {
-    console.log(`🎨 Adapting theme for user: ${userId}`);
-
     try {
       // Get user preferences
       const preferences =
@@ -3325,16 +3344,13 @@ export class AdaptiveUIEngineService {
       await this.learnFromAdaptation(userId, context, adaptedTheme);
 
       // Track adaptation
-      observabilityService.trackBusinessEvent({
-        eventName: 'theme_adaptation',
-        properties: {
-          userId,
-          themeId: adaptedTheme.id,
-          context: contextAnalysis.type,
-          carbonLevel:
-            context.sensors.find(s => s.sensorId === 'carbon')?.data.value ||
-            'unknown',
-        },
+      analyticsService.trackEvent('theme_adaptation', {
+        userId,
+        themeId: adaptedTheme.id,
+        context: contextAnalysis.type,
+        carbonLevel:
+          context.sensors.find(s => s.sensorId === 'carbon')?.data.value ||
+          'unknown',
       });
 
       this.currentTheme = adaptedTheme;
@@ -3348,8 +3364,6 @@ export class AdaptiveUIEngineService {
   async createCarbonVisualization(
     carbonData: CarbonVisualizationData,
   ): Promise<CarbonVisualizationTheme> {
-    console.log('🌱 Creating carbon visualization theme...');
-
     try {
       // Analyze carbon data
       const analysis = await this.analyzeCarbonData(carbonData);
@@ -3379,14 +3393,11 @@ export class AdaptiveUIEngineService {
       };
 
       // Track visualization creation
-      observabilityService.trackBusinessEvent({
-        eventName: 'carbon_visualization_created',
-        properties: {
-          themeId: theme.themeId,
-          carbonLevel: analysis.level,
-          emotionalTone: emotionalResonance.primary.name,
-          visualizationTypes: visualizations.map(v => v.type),
-        },
+      analyticsService.trackEvent('carbon_visualization_created', {
+        themeId: theme.themeId,
+        carbonLevel: analysis.level,
+        emotionalTone: emotionalResonance.primary.name,
+        visualizationTypes: visualizations.map(v => v.type),
       });
 
       return theme;
@@ -3442,8 +3453,6 @@ export class AdaptiveUIEngineService {
 
   // Private implementation methods
   private async loadDefaultThemes(): Promise<void> {
-    console.log('🎨 Loading default adaptive themes...');
-
     // Create comprehensive default themes
     const defaultThemes: AdaptiveTheme[] = [
       await this.createDefaultTheme('sustainable_harmony'),
@@ -3502,13 +3511,636 @@ export class AdaptiveUIEngineService {
     };
   }
 
+  private async initializeContextSensors(): Promise<void> {
+    // Implementation for initializing various sensors (time, location, carbon, etc.)
+  }
+
+  private async loadUserPreferences(): Promise<void> {
+    try {
+      const stored = await AsyncStorage.getItem('adaptive_ui_preferences');
+      if (stored) {
+        const prefs = JSON.parse(stored);
+        Object.keys(prefs).forEach(userId => {
+          this.userPreferences.set(userId, prefs[userId]);
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load user preferences:', error);
+    }
+  }
+
+  private async setupAdaptationRules(): Promise<void> {
+    // Implementation for setting up rules that trigger theme changes
+  }
+
+  private async initializeAITheming(): Promise<void> {
+    // Implementation for AI-driven theme recommendations and learning
+  }
+
+  private async createDefaultPreferences(
+    userId: string,
+  ): Promise<UserThemePreferences> {
+    const defaultPreferences: UserThemePreferences = {
+      userId,
+      preferences: [],
+      accessibility: {
+        colorBlindness: {
+          type: 'none',
+          severity: 'mild',
+          compensation: {
+            patterns: false,
+            textures: false,
+            shapes: false,
+            labels: false,
+          },
+        },
+        motorImpairments: {
+          targetSize: 44,
+          spacing: 8,
+          gestures: {
+            alternatives: [],
+            sensitivity: 0.5,
+            customization: false,
+          },
+          timing: { extended: false, customizable: false, alternatives: [] },
+        },
+        cognitiveSupport: {
+          simplification: { level: 'none', areas: [], adaptive: false },
+          memory: {
+            reminders: false,
+            breadcrumbs: false,
+            saved_states: false,
+            shortcuts: false,
+          },
+          attention: {
+            focus_assistance: false,
+            distraction_reduction: false,
+            progress_tracking: false,
+          },
+          processing: { pacing: 'normal', chunking: false, progressive: false },
+        },
+        sensorySupport: {
+          visual: {
+            contrast: 1,
+            brightness: 1,
+            motion: { reduced: false, alternatives: [], sensitivity: 0.5 },
+            text: { size: 14, font: ['System'], spacing: 0, line_height: 1.2 },
+          },
+          auditory: { alternatives: false, volume: 1, frequency: [] },
+          haptic: { enabled: true, intensity: 0.5, patterns: [] },
+        },
+      },
+      emotional: {
+        preferredEmotions: [],
+        avoidedEmotions: [],
+        intensity: 0.5,
+        contexts: [],
+      },
+      behavioral: {
+        interactionStyle: {
+          pace: 'moderate',
+          depth: 'moderate',
+          exploration: 'semi_guided',
+        },
+        feedbackPreferences: {
+          immediacy: 'immediate',
+          detail: 'standard',
+          format: ['visual'],
+        },
+        navigationStyle: {
+          structure: 'hierarchical',
+          predictability: 'high',
+          shortcuts: true,
+        },
+      },
+      contextual: {
+        timeOfDay: { morning: [], afternoon: [], evening: [], night: [] },
+        location: { home: [], work: [], travel: [], outdoor: [] },
+        activity: { tracking: [], analysis: [], goal_setting: [], social: [] },
+        mood: { motivated: [], relaxed: [], focused: [], stressed: [] },
+      },
+      learned: { patterns: [], adaptations: [], predictions: [] },
+    };
+    this.userPreferences.set(userId, defaultPreferences);
+    return defaultPreferences;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async analyzeContext(_context: ContextSnapshot): Promise<any> {
+    // Implementation for analyzing context sensors and user state
+    return { type: 'default', complexity: 0.5 };
+  }
+
+  private async generateThemeRecommendations(
+    _preferences: UserThemePreferences,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _contextAnalysis: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    // Implementation for generating theme candidates based on preferences and context
+    return [];
+  }
+
+  private async selectOptimalTheme(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _recommendations: any,
+  ): Promise<AdaptiveTheme> {
+    // Implementation for selecting the best theme from recommendations
+    return Array.from(this.themes.values())[0];
+  }
+
+  private async applyContextualAdaptations(
+    theme: AdaptiveTheme,
+    _context: ContextSnapshot,
+  ): Promise<AdaptiveTheme> {
+    // Implementation for fine-tuning the theme based on specific context
+    return theme;
+  }
+
+  private async learnFromAdaptation(
+    _userId: string,
+    _context: ContextSnapshot,
+    _theme: AdaptiveTheme,
+  ): Promise<void> {
+    // Implementation for updating learned preferences based on user feedback/interaction
+  }
+
+  private async analyzeCarbonData(
+    data: CarbonVisualizationData,
+  ): Promise<CarbonAnalysis> {
+    return {
+      level:
+        data.footprint < 2
+          ? 'veryLow'
+          : data.footprint < 5
+          ? 'low'
+          : data.footprint < 10
+          ? 'moderate'
+          : data.footprint < 20
+          ? 'high'
+          : 'veryHigh',
+      trend: data.trend,
+      urgency: data.trend === 'worsening' ? 'urgent' : 'calm',
+      context: [data.context],
+    };
+  }
+
+  private async generateCarbonColorMappings(
+    _analysis: CarbonAnalysis,
+  ): Promise<CarbonColorMapping> {
+    // Simplified mapping for now
+    return {
+      footprintColors: {
+        excellent: '#10B981',
+        good: '#059669',
+        fair: '#F59E0B',
+        poor: '#EF4444',
+        critical: '#991B1B',
+      },
+      trendColors: {
+        improving_fast: '#059669',
+        improving_slow: '#10B981',
+        stable: '#3B82F6',
+        worsening_slow: '#F59E0B',
+        worsening_fast: '#EF4444',
+      },
+      achievementColors: {
+        minor: '#3B82F6',
+        moderate: '#10B981',
+        major: '#F59E0B',
+        breakthrough: '#8B5CF6',
+        legendary: '#D946EF',
+      },
+      urgencyColors: {
+        calm: '#3B82F6',
+        notice: '#10B981',
+        attention: '#F59E0B',
+        urgent: '#EF4444',
+        critical: '#991B1B',
+      },
+    };
+  }
+
+  private async createImmersiveVisualizations(
+    _analysis: CarbonAnalysis,
+  ): Promise<ImmersiveVisualization[]> {
+    return [];
+  }
+
+  private async generateEmotionalResonance(
+    _analysis: CarbonAnalysis,
+  ): Promise<EmotionalTone> {
+    const emotion: Emotion = {
+      name: 'neutral',
+      intensity: 0.5,
+      expression: {
+        colors: [],
+        typography: { weight: 400, size: 14, spacing: 0, style: 'normal' },
+        animations: [],
+        spacing: { tightness: 0.5, rhythm: 0.5, breathing: 0.5 },
+      },
+      triggers: [],
+    };
+
+    return {
+      primary: emotion,
+      secondary: [],
+      contextual: [],
+      transitions: [],
+    };
+  }
+
+  private async generateAdaptiveElements(
+    _analysis: CarbonAnalysis,
+  ): Promise<AdaptiveElement[]> {
+    return [];
+  }
+
+  private async generateInteractionPatterns(
+    _analysis: CarbonAnalysis,
+  ): Promise<InteractionPattern[]> {
+    return [];
+  }
+
+  private async optimizeVisualizationPerformance(
+    _visualizations: ImmersiveVisualization[],
+  ): Promise<VisualizationPerformance> {
+    return {
+      rendering: { fps: 60, frameTime: 16.6, complexity: 0.1 },
+      memory: { usage: 0, allocation: 0, cleanup: 0 },
+      optimization: { techniques: [], improvement: 0, tradeoffs: [] },
+    };
+  }
+
+  private async persistUserPreferences(
+    preferences: UserThemePreferences,
+  ): Promise<void> {
+    try {
+      const stored = await AsyncStorage.getItem('adaptive_ui_preferences');
+      const allPrefs = stored ? JSON.parse(stored) : {};
+      allPrefs[preferences.userId] = preferences;
+      await AsyncStorage.setItem(
+        'adaptive_ui_preferences',
+        JSON.stringify(allPrefs),
+      );
+    } catch (error) {
+      console.error('Failed to persist user preferences:', error);
+    }
+  }
+
+  private async generateAdaptiveRules(
+    _themeType: string,
+  ): Promise<ThemeAdaptationRule[]> {
+    return [];
+  }
+
+  private async generateEmotionalProfile(
+    themeType: string,
+  ): Promise<EmotionalThemeProfile> {
+    const emotion: Emotion = {
+      name: 'neutral',
+      intensity: 0.5,
+      expression: {
+        colors: [],
+        typography: { weight: 400, size: 14, spacing: 0, style: 'normal' },
+        animations: [],
+        spacing: { tightness: 0.5, rhythm: 0.5, breathing: 0.5 },
+      },
+      triggers: [],
+    };
+
+    return {
+      profileId: `emotional_${themeType}`,
+      emotionalTone: {
+        primary: emotion,
+        secondary: [],
+        contextual: [],
+        transitions: [],
+      },
+      psychologicalImpact: {
+        trust: {
+          consistency: 0.8,
+          familiarity: 0.8,
+          transparency: 0.8,
+          reliability: 0.8,
+        },
+        motivation: {
+          progress: 0.8,
+          achievement: 0.8,
+          challenge: 0.8,
+          autonomy: 0.8,
+        },
+        comfort: {
+          ease: 0.8,
+          predictability: 0.8,
+          forgiveness: 0.8,
+          support: 0.8,
+        },
+        engagement: {
+          novelty: 0.8,
+          interactivity: 0.8,
+          feedback: 0.8,
+          flow: 0.8,
+        },
+      },
+      motivationalDesign: {
+        framework: 'gamification',
+        elements: [],
+        triggers: [],
+        rewards: [],
+      },
+      wellbeingConsiderations: {
+        stressReduction: {
+          calming: { colors: [], animations: [], spacing: 16 },
+          clarity: {
+            hierarchy: 0.8,
+            contrast: 0.8,
+            labeling: 0.8,
+            grouping: 0.8,
+          },
+          control: {
+            customization: 0.8,
+            predictability: 0.8,
+            reversibility: 0.8,
+            transparency: 0.8,
+          },
+        },
+        cognitiveLoad: {
+          chunking: { groupSize: 5, categories: [], priority: [] },
+          progressive: { levels: [], triggers: [], timing: 'adaptive' },
+          defaults: { personalization: 0.8, context: 0.8, learning: 0.8 },
+          guidance: {
+            onboarding: { steps: 5, interactivity: 0.8, personalization: 0.8 },
+            contextual: { triggers: [], format: [], timing: 'adaptive' },
+            progressive: { complexity: [], mastery: [], adaptation: 0.8 },
+          },
+        },
+        positiveReinforcement: {
+          celebrations: [],
+          progress: {
+            visualization: [],
+            frequency: 'daily',
+            granularity: 'medium',
+          },
+          achievements: {
+            levels: [],
+            presentation: {
+              timing: 'immediate',
+              format: 'popup',
+              duration: 3000,
+              interactivity: true,
+            },
+            sharing: { platforms: [], privacy: [], customization: true },
+          },
+        },
+        mindfulness: {
+          breathing: { rhythm: [], visualization: [], guidance: true },
+          focus: {
+            distraction: {
+              notifications: { timing: [], priority: [], batching: true },
+              visual: { elements: 5, colors: 3, contrast: 0.8 },
+              interaction: { steps: 3, choices: 5, complexity: 0.5 },
+            },
+            attention: { hierarchy: 0.8, flow: [], emphasis: [] },
+            flow: {
+              challenge: {
+                adaptive: true,
+                personalized: true,
+                progressive: true,
+              },
+              feedback: { immediacy: 0.8, clarity: 0.8, actionability: 0.8 },
+              immersion: { focus: 0.8, engagement: 0.8, flow: 0.8 },
+            },
+          },
+          reflection: {
+            prompts: [],
+            timing: { optimal: [], adaptive: true, personal: true },
+            format: { types: [], duration: [], guidance: true },
+          },
+        },
+      },
+    };
+  }
+
+  private async generateCarbonContext(
+    _themeType: string,
+  ): Promise<CarbonThemeContext> {
+    const emptyVariation: ThemeVariation = {
+      colors: {},
+      typography: {},
+      spacing: {},
+      animations: {},
+      elevation: {},
+    };
+    return {
+      footprintLevel: {
+        veryLow: emptyVariation,
+        low: emptyVariation,
+        moderate: emptyVariation,
+        high: emptyVariation,
+        veryHigh: emptyVariation,
+      },
+      trendDirection: {
+        improving: emptyVariation,
+        stable: emptyVariation,
+        worsening: emptyVariation,
+      },
+      achievementContext: {
+        celebration: emptyVariation,
+        progress: emptyVariation,
+        milestone: emptyVariation,
+        breakthrough: emptyVariation,
+      },
+      urgencyLevel: {
+        calm: emptyVariation,
+        attention: emptyVariation,
+        urgent: emptyVariation,
+        critical: emptyVariation,
+      },
+    };
+  }
+
+  private async generateAccessibilityConfig(
+    _themeType: string,
+  ): Promise<AccessibilityThemeConfig> {
+    return {
+      highContrast: false,
+      reducedMotion: false,
+      screenReaderOptimized: false,
+      dyslexiaFriendly: false,
+      fontSizeMultiplier: 1,
+      targetSizeMinimum: 44,
+      colorCompensation: 'none',
+    };
+  }
+
+  private async generatePerformanceConfig(
+    _themeType: string,
+  ): Promise<ThemePerformanceConfig> {
+    return {
+      optimization: {
+        techniques: [],
+        targets: [],
+        monitoring: { metrics: [], frequency: 3600, alerting: false },
+      },
+      caching: {
+        strategy: 'adaptive',
+        invalidation: { triggers: [], strategy: 'lru', timing: 0 },
+        storage: { location: 'hybrid', capacity: 100, compression: true },
+      },
+      loading: {
+        strategy: 'predictive',
+        prioritization: { critical: [], important: [], deferred: [] },
+        fallbacks: [],
+      },
+      rendering: {
+        techniques: [],
+        batching: { enabled: true, size: 50, timeout: 100 },
+        scheduling: { strategy: 'prioritized', priorities: [] },
+      },
+    };
+  }
+
+  private async generateColorScheme(
+    _themeType: string,
+  ): Promise<BaseThemeConfig['colors']> {
+    const defaultScheme = {
+      light: '#000000',
+      dark: '#FFFFFF',
+      contrast: '#FFFFFF',
+      disabled: '#888888',
+      hover: '#111111',
+      pressed: '#222222',
+      focus: '#333333',
+      variants: [],
+    };
+    return {
+      primary: defaultScheme,
+      secondary: defaultScheme,
+      accent: defaultScheme,
+      background: defaultScheme,
+      surface: defaultScheme,
+      text: defaultScheme,
+      carbon: {
+        veryLow: '#10B981',
+        low: '#059669',
+        moderate: '#F59E0B',
+        high: '#EF4444',
+        veryHigh: '#991B1B',
+        neutral: '#6B7280',
+        positive: '#10B981',
+        negative: '#EF4444',
+        gradient: [],
+      },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+        progress: '#10B981',
+      },
+      semantic: {
+        achievement: '#10B981',
+        milestone: '#3B82F6',
+        improvement: '#10B981',
+        regression: '#EF4444',
+        neutral: '#6B7280',
+      },
+    };
+  }
+
+  private async generateTypographySystem(
+    _themeType: string,
+  ): Promise<TypographySystem> {
+    return {
+      families: [],
+      scales: [],
+      weights: [],
+      lineHeights: [],
+      letterSpacing: [],
+      responsive: {
+        breakpoints: [],
+        fluidScaling: true,
+        accessibilityScaling: {
+          respectSystemSize: true,
+          maxScaleFactor: 2,
+          minContrastRatio: 4.5,
+          dyslexiaFriendly: false,
+        },
+      },
+    };
+  }
+
+  private async generateSpacingSystem(
+    _themeType: string,
+  ): Promise<SpacingSystem> {
+    return {
+      baseUnit: 4,
+      scale: [],
+      semanticSpacing: {
+        comfortable: 16,
+        compact: 8,
+        cozy: 12,
+        spacious: 24,
+        intimate: 4,
+      },
+      responsiveSpacing: { breakpoints: [], adaptiveRules: [] },
+      carbonSpacing: {
+        lowImpact: 20,
+        moderateImpact: 16,
+        highImpact: 12,
+        celebration: 24,
+      },
+    };
+  }
+
+  private async generateElevationSystem(
+    _themeType: string,
+  ): Promise<ElevationSystem> {
+    return {
+      levels: [],
+      shadows: [],
+      contextualElevation: {
+        carbon: { lowFootprint: 1, moderateFootprint: 2, highFootprint: 4 },
+        achievement: { minor: 2, major: 4, milestone: 6, breakthrough: 8 },
+        alert: { info: 2, warning: 4, error: 6, success: 4 },
+      },
+    };
+  }
+
+  private async generateAnimationSystem(
+    _themeType: string,
+  ): Promise<AnimationSystem> {
+    return {
+      durations: [],
+      easings: [],
+      transitions: [],
+      microInteractions: [],
+      carbonAnimations: [],
+    };
+  }
+
+  private async generateLayoutSystem(
+    _themeType: string,
+  ): Promise<LayoutSystem> {
+    return {
+      grids: [],
+      containers: [],
+      responsive: {
+        breakpoints: [],
+        fluidLayouts: true,
+        containerQueries: false,
+      },
+      adaptive: [],
+    };
+  }
+
   destroy(): void {
     this.themes.clear();
     this.userPreferences.clear();
     this.contextSensors.clear();
     this.adaptationRules.clear();
     this.currentTheme = null;
-    console.log('🛑 Adaptive UI Engine destroyed');
   }
 }
 
@@ -3526,7 +4158,7 @@ interface CarbonVisualizationTheme {
   readonly carbonData: CarbonAnalysis;
   readonly colorMappings: CarbonColorMapping;
   readonly visualizations: ImmersiveVisualization[];
-  readonly emotionalResonance: EmotionalResponse;
+  readonly emotionalResonance: EmotionalTone;
   readonly adaptiveElements: AdaptiveElement[];
   readonly interactionPatterns: InteractionPattern[];
   readonly performance: VisualizationPerformance;
@@ -3542,6 +4174,7 @@ interface CarbonAnalysis {
 interface ImmersiveVisualization {
   readonly id: string;
   readonly type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly data: any;
   readonly style: VisualizationStyle;
   readonly interactivity: VisualizationInteractivity;
@@ -3567,6 +4200,7 @@ interface AdaptiveElement {
 
 interface ElementAdaptation {
   readonly property: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly condition: string;
 }

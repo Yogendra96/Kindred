@@ -8,7 +8,7 @@
 
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { observabilityService } from './ObservabilityService';
+import { analyticsService } from './AnalyticsService';
 import { carbonTwinEngine } from './CarbonTwinEngine';
 
 // Core Computer Vision Types
@@ -850,15 +850,12 @@ export class ComputerVisionCarbonEngine {
       };
 
       // Track scan
-      observabilityService.trackBusinessEvent({
-        eventName: 'product_carbon_scan',
-        properties: {
-          scanId,
-          productCategory: productAnalysis.category,
-          carbonFootprint: carbonData.totalFootprint,
-          processingTime,
-          confidence: productAnalysis.confidence,
-        },
+      analyticsService.trackEvent('product_carbon_scan', {
+        scanId,
+        productCategory: productAnalysis.category,
+        carbonFootprint: carbonData.totalFootprint,
+        processingTime,
+        confidence: productAnalysis.confidence,
       });
 
       console.log(
@@ -913,14 +910,11 @@ export class ComputerVisionCarbonEngine {
       };
 
       // Track detection
-      observabilityService.trackBusinessEvent({
-        eventName: 'transport_detection',
-        properties: {
-          sessionId,
-          modes: detectedModes.map(m => m.type),
-          totalDistance: detectedModes.reduce((sum, m) => sum + m.distance, 0),
-          totalEmissions: emissionCalculation.totalEmissions,
-        },
+      analyticsService.trackEvent('transport_detection', {
+        sessionId,
+        modes: detectedModes.map(m => m.type),
+        totalDistance: detectedModes.reduce((sum, m) => sum + m.distance, 0),
+        totalEmissions: emissionCalculation.totalEmissions,
       });
 
       return result;
@@ -972,15 +966,12 @@ export class ComputerVisionCarbonEngine {
       };
 
       // Track audit
-      observabilityService.trackBusinessEvent({
-        eventName: 'home_energy_audit',
-        properties: {
-          auditId,
-          roomsAnalyzed: roomAnalysis.length,
-          appliancesDetected: applianceDetection.length,
-          inefficienciesFound: inefficiencies.length,
-          potentialSavings: potentialSavings.totalSavings.carbonSavings,
-        },
+      analyticsService.trackEvent('home_energy_audit', {
+        auditId,
+        roomsAnalyzed: roomAnalysis.length,
+        appliancesDetected: applianceDetection.length,
+        inefficienciesFound: inefficiencies.length,
+        potentialSavings: potentialSavings.totalSavings.carbonSavings,
       });
 
       return result;
@@ -1036,15 +1027,12 @@ export class ComputerVisionCarbonEngine {
       };
 
       // Track meal planning
-      observabilityService.trackBusinessEvent({
-        eventName: 'meal_planning_optimization',
-        properties: {
-          planId,
-          inventoryItems: currentInventory.items.length,
-          recommendedMeals: mealRecommendations.length,
-          wasteReduction: wasteReduction.targetReduction,
-          carbonReduction: carbonOptimization.reductionPotential,
-        },
+      analyticsService.trackEvent('meal_planning_optimization', {
+        planId,
+        inventoryItems: currentInventory.items.length,
+        recommendedMeals: mealRecommendations.length,
+        wasteReduction: wasteReduction.targetReduction,
+        carbonReduction: carbonOptimization.reductionPotential,
       });
 
       return result;
@@ -1097,15 +1085,12 @@ export class ComputerVisionCarbonEngine {
       };
 
       // Track behavior analysis
-      observabilityService.trackBusinessEvent({
-        eventName: 'behavior_pattern_analysis',
-        properties: {
-          analysisId,
-          activitiesRecognized: activityRecognition.activities.length,
-          patternsFound: behaviorPatterns.patterns.length,
-          healthScore: healthMetrics.healthScore,
-          carbonImpact: carbonImplications.netImpact,
-        },
+      analyticsService.trackEvent('behavior_pattern_analysis', {
+        analysisId,
+        activitiesRecognized: activityRecognition.activities.length,
+        patternsFound: behaviorPatterns.patterns.length,
+        healthScore: healthMetrics.healthScore,
+        carbonImpact: carbonImplications.netImpact,
       });
 
       return result;

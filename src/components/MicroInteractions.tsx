@@ -34,6 +34,7 @@ export const AnimatedTouchable: React.FC<AnimatedTouchableProps> = ({
   const elevationAnim = useRef(new Animated.Value(0)).current;
   const rippleAnim = useRef(new Animated.Value(0)).current;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePressIn = (event: any) => {
     if (disabled) return;
 
@@ -112,6 +113,7 @@ export const AnimatedTouchable: React.FC<AnimatedTouchableProps> = ({
     onPressIn?.(event);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePressOut = (event: any) => {
     if (disabled) return;
 

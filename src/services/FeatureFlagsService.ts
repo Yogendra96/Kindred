@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
@@ -87,7 +87,7 @@ class FeatureFlagsService {
   private flags: Map<string, FeatureFlag> = new Map();
   private userContext: UserContext;
   private config: FeatureFlagConfig;
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private analytics: Map<string, FeatureFlagAnalytics> = new Map();
   private eventListeners: Map<string, ((event: FeatureFlagEvent) => void)[]> =
     new Map();
@@ -109,7 +109,7 @@ class FeatureFlagsService {
       appVersion: '1.0.0', // This should come from app config
     };
 
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
   }
 
   // Initialize the service

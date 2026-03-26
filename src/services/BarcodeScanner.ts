@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import PerformanceMonitoringService from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
@@ -111,7 +111,7 @@ export interface ScanHistory {
 class BarcodeScannerService {
   private static instance: BarcodeScannerService;
   private apiClient: AxiosInstance;
-  private performanceService = PerformanceMonitoringService;
+  private performanceService = modernAPMService;
   private scanHistory: ScanHistory[] = [];
   private productCache = new Map<string, ProductInfo>();
   private carbonCache = new Map<string, CarbonFootprintData>();
@@ -146,7 +146,8 @@ class BarcodeScannerService {
           config.method?.toUpperCase() || 'GET',
         );
         (
-          config as InternalAxiosRequestConfig & { metadata?: unknown }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          config as InternalAxiosRequestConfig & { metadata?: any }
         ).metadata = {
           trace,
           startTime: performance.now(),
@@ -236,7 +237,7 @@ class BarcodeScannerService {
     location?: { latitude: number; longitude: number },
   ): Promise<ScanResult> {
     try {
-      await this.performanceService.startTrace('barcode_processing');
+      this.performanceService.startTraceSimple('barcode_processing');
 
       const scanResult: ScanResult = {
         barcode,
@@ -263,14 +264,14 @@ class BarcodeScannerService {
       // Save to scan history
       await this.saveScanToHistory(scanResult);
 
-      await this.performanceService.stopTrace('barcode_processing', {
+      await this.performanceService.stopTraceSimple('barcode_processing', {
         barcode_found: productInfo ? 'true' : 'false',
         carbon_data_found: scanResult.carbonFootprint ? 'true' : 'false',
       });
 
       return scanResult;
     } catch (error) {
-      await this.performanceService.stopTrace('barcode_processing', {
+      await this.performanceService.stopTraceSimple('barcode_processing', {
         status: 'error',
         error: String(error),
       });

@@ -14,6 +14,7 @@ import _FeatureButton from '../../components/ui/FeatureButton';
 import _SectionHeader from '../../components/ui/SectionHeader';
 import _StatCard from '../../components/ui/StatCard';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const HomeScreen = ({ navigation }: any) => {
   const dispatch = useDispatch();
   const { footprint, loading, error } = useSelector(

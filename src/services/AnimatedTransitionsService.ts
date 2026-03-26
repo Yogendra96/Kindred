@@ -2,7 +2,7 @@
 /* eslint-disable */
 import HapticFeedbackService from './HapticFeedbackService';
 import { createSingleton } from '../utils/Singleton';
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import { Animated, Easing, Dimensions, Platform } from 'react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -121,7 +121,7 @@ export interface TransitionPreset {
 }
 
 class AnimatedTransitionsService {
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private hapticService: typeof HapticFeedbackService;
   private activeAnimations: Map<string, Animated.CompositeAnimation> =
     new Map();
@@ -236,7 +236,7 @@ class AnimatedTransitionsService {
   };
 
   constructor() {
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
     this.hapticService = HapticFeedbackService;
   }
 
@@ -688,7 +688,7 @@ class AnimatedTransitionsService {
     animation: Animated.CompositeAnimation,
     config: TransitionConfig = {},
   ): Promise<void> {
-    const trace = this.performanceMonitor.startTrace('animated-transition');
+    const trace = await this.performanceMonitor.startTrace('animated-transition');
     const animationId = this.generateAnimationId();
 
     return new Promise((resolve, reject) => {
@@ -712,18 +712,24 @@ class AnimatedTransitionsService {
             // Call onComplete callback
             config.onComplete?.();
 
-            trace.putAttribute('completed', true);
-            trace.stop();
+            if (trace) {
+              trace.putAttribute('completed', 'true');
+              await trace.stop();
+            }
             resolve();
           } else {
-            trace.putAttribute('completed', false);
-            trace.stop();
+            if (trace) {
+              trace.putAttribute('completed', 'false');
+              await trace.stop();
+            }
             reject(new Error('Animation was interrupted'));
           }
         });
       } catch (error) {
         this.activeAnimations.delete(animationId);
-        trace.stop();
+        if (trace) {
+          await trace.stop();
+        }
         reject(error);
       }
     });

@@ -1,15 +1,10 @@
-// @ts-nocheck
-/* eslint-disable */
 /**
  * 🧙 Next-Generation Interaction Engine
  * Revolutionary multi-modal interaction patterns for intuitive carbon tracking
  * Features: Gesture recognition, voice commands, adaptive interfaces, neural interfaces
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, PanResponder, Dimensions } from 'react-native';
-import { observabilityService } from './ObservabilityService';
-import { adaptiveUIEngine } from './AdaptiveUIEngine';
+import analyticsService from './AnalyticsService';
 
 // Core Interaction Engine Types
 export interface NextGenInteractionEngine {
@@ -23,6 +18,92 @@ export interface NextGenInteractionEngine {
   readonly predictiveInterface: PredictiveInterfaceEngine;
 }
 
+export interface VoiceInterfaceEngine {
+  readonly recognition: VoiceRecognition;
+  readonly synthesis: VoiceSynthesis;
+  readonly language_support: string[];
+  readonly sensitivity: number;
+}
+
+interface VoiceRecognition {
+  readonly models: string[];
+  readonly accuracy: number;
+  readonly keywords: string[];
+}
+
+interface VoiceSynthesis {
+  readonly voices: string[];
+  readonly rate: number;
+  readonly pitch: number;
+}
+
+export interface AdaptiveInterfaceEngine {
+  readonly adaptationConfigs: AdaptiveInterfaceConfiguration[];
+  readonly currentStrategy: string;
+  readonly learningRate: number;
+}
+
+export interface NeuralInterfaceEngine {
+  readonly signalProcessing: NeuralSignalProcessor;
+  readonly calibration: NeuralCalibration;
+  readonly sensitivity: number;
+}
+
+interface NeuralSignalProcessor {
+  readonly updateFrequency: number;
+  readonly noiseReduction: boolean;
+}
+
+interface NeuralCalibration {
+  readonly baseline: number[];
+  readonly lastCalibrated: number;
+}
+
+export interface HapticFeedbackEngine {
+  readonly patterns: HapticPattern[];
+  readonly intensity: number;
+  readonly systemStatus: string;
+}
+
+export interface EyeTrackingEngine {
+  readonly gazeTracking: GazeTracker;
+  readonly fixationAnalysis: FixationAnalyzer;
+  readonly accuracy: number;
+}
+
+interface GazeTracker {
+  readonly refreshRate: number;
+  readonly precision: number;
+}
+
+interface FixationAnalyzer {
+  readonly currentFixation?: string;
+  readonly heatmapEnabled: boolean;
+}
+
+export interface ContextualInterfaceEngine {
+  readonly awareness: ContextAwareness;
+  readonly triggers: ContextualTrigger[];
+  readonly learning: boolean;
+}
+
+interface ContextualTrigger {
+  readonly triggerId: string;
+  readonly condition: string;
+  readonly action: string;
+}
+
+export interface PredictiveInterfaceEngine {
+  readonly models: string[];
+  readonly currentPredictions: InteractionPrediction[];
+  readonly confidenceThreshold: number;
+}
+
+interface InteractionPrediction {
+  readonly predictedAction: string;
+  readonly confidence: number;
+}
+
 // Gesture Recognition Engine
 export interface GestureRecognitionEngine {
   readonly multiTouchGestures: MultiTouchGestureSystem;
@@ -31,6 +112,155 @@ export interface GestureRecognitionEngine {
   readonly gestureChaining: GestureChainingSystem;
   readonly adaptiveGestures: AdaptiveGestureSystem;
   readonly accessibility: GestureAccessibilitySystem;
+}
+
+export interface CustomGestureSystem {
+  readonly userGestures: UserGesture[];
+  readonly trainingInProgress: boolean;
+  readonly maxCustomGestures: number;
+}
+
+export interface GestureChainingSystem {
+  readonly chains: GestureChain[];
+  readonly maxChainLength: number;
+}
+
+interface GestureChain {
+  readonly chainId: string;
+  readonly steps: string[];
+}
+
+export interface AdaptiveGestureSystem {
+  readonly adaptationRate: number;
+  readonly learnedPatterns: BehaviorPattern[];
+}
+
+interface BehaviorPattern {
+  readonly patternId: string;
+  readonly frequency: number;
+}
+
+export interface GestureAccessibilitySystem {
+  readonly assistiveFeatures: string[];
+  readonly sensitivityScaling: number;
+  readonly voiceOverEnabled: boolean;
+}
+
+// Supporting Interaction Types
+export interface GestureInputData {
+  readonly points: GesturePoint[];
+  readonly sensors: SensorData[];
+  readonly context: GestureContext;
+  readonly timestamp: number;
+}
+
+export interface SensorData {
+  readonly type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly data: any;
+  readonly timestamp: number;
+  readonly confidence: number;
+}
+
+export interface GestureContext {
+  readonly environment: string;
+  readonly user_state: string;
+  readonly application_state: string;
+}
+
+export interface InteractionContext {
+  readonly type: string;
+  readonly user_id: string;
+  readonly session_id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly carbon_context: any;
+}
+
+export type GestureTrainingData = TrainingData;
+
+export interface GestureRecognitionResult {
+  readonly gesture: RecognizedGesture;
+  readonly confidence: number;
+  readonly alternatives: AlternativeGesture[];
+  readonly processingTime: number;
+  readonly feedback: GestureFeedback;
+}
+
+export interface RecognizedGesture {
+  readonly gestureId: string;
+  readonly type: GestureType;
+  readonly action: string;
+  readonly parameters: GestureParameter[];
+}
+
+export interface GestureParameter {
+  readonly name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly value: any;
+  readonly confidence: number;
+}
+
+export interface AlternativeGesture {
+  readonly gestureId: string;
+  readonly confidence: number;
+  readonly reason: string;
+}
+
+export interface InteractionSession {
+  readonly sessionId: string;
+  readonly userId: string;
+  readonly startTime: number;
+  readonly interactions: InteractionRecord[];
+  readonly performance: SessionPerformance;
+}
+
+export interface InteractionRecord {
+  readonly interactionId: string;
+  readonly type: string;
+  readonly timestamp: number;
+  readonly success: boolean;
+  readonly duration: number;
+}
+
+export interface SessionPerformance {
+  readonly accuracy: number;
+  readonly efficiency: number;
+  readonly satisfaction: number;
+  readonly learning_progress: number;
+}
+
+export interface AdaptiveInterfaceConfiguration {
+  readonly configurationId: string;
+  readonly adaptations: InterfaceAdaptation[];
+  readonly rationale: AdaptationRationale;
+  readonly performance: AdaptationPerformance;
+}
+
+export interface InterfaceAdaptation {
+  readonly element: string;
+  readonly modification: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly value: any;
+  readonly priority: number;
+}
+
+export interface AdaptationRationale {
+  readonly reasons: string[];
+  readonly evidence: Evidence[];
+  readonly confidence: number;
+}
+
+export interface Evidence {
+  readonly type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly data: any;
+  readonly weight: number;
+}
+
+export interface AdaptationPerformance {
+  readonly expected_improvement: number;
+  readonly measured_improvement?: number;
+  readonly user_satisfaction?: number;
 }
 
 interface MultiTouchGestureSystem {
@@ -165,6 +395,7 @@ interface DisambiguationStrategy {
 
 interface DisambiguationParameter {
   readonly parameter: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly weight: number;
 }
@@ -433,6 +664,7 @@ interface CombinationResult {
 
 interface CombinationParameter {
   readonly parameter: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly source_gesture: string;
 }
@@ -507,13 +739,16 @@ interface TrainingData {
   readonly session: string;
   readonly examples: GestureExample[];
   readonly quality: number;
+  readonly quality_score?: number; // Added for compatibility with AirGestureTrainingData
   readonly timestamp: number;
 }
 
 interface GestureExample {
-  readonly points: GesturePoint[];
-  readonly success: boolean;
-  readonly recognition_time: number;
+  readonly points?: GesturePoint[];
+  readonly hand_data?: HandTrackingData[]; // Added for AirGesture integration
+  readonly label?: string;
+  readonly success?: boolean;
+  readonly recognition_time?: number;
   readonly confidence: number;
 }
 
@@ -540,6 +775,12 @@ interface GesturePersonalization {
 interface PreferenceWeight {
   readonly aspect: 'speed' | 'accuracy' | 'comfort' | 'accessibility';
   readonly weight: number;
+}
+
+interface PerformanceOptimization {
+  readonly techniques: string[];
+  readonly metrics: string[];
+  readonly autoTune: boolean;
 }
 
 interface GestureLearningSystem {
@@ -749,6 +990,7 @@ interface FeedbackPreference {
 
 interface UserCustomization {
   readonly customization: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly value: any;
   readonly timestamp: number;
 }
@@ -1159,17 +1401,9 @@ interface CustomAirGesture {
   readonly performance: AirGesturePerformance;
 }
 
-interface AirGestureTrainingData {
-  readonly session: string;
-  readonly examples: AirGestureExample[];
-  readonly quality_score: number;
-}
+type AirGestureTrainingData = TrainingData;
 
-interface AirGestureExample {
-  readonly hand_data: HandTrackingData[];
-  readonly label: string;
-  readonly confidence: number;
-}
+type _AirGestureExample = GestureExample;
 
 interface HandTrackingData {
   readonly timestamp: number;
@@ -1518,8 +1752,6 @@ export class NextGenInteractionEngineService {
     if (this.isInitialized) return;
 
     try {
-      console.log('🧙 Initializing Next-Generation Interaction Engine...');
-
       // Initialize gesture recognition systems
       await this.initializeGestureRecognition();
 
@@ -1536,9 +1768,6 @@ export class NextGenInteractionEngineService {
       await this.initializeLearningSystem();
 
       this.isInitialized = true;
-      console.log(
-        '✅ Next-Generation Interaction Engine initialized successfully',
-      );
     } catch (error) {
       console.error(
         '❌ Failed to initialize Next-Generation Interaction Engine:',
@@ -1552,8 +1781,6 @@ export class NextGenInteractionEngineService {
     gestureData: GestureInputData,
     context: InteractionContext,
   ): Promise<GestureRecognitionResult> {
-    console.log('👋 Recognizing gesture...');
-
     try {
       // Preprocess gesture data
       const processedData = await this.preprocessGestureData(gestureData);
@@ -1577,14 +1804,11 @@ export class NextGenInteractionEngineService {
       await this.learnFromGestureRecognition(gestureData, result, context);
 
       // Track recognition
-      observabilityService.trackBusinessEvent({
-        eventName: 'gesture_recognized',
-        properties: {
-          gestureType: result.gesture.type,
-          confidence: result.confidence,
-          recognitionTime: result.processingTime,
-          context: context.type,
-        },
+      analyticsService.trackEvent('gesture_recognized', {
+        gestureType: result.gesture.type,
+        confidence: result.confidence,
+        recognitionTime: result.processingTime,
+        context: context.type,
       });
 
       return result;
@@ -1599,8 +1823,6 @@ export class NextGenInteractionEngineService {
     gestureName: string,
     trainingData: GestureTrainingData[],
   ): Promise<UserGesture> {
-    console.log(`🎨 Creating custom gesture: ${gestureName}`);
-
     try {
       // Validate training data
       const validatedData = await this.validateTrainingData(trainingData);
@@ -1628,15 +1850,12 @@ export class NextGenInteractionEngineService {
       await this.storeUserGesture(userId, userGesture);
 
       // Track creation
-      observabilityService.trackBusinessEvent({
-        eventName: 'custom_gesture_created',
-        properties: {
-          userId,
-          gestureId: userGesture.gestureId,
-          gestureName,
-          trainingDataSize: trainingData.length,
-          performance: userGesture.performance.accuracy,
-        },
+      analyticsService.trackEvent('custom_gesture_created', {
+        userId,
+        gestureId: userGesture.gestureId,
+        gestureName,
+        trainingDataSize: trainingData.length,
+        performance: userGesture.performance.accuracy,
       });
 
       return userGesture;
@@ -1651,8 +1870,6 @@ export class NextGenInteractionEngineService {
     interactionHistory: InteractionHistory[],
     currentContext: InteractionContext,
   ): Promise<AdaptiveInterfaceConfiguration> {
-    console.log(`🧠 Adapting interface for user: ${userId}`);
-
     try {
       // Analyze user behavior
       const behaviorAnalysis = await this.analyzeUserBehavior(
@@ -1681,10 +1898,166 @@ export class NextGenInteractionEngineService {
     }
   }
 
+  private async initializeVoiceInterface(): Promise<void> {}
+
+  private async initializeAdaptiveInterface(): Promise<void> {}
+
+  private async initializeHapticFeedback(): Promise<void> {}
+
+  private async initializeLearningSystem(): Promise<void> {}
+
+  private async preprocessGestureData(
+    data: GestureInputData,
+  ): Promise<GestureInputData> {
+    return data;
+  }
+
+  private async extractGestureFeatures(
+    data: GestureInputData,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    return data;
+  }
+
+  private async runGestureRecognition(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _features: any,
+    _context: InteractionContext,
+  ): Promise<GestureRecognitionResult[]> {
+    return [];
+  }
+
+  private async postProcessRecognition(
+    _results: GestureRecognitionResult[],
+    _context: InteractionContext,
+  ): Promise<GestureRecognitionResult> {
+    return {
+      gesture: {
+        gestureId: 'unknown',
+        type: 'tap',
+        action: 'none',
+        parameters: [],
+      },
+      confidence: 0,
+      alternatives: [],
+      processingTime: 0,
+      feedback: await this.createCarbonFeedback(),
+    };
+  }
+
+  private async learnFromGestureRecognition(
+    _data: GestureInputData,
+    _result: GestureRecognitionResult,
+    _context: InteractionContext,
+  ): Promise<void> {
+    // Learning logic
+  }
+
+  private async validateTrainingData(
+    data: GestureTrainingData[],
+  ): Promise<GestureTrainingData[]> {
+    return data;
+  }
+
+  private async extractGesturePattern(
+    _data: GestureTrainingData[],
+  ): Promise<GesturePattern> {
+    return {
+      points: [],
+      timing: [],
+      spatial: [],
+      force: [],
+      variability: { spatial: 0, temporal: 0, force: 0, adaptation: false },
+    };
+  }
+
+  private async trainCustomGestureModel(
+    _pattern: GesturePattern,
+    _data: GestureTrainingData[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    return {};
+  }
+
+  private async evaluateGesturePerformance(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _model: any,
+    _data: GestureTrainingData[],
+  ): Promise<GesturePerformance> {
+    return {
+      accuracy: 1.0,
+      speed: 1.0,
+      consistency: 1.0,
+      user_satisfaction: 1.0,
+    };
+  }
+
+  private async storeUserGesture(
+    _userId: string,
+    _gesture: UserGesture,
+  ): Promise<void> {
+    // Storage logic
+  }
+
+  private async analyzeUserBehavior(
+    _history: InteractionHistory[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    return {};
+  }
+
+  private async analyzeCurrentContext(
+    _context: InteractionContext,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    return {};
+  }
+
+  private async generateInterfaceAdaptations(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _behavior: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _context: any,
+  ): Promise<InterfaceAdaptation[]> {
+    return [];
+  }
+
+  private async applyInterfaceAdaptations(
+    adaptations: InterfaceAdaptation[],
+  ): Promise<AdaptiveInterfaceConfiguration> {
+    return {
+      configurationId: 'default',
+      adaptations,
+      rationale: { reasons: [], evidence: [], confidence: 1.0 },
+      performance: { expected_improvement: 1.0 },
+    };
+  }
+
+  private async learnFromInterfaceAdaptation(
+    _userId: string,
+    _config: AdaptiveInterfaceConfiguration,
+  ): Promise<void> {
+    // Learning logic
+  }
+
+  private async createImpactPinchGesture(): Promise<GestureRecognizer> {
+    return this.createCarbonSwipeGesture();
+  }
+
+  private async createGoalTapGesture(): Promise<GestureRecognizer> {
+    return this.createCarbonSwipeGesture();
+  }
+
+  private async createComparisonRotateGesture(): Promise<GestureRecognizer> {
+    return this.createCarbonSwipeGesture();
+  }
+
+  private async createAchievementCelebrationGesture(): Promise<GestureRecognizer> {
+    return this.createCarbonSwipeGesture();
+  }
+
   // Private implementation methods
   private async initializeGestureRecognition(): Promise<void> {
-    console.log('👋 Initializing gesture recognition systems...');
-
     // Load default gesture recognizers
     const defaultGestures = await this.loadDefaultGestures();
     for (const gesture of defaultGestures) {
@@ -1862,119 +2235,10 @@ export class NextGenInteractionEngineService {
     this.gestureRecognizers.clear();
     this.userProfiles.clear();
     this.interactionSessions.clear();
-    console.log('🛑 Next-Generation Interaction Engine destroyed');
   }
 }
 
-// Supporting interfaces and types
-interface GestureInputData {
-  readonly points: GesturePoint[];
-  readonly sensors: SensorData[];
-  readonly context: GestureContext;
-  readonly timestamp: number;
-}
-
-interface SensorData {
-  readonly type: string;
-  readonly data: any;
-  readonly timestamp: number;
-  readonly confidence: number;
-}
-
-interface GestureContext {
-  readonly environment: string;
-  readonly user_state: string;
-  readonly application_state: string;
-}
-
-interface InteractionContext {
-  readonly type: string;
-  readonly user_id: string;
-  readonly session_id: string;
-  readonly carbon_context: any;
-}
-
-interface GestureRecognitionResult {
-  readonly gesture: RecognizedGesture;
-  readonly confidence: number;
-  readonly alternatives: AlternativeGesture[];
-  readonly processingTime: number;
-  readonly feedback: GestureFeedback;
-}
-
-interface RecognizedGesture {
-  readonly gestureId: string;
-  readonly type: GestureType;
-  readonly action: string;
-  readonly parameters: GestureParameter[];
-}
-
-interface GestureParameter {
-  readonly name: string;
-  readonly value: any;
-  readonly confidence: number;
-}
-
-interface AlternativeGesture {
-  readonly gestureId: string;
-  readonly confidence: number;
-  readonly reason: string;
-}
-
-interface InteractionSession {
-  readonly sessionId: string;
-  readonly userId: string;
-  readonly startTime: number;
-  readonly interactions: InteractionRecord[];
-  readonly performance: SessionPerformance;
-}
-
-interface InteractionRecord {
-  readonly interactionId: string;
-  readonly type: string;
-  readonly timestamp: number;
-  readonly success: boolean;
-  readonly duration: number;
-}
-
-interface SessionPerformance {
-  readonly accuracy: number;
-  readonly efficiency: number;
-  readonly satisfaction: number;
-  readonly learning_progress: number;
-}
-
-interface AdaptiveInterfaceConfiguration {
-  readonly configurationId: string;
-  readonly adaptations: InterfaceAdaptation[];
-  readonly rationale: AdaptationRationale;
-  readonly performance: AdaptationPerformance;
-}
-
-interface InterfaceAdaptation {
-  readonly element: string;
-  readonly modification: string;
-  readonly value: any;
-  readonly priority: number;
-}
-
-interface AdaptationRationale {
-  readonly reasons: string[];
-  readonly evidence: Evidence[];
-  readonly confidence: number;
-}
-
-interface Evidence {
-  readonly type: string;
-  readonly data: any;
-  readonly weight: number;
-}
-
-interface AdaptationPerformance {
-  readonly expected_improvement: number;
-  readonly measured_improvement?: number;
-  readonly user_satisfaction?: number;
-}
+// Supporting interfaces and types consolidated at the top
 
 // Export singleton instance
 export const nextGenInteractionEngine = new NextGenInteractionEngineService();

@@ -8,7 +8,7 @@ import type {
 import analytics from '@react-native-firebase/analytics';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { performanceService } from '@services/PerformanceService';
+import { modernAPMService } from '@services/ModernAPMService';
 
 type NavigationParams = RootStackParamList &
   AuthStackParamList &
@@ -24,7 +24,7 @@ export function useAppNavigation() {
   ) => {
     try {
       // Start performance tracking
-      await performanceService.startTrace(`navigation_${screen as string}`);
+      await modernAPMService.startTraceSimple(`navigation_${screen as string}`);
 
       // Track screen view in analytics
       await analytics().logScreenView({
@@ -36,7 +36,7 @@ export function useAppNavigation() {
       navigation.navigate(screen, params);
 
       // Stop performance tracking
-      await performanceService.stopTrace(`navigation_${screen as string}`);
+      await modernAPMService.stopTraceSimple(`navigation_${screen as string}`);
     } catch (error) {
       console.error('Navigation error:', error);
     }

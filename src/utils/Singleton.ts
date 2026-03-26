@@ -60,7 +60,8 @@ export abstract class SingletonBase<_T> {
   }
 
   static getInstance<T>(this: new () => T): T {
-    const key = (this as unknown as typeof SingletonBase).instanceKey();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const key = (this as any as typeof SingletonBase).instanceKey();
     if (!SingletonBase._instances.has(key)) {
       SingletonBase._instances.set(key, new (this as new () => T)());
     }
@@ -69,7 +70,8 @@ export abstract class SingletonBase<_T> {
 
   /** Reset the singleton (useful in tests) */
   static _reset(): void {
-    const key = (this as unknown as typeof SingletonBase).instanceKey();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const key = (this as any as typeof SingletonBase).instanceKey();
     SingletonBase._instances.delete(key);
   }
 }
@@ -97,21 +99,25 @@ import { container } from 'tsyringe';
  *   const log = serviceRegistry.get<LoggerService>('logger');
  */
 export const serviceRegistry = {
-  register<_T>(token: any, provider: any): void {
-    container.register(token, provider);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  register<T>(token: any, instance: T): void {
+    container.registerInstance(token, instance);
   },
 
-  get<T>(token: any): T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resolve<T>(token: any): T {
     if (!container.isRegistered(token)) {
       throw new Error(`ServiceRegistry: '${String(token)}' not registered.`);
     }
     return container.resolve<T>(token);
   },
 
-  has(token: any): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isRegistered(token: any): boolean {
     return container.isRegistered(token);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unregister(_token: any): void {
     container.clearInstances();
   },

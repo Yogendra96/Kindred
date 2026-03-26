@@ -1,15 +1,17 @@
-// @ts-nocheck
-/* eslint-disable */
 /**
  * Comprehensive Observability Service for production monitoring
  * Includes APM, Real User Monitoring, Business Metrics, and Alerting
  */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import loggingService from './/LoggerService';
+import loggingService from './LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import type { AppStateStatus } from 'react-native';
-import { Platform, AppState } from 'react-native';
+import {
+  Platform,
+  AppState,
+  type NativeEventSubscription,
+  type AppStateStatus,
+} from 'react-native';
+import type { NetInfoSubscription } from '@react-native-community/netinfo';
 
 export interface MetricData {
   readonly name: string;
@@ -25,7 +27,7 @@ export interface BusinessMetric {
   readonly userId?: string;
   readonly sessionId: string;
   readonly timestamp: number;
-  readonly properties: Record<string, unknown>;
+  readonly properties: Record<string, any>;
   readonly value?: number;
   readonly currency?: string;
 }
@@ -38,7 +40,7 @@ export interface UserJourneyEvent {
   readonly duration?: number;
   readonly success: boolean;
   readonly errorCode?: string;
-  readonly metadata?: Record<string, unknown>;
+  readonly metadata?: Record<string, any>;
 }
 
 export interface PerformanceMetric {
@@ -48,7 +50,7 @@ export interface PerformanceMetric {
   readonly threshold?: number;
   readonly severity: 'info' | 'warning' | 'critical';
   readonly timestamp: number;
-  readonly context: Record<string, unknown>;
+  readonly context: Record<string, any>;
 }
 
 export interface AlertRule {
@@ -80,12 +82,13 @@ class ObservabilityService {
   private readonly businessMetricsBuffer: BusinessMetric[] = [];
   private readonly journeyEventsBuffer: UserJourneyEvent[] = [];
   private readonly performanceMetricsBuffer: PerformanceMetric[] = [];
+  private readonly sessionId: string;
 
-  private sessionId: string;
   private userId?: string;
-  private flushTimer?: NodeJS.Timeout;
-  private appStateSubscription?: any;
-  private networkSubscription?: any;
+  private flushTimer?: ReturnType<typeof setInterval>;
+  private appStateSubscription?: NativeEventSubscription;
+  private networkSubscription?: NetInfoSubscription;
+  private sessionStartTime: number | null = null;
 
   // Core Web Vitals tracking
   private readonly coreVitals = {
@@ -141,19 +144,27 @@ class ObservabilityService {
       // Track app startup metrics
       this.trackStartupMetrics(Date.now() - startTime);
 
-      loggingService.info('Observability Service initialized', {
-        sessionId: this.sessionId,
-        platform: Platform.OS,
-        enabledFeatures: {
-          rum: this.config.enableRUM,
-          apm: this.config.enableAPM,
-          businessMetrics: this.config.enableBusinessMetrics,
+      loggingService.info(
+        'Observability',
+        'Observability Service initialized',
+        {
+          sessionId: this.sessionId,
+          platform: Platform.OS,
+          enabledFeatures: {
+            rum: this.config.enableRUM,
+            apm: this.config.enableAPM,
+            businessMetrics: this.config.enableBusinessMetrics,
+          },
         },
-      });
+      );
     } catch (error) {
-      loggingService.error('Failed to initialize Observability Service', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      loggingService.error(
+        'Observability',
+        'Failed to initialize Observability Service',
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
       throw error;
     }
   }
@@ -177,7 +188,7 @@ class ObservabilityService {
       this.checkAlerts(metric);
     }
 
-    loggingService.debug('Metric tracked', {
+    loggingService.debug('Observability', 'Metric tracked', {
       metric: metric.name,
       value: metric.value,
     });
@@ -200,7 +211,7 @@ class ObservabilityService {
     this.businessMetricsBuffer.push(event);
     this.checkBufferSize();
 
-    loggingService.debug('Business event tracked', {
+    loggingService.debug('Observability', 'Business event tracked', {
       eventName: event.eventName,
     });
   }
@@ -219,7 +230,7 @@ class ObservabilityService {
     this.journeyEventsBuffer.push(journeyEvent);
     this.checkBufferSize();
 
-    loggingService.debug('User journey tracked', {
+    loggingService.debug('Observability', 'User journey tracked', {
       step: journeyEvent.stepName,
       screen: journeyEvent.screenName,
     });
@@ -244,7 +255,7 @@ class ObservabilityService {
       perfMetric.severity === 'critical' ||
       perfMetric.severity === 'warning'
     ) {
-      loggingService.warn('Performance issue detected', {
+      loggingService.warn('Observability', 'Performance issue detected', {
         metric: perfMetric.name,
         value: perfMetric.value,
         threshold: perfMetric.threshold,
@@ -335,7 +346,7 @@ class ObservabilityService {
   trackUserAction(
     action: string,
     screen: string,
-    properties: Record<string, unknown> = {},
+    properties: Record<string, any> = {},
   ): void {
     this.trackBusinessEvent({
       eventName: 'user_action',
@@ -353,7 +364,7 @@ class ObservabilityService {
    */
   trackError(
     error: Error,
-    context: Record<string, unknown> = {},
+    context: Record<string, any> = {},
     severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
   ): void {
     if (!this.config.enableErrorTracking) return;
@@ -372,7 +383,11 @@ class ObservabilityService {
 
     // Log immediately for critical errors
     if (severity === 'critical' || severity === 'high') {
-      loggingService.error('Critical error tracked', errorData);
+      loggingService.error(
+        'Observability',
+        'Critical error tracked',
+        errorData,
+      );
     }
 
     this.trackBusinessEvent({
@@ -386,7 +401,13 @@ class ObservabilityService {
    * Generate observability dashboard data
    */
   getDashboardMetrics(): {
-    coreVitals: typeof this.coreVitals;
+    coreVitals: {
+      firstContentfulPaint: number;
+      largestContentfulPaint: number;
+      firstInputDelay: number;
+      cumulativeLayoutShift: number;
+      timeToInteractive: number;
+    };
     sessionMetrics: {
       sessionId: string;
       userId?: string;
@@ -406,8 +427,9 @@ class ObservabilityService {
       topEvents: Array<{ name: string; count: number }>;
     };
   } {
-    const sessionStart = this.getSessionStartTime();
-    const sessionDuration = sessionStart ? Date.now() - sessionStart : 0;
+    const sessionDuration = this.sessionStartTime
+      ? Date.now() - this.sessionStartTime
+      : 0;
 
     const apiCalls = this.performanceMetricsBuffer.filter(
       m => m.metricType === 'network' && m.name === 'api_call_duration',
@@ -495,26 +517,27 @@ class ObservabilityService {
       // Clear buffers
       this.clearBuffers();
 
-      loggingService.debug('Observability data flushed', {
+      loggingService.debug('Observability', 'Observability data flushed', {
         metricsCount: batchData.metrics.length,
         businessEventsCount: batchData.businessEvents.length,
         journeyEventsCount: batchData.journeyEvents.length,
         performanceMetricsCount: batchData.performanceMetrics.length,
       });
     } catch (error) {
-      loggingService.error('Failed to flush observability data', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      loggingService.error(
+        'Observability',
+        'Failed to flush observability data',
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
     }
   }
 
   /**
    * Set user context
    */
-  setUserContext(
-    userId: string,
-    properties: Record<string, unknown> = {},
-  ): void {
+  setUserContext(userId: string, properties: Record<string, any> = {}): void {
     this.userId = userId;
 
     this.trackBusinessEvent({
@@ -523,7 +546,7 @@ class ObservabilityService {
       properties,
     });
 
-    loggingService.info('User context set', { userId });
+    loggingService.info('Observability', 'User context set', { userId });
   }
 
   /**
@@ -531,7 +554,9 @@ class ObservabilityService {
    */
   createAlertRule(rule: AlertRule): void {
     // In production, store in persistent storage or send to alerting system
-    loggingService.info('Alert rule created', { rule: rule.name });
+    loggingService.info('Observability', 'Alert rule created', {
+      rule: rule.name,
+    });
   }
 
   // Private methods
@@ -546,10 +571,9 @@ class ObservabilityService {
 
   private async initializeSession(): Promise<void> {
     try {
-      await AsyncStorage.setItem(
-        'observability_session_start',
-        Date.now().toString(),
-      );
+      const now = Date.now();
+      await AsyncStorage.setItem('observability_session_start', now.toString());
+      this.sessionStartTime = now;
 
       this.trackBusinessEvent({
         eventName: 'session_started',
@@ -559,7 +583,9 @@ class ObservabilityService {
         },
       });
     } catch (error) {
-      loggingService.warn('Failed to initialize session', { error });
+      loggingService.warn('Observability', 'Failed to initialize session', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -703,7 +729,7 @@ class ObservabilityService {
       alertState.count++;
     }
 
-    loggingService.warn('Alert triggered', {
+    loggingService.warn('Observability', 'Alert triggered', {
       ruleName: rule.name,
       severity: rule.severity,
       threshold: rule.threshold,
@@ -721,7 +747,8 @@ class ObservabilityService {
     });
   }
 
-  private async sendToObservabilityPlatform(data: unknown): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async sendToObservabilityPlatform(data: any): Promise<void> {
     // In production, implement integration with your observability platform
     // Examples: DataDog, New Relic, Dynatrace, Elastic APM, etc.
 
@@ -736,17 +763,24 @@ class ObservabilityService {
       //   body: JSON.stringify(data),
       // });
 
-      loggingService.debug('Data sent to observability platform', {
-        dataType: typeof data,
-      });
+      loggingService.debug(
+        'Observability',
+        'Data sent to observability platform',
+        {
+          dataType: typeof data,
+        },
+      );
     } catch (error) {
-      loggingService.error('Failed to send data to observability platform', {
-        error,
-      });
+      loggingService.error(
+        'Observability',
+        'Failed to send data to observability platform',
+        { error },
+      );
     }
   }
 
-  private async storeLocalBackup(data: unknown): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async storeLocalBackup(data: any): Promise<void> {
     try {
       const backupKey = `observability_backup_${Date.now()}`;
       await AsyncStorage.setItem(backupKey, JSON.stringify(data));
@@ -754,7 +788,9 @@ class ObservabilityService {
       // Clean up old backups (keep last 10)
       await this.cleanupOldBackups();
     } catch (error) {
-      loggingService.warn('Failed to store local backup', { error });
+      loggingService.warn('Observability', 'Failed to store local backup', {
+        error,
+      });
     }
   }
 
@@ -770,7 +806,9 @@ class ObservabilityService {
       const keysToDelete = backupKeys.slice(10);
       await AsyncStorage.multiRemove(keysToDelete);
     } catch (error) {
-      loggingService.warn('Failed to cleanup old backups', { error });
+      loggingService.warn('Observability', 'Failed to cleanup old backups', {
+        error,
+      });
     }
   }
 
@@ -786,6 +824,11 @@ class ObservabilityService {
    */
   cleanup(): void {
     if (this.flushTimer) {
+      loggingService.info(
+        'Observability',
+        'Cleaning up Observability Service',
+        { sessionId: this.sessionId },
+      );
       clearInterval(this.flushTimer);
       this.flushTimer = undefined;
     }
@@ -806,7 +849,7 @@ class ObservabilityService {
     this.clearBuffers();
     this.alertStates.clear();
 
-    loggingService.info('Observability Service cleaned up');
+    loggingService.info('Observability', 'Observability Service cleaned up');
   }
 }
 

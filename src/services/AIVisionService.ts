@@ -1,8 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { enhancedSecurityService } from './EnhancedSecurityService';
-import loggingService from './/LoggerService';
+import { modernAPMService } from './ModernAPMService';
+import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
+import loggingService from './LoggerService';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { Platform } from 'react-native';
@@ -121,11 +121,12 @@ class AIVisionService {
 
       this.isInitialized = true;
 
-      enhancedPerformanceService.recordMetric(
-        'ai_vision_service_init',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'ai_vision_service_init',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       loggingService.info('AI Vision Service initialized successfully', {
         modelsLoaded: this.models.size,
@@ -229,11 +230,12 @@ class AIVisionService {
         await this.cacheModel(modelType, model);
       }
 
-      enhancedPerformanceService.recordMetric(
-        `model_load_${modelType}`,
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: `model_load_${modelType}`,
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       loggingService.info(`${modelType} model loaded successfully`, {
         loadTime: Date.now() - startTime,
@@ -253,7 +255,7 @@ class AIVisionService {
     modelType: string,
   ): Promise<tf.LayersModel | null> {
     try {
-      const cachedData = await enhancedSecurityService.secureRetrieve(
+      const cachedData = await zeroTrustSecurityService.secureRetrieve(
         `model_${modelType}`,
       );
       if (cachedData) {
@@ -275,7 +277,7 @@ class AIVisionService {
       const modelArtifacts = await model.save(
         tf.io.withSaveHandler(async artifacts => artifacts),
       );
-      await enhancedSecurityService.secureStore(
+      await zeroTrustSecurityService.secureStore(
         `model_${modelType}`,
         modelArtifacts,
       );
@@ -314,11 +316,12 @@ class AIVisionService {
       imageTensor.dispose();
       predictions.dispose();
 
-      enhancedPerformanceService.recordMetric(
-        'waste_classification_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'waste_classification_time',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       loggingService.info('Waste image classified', {
         category: result.category,
@@ -362,11 +365,12 @@ class AIVisionService {
       imageTensor.dispose();
       predictions.dispose();
 
-      enhancedPerformanceService.recordMetric(
-        'food_recognition_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'food_recognition_time',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       return {
         ...result,
@@ -404,11 +408,12 @@ class AIVisionService {
       imageTensor.dispose();
       predictions.dispose();
 
-      enhancedPerformanceService.recordMetric(
-        'transport_detection_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'transport_detection_time',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       return {
         ...result,
@@ -444,11 +449,12 @@ class AIVisionService {
       imageTensor.dispose();
       predictions.dispose();
 
-      enhancedPerformanceService.recordMetric(
-        'energy_meter_reading_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'energy_meter_reading_time',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       return result;
     } catch (error) {
@@ -466,6 +472,7 @@ class AIVisionService {
       const imageBuffer = await response.arrayBuffer();
 
       // Decode image
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const imageTensor = (tf as any).node.decodeImage(
         new Uint8Array(imageBuffer),
         3,
@@ -809,11 +816,11 @@ class AIVisionService {
         }),
       );
 
-      enhancedPerformanceService.recordMetric(
-        'batch_image_classification',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'batch_image_classification',
+        value: Date.now() - startTime,
+        unit: 'ms',
+      });
 
       return results;
     } catch (error) {
@@ -824,6 +831,7 @@ class AIVisionService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getModelInfo(): { [key: string]: any } {
     return {
       modelsLoaded: Array.from(this.models.keys()),

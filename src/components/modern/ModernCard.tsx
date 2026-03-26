@@ -22,7 +22,7 @@ import {
 import type { Theme } from '../../design-system/ModernDesignSystem';
 import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
 import { hapticFeedbackService } from '../../services/HapticFeedbackService';
-import { observabilityService } from '../../services/ObservabilityService';
+import analyticsService from '../../services/AnalyticsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -431,7 +431,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       }
 
       // Track interaction
-      observabilityService.trackUserAction('card_gesture', 'current', {
+      analyticsService.trackUserAction('card_gesture', 'current', {
         gesture,
         data,
         cardVariant: variant,

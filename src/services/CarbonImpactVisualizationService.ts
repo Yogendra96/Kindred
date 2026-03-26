@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { CarbonAPIService } from './CarbonAPIService';
 import { createSingleton } from '../utils/Singleton';
-import { EnhancedUserAnalyticsService } from './EnhancedUserAnalyticsService';
+import { analyticsService } from './AnalyticsService';
 import { Dimensions } from 'react-native';
 
 // Chart and visualization types
@@ -374,7 +374,7 @@ export interface VisualizationTheme {
 
 class CarbonImpactVisualizationService {
   private carbonAPI: CarbonAPIService;
-  private analytics: EnhancedUserAnalyticsService;
+  private analytics: typeof analyticsService;
   private themes: Map<string, VisualizationTheme> = new Map();
   private colorSchemes: Map<string, ColorScheme> = new Map();
   private dashboards: Map<string, CarbonDashboard> = new Map();
@@ -384,7 +384,7 @@ class CarbonImpactVisualizationService {
 
   constructor() {
     this.carbonAPI = new CarbonAPIService();
-    this.analytics = EnhancedUserAnalyticsService;
+    this.analytics = analyticsService;
     this.initializeThemes();
     this.initializeColorSchemes();
   }

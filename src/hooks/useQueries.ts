@@ -68,6 +68,7 @@ const api = {
     }
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateUserProfile: async (updates: any) => {
     const log = logger.withTag('api:updateUserProfile');
     const stopPerf = log.perf('update');

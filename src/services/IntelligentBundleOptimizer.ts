@@ -8,7 +8,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import { observabilityService } from './ObservabilityService';
+import { modernAPMService } from './ModernAPMService';
 
 // Bundle Analysis Types
 interface BundleAnalysis {
@@ -149,13 +149,7 @@ class DynamicImportManager {
       this.recordAccess(moduleId);
 
       // Track performance
-      observabilityService.trackPerformance({
-        metricType: 'network',
-        name: 'dynamic_import_time',
-        value: loadTime,
-        severity: loadTime > 1000 ? 'warning' : 'info',
-        context: { moduleId, priority },
-      });
+      modernAPMService.recordMetric('dynamic_import_time', loadTime, 'ms', { moduleId, priority });
 
       return module;
     } catch (error) {
@@ -364,21 +358,9 @@ class BundleSizeMonitor {
 
   private checkThresholds(size: number): void {
     if (size > this.thresholds.critical) {
-      observabilityService.trackPerformance({
-        metricType: 'custom',
-        name: 'bundle_size_critical',
-        value: size,
-        severity: 'critical',
-        context: { threshold: this.thresholds.critical },
-      });
+      modernAPMService.recordMetric('bundle_size_critical', size, 'bytes', { threshold: this.thresholds.critical });
     } else if (size > this.thresholds.warning) {
-      observabilityService.trackPerformance({
-        metricType: 'custom',
-        name: 'bundle_size_warning',
-        value: size,
-        severity: 'warning',
-        context: { threshold: this.thresholds.warning },
-      });
+      modernAPMService.recordMetric('bundle_size_warning', size, 'bytes', { threshold: this.thresholds.warning });
     }
   }
 

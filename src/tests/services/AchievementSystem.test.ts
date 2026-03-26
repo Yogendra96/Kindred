@@ -12,9 +12,11 @@ jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-async-storage/async-storage');
 
 // Mock other services
-jest.mock('../../services/PerformanceMonitoringService', () => ({
-  startTrace: jest.fn(),
-  stopTrace: jest.fn(),
+jest.mock('../../services/ModernAPMService', () => ({
+  modernAPMService: {
+    startTrace: jest.fn(),
+    stopTrace: jest.fn(),
+  },
 }));
 
 jest.mock('../../services/SocialFeaturesService', () => ({

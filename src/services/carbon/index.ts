@@ -69,18 +69,21 @@ export type {
  * Quick access to main calculation function
  * Usage: import { calculateEmissions } from '@services/carbon';
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const calculateEmissions = (request: any) =>
   _carbonServiceLocal.calculateEmissions(request);
 
 /**
  * Quick access to batch calculation
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const batchCalculateEmissions = (requests: any[]) =>
   _carbonServiceLocal.batchCalculateEmissions(requests);
 
 /**
  * Quick access to form conversion
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const convertToFormCalculation = (response: any) =>
   _carbonServiceLocal.convertToFormCalculation(response);
 

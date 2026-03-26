@@ -1,6 +1,6 @@
-import { enhancedSecurityService } from '../EnhancedSecurityService';
+import { zeroTrustSecurityService } from '../ZeroTrustSecurityService';
 import { notificationService } from '../NotificationService';
-import { enhancedPerformanceService } from '../EnhancedPerformanceService';
+import { modernAPMService } from '../ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -35,17 +35,19 @@ jest.mock('expo-task-manager', () => ({
   defineTask: jest.fn(),
 }));
 jest.mock('@react-native-async-storage/async-storage');
-jest.mock('../EnhancedPerformanceService', () => ({
+jest.mock('../ModernAPMService', () => ({
   __esModule: true,
-  enhancedPerformanceService: {
+  modernAPMService: {
     startTimer: jest.fn(),
     endTimer: jest.fn(),
     recordMetric: jest.fn(),
+    startTrace: jest.fn(),
+    stopTrace: jest.fn(),
   },
 }));
-jest.mock('../EnhancedSecurityService', () => ({
+jest.mock('../ZeroTrustSecurityService', () => ({
   __esModule: true,
-  enhancedSecurityService: {
+  zeroTrustSecurityService: {
     secureRetrieve: jest.fn(),
     secureStore: jest.fn(),
   },
@@ -60,10 +62,10 @@ jest.mock('react-native', () => ({
 
 const mockLocation = Location as any;
 const mockTaskManager = TaskManager as any;
-const mockAsyncStorage = AsyncStorage as any;
-const mockPerformanceMonitoring = enhancedPerformanceService as any;
-const mockSecurityService = enhancedSecurityService as any;
-const mockNotificationService = notificationService as any;
+const _mockAsyncStorage = AsyncStorage as any;
+const mockPerformanceMonitoring = modernAPMService as any;
+const mockSecurityService = zeroTrustSecurityService as any;
+const _mockNotificationService = notificationService as any;
 
 const mockLocationObject: Location.LocationObject = {
   coords: {
@@ -155,9 +157,11 @@ describe('LocationService', () => {
 
       expect(LocationService.isServiceInitialized()).toBe(true);
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_service_init',
-        expect.any(Number),
-        'ms',
+        expect.objectContaining({
+          name: 'location_service_init',
+          value: expect.any(Number),
+          unit: 'ms',
+        }),
       );
     });
 
@@ -215,9 +219,11 @@ describe('LocationService', () => {
       expect(mockLocation.requestForegroundPermissionsAsync).toHaveBeenCalled();
       expect(permissions.foreground).toBe('granted');
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_permissions_request',
-        expect.any(Number),
-        'ms',
+        expect.objectContaining({
+          name: 'location_permissions_request',
+          value: expect.any(Number),
+          unit: 'ms',
+        }),
       );
     });
 
@@ -242,9 +248,11 @@ describe('LocationService', () => {
       expect(permissions.foreground).toBe('denied');
       expect(permissions.canAskAgain).toBe(false);
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_permissions_request',
-        expect.any(Number),
-        'ms',
+        expect.objectContaining({
+          name: 'location_permissions_request',
+          value: expect.any(Number),
+          unit: 'ms',
+        }),
       );
     });
   });
@@ -267,9 +275,11 @@ describe('LocationService', () => {
       expect(location.longitude).toBe(-122.4194);
       expect(location.city).toBe('San Francisco');
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_retrieved',
-        expect.any(Number),
-        'ms',
+        expect.objectContaining({
+          name: 'location_retrieved',
+          value: expect.any(Number),
+          unit: 'ms',
+        }),
       );
     });
 
@@ -294,8 +304,10 @@ describe('LocationService', () => {
       expect(mockLocation.watchPositionAsync).toHaveBeenCalled();
       expect(LocationService.isLocationTrackingActive()).toBe(true);
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_tracking_started',
-        1,
+        expect.objectContaining({
+          name: 'location_tracking_started',
+          value: 1,
+        }),
       );
     });
 
@@ -311,8 +323,10 @@ describe('LocationService', () => {
       expect(mockSubscription.remove).toHaveBeenCalled();
       expect(LocationService.isLocationTrackingActive()).toBe(false);
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_tracking_stopped',
-        1,
+        expect.objectContaining({
+          name: 'location_tracking_stopped',
+          value: 1,
+        }),
       );
     });
 
@@ -328,8 +342,10 @@ describe('LocationService', () => {
         'Location permissions not granted',
       );
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_tracking_start_error',
-        1,
+        expect.objectContaining({
+          name: 'location_tracking_start_error',
+          value: 1,
+        }),
       );
     });
   });
@@ -348,8 +364,10 @@ describe('LocationService', () => {
         }),
       );
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'background_location_started',
-        1,
+        expect.objectContaining({
+          name: 'background_location_started',
+          value: 1,
+        }),
       );
     });
 
@@ -770,8 +788,10 @@ describe('LocationService', () => {
       expect(mockSubscription.remove).toHaveBeenCalled();
       expect(LocationService.isServiceInitialized()).toBe(false);
       expect(mockPerformanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'location_service_cleanup',
-        1,
+        expect.objectContaining({
+          name: 'location_service_cleanup',
+          value: 1,
+        }),
       );
     });
   });

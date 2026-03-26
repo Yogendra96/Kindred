@@ -216,7 +216,7 @@ class AccessibilityService {
    * Validate accessibility compliance for a component
    */
   auditComponent(
-    componentProps: Record<string, unknown>,
+    componentProps: Record<string, any>,
   ): AccessibilityAuditResult[] {
     const results: AccessibilityAuditResult[] = [];
 
@@ -251,7 +251,7 @@ class AccessibilityService {
     }
 
     // Check for sufficient touch target size (44x44 minimum)
-    const style = componentProps.style as Record<string, unknown>;
+    const style = componentProps.style as Record<string, any>;
     if (
       style &&
       ((typeof style.width === 'number' && style.width < 44) ||

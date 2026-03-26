@@ -40,6 +40,7 @@ httpClient.interceptors.request.use(
     );
 
     // Add performance marker
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (config as any).metadata = { startTime: Date.now() };
 
     return config;
@@ -53,6 +54,7 @@ httpClient.interceptors.request.use(
 // Response Interceptor
 httpClient.interceptors.response.use(
   response => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const startTime = (response.config as any)?.metadata?.startTime;
     const latency = startTime ? Date.now() - startTime : undefined;
 

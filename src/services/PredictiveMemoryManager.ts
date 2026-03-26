@@ -7,7 +7,7 @@
  */
 
 import { Platform, NativeModules, DeviceEventEmitter } from 'react-native';
-import { observabilityService } from './ObservabilityService';
+import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Advanced Memory Metrics
@@ -382,16 +382,10 @@ class MemoryPatternAnalyzer {
     console.warn('🚨 Memory leak detected:', leak);
 
     // Report to observability service
-    observabilityService.trackPerformance({
-      metricType: 'memory',
-      name: 'memory_leak_detected',
-      value: leak.growthRate,
-      severity: leak.severity === 'critical' ? 'critical' : 'warning',
-      context: {
-        leakType: leak.type,
-        pattern: leak.pattern,
-        timeToOOM: leak.predictedImpact.timeToOOM,
-      },
+    modernAPMService.recordMetric('memory_leak_detected', leak.growthRate, 'bytes', {
+      leakType: leak.type,
+      pattern: leak.pattern,
+      timeToOOM: leak.predictedImpact.timeToOOM,
     });
   }
 
@@ -435,6 +429,7 @@ class MemoryPatternAnalyzer {
 // Main Predictive Memory Manager
 export class PredictiveMemoryManager {
   private readonly analyzer: MemoryPatternAnalyzer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly objectPools = new Map<string, AdvancedObjectPool<any>>();
   private readonly componentTrackers = new Map<
     string,
@@ -706,15 +701,9 @@ export class PredictiveMemoryManager {
     await this.aggressiveMemoryCleanup();
 
     // Report critical memory usage
-    observabilityService.trackPerformance({
-      metricType: 'memory',
-      name: 'critical_memory_usage',
-      value: metrics.usedMemory,
-      severity: 'critical',
-      context: {
-        totalMemory: metrics.totalMemory,
-        fragmentationRatio: metrics.fragmentationRatio,
-      },
+    modernAPMService.recordMetric('critical_memory_usage', metrics.usedMemory, 'bytes', {
+      totalMemory: metrics.totalMemory,
+      fragmentationRatio: metrics.fragmentationRatio,
     });
   }
 

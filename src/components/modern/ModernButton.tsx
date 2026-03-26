@@ -25,7 +25,7 @@ import {
 import type { Theme } from '../../design-system/ModernDesignSystem';
 import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
 import { hapticFeedbackService } from '../../services/HapticFeedbackService';
-import { observabilityService } from '../../services/ObservabilityService';
+import analyticsService from '../../services/AnalyticsService';
 
 // Advanced Button Configuration
 export interface ModernButtonProps {
@@ -375,7 +375,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     }
 
     // Track button interaction
-    observabilityService.trackUserAction('button_press', 'current', {
+    analyticsService.trackUserAction('button_press', 'current', {
       variant,
       size: responsiveActualSize,
       disabled,

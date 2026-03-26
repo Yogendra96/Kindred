@@ -31,6 +31,7 @@ interface Tip {
   description: string;
   impact: 'high' | 'medium' | 'low';
   category: keyof CarbonData;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any; // Replace with proper icon type from your assets
   potentialSavings: number;
 }

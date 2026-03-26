@@ -1,5 +1,5 @@
 /**
- * Enhanced Performance Monitoring Types
+ * Performance Monitoring Types
  * Modern APM interfaces for React Native with Core Web Vitals equivalents
  */
 
@@ -30,8 +30,8 @@ export interface CoreVitalThreshold {
   poor: number;
 }
 
-// Enhanced Performance Metrics
-export interface EnhancedPerformanceMetric {
+// Performance Metrics
+export interface PerformanceMetric {
   id: string;
   name: string;
   value: number;
@@ -59,8 +59,8 @@ export interface NativeMemoryMetrics {
   platform: 'ios' | 'android';
 }
 
-// Enhanced Network Metrics
-export interface EnhancedNetworkMetrics {
+// Network Metrics
+export interface NetworkMetrics {
   id: string;
   url: string;
   method: string;
@@ -145,7 +145,7 @@ export interface UserJourneyEvent {
   screenName: string;
   action?: string;
   timestamp: number;
-  performanceMetrics?: EnhancedPerformanceMetric[];
+  performanceMetrics?: PerformanceMetric[];
   context?: Record<string, any>;
 }
 
@@ -167,7 +167,7 @@ export interface PerformanceBottleneck {
   description: string;
   impact: 'low' | 'medium' | 'high' | 'critical';
   recommendation: string;
-  metrics: EnhancedPerformanceMetric[];
+  metrics: PerformanceMetric[];
 }
 
 // Device Context
@@ -214,8 +214,8 @@ export interface SessionPerformanceData {
   endTime?: number;
   screenViews: string[];
   coreVitals: CoreVitalMetric[];
-  performanceMetrics: EnhancedPerformanceMetric[];
-  networkMetrics: EnhancedNetworkMetrics[];
+  performanceMetrics: PerformanceMetric[];
+  networkMetrics: NetworkMetrics[];
   memoryMetrics: NativeMemoryMetrics[];
   alerts: PerformanceAlert[];
   performanceScore: number;
@@ -301,7 +301,7 @@ export interface APMProvider {
   name: string;
   enabled: boolean;
   config: Record<string, any>;
-  sendMetric(metric: EnhancedPerformanceMetric): Promise<void>;
+  sendMetric(metric: PerformanceMetric): Promise<void>;
   sendAlert(alert: PerformanceAlert): Promise<void>;
   sendSessionData(session: SessionPerformanceData): Promise<void>;
 }

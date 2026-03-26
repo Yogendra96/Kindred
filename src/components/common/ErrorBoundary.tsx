@@ -1,6 +1,5 @@
 /* global window, navigator */
 import _analytics from '@react-native-firebase/analytics';
-import { performanceService } from '@services/PerformanceService';
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';

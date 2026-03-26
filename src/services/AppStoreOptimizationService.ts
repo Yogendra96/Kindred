@@ -1,4 +1,4 @@
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import { createSingleton } from '../utils/Singleton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Linking } from 'react-native';
@@ -205,7 +205,7 @@ export interface ReviewResponse {
 }
 
 class AppStoreOptimizationService {
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private metadata: AppStoreMetadata | null = null;
   private metrics: ASOMetrics | null = null;
   private abTests: Map<string, ASOABTest> = new Map();
@@ -213,7 +213,7 @@ class AppStoreOptimizationService {
   private isInitialized: boolean = false;
 
   constructor() {
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
   }
 
   // Initialize the service
@@ -455,6 +455,7 @@ class AppStoreOptimizationService {
   }
 
   // Review management
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async analyzeReviews(reviews: any[]): Promise<{
     sentiment: ReviewSentiment;
     topics: ReviewTopic[];
@@ -475,6 +476,7 @@ class AppStoreOptimizationService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private analyzeSentiment(reviews: any[]): ReviewSentiment {
     // Simplified sentiment analysis
     const positive = reviews.filter(r => r.rating >= 4).length;
@@ -495,6 +497,7 @@ class AppStoreOptimizationService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private extractTopics(reviews: any[]): ReviewTopic[] {
     // Simplified topic extraction
     const commonTopics = ['performance', 'ui', 'features', 'bugs', 'support'];
@@ -538,6 +541,7 @@ class AppStoreOptimizationService {
   }
 
   private generateResponseRecommendations(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _reviews: any[],
   ): ResponseRecommendation[] {
     return [
@@ -768,7 +772,6 @@ class AppStoreOptimizationService {
 
   async requestReview(): Promise<void> {
     // This would integrate with react-native-rate or similar
-    console.log('Requesting app review...');
   }
 
   // Storage methods

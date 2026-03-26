@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import React, { Component } from 'react';
 import HapticFeedbackService from '../../services/HapticFeedbackService';
-import { PerformanceMonitoringService } from '../../services/PerformanceMonitoringService';
+import { modernAPMService } from '../../services/ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -97,7 +97,7 @@ export interface ErrorBoundaryProps {
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private hapticService: typeof HapticFeedbackService;
   private breadcrumbs: ErrorBreadcrumb[] = [];
   private userActions: UserAction[] = [];
@@ -117,7 +117,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       showDetails: false,
     };
 
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
     this.hapticService = HapticFeedbackService;
     this.sessionId = this.generateSessionId();
 
@@ -203,6 +203,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       sessionId: this.sessionId,
       platform: Platform.OS,
       deviceInfo: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         model: (Platform.constants as any)?.Model || 'unknown',
         systemVersion: Platform.Version.toString(),
       },
@@ -265,8 +266,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // Example: Crashlytics, Sentry, Bugsnag, etc.
     try {
       // Placeholder for actual reporting service integration
-      console.log('Sending error to reporting service:', errorDetails);
-
       // Example Sentry integration:
       // Sentry.captureException(errorDetails.error, {
       //   extra: errorDetails,
@@ -281,13 +280,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   private logError(errorDetails: ErrorDetails): void {
-    console.group('🚨 Error Boundary Caught Error');
     console.error('Error:', errorDetails.error);
     console.error('Component Stack:', errorDetails.errorInfo.componentStack);
-    console.log('Error Details:', errorDetails);
-    console.log('Breadcrumbs:', errorDetails.breadcrumbs);
-    console.log('User Actions:', errorDetails.userActions);
-    console.groupEnd();
   }
 
   private addBreadcrumb(breadcrumb: ErrorBreadcrumb): void {
@@ -399,7 +393,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           text: 'Report',
           onPress: () => {
             // Implement your reporting mechanism here
-            console.log('User reported issue:', reportData);
+
             this.hapticService.triggerSuccess();
           },
         },
@@ -533,12 +527,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // Public methods for external breadcrumb/action tracking
   public static addBreadcrumb = (breadcrumb: ErrorBreadcrumb): void => {
     // This would need to be implemented with a global error boundary manager
-    console.log('Global breadcrumb:', breadcrumb);
   };
 
   public static addUserAction = (action: UserAction): void => {
     // This would need to be implemented with a global error boundary manager
-    console.log('Global user action:', action);
   };
 }
 

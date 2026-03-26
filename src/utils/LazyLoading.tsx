@@ -10,8 +10,10 @@ import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 
 // Mock ErrorBoundary for development
 interface ErrorBoundaryProps {
-  FallbackComponent?: ComponentType<unknown>;
-  onError?: (error: Error, errorInfo: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FallbackComponent?: ComponentType<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onError?: (error: Error, errorInfo: any) => void;
   onReset?: () => void;
   children: ReactNode;
 }
@@ -64,7 +66,8 @@ interface LazyWrapperProps {
   children: ReactNode;
   fallback?: ReactNode;
   errorFallback?: ComponentType<ErrorFallbackProps>;
-  onError?: (error: Error, errorInfo: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onError?: (error: Error, errorInfo: any) => void;
 }
 
 const LazyWrapper: React.FC<LazyWrapperProps> = ({
@@ -85,12 +88,14 @@ const LazyWrapper: React.FC<LazyWrapperProps> = ({
 );
 
 // Utility function to create lazy-loaded components with enhanced error handling
-export const createLazyComponent = <T extends ComponentType<unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const createLazyComponent = <T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   options: {
     fallback?: ReactNode;
     errorFallback?: ComponentType<ErrorFallbackProps>;
-    onError?: (error: Error, errorInfo: unknown) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError?: (error: Error, errorInfo: any) => void;
     preload?: boolean;
   } = {},
 ) => {
@@ -103,7 +108,7 @@ export const createLazyComponent = <T extends ComponentType<unknown>>(
     });
   }
 
-  const WrappedComponent: React.FC<Record<string, unknown>> & {
+  const WrappedComponent: React.FC<Record<string, any>> & {
     preload: () => Promise<{ default: T }>;
   } = props => (
     <LazyWrapper
@@ -127,7 +132,8 @@ export class ComponentPreloader {
 
   static preload(
     componentName: string,
-    importFn: () => Promise<unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    importFn: () => Promise<any>,
   ): void {
     if (!this.preloadedComponents.has(componentName)) {
       this.preloadedComponents.add(componentName);
@@ -139,7 +145,8 @@ export class ComponentPreloader {
   }
 
   static preloadMultiple(
-    components: Array<{ name: string; importFn: () => Promise<unknown> }>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    components: Array<{ name: string; importFn: () => Promise<any> }>,
   ): void {
     components.forEach(({ name, importFn }) => {
       this.preload(name, importFn);
@@ -157,7 +164,8 @@ export class ComponentPreloader {
 
 // Route-based code splitting utility
 export const createLazyRoute = (
-  importFn: () => Promise<{ default: ComponentType<unknown> }>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  importFn: () => Promise<{ default: ComponentType<any> }>,
   routeName: string,
 ) => {
   return createLazyComponent(importFn, {
@@ -171,11 +179,13 @@ export const createLazyRoute = (
 
 // Conditional loading based on feature flags
 export const createConditionalLazyComponent = <
-  T extends ComponentType<unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends ComponentType<any>,
 >(
   importFn: () => Promise<{ default: T }>,
   condition: () => boolean | Promise<boolean>,
-  fallbackComponent?: ComponentType<unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fallbackComponent?: ComponentType<any>,
 ) => {
   const LazyComponent = lazy(async () => {
     const shouldLoad = await condition();
@@ -190,7 +200,7 @@ export const createConditionalLazyComponent = <
     }
   });
 
-  return (props: Record<string, unknown>) => (
+  return (props: Record<string, any>) => (
     <LazyWrapper errorFallback={ErrorFallback}>
       <LazyComponent {...props} />
     </LazyWrapper>
@@ -237,11 +247,12 @@ export const BundleSplitter = {
 };
 
 // Performance monitoring for lazy loading
-export const withLazyLoadingMetrics = <T extends ComponentType<unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const withLazyLoadingMetrics = <T extends ComponentType<any>>(
   LazyComponent: T,
   componentName: string,
 ) => {
-  return (props: Record<string, unknown>) => {
+  return (props: Record<string, any>) => {
     const startTime = performance.now();
 
     React.useEffect(() => {

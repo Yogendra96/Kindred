@@ -41,7 +41,8 @@ function useApiHook<T>(
   mockFn: () => T,
   realFn: () => Promise<T>,
   useReal = false,
-  deps: unknown[] = [],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deps: any[] = [],
 ): ApiState<T> {
   const log = logger.withTag(tag);
   const [data, setData] = useState<T | null>(null);

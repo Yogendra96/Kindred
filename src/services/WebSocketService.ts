@@ -1,8 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { enhancedSecurityService } from './EnhancedSecurityService';
-import loggingService from './/LoggerService';
+import { modernAPMService } from './ModernAPMService';
+import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
+import loggingService from './LoggerService';
 import { Platform } from 'react-native';
 
 export interface WebSocketConfig {
@@ -82,7 +82,7 @@ class WebSocketService {
       }
 
       // Set auth token from security service
-      const authToken = await enhancedSecurityService.secureRetrieve(
+      const authToken = await zeroTrustSecurityService.secureRetrieve(
         'auth_token',
       );
       if (authToken) {
@@ -94,11 +94,12 @@ class WebSocketService {
         reconnectAttempts: this.config.reconnectAttempts,
       });
 
-      enhancedPerformanceService.recordMetric(
-        'websocket_service_init',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'websocket_service_init',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
     } catch (error) {
       loggingService.error('WebSocket service initialization failed', {
         error: error.message,
@@ -128,11 +129,12 @@ class WebSocketService {
       // Process queued messages
       await this.processMessageQueue();
 
-      enhancedPerformanceService.recordMetric(
-        'websocket_connection_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'websocket_connection_time',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       loggingService.info('WebSocket connected successfully');
     } catch (error) {
@@ -371,7 +373,12 @@ class WebSocketService {
     this.connectionStats.averageLatency =
       (totalLatency + latency) / (this.connectionStats.messagesSent + 1);
 
-    enhancedPerformanceService.recordMetric('websocket_latency', latency, 'ms');
+    modernAPMService.recordMetric({
+      name: 'websocket_latency',
+      value: latency,
+      unit: 'ms',
+      severity: 'low',
+    });
   }
 
   async sendMessage(message: WebSocketMessage): Promise<void> {
@@ -522,7 +529,7 @@ class WebSocketService {
 
   async updateAuthToken(token: string): Promise<void> {
     this.config.authToken = token;
-    await enhancedSecurityService.secureStore('auth_token', token);
+    await zeroTrustSecurityService.secureStore('auth_token', token);
 
     // Reconnect with new token if currently connected
     if (this.isConnected()) {

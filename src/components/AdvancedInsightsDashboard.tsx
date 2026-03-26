@@ -1,4 +1,5 @@
-import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
+import { AnalyticsService } from '../services/AnalyticsService';
+const analyticsService = AnalyticsService.getInstance();
 import { iotIntegrationService } from '../services/IoTIntegrationService';
 import { mlCarbonPredictionService } from '../services/MLCarbonPrediction';
 import { useTheme } from '../theme/ThemeProvider';

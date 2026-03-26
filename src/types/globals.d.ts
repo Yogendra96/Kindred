@@ -10,69 +10,81 @@ declare module '@react-native-firebase/analytics' {
   }
 
   export interface Promotion {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export type ConsentStatusString = 'granted' | 'denied';
 
   export interface MultiFactorError {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface PasswordPolicy {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface ActionCodeURL {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 }
 
 declare module '@react-native-firebase/auth' {
   export interface MultiFactorError {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface PasswordPolicy {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface ActionCodeURL {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 }
 
 declare module '@react-native-firebase/app' {
   export interface ReactNativeAsyncStorage {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 }
 
 declare module '@react-native-firebase/firestore' {
   export interface FirestoreBlob {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface DocumentData {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 }
 
 // Expo Vector Icons type fix
 declare module '@expo/vector-icons/build/createIconSet' {
   export default function createIconSet(
-    glyphMap: Record<string, unknown>,
+    glyphMap: Record<string, any>,
     fontFamily: string,
     fontFile?: string,
-  ): React.ComponentType<unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): React.ComponentType<any>;
 }
 
 declare module '@expo/vector-icons/build/vendor/react-native-vector-icons/lib/create-icon-set' {
   export default function createIconSet(
-    glyphMap: Record<string, unknown>,
+    glyphMap: Record<string, any>,
     fontFamily: string,
     fontFile?: string,
-  ): React.ComponentType<unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): React.ComponentType<any>;
 }
 
 // React Native Chart Kit type extensions
@@ -82,8 +94,9 @@ declare module 'react-native-chart-kit' {
     backgroundGradientFrom?: string;
     backgroundGradientTo?: string;
     color?: (opacity?: number) => string;
-    style?: Record<string, unknown>;
-    [key: string]: unknown;
+    style?: Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface ChartData {
@@ -91,7 +104,8 @@ declare module 'react-native-chart-kit' {
     population: number;
     color: string;
     legendFontColor: string;
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export interface PieChartProps {
@@ -103,7 +117,8 @@ declare module 'react-native-chart-kit' {
     backgroundColor?: string;
     paddingLeft?: string;
     absolute?: boolean;
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   export const PieChart: React.ComponentType<PieChartProps>;
@@ -119,9 +134,12 @@ declare global {
   namespace Console {
     interface Console {
       tron?: {
-        log: (message: unknown, ...args: unknown[]) => void;
-        error: (message: unknown, ...args: unknown[]) => void;
-        warn: (message: unknown, ...args: unknown[]) => void;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        log: (message: any, ...args: any[]) => void;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: (message: any, ...args: any[]) => void;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        warn: (message: any, ...args: any[]) => void;
       };
     }
   }
@@ -130,15 +148,18 @@ declare global {
 // React Native specific extensions
 declare module 'react-native' {
   interface ViewStyle {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   interface TextStyle {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 
   interface ImageStyle {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   }
 }
 

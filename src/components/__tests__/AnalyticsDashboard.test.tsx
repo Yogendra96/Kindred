@@ -26,10 +26,10 @@ jest.mock('../SkeletonLoader', () => {
   };
 });
 
-jest.mock('../../services/PerformanceMonitoringService', () => ({
-  PerformanceMonitoringService: {
-    startTimer: jest.fn(),
-    endTimer: jest.fn(),
+jest.mock('../../services/ModernAPMService', () => ({
+  modernAPMService: {
+    startTraceSimple: jest.fn(),
+    stopTraceSimple: jest.fn(),
     recordMetric: jest.fn(),
   },
 }));

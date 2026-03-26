@@ -2,7 +2,7 @@
 /* eslint-disable */
 import CarbonAPIService from './CarbonAPIService';
 import { createSingleton } from '../utils/Singleton';
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 
 // Types for Sustainability Scoring
 export interface SustainabilityMetrics {
@@ -160,7 +160,7 @@ export interface GlobalBenchmarks {
 }
 
 class SustainabilityScoreCalculator {
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private carbonAPI: typeof CarbonAPIService;
   private scoreCache: Map<string, SustainabilityScore> = new Map();
   private benchmarks: GlobalBenchmarks | null = null;
@@ -173,7 +173,7 @@ class SustainabilityScoreCalculator {
   };
 
   constructor() {
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
     this.carbonAPI = CarbonAPIService;
 
     // Initialize benchmarks
@@ -191,7 +191,7 @@ class SustainabilityScoreCalculator {
     context: UserContext,
     weights?: Partial<ScoreWeights>,
   ): Promise<SustainabilityScore> {
-    const trace = this.performanceMonitor.startTrace(
+    const trace = await this.performanceMonitor.startTrace(
       'calculate-sustainability-score',
     );
 
@@ -200,7 +200,9 @@ class SustainabilityScoreCalculator {
       const cacheKey = this.generateCacheKey(context.id, metrics);
       const cached = this.scoreCache.get(cacheKey);
       if (cached && cached.validUntil > new Date()) {
-        trace.stop();
+        if (trace) {
+          await trace.stop();
+        }
         return cached;
       }
 
@@ -272,13 +274,17 @@ class SustainabilityScoreCalculator {
       // Cache the result
       this.scoreCache.set(cacheKey, score);
 
-      trace.putAttribute('overall_score', overall);
-      trace.putAttribute('grade', grade);
-      trace.stop();
+      if (trace) {
+        trace.putAttribute('overall_score', overall.toString());
+        trace.putAttribute('grade', grade);
+        await trace.stop();
+      }
 
       return score;
     } catch (error) {
-      trace.stop();
+      if (trace) {
+        await trace.stop();
+      }
       throw error;
     }
   }

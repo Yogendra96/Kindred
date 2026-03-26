@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 import { advancedEncryptionService } from './AdvancedEncryptionService';
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { modernAPMService } from './ModernAPMService';
 import loggingService from './/LoggerService';
 import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -106,7 +106,7 @@ class DeviceAttestationService {
       // Initialize behavior monitoring
       this.initializeBehaviorMonitoring();
 
-      enhancedPerformanceService.recordMetric(
+      modernAPMService.recordMetric(
         'device_attestation_init',
         Date.now() - startTime,
         'ms',
@@ -173,7 +173,7 @@ class DeviceAttestationService {
       // Log attestation result
       await this.logAttestationResult(attestation);
 
-      enhancedPerformanceService.recordMetric(
+      modernAPMService.recordMetric(
         'device_attestation_time',
         attestation.attestationTime,
         'ms',
@@ -560,11 +560,13 @@ class DeviceAttestationService {
     }
 
     // Check for React DevTools
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof (global as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined') {
       debugIndicators.push('React DevTools detected');
     }
 
     // Check for Flipper
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof (global as any).__FLIPPER__ !== 'undefined') {
       debugIndicators.push('Flipper debugging tool detected');
     }
@@ -625,6 +627,7 @@ class DeviceAttestationService {
     ];
 
     const detectedHooks = suspiciousGlobals.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       global => typeof (global as any)[global] !== 'undefined',
     );
 

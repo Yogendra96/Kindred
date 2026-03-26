@@ -6,7 +6,7 @@ import { analyticsService } from '../services/AnalyticsService';
 export class CarbonCalculationError extends Error {
   constructor(
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, any>,
   ) {
     super(message);
     this.name = 'CarbonCalculationError';
@@ -180,7 +180,7 @@ export class CarbonCalculator {
 
   private logCalculation(
     type: string,
-    details: Record<string, unknown>,
+    details: Record<string, any>,
     emissions: number,
   ): void {
     analyticsService.logEvent('carbon_calculation', {

@@ -6,7 +6,7 @@
 
 import { EventEmitter } from 'events';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { observabilityService } from '../services/ObservabilityService';
+import analyticsService from '../services/AnalyticsService';
 
 // Core Architecture Interfaces
 export interface ServiceContainer {
@@ -162,13 +162,10 @@ export class EventStore {
     }
 
     // Track event for observability
-    observabilityService.trackBusinessEvent({
-      eventName: 'domain_event',
-      properties: {
-        eventType: event.type,
-        source: event.source,
-        version: event.version,
-      },
+    analyticsService.trackEvent('domain_event', {
+      eventType: event.type,
+      source: event.source,
+      version: event.version,
     });
   }
 
@@ -539,8 +536,6 @@ export abstract class Saga {
   }
 
   protected async compensate(): Promise<void> {
-    console.log(`Compensating saga ${this.id}...`);
-
     // Execute compensations in reverse order
     for (let i = this.compensations.length - 1; i >= 0; i--) {
       try {
@@ -577,8 +572,6 @@ export class ModernArchitectureCore {
     if (this.isInitialized) return;
 
     try {
-      console.log('🏗️ Initializing Modern Architecture Core...');
-
       // Register core services
       this.registerCoreServices();
 
@@ -591,7 +584,6 @@ export class ModernArchitectureCore {
       }
 
       this.isInitialized = true;
-      console.log('✅ Modern Architecture Core initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize Modern Architecture Core:', error);
       throw error;
@@ -608,13 +600,11 @@ export class ModernArchitectureCore {
   private setupMiddleware(): void {
     // Logging middleware
     this.commandBus.addMiddleware(async (command, next) => {
-      console.log(`Executing command: ${command.type}`);
       const start = Date.now();
 
       try {
         await next();
         const duration = Date.now() - start;
-        console.log(`Command ${command.type} completed in ${duration}ms`);
       } catch (error) {
         console.error(`Command ${command.type} failed:`, error);
         throw error;
@@ -627,13 +617,16 @@ export class ModernArchitectureCore {
       await next();
       const duration = Date.now() - start;
 
-      observabilityService.trackPerformance({
-        metricType: 'custom',
-        name: 'command_execution_time',
-        value: duration,
-        severity: duration > 1000 ? 'warning' : 'info',
-        context: { commandType: command.type },
-      });
+      analyticsService.trackPerformance(
+        'command_execution_time',
+        duration,
+        'MILLISECONDS',
+        {
+          metricType: 'custom',
+          severity: duration > 1000 ? 'warning' : 'info',
+          context: { commandType: command.type },
+        },
+      );
     });
   }
 
@@ -718,7 +711,6 @@ export class ModernArchitectureCore {
     this.container.dispose();
     this.eventEmitter.removeAllListeners();
     this.isInitialized = false;
-    console.log('🛑 Modern Architecture Core disposed');
   }
 }
 

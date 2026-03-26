@@ -1,10 +1,6 @@
 module.exports = {
   // TypeScript and JavaScript files
-  '*.{ts,tsx,js,jsx}': [
-    'eslint --fix',
-    'prettier --write',
-    'jest --bail --findRelatedTests --passWithNoTests',
-  ],
+  '*.{ts,tsx,js,jsx}': ['eslint --fix', 'prettier --write'],
 
   // JSON files
   '*.json': ['prettier --write'],

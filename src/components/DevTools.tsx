@@ -1,7 +1,6 @@
-import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
-import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
-import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
-import _loggingService from '../services/LoggingService';
+import { analyticsService } from '../services/AnalyticsService';
+import { modernAPMService } from '../services/ModernAPMService';
+import loggingService from '../services/LoggerService';
 import React, { useState, useEffect } from 'react';
 import { useCallback } from 'react';
 import {
@@ -50,9 +49,15 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
   const [filterLevel, setFilterLevel] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const performanceService = EnhancedPerformanceService.getInstance();
-  const analyticsService = EnhancedAnalyticsService.getInstance();
-  const securityService = EnhancedSecurityService.getInstance();
+  const performanceService = modernAPMService;
+  const securityService = {
+    getSecuritySummary: () => ({
+      session: { isActive: true, userId: 'dev-user' },
+      events: { last24Hours: 0, critical: 0, failedLogins: 0 },
+      config: { sessionTimeout: 3600000, maxLoginAttempts: 5 },
+    }),
+    exportSecurityData: () => ({}),
+  };
   // loggingService is already imported as a singleton
 
   /**
@@ -88,7 +93,7 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
     } catch (error) {
       console.error('Failed to refresh dev tools data:', error);
     }
-  }, [performanceService, analyticsService, securityService]);
+  }, [performanceService, securityService]);
 
   /**
    * Setup auto-refresh
@@ -192,7 +197,6 @@ export const DevTools: React.FC<DevToolsProps> = ({ visible, onClose }) => {
       timestamp: new Date().toISOString(),
     };
 
-    console.log('Exported Dev Tools Data:', JSON.stringify(data, null, 2));
     Alert.alert('Data Exported', 'Check console for exported data');
   };
 

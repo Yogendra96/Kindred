@@ -25,19 +25,24 @@ export class LoggingService {
     return LoggingService._instance;
   }
 
-  debug(message: string, data?: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  debug(message: string, data?: any): void {
     logger.debug(this._tag, message, data);
   }
-  info(message: string, data?: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  info(message: string, data?: any): void {
     logger.info(this._tag, message, data);
   }
-  warn(message: string, data?: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  warn(message: string, data?: any): void {
     logger.warn(this._tag, message, data);
   }
-  error(message: string, err?: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error(message: string, err?: any): void {
     logger.error(this._tag, message, err);
   }
   setLogLevel(level: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger.setMinLevel(level as any);
   }
 }

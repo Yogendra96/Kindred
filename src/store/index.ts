@@ -1,5 +1,6 @@
 // Import services for middleware integration
-import { enhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
+import { AnalyticsService } from '../services/AnalyticsService';
+const analyticsService = AnalyticsService.getInstance();
 import loggingService from '../services/LoggerService';
 import analyticsReducer, {
   addEvent,
@@ -36,14 +37,14 @@ const listenerMiddleware = createListenerMiddleware();
 listenerMiddleware.startListening({
   matcher: isAnyOf(loginSuccess, logout),
   effect: async (action, listenerApi) => {
-    const state = listenerApi.getState() as RootState;
+    const _state = listenerApi.getState() as RootState;
 
     if (loginSuccess.match(action)) {
       // Start analytics session on login
-      await enhancedAnalyticsService.startSession(action.payload.id);
+      await analyticsService.startSession(action.payload.id);
 
       // Track login event
-      enhancedAnalyticsService.trackEvent(
+      analyticsService.trackEvent(
         'user_login',
         {
           method: 'email', // This could be dynamic based on login method
@@ -62,15 +63,10 @@ listenerMiddleware.startListening({
       );
     } else if (logout.match(action)) {
       // End analytics session on logout
-      await enhancedAnalyticsService.endSession();
+      await analyticsService.endSession();
 
       // Track logout event
-      enhancedAnalyticsService.trackEvent(
-        'user_logout',
-        {},
-        'user_action',
-        'medium',
-      );
+      analyticsService.trackEvent('user_logout', {}, 'user_action', 'medium');
 
       loggingService.info('User logged out', '');
     }
@@ -80,9 +76,9 @@ listenerMiddleware.startListening({
 // Listen for analytics events to sync with service
 listenerMiddleware.startListening({
   actionCreator: addEvent,
-  effect: async (action, listenerApi) => {
+  effect: async (action, _listenerApi) => {
     const event = action.payload;
-    enhancedAnalyticsService.trackEvent(
+    analyticsService.trackEvent(
       event.name,
       event.properties,
       event.category,

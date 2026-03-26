@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import { createSingleton } from '../utils/Singleton';
 import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
@@ -93,7 +93,7 @@ export interface HapticAnalytics {
 }
 
 class HapticFeedbackService {
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private config: HapticConfig;
   private isEnabled: boolean = true;
   private eventHistory: HapticEvent[] = [];
@@ -103,7 +103,7 @@ class HapticFeedbackService {
   private isProcessingQueue: boolean = false;
 
   constructor() {
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
     this.config = this.getDefaultConfig();
     this.analytics = this.initializeAnalytics();
 

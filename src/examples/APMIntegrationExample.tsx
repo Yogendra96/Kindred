@@ -19,7 +19,7 @@ import {
   useInteractionTracking,
   useNavigationPerformance,
 } from '../hooks/useModernAPM';
-import { EnhancedPerformanceMetric } from '../types/performance';
+import { PerformanceMetric } from '../types/performance';
 
 // Example: Screen component with comprehensive APM integration
 const CarbonTrackingScreen: React.FC = () => {

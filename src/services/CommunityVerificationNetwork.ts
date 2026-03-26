@@ -8,8 +8,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import { observabilityService } from './ObservabilityService';
-import { securityMonitoringService } from './SecurityMonitoringService';
+import analyticsService from './AnalyticsService';
 
 // Core Community Verification Types
 export interface CommunityVerificationNetwork {
@@ -1697,14 +1696,11 @@ export class CommunityVerificationNetworkEngine {
       await this.notifyValidators(selectedValidators, validationId);
 
       // Track submission
-      observabilityService.trackBusinessEvent({
-        eventName: 'validation_submitted',
-        properties: {
-          validationId,
-          dataType: dataPoint.type,
-          validatorsAssigned: selectedValidators.length,
-          submittedBy: dataPoint.submittedBy,
-        },
+      analyticsService.trackEvent('validation_submitted', {
+        validationId,
+        dataType: dataPoint.type,
+        validatorsAssigned: selectedValidators.length,
+        submittedBy: dataPoint.submittedBy,
       });
 
       console.log(`✅ Validation process started: ${validationId}`);
@@ -1748,15 +1744,12 @@ export class CommunityVerificationNetworkEngine {
       await this.updateValidatorReputation(validatorId, opinion);
 
       // Track validation
-      observabilityService.trackBusinessEvent({
-        eventName: 'validation_opinion_submitted',
-        properties: {
-          validationId,
-          validatorId,
-          stance: opinion.stance,
-          confidence: opinion.confidence,
-          consensusReached: consensus.consensusReached,
-        },
+      analyticsService.trackEvent('validation_opinion_submitted', {
+        validationId,
+        validatorId,
+        stance: opinion.stance,
+        confidence: opinion.confidence,
+        consensusReached: consensus.consensusReached,
       });
     } catch (error) {
       console.error('Validation opinion submission failed:', error);
@@ -1810,14 +1803,11 @@ export class CommunityVerificationNetworkEngine {
       await this.notifyExpertReviewers(experts, reviewId);
 
       // Track review request
-      observabilityService.trackBusinessEvent({
-        eventName: 'expert_review_requested',
-        properties: {
-          reviewId,
-          dataType: dataPoint.type,
-          urgency,
-          expertsAssigned: experts.length,
-        },
+      analyticsService.trackEvent('expert_review_requested', {
+        reviewId,
+        dataType: dataPoint.type,
+        urgency,
+        expertsAssigned: experts.length,
       });
 
       return review;
@@ -1858,14 +1848,11 @@ export class CommunityVerificationNetworkEngine {
       await this.persistBlockchainRecord(record);
 
       // Track blockchain recording
-      observabilityService.trackBusinessEvent({
-        eventName: 'blockchain_record_created',
-        properties: {
-          recordId,
-          dataType: data.dataType,
-          blockHash: record.blockHash,
-          signatures: signatures.length,
-        },
+      analyticsService.trackEvent('blockchain_record_created', {
+        recordId,
+        dataType: data.dataType,
+        blockHash: record.blockHash,
+        signatures: signatures.length,
       });
 
       console.log(`✅ Blockchain record created: ${recordId}`);
@@ -1942,15 +1929,12 @@ export class CommunityVerificationNetworkEngine {
       await this.persistTrustScore(userId, updatedTrustMetric);
 
       // Track trust score update
-      observabilityService.trackBusinessEvent({
-        eventName: 'trust_score_updated',
-        properties: {
-          userId,
-          action,
-          impact,
-          oldScore: trustMetric.overallScore,
-          newScore: newOverallScore,
-        },
+      analyticsService.trackEvent('trust_score_updated', {
+        userId,
+        action,
+        impact,
+        oldScore: trustMetric.overallScore,
+        newScore: newOverallScore,
       });
 
       return updatedTrustMetric;

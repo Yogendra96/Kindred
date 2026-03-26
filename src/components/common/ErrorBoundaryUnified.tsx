@@ -44,6 +44,7 @@ import { createLogger } from '../../utils/loggingUtils';
 
 // Helper logging functions
 const logStructuredError = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logger: any,
   error: Error,
   component: string,
@@ -54,6 +55,7 @@ const logStructuredError = (
 };
 
 const logRecoveryAttempt = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logger: any,
   error: Error,
   attemptType: string,

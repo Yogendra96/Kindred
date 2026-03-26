@@ -1,4 +1,4 @@
-import { performanceService } from '@services/PerformanceService';
+import { modernAPMService } from '../services/ModernAPMService';
 import { useTheme } from '../theme/ThemeProvider';
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Text, Dimensions, Platform } from 'react-native';
@@ -27,7 +27,7 @@ const CarbonFootprintCard: React.FC<Props> = ({
 
   // Memoize chart data to prevent unnecessary recalculations
   const chartData = useMemo(() => {
-    performanceService.startTrace('prepare_chart_data');
+    modernAPMService.startTraceSimple('prepare_chart_data');
 
     const result = [
       {
@@ -56,7 +56,7 @@ const CarbonFootprintCard: React.FC<Props> = ({
       },
     ];
 
-    performanceService.stopTrace('prepare_chart_data');
+    modernAPMService.stopTraceSimple('prepare_chart_data');
     return result;
   }, [data, theme, isDark]);
 

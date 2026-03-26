@@ -3,6 +3,7 @@
 import type { AxiosInstance, AxiosInstance } from 'axios';
 import axios from 'axios';
 import { queryClient, queryKeys } from './QueryService';
+import { modernAPMService } from './ModernAPMService';
 import axios from 'axios';
 
 // Types for Carbon Offset Marketplace
@@ -121,7 +122,7 @@ export interface OffsetCalculation {
 class CarbonOffsetMarketplaceService {
   private static instance: CarbonOffsetMarketplaceService;
   private apiClient: AxiosInstance;
-  private performanceService = PerformanceMonitoringService;
+  private performanceService = modernAPMService;
 
   private constructor() {
     this.apiClient = axios.create({

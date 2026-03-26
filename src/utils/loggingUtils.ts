@@ -44,29 +44,34 @@ export const logAPIResponse = (
 ): void => logger.info(tag, 'api:response', { url, status, latencyMs });
 
 /** @deprecated Use logger.error(tag, 'api:error', error) */
-export const logAPIError = (tag: string, url: string, error: unknown): void =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const logAPIError = (tag: string, url: string, error: any): void =>
   logger.error(tag, `api:error ${url}`, error);
 
 /** @deprecated Use logger.info(tag, 'carbon:calc', data) */
-export const logCarbonCalculation = (tag: string, data: unknown): void =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const logCarbonCalculation = (tag: string, data: any): void =>
   logger.info(tag, 'carbon:calc', data);
 
 /** @deprecated Use logger.info(tag, 'form:validation', data) */
-export const logFormValidation = (tag: string, data: unknown): void =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const logFormValidation = (tag: string, data: any): void =>
   logger.info(tag, 'form:validation', data);
 
 /** @deprecated Use logger.info(tag, 'user:action', data) */
 export const logUserAction = (
   tag: string,
   action: string,
-  data?: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: any,
 ): void => logger.info(tag, `user:action ${action}`, data);
 
 // ─── BatchLogger ──────────────────────────────────────────────────────────────
 
 /** @deprecated Use logger directly — no batching needed (env-aware) */
 export class BatchLogger {
-  add(tag: string, message: string, data?: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  add(tag: string, message: string, data?: any): void {
     logger.info(tag, message, data);
   }
   flush(): void {

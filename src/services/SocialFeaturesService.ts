@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import PerformanceMonitoringService from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
@@ -229,7 +229,7 @@ export interface Group {
 
 class SocialFeaturesService {
   private static instance: SocialFeaturesService;
-  private performanceService = PerformanceMonitoringService;
+  private performanceService = modernAPMService;
   private currentUser: UserProfile | null = null;
   private friends: Friend[] = [];
   private activities: Activity[] = [];
@@ -272,7 +272,7 @@ class SocialFeaturesService {
   // User Profile Management
   public async loadUserProfile(uid: string): Promise<UserProfile | null> {
     try {
-      await this.performanceService.startTrace('load_user_profile');
+      this.performanceService.startTraceSimple('load_user_profile');
 
       const userDoc = await firestore().collection('users').doc(uid).get();
 
@@ -281,20 +281,20 @@ class SocialFeaturesService {
         this.currentUser = userData;
         await this.saveCachedData();
 
-        await this.performanceService.stopTrace('load_user_profile', {
+        await this.performanceService.stopTraceSimple('load_user_profile', {
           user_found: 'true',
         });
 
         return userData;
       }
 
-      await this.performanceService.stopTrace('load_user_profile', {
+      await this.performanceService.stopTraceSimple('load_user_profile', {
         user_found: 'false',
       });
 
       return null;
     } catch (error) {
-      await this.performanceService.stopTrace('load_user_profile', {
+      await this.performanceService.stopTraceSimple('load_user_profile', {
         status: 'error',
         error: String(error),
       });
@@ -611,7 +611,7 @@ class SocialFeaturesService {
     limit: number = 100,
   ): Promise<Leaderboard> {
     try {
-      await this.performanceService.startTrace('load_leaderboard');
+      this.performanceService.startTraceSimple('load_leaderboard');
 
       const query = firestore().collection('leaderboards');
 
@@ -626,7 +626,7 @@ class SocialFeaturesService {
           category,
         );
 
-        await this.performanceService.stopTrace('load_leaderboard', {
+        await this.performanceService.stopTraceSimple('load_leaderboard', {
           type,
           period,
           entries_count: entries.length.toString(),
@@ -656,7 +656,7 @@ class SocialFeaturesService {
       if (leaderboardDoc.exists) {
         const leaderboardData = leaderboardDoc.data() as Leaderboard;
 
-        await this.performanceService.stopTrace('load_leaderboard', {
+        await this.performanceService.stopTraceSimple('load_leaderboard', {
           type,
           period,
           entries_count: leaderboardData.entries.length.toString(),
@@ -666,7 +666,7 @@ class SocialFeaturesService {
       }
 
       // Return empty leaderboard if not found
-      await this.performanceService.stopTrace('load_leaderboard', {
+      await this.performanceService.stopTraceSimple('load_leaderboard', {
         type,
         period,
         entries_count: '0',
@@ -682,7 +682,7 @@ class SocialFeaturesService {
         totalParticipants: 0,
       };
     } catch (error) {
-      await this.performanceService.stopTrace('load_leaderboard', {
+      await this.performanceService.stopTraceSimple('load_leaderboard', {
         status: 'error',
         error: String(error),
       });

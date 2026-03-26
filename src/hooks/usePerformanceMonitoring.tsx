@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
-import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
-import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
+import { analyticsService } from '../services/AnalyticsService';
+import { modernAPMService } from '../services/ModernAPMService';
 import loggingService from '../services/LoggerService';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import type { AppStateStatus } from 'react-native';
@@ -63,8 +63,8 @@ export const usePerformanceMonitoring = (
     sampleRate = 1.0, // 100% sampling by default
   } = options;
 
-  const performanceService = useRef(EnhancedPerformanceService.getInstance());
-  const analyticsService = useRef(EnhancedAnalyticsService.getInstance());
+  const performanceService = useRef(modernAPMService);
+  const analyticsServiceRef = useRef(analyticsService);
   const logger = useRef(loggingService);
 
   const renderStartTime = useRef<number>(0);
@@ -116,7 +116,7 @@ export const usePerformanceMonitoring = (
         );
 
         if (enableAnalytics) {
-          analyticsService.current.trackPerformance(
+          analyticsServiceRef.current.trackPerformance(
             `${componentName}_${name}`,
             duration,
             'ms',
@@ -149,7 +149,7 @@ export const usePerformanceMonitoring = (
       );
 
       if (enableAnalytics) {
-        analyticsService.current.trackPerformance(
+        analyticsServiceRef.current.trackPerformance(
           `${componentName}_${name}`,
           value,
           unit,
@@ -204,7 +204,7 @@ export const usePerformanceMonitoring = (
         );
 
         if (enableAnalytics) {
-          analyticsService.current.trackEvent(
+          analyticsServiceRef.current.trackEvent(
             'slow_render',
             {
               component: componentName,
@@ -263,7 +263,7 @@ export const usePerformanceMonitoring = (
   const handleAppStateChange = useCallback(
     (nextAppState: AppStateStatus) => {
       if (enableAnalytics) {
-        analyticsService.current.trackEvent(
+        analyticsServiceRef.current.trackEvent(
           'app_state_change',
           {
             component: componentName,
@@ -284,7 +284,7 @@ export const usePerformanceMonitoring = (
   useEffect(() => {
     // Track component mount
     if (enableAnalytics) {
-      analyticsService.current.trackEvent(
+      analyticsServiceRef.current.trackEvent(
         'component_mounted',
         {
           component: componentName,
@@ -311,7 +311,7 @@ export const usePerformanceMonitoring = (
       // Track component unmount
       if (enableAnalytics) {
         const componentLifetime = Date.now() - componentMountTime.current;
-        analyticsService.current.trackEvent(
+        analyticsServiceRef.current.trackEvent(
           'component_unmounted',
           {
             component: componentName,
@@ -424,8 +424,8 @@ export const withPerformanceMonitoring = <P extends object>(
  * Hook for measuring async operations
  */
 export const useAsyncPerformance = () => {
-  const performanceService = useRef(EnhancedPerformanceService.getInstance());
-  const analyticsService = useRef(EnhancedAnalyticsService.getInstance());
+  const performanceService = useRef(modernAPMService);
+  const analyticsServiceRef = useRef(analyticsService);
 
   const measureAsync = useCallback(
     async <T extends any>(
@@ -437,7 +437,7 @@ export const useAsyncPerformance = () => {
         await performanceService.current.measureAsync(name, asyncFn, context);
 
       // Track in analytics
-      analyticsService.current.trackPerformance(name, duration, 'ms', context);
+      analyticsServiceRef.current.trackPerformance(name, duration, 'ms', context);
 
       return { result, duration };
     },
@@ -457,7 +457,7 @@ export const useAsyncPerformance = () => {
       );
 
       // Track in analytics
-      analyticsService.current.trackPerformance(name, duration, 'ms', context);
+      analyticsServiceRef.current.trackPerformance(name, duration, 'ms', context);
 
       return { result, duration };
     },

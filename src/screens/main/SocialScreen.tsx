@@ -841,7 +841,12 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 12,
   },
-  progressLabel: { fontSize: 12, color: '#888', whiteSpace: 'nowrap' } as any,
+  progressLabel: {
+    fontSize: 12,
+    color: '#888',
+    whiteSpace: 'nowrap',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   groupStats: {
     flexDirection: 'row',
     backgroundColor: '#f9f9f9',

@@ -1,8 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
-import { EnhancedAnalyticsService } from '../services/EnhancedAnalyticsService';
-import { EnhancedPerformanceService } from '../services/EnhancedPerformanceService';
-import { EnhancedSecurityService } from '../services/EnhancedSecurityService';
+import { analyticsService } from '../services/AnalyticsService';
+import { modernAPMService } from '../services/ModernAPMService';
+import { zeroTrustSecurityService } from '../services/ZeroTrustSecurityService';
 // Services
 import loggingService from '../services/LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -111,19 +111,15 @@ export const developmentConfig = {
 export class DevelopmentUtils {
   private static instance: DevelopmentUtils;
   private isInitialized = false;
-  private performanceService: EnhancedPerformanceService;
-  private securityService: EnhancedSecurityService;
-  private analyticsService: EnhancedAnalyticsService;
+  private modernAPMService: typeof modernAPMService;
+  private securityService: typeof zeroTrustSecurityService;
+  private analyticsService: typeof analyticsService;
   private logger: typeof loggingService;
 
   constructor() {
-    this.performanceService = EnhancedPerformanceService.getInstance();
-    this.securityService = EnhancedSecurityService.getInstance(
-      developmentConfig.security,
-    );
-    this.analyticsService = EnhancedAnalyticsService.getInstance(
-      developmentConfig.analytics,
-    );
+    this.modernAPMService = modernAPMService;
+    this.securityService = zeroTrustSecurityService;
+    this.analyticsService = analyticsService;
     this.logger = loggingService;
   }
 
@@ -164,8 +160,8 @@ export class DevelopmentUtils {
     try {
       // Initialize performance service
       if (developmentConfig.debugging.enablePerformanceMonitoring) {
-        await this.performanceService.initialize();
-        this.logger.info('📊 Enhanced Performance Service initialized');
+        await this.modernAPMService.initialize();
+        this.logger.info('📊 Modern APM Service initialized');
       }
 
       // Initialize security service
@@ -177,7 +173,7 @@ export class DevelopmentUtils {
       // Initialize analytics service
       if (developmentConfig.debugging.enableAnalyticsTracking) {
         await this.analyticsService.initialize();
-        this.logger.info('📈 Enhanced Analytics Service initialized');
+        this.logger.info('📈 Analytics Service initialized');
       }
     } catch (error) {
       this.logger.error('Failed to initialize enhanced services:', error);
@@ -302,7 +298,7 @@ export class DevelopmentUtils {
       (global as any).devUtils = {
         config: developmentConfig,
         services: {
-          performance: this.performanceService,
+          performance: this.modernAPMService,
           security: this.securityService,
           analytics: this.analyticsService,
           logger: this.logger,

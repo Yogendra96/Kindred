@@ -1,8 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { enhancedSecurityService } from './EnhancedSecurityService';
-import loggingService from './/LoggerService';
+import { modernAPMService } from './ModernAPMService';
+import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
+import loggingService from './LoggerService';
 import { webSocketService } from './WebSocketService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -150,11 +150,12 @@ class IoTIntegrationService {
 
       this.isInitialized = true;
 
-      enhancedPerformanceService.recordMetric(
-        'iot_service_init',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric({
+        name: 'iot_service_init',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       loggingService.info('IoT Integration Service initialized', {
         deviceCount: this.devices.size,
@@ -187,7 +188,7 @@ class IoTIntegrationService {
         lastSync: new Date(),
         capabilities: ['temperature_control', 'schedule', 'energy_monitoring'],
         metadata: {
-          apiKey: await enhancedSecurityService.encrypt(credentials.apiKey),
+          apiKey: await zeroTrustSecurityService.encrypt(credentials.apiKey),
           deviceId: credentials.deviceId,
           provider: credentials.provider,
         },
@@ -205,11 +206,12 @@ class IoTIntegrationService {
           this.startDeviceSync(device.id);
         }
 
-        enhancedPerformanceService.recordMetric(
-          'thermostat_connection_time',
-          Date.now() - startTime,
-          'ms',
-        );
+        modernAPMService.recordMetric({
+          name: 'thermostat_connection_time',
+          value: Date.now() - startTime,
+          unit: 'ms',
+          severity: 'low',
+        });
 
         loggingService.info('Thermostat connected successfully', {
           deviceId: device.id,
@@ -234,7 +236,7 @@ class IoTIntegrationService {
   ): Promise<ThermostatData | null> {
     try {
       const { provider, apiKey: encryptedKey, deviceId } = device.metadata;
-      const apiKey = await enhancedSecurityService.decrypt(encryptedKey);
+      const apiKey = await zeroTrustSecurityService.decrypt(encryptedKey);
 
       let data: any;
 
@@ -339,7 +341,7 @@ class IoTIntegrationService {
         lastSync: new Date(),
         capabilities: ['location', 'battery', 'efficiency', 'charging'],
         metadata: {
-          accessToken: await enhancedSecurityService.encrypt(
+          accessToken: await zeroTrustSecurityService.encrypt(
             credentials.accessToken,
           ),
           vehicleId: credentials.vehicleId,
@@ -359,11 +361,12 @@ class IoTIntegrationService {
           this.startDeviceSync(device.id);
         }
 
-        enhancedPerformanceService.recordMetric(
-          'vehicle_connection_time',
-          Date.now() - startTime,
-          'ms',
-        );
+        modernAPMService.recordMetric({
+          name: 'vehicle_connection_time',
+          value: Date.now() - startTime,
+          unit: 'ms',
+          severity: 'low',
+        });
 
         return device;
       } else {
@@ -386,7 +389,7 @@ class IoTIntegrationService {
         accessToken: encryptedToken,
         vehicleId,
       } = device.metadata;
-      const accessToken = await enhancedSecurityService.decrypt(encryptedToken);
+      const accessToken = await zeroTrustSecurityService.decrypt(encryptedToken);
 
       let data: any;
 
@@ -480,7 +483,7 @@ class IoTIntegrationService {
         lastSync: new Date(),
         capabilities: ['steps', 'distance', 'activities', 'calories'],
         metadata: {
-          accessToken: await enhancedSecurityService.encrypt(
+          accessToken: await zeroTrustSecurityService.encrypt(
             credentials.accessToken,
           ),
           provider: credentials.provider,
@@ -498,11 +501,12 @@ class IoTIntegrationService {
           this.startDeviceSync(device.id);
         }
 
-        enhancedPerformanceService.recordMetric(
-          'fitness_connection_time',
-          Date.now() - startTime,
-          'ms',
-        );
+        modernAPMService.recordMetric({
+          name: 'fitness_connection_time',
+          value: Date.now() - startTime,
+          unit: 'ms',
+          severity: 'low',
+        });
 
         return device;
       } else {
@@ -521,7 +525,7 @@ class IoTIntegrationService {
   ): Promise<FitnessData | null> {
     try {
       const { provider, accessToken: encryptedToken } = device.metadata;
-      const accessToken = await enhancedSecurityService.decrypt(encryptedToken);
+      const accessToken = await zeroTrustSecurityService.decrypt(encryptedToken);
 
       let data: any;
 
@@ -706,7 +710,7 @@ class IoTIntegrationService {
     parameters: Record<string, any>,
   ): Promise<void> {
     const { provider, apiKey: encryptedKey, deviceId } = device.metadata;
-    const apiKey = await enhancedSecurityService.decrypt(encryptedKey);
+    const apiKey = await zeroTrustSecurityService.decrypt(encryptedKey);
 
     switch (action) {
       case 'set_temperature':
@@ -864,8 +868,8 @@ class IoTIntegrationService {
   private async loadPersistedData(): Promise<void> {
     try {
       const [devicesData, rulesData] = await Promise.all([
-        enhancedSecurityService.secureRetrieve('iot_devices'),
-        enhancedSecurityService.secureRetrieve('automation_rules'),
+        zeroTrustSecurityService.secureRetrieve('iot_devices'),
+        zeroTrustSecurityService.secureRetrieve('automation_rules'),
       ]);
 
       if (devicesData) {
@@ -893,11 +897,11 @@ class IoTIntegrationService {
   private async persistData(): Promise<void> {
     try {
       await Promise.all([
-        enhancedSecurityService.secureStore(
+        zeroTrustSecurityService.secureStore(
           'iot_devices',
           Array.from(this.devices.values()),
         ),
-        enhancedSecurityService.secureStore(
+        zeroTrustSecurityService.secureStore(
           'automation_rules',
           Array.from(this.automationRules.values()),
         ),
@@ -926,7 +930,7 @@ class IoTIntegrationService {
 
   async updateConfig(updates: Partial<IoTConfig>): Promise<void> {
     this.config = { ...this.config, ...updates };
-    await enhancedSecurityService.secureStore('iot_config', this.config);
+    await zeroTrustSecurityService.secureStore('iot_config', this.config);
 
     if (updates.enableAutoSync !== undefined) {
       if (updates.enableAutoSync) {

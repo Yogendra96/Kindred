@@ -1,8 +1,9 @@
 // @ts-nocheck
 /* eslint-disable */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
-import { enhancedSecurityService } from './EnhancedSecurityService';
-import loggingService from './/LoggerService';
+import { modernAPMService } from './ModernAPMService';
+import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
+import { analyticsService } from './AnalyticsService';
+import loggingService from './LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import * as Location from 'expo-location';
@@ -105,8 +106,9 @@ export interface LocationSharingSettings {
 
 class LocationService {
   private logger: typeof loggingService;
-  private securityService: typeof enhancedSecurityService;
-  private performanceService: typeof enhancedPerformanceService;
+  private securityService: typeof zeroTrustSecurityService;
+  private apmService: typeof modernAPMService;
+  private analyticsService: typeof analyticsService;
   private config: LocationConfig;
   private isInitialized = false;
   private isTracking = false;
@@ -153,8 +155,9 @@ class LocationService {
 
     // Initialize logging
     this.logger = loggingService;
-    this.securityService = enhancedSecurityService;
-    this.performanceService = enhancedPerformanceService;
+    this.securityService = zeroTrustSecurityService;
+    this.apmService = modernAPMService;
+    this.analyticsService = analyticsService;
   }
 
   async initialize(config?: Partial<LocationConfig>): Promise<void> {
@@ -185,7 +188,7 @@ class LocationService {
 
       this.isInitialized = true;
 
-      this.performanceService.recordMetric('location_service_init', Date.now() - startTime, 'ms');
+      this.apmService.recordMetric({ name: 'location_service_init', value: Date.now() - startTime, unit: 'ms', severity: 'low' });
 
       this.logger.info('Location service initialized', {
         config: this.config,
@@ -230,11 +233,12 @@ class LocationService {
         canAskAgain: fgResponse.canAskAgain,
       };
 
-      this.performanceService.recordMetric(
-        'location_permissions_request',
-        Date.now() - startTime,
-        'ms',
-      );
+      this.apmService.recordMetric({
+        name: 'location_permissions_request',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       this.logger.info('Location permissions requested', permissions);
       return permissions;
@@ -253,7 +257,7 @@ class LocationService {
       const location = await this.getLocationFromNavigator(highAccuracy);
       await this.handleLocationUpdate(location, 'manual');
 
-      this.performanceService.recordMetric('location_retrieved', Date.now() - startTime, 'ms');
+      this.apmService.recordMetric({ name: 'location_retrieved', value: Date.now() - startTime, unit: 'ms', severity: 'low' });
 
       this.logger.info('Current location retrieved', {
         accuracy: this.currentLocation?.accuracy,
@@ -293,9 +297,9 @@ class LocationService {
       );
 
       this.isTracking = true;
-      this.performanceService.recordMetric('location_tracking_started', 1);
+      this.apmService.recordMetric({ name: 'location_tracking_started', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
-      this.performanceService.recordMetric('location_tracking_start_error', 1);
+      this.apmService.recordMetric({ name: 'location_tracking_start_error', value: 1, unit: 'count', severity: 'high' });
       throw error;
     }
   }
@@ -310,9 +314,9 @@ class LocationService {
       }
 
       this.isTracking = false;
-      this.performanceService.recordMetric('location_tracking_stopped', 1);
+      this.apmService.recordMetric({ name: 'location_tracking_stopped', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
-      this.performanceService.recordMetric('location_tracking_stop_error', 1);
+      this.apmService.recordMetric({ name: 'location_tracking_stop_error', value: 1, unit: 'count', severity: 'high' });
       throw error;
     }
   }
@@ -339,9 +343,9 @@ class LocationService {
         },
       });
 
-      this.performanceService.recordMetric('background_location_started', 1);
+      this.apmService.recordMetric({ name: 'background_location_started', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
-      this.performanceService.recordMetric('background_location_setup_error', 1);
+      this.apmService.recordMetric({ name: 'background_location_setup_error', value: 1, unit: 'count', severity: 'high' });
       throw error;
     }
   }
@@ -362,9 +366,9 @@ class LocationService {
         }));
 
       await Location.startGeofencingAsync(GEOFENCE_TASK_NAME, regions);
-      this.performanceService.recordMetric('geofencing_started', 1);
+      this.apmService.recordMetric({ name: 'geofencing_started', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
-      this.performanceService.recordMetric('geofencing_setup_error', 1);
+      this.apmService.recordMetric({ name: 'geofencing_setup_error', value: 1, unit: 'count', severity: 'high' });
       throw error;
     }
   }
@@ -453,9 +457,9 @@ class LocationService {
         });
       }
 
-      this.performanceService.recordMetric('geofence_event_processed', 1);
+      this.apmService.recordMetric({ name: 'geofence_event_processed', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
-      this.performanceService.recordMetric('geofence_event_error', 1);
+      this.apmService.recordMetric({ name: 'geofence_event_error', value: 1, unit: 'count', severity: 'high' });
       this.logger.error('Error handling geofence event:', error);
     }
   }
@@ -582,7 +586,7 @@ class LocationService {
     try {
       const sharedLocation = this.prepareLocationForSharing(location);
       // Send to sharing service
-      this.performanceService.recordMetric('location_shared', 1);
+      this.apmService.recordMetric({ name: 'location_shared', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
       this.logger.error('Error sharing location:', error);
     }
@@ -861,7 +865,7 @@ class LocationService {
       this.geofenceListeners.clear();
       this.isInitialized = false;
 
-      this.performanceService.recordMetric('location_service_cleanup', 1);
+      this.apmService.recordMetric({ name: 'location_service_cleanup', value: 1, unit: 'count', severity: 'low' });
     } catch (error) {
       this.logger.error('Error during location service cleanup:', error);
     }

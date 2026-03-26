@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import { enhancedPerformanceService } from './EnhancedPerformanceService';
+import { modernAPMService } from './ModernAPMService';
 import loggingService from './/LoggerService';
 import CryptoJS from 'crypto-js';
 
@@ -51,7 +51,7 @@ class AdvancedEncryptionService {
       // Test encryption capabilities
       await this.validateEncryptionCapabilities();
 
-      enhancedPerformanceService.recordMetric(
+      modernAPMService.recordMetric(
         'encryption_service_init',
         Date.now() - startTime,
         'ms',
@@ -87,7 +87,7 @@ class AdvancedEncryptionService {
         padding: CryptoJS.pad.Pkcs7,
       });
 
-      enhancedPerformanceService.recordMetric(
+      modernAPMService.recordMetric(
         'data_encryption_time',
         Date.now() - startTime,
         'ms',
@@ -157,7 +157,7 @@ class AdvancedEncryptionService {
 
       const result = decrypted.toString(CryptoJS.enc.Utf8);
 
-      enhancedPerformanceService.recordMetric(
+      modernAPMService.recordMetric(
         'data_decryption_time',
         Date.now() - startTime,
         'ms',

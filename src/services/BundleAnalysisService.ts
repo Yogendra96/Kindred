@@ -1,4 +1,4 @@
-import { PerformanceMonitoringService } from './PerformanceMonitoringService';
+import { modernAPMService } from './ModernAPMService';
 import { createSingleton } from '../utils/Singleton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -211,6 +211,7 @@ export interface CodeChange {
 export interface ConfigChange {
   file: string;
   property: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any;
   description: string;
 }
@@ -296,14 +297,14 @@ export interface AppliedOptimization {
 }
 
 class BundleAnalysisService {
-  private performanceMonitor: PerformanceMonitoringService;
+  private performanceMonitor: typeof modernAPMService;
   private analyses: Map<string, BundleAnalysis> = new Map();
   private optimizations: Map<string, OptimizationResult> = new Map();
   private isAnalyzing: boolean = false;
   private config: OptimizationConfig;
 
   constructor() {
-    this.performanceMonitor = new PerformanceMonitoringService();
+    this.performanceMonitor = modernAPMService;
     this.config = this.getDefaultConfig();
   }
 
@@ -356,6 +357,7 @@ class BundleAnalysisService {
   private async performBundleAnalysis(
     analysisId: string,
     _buildPath?: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _options?: any,
   ): Promise<BundleAnalysis> {
     // Mock analysis data (in real implementation, this would parse actual bundle)
@@ -1217,7 +1219,6 @@ class BundleAnalysisService {
   ): Promise<void> {
     try {
       // This would integrate with your analytics service
-      console.log(`Bundle Analysis Event: ${eventName}`, properties);
     } catch (error) {
       console.error('Failed to track analysis event:', error);
     }

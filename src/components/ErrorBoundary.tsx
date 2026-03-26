@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';
 import * as Haptics from 'expo-haptics';
-
 import {
   View,
   Text,
@@ -14,7 +13,10 @@ import {
   ScrollView,
   Dimensions,
   Alert,
+  Platform,
 } from 'react-native';
+import { CrashReportingService } from '../services/CrashReportingService';
+import loggingService from '../services/LoggerService';
 
 interface Props {
   children: ReactNode;
@@ -24,6 +26,7 @@ interface Props {
   showDetails?: boolean;
   resetOnPropsChange?: boolean;
   resetKeys?: Array<string | number>;
+  enableDevelopmentMode?: boolean;
 }
 
 interface State {
@@ -36,9 +39,13 @@ interface State {
 
 const { width: _screenWidth, height: _screenHeight } = Dimensions.get('window');
 
+/**
+ * Error Boundary for catching and reporting component-level errors
+ */
 class ErrorBoundary extends Component<Props, State> {
   private resetTimeoutId: number | null = null;
   private previousResetKeys: Array<string | number> = [];
+  private logger = loggingService;
 
   constructor(props: Props) {
     super(props);
@@ -82,6 +89,14 @@ class ErrorBoundary extends Component<Props, State> {
     if (Haptics.notificationAsync) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
+
+    // Development mode logging
+    if (__DEV__ && this.props.enableDevelopmentMode) {
+      console.error('Error:', error);
+      console.error('Error Info:', errorInfo);
+      console.error('Component Stack:', errorInfo.componentStack);
+      console.error('Error ID:', errorId);
+    }
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -89,14 +104,12 @@ class ErrorBoundary extends Component<Props, State> {
     const { hasError } = this.state;
 
     if (hasError && resetOnPropsChange) {
-      // Reset if any prop changed
       if (prevProps !== this.props) {
         this.resetErrorBoundary();
       }
     }
 
     if (hasError && resetKeys) {
-      // Reset if resetKeys changed
       const hasResetKeyChanged = resetKeys.some(
         (key, index) => this.previousResetKeys[index] !== key,
       );
@@ -129,32 +142,40 @@ class ErrorBoundary extends Component<Props, State> {
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
-      userAgent: navigator.userAgent,
-      url: window.location?.href || 'react-native-app',
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'any',
+      url:
+        typeof window !== 'undefined'
+          ? window.location?.href
+          : 'react-native-app',
     };
 
     try {
-      // Store error log locally
       const existingLogs = await AsyncStorage.getItem('error_logs');
       const logs = existingLogs ? JSON.parse(existingLogs) : [];
       logs.push(errorLog);
 
-      // Keep only last 50 errors
       if (logs.length > 50) {
         logs.splice(0, logs.length - 50);
       }
 
       await AsyncStorage.setItem('error_logs', JSON.stringify(logs));
     } catch (storageError) {
-      console.error('Failed to store error log:', storageError);
+      this.logger.error(
+        'ErrorBoundary',
+        'Failed to store error log:',
+        storageError,
+      );
     }
 
-    // Console log for development
-    console.group(`🚨 Error Boundary Caught Error [${errorId}]`);
-    console.error('Error:', error);
-    console.error('Error Info:', errorInfo);
-    console.error('Component Stack:', errorInfo.componentStack);
-    console.groupEnd();
+    this.logger.error(
+      'ErrorBoundary',
+      `Error Boundary Caught Error [${errorId}]`,
+      {
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+      },
+    );
   };
 
   private reportError = async (
@@ -165,18 +186,23 @@ class ErrorBoundary extends Component<Props, State> {
     try {
       // Report to Sentry
       captureException(error, {
-        tags: {
-          errorBoundary: true,
-          errorId,
-        },
-        contexts: {
-          react: {
-            componentStack: errorInfo.componentStack,
-          },
-        },
+        tags: { errorBoundary: true, errorId },
+        contexts: { react: { componentStack: errorInfo.componentStack } },
+      });
+
+      // Report to Crash Reporting Service (Firebase)
+      CrashReportingService.logError(error, {
+        errorBoundary: true,
+        errorId,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
       });
     } catch (reportingError) {
-      console.error('Failed to report error:', reportingError);
+      this.logger.error(
+        'ErrorBoundary',
+        'Failed to report error:',
+        reportingError,
+      );
     }
   };
 
@@ -197,7 +223,6 @@ class ErrorBoundary extends Component<Props, State> {
 
     this.setState({ isRetrying: true });
 
-    // Add a small delay to show loading state
     this.resetTimeoutId = setTimeout(() => {
       this.resetErrorBoundary();
     }, 500) as any;
@@ -225,8 +250,6 @@ class ErrorBoundary extends Component<Props, State> {
         {
           text: 'Report',
           onPress: () => {
-            // Here you could integrate with your issue reporting system
-            console.log('Reporting issue:', errorDetails);
             Alert.alert('Thank you', 'Your report has been submitted.');
           },
         },
@@ -242,16 +265,10 @@ class ErrorBoundary extends Component<Props, State> {
 
     return (
       <View style={styles.detailsContainer}>
-        <TouchableOpacity
-          style={styles.detailsHeader}
-          onPress={() => {
-            // Toggle details visibility could be implemented here
-          }}
-        >
+        <View style={styles.detailsHeader}>
           <Ionicons name='information-circle' size={20} color='#666' />
           <Text style={styles.detailsHeaderText}>Error Details</Text>
-          <Ionicons name='chevron-down' size={20} color='#666' />
-        </TouchableOpacity>
+        </View>
 
         <ScrollView
           style={styles.detailsContent}
@@ -290,12 +307,10 @@ class ErrorBoundary extends Component<Props, State> {
     const { children, fallback } = this.props;
 
     if (hasError && error) {
-      // Use custom fallback if provided
       if (fallback) {
         return fallback(error, this.state.errorInfo!);
       }
 
-      // Default error UI
       return (
         <View style={styles.container}>
           <ScrollView
@@ -311,7 +326,7 @@ class ErrorBoundary extends Component<Props, State> {
 
               <Text style={styles.message}>
                 We're sorry, but something unexpected happened. The error has
-                been logged and we'll look into it.
+                been logged and reported.
               </Text>
 
               <View style={styles.buttonContainer}>
@@ -457,14 +472,13 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 12,
     color: '#6c757d',
-    fontFamily: 'monospace',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     lineHeight: 16,
   },
 });
 
 export default ErrorBoundary;
 
-// Higher-order component for easier usage
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
   errorBoundaryProps?: Omit<Props, 'children'>,
@@ -482,24 +496,28 @@ export const withErrorBoundary = <P extends object>(
   return WrappedComponent;
 };
 
-// Hook for manual error reporting
 export const useErrorHandler = () => {
   const reportError = React.useCallback((error: Error, errorInfo?: any) => {
     const errorId = `manual_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
 
-    console.error('Manual error report:', { error, errorInfo, errorId });
+    loggingService.error('ErrorBoundary', 'Manual error report:', {
+      error,
+      errorInfo,
+      errorId,
+    });
 
-    if (captureException) {
-      captureException(error, {
-        tags: {
-          manual: true,
-          errorId,
-        },
-        extra: errorInfo,
-      });
-    }
+    captureException(error, {
+      tags: { manual: true, errorId },
+      extra: errorInfo,
+    });
+
+    CrashReportingService.logError(error, {
+      manual: true,
+      errorId,
+      ...errorInfo,
+    });
   }, []);
 
   return { reportError };
