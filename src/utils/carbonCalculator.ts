@@ -183,12 +183,12 @@ export class CarbonCalculator {
     details: Record<string, any>,
     emissions: number,
   ): void {
-    analyticsService.logEvent('carbon_calculation', {
+    analyticsService.trackEvent('carbon_calculation', {
       type,
       ...details,
       emissions,
       timestamp: new Date().toISOString(),
-    });
+    }, 'feature_usage', 'low');
   }
 
   /**
@@ -445,7 +445,7 @@ export class CarbonCalculator {
         },
       };
 
-      analyticsService.logEvent('daily_carbon_footprint', result);
+      analyticsService.trackEvent('daily_carbon_footprint', result, 'feature_usage', 'medium');
       return result;
     } catch (error) {
       throw new CarbonCalculationError('Error calculating total emissions', {
@@ -474,11 +474,11 @@ export class CarbonCalculator {
         );
       }
 
-      analyticsService.logEvent('carbon_saved', {
+      analyticsService.trackEvent('carbon_saved', {
         oldActivity,
         newActivity,
         savedEmissions: saved,
-      });
+      }, 'feature_usage', 'medium');
 
       return saved;
     } catch (error) {

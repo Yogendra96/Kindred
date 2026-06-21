@@ -15,7 +15,7 @@ import SmartDevicesScreen from '../screens/main/SmartDevicesScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { House, MapTrifold, User, Users, ShoppingCart, Trophy } from 'phosphor-react-native';
 import AppErrorBoundary from '../components/ui/AppErrorBoundary';
 import logger from '../services/LoggerService';
 import { ErrorHandler } from '../utils/errorHandler';
@@ -30,26 +30,24 @@ const MainTabs = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Map') {
-            iconName = focused ? 'map' : 'map-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
-          } else if (route.name === 'Social') {
-            iconName = focused ? 'people' : 'people-outline';
-          } else if (route.name === 'Market') {
-            iconName = focused ? 'cart' : 'cart-outline';
-          } else if (route.name === 'Awards') {
-            iconName = focused ? 'trophy' : 'trophy-outline';
-          }
-
-          return <Icon name={iconName} size={size} color={color} />;
+          const weight = focused ? 'fill' : 'regular';
+          
+          if (route.name === 'Home') return <House size={size} color={color} weight={weight} />;
+          if (route.name === 'Map') return <MapTrifold size={size} color={color} weight={weight} />;
+          if (route.name === 'Profile') return <User size={size} color={color} weight={weight} />;
+          if (route.name === 'Social') return <Users size={size} color={color} weight={weight} />;
+          if (route.name === 'Market') return <ShoppingCart size={size} color={color} weight={weight} />;
+          if (route.name === 'Awards') return <Trophy size={size} color={color} weight={weight} />;
+          
+          return null;
         },
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: '#007AFF', // You could use spatialColors.primary here
         tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          backgroundColor: '#1C1C1E', // Dark mode support
+          borderTopColor: 'rgba(255,255,255,0.1)',
+        },
+        headerShown: false,
       })}
     >
       <Tab.Screen name='Home' component={HomeScreen} />

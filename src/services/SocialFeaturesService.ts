@@ -4,7 +4,23 @@ import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import firebase from '../utils/firebaseInit';
+import { MOCK_SOCIAL_FEED } from '../utils/demoData';
 import { Share } from 'react-native';
+
+// Safety check for Firebase app
+const ensureFirebase = () => {
+  if (!firebase.apps.length) {
+    try {
+      firebase.initializeApp({
+        apiKey: 'dummy-api-key-for-local-dev',
+        appId: '1:1234567890:ios:abcdef',
+        projectId: 'kindred-dummy-project',
+        messagingSenderId: '1234567890',
+      });
+    } catch (e) {}
+  }
+};
 
 // Types for Social Features
 export interface UserProfile {
@@ -248,6 +264,7 @@ class SocialFeaturesService {
   }
 
   private async initializeService(): Promise<void> {
+    ensureFirebase();
     try {
       await this.loadCachedData();
       this.setupAuthListener();
@@ -257,7 +274,9 @@ class SocialFeaturesService {
   }
 
   private setupAuthListener(): void {
-    auth().onAuthStateChanged(async user => {
+    try {
+      if (!firebase.apps.length) return;
+      auth().onAuthStateChanged(async user => {
       if (user) {
         await this.loadUserProfile(user.uid);
         await this.syncUserData();
@@ -265,8 +284,13 @@ class SocialFeaturesService {
         this.currentUser = null;
         this.friends = [];
         this.activities = [];
+        this.challenges = [];
+        this.groups = [];
       }
     });
+    } catch (e) {
+      console.warn('Could not setup auth listener for Social Features:', e);
+    }
   }
 
   // User Profile Management
@@ -508,7 +532,20 @@ class SocialFeaturesService {
 
   public async loadActivities(limit: number = 50): Promise<Activity[]> {
     try {
-      if (!this.currentUser) return [];
+      if (!this.currentUser) {
+         // Even if no user, show mock data in demo mode
+         if (!firebase.apps.length || firebase.app().options.projectId?.includes('dummy')) {
+           this.activities = MOCK_SOCIAL_FEED as any;
+           return MOCK_SOCIAL_FEED as any;
+         }
+         return [];
+      }
+
+      // Demo Mode Fallback
+      if (!firebase.apps.length || firebase.app().options.projectId?.includes('dummy')) {
+        this.activities = MOCK_SOCIAL_FEED as any;
+        return MOCK_SOCIAL_FEED as any;
+      }
 
       // Get activities from user and friends
       const friendUids = this.friends.map(friend => friend.uid);

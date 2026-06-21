@@ -5,6 +5,16 @@ import type {
   WasteInput,
 } from '../carbonCalculator';
 import { CarbonCalculator, InputValidationError } from '../carbonCalculator';
+
+jest.mock('../../services/AnalyticsService', () => ({
+  analyticsService: {
+    trackEvent: jest.fn(),
+    trackPerformance: jest.fn(),
+    trackError: jest.fn(),
+    trackCarbonActivity: jest.fn(),
+  },
+}));
+
 describe('CarbonCalculator', () => {
   let calculator: CarbonCalculator;
 

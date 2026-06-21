@@ -5,6 +5,7 @@ import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
 import loggingService from './LoggerService';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
+import { decodeJpeg } from '@tensorflow/tfjs-react-native';
 import { Platform } from 'react-native';
 
 export interface VisionConfig {
@@ -471,12 +472,8 @@ class AIVisionService {
       const response = await fetch(imageUri);
       const imageBuffer = await response.arrayBuffer();
 
-      // Decode image
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const imageTensor = (tf as any).node.decodeImage(
-        new Uint8Array(imageBuffer),
-        3,
-      );
+      // Decode image using mobile-compatible decoder
+      const imageTensor = decodeJpeg(new Uint8Array(imageBuffer));
 
       // Resize to model input size
       const resized = tf.image.resizeBilinear(imageTensor, [

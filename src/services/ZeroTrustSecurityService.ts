@@ -163,7 +163,9 @@ export class ZeroTrustSecurityService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private appStateListener?: any;
 
-  static getInstance(config?: Partial<ZeroTrustConfig>): ZeroTrustSecurityService {
+  static getInstance(
+    config?: Partial<ZeroTrustConfig>,
+  ): ZeroTrustSecurityService {
     if (!ZeroTrustSecurityService.instance) {
       ZeroTrustSecurityService.instance = new ZeroTrustSecurityService(config);
     }
@@ -211,7 +213,9 @@ export class ZeroTrustSecurityService {
       log.info('Initializing Zero-Trust Security');
 
       const fingerprint = await this.generateFingerprint();
-      const sessionId = await advancedEncryptionService.hashData(Math.random().toString());
+      const sessionId = await advancedEncryptionService.hashData(
+        Math.random().toString(),
+      );
 
       this.currentContext = {
         deviceId: fingerprint.fingerprint,
@@ -316,7 +320,9 @@ export class ZeroTrustSecurityService {
     const encryptedStr = await AsyncStorage.getItem('zt_session');
     if (encryptedStr) {
       try {
-        const decrypted = await advancedEncryptionService.decryptData(JSON.parse(encryptedStr));
+        const decrypted = await advancedEncryptionService.decryptData(
+          JSON.parse(encryptedStr),
+        );
         this.currentSession = JSON.parse(decrypted);
       } catch (e) {
         await AsyncStorage.removeItem('zt_session');
@@ -333,7 +339,9 @@ export class ZeroTrustSecurityService {
       deviceId: this.currentContext?.deviceId || 'unknown',
     };
     this.currentSession = session;
-    const encrypted = await advancedEncryptionService.encryptData(JSON.stringify(session));
+    const encrypted = await advancedEncryptionService.encryptData(
+      JSON.stringify(session),
+    );
     await AsyncStorage.setItem('zt_session', JSON.stringify(encrypted));
     return session;
   }
@@ -442,7 +450,9 @@ export class ZeroTrustSecurityService {
   ): Promise<Record<string, string>> {
     const timestamp = Date.now().toString();
     const nonce = Math.random().toString(36).substring(7);
-    const data = `${method}${url}${timestamp}${nonce}${body ? JSON.stringify(body) : ''}`;
+    const data = `${method}${url}${timestamp}${nonce}${
+      body ? JSON.stringify(body) : ''
+    }`;
     const signature = await advancedEncryptionService.hashData(data);
 
     return {
@@ -489,7 +499,9 @@ export class ZeroTrustSecurityService {
    */
   async logSecurityEvent(event: Partial<SecurityEvent>): Promise<void> {
     const securityEvent: SecurityEvent = {
-      id: event.id || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id:
+        event.id ||
+        `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: event.type || 'unknown',
       severity: event.severity || 'low',
       timestamp: event.timestamp || Date.now(),
@@ -501,11 +513,18 @@ export class ZeroTrustSecurityService {
     log.info('Security Event Logged:', securityEvent);
 
     // Record as persistent threat if high severity
-    if (securityEvent.severity === 'high' || securityEvent.severity === 'critical') {
+    if (
+      securityEvent.severity === 'high' ||
+      securityEvent.severity === 'critical'
+    ) {
       const incident: SecurityIncident = {
         id: securityEvent.id,
         type: securityEvent.type,
-        severity: securityEvent.severity as 'low' | 'medium' | 'high' | 'critical',
+        severity: securityEvent.severity as
+          | 'low'
+          | 'medium'
+          | 'high'
+          | 'critical',
         description: securityEvent.description,
         timestamp: securityEvent.timestamp,
         source: securityEvent.source,

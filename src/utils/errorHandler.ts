@@ -169,7 +169,9 @@ class ErrorHandlerClass {
         logger.error(
           'Global',
           isFatal ? 'FATAL JS ERROR' : 'Uncaught JS Error',
-          error,
+          error instanceof Error
+            ? { message: error.message, stack: error.stack }
+            : error,
         );
         if (previousHandler) previousHandler(error, isFatal);
       },
@@ -179,7 +181,13 @@ class ErrorHandlerClass {
     const HermesInternal = (global as any).HermesInternal;
     if (HermesInternal?.hasPromise?.()) {
       (global as any).onunhandledrejection = (event: { reason: any }) => {
-        logger.error('Global', 'Unhandled Promise Rejection', event.reason);
+        logger.error(
+          'Global',
+          'Unhandled Promise Rejection',
+          event.reason instanceof Error
+            ? { message: event.reason.message, stack: event.reason.stack }
+            : event.reason,
+        );
       };
     }
 

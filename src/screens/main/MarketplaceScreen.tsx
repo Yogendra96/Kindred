@@ -11,6 +11,20 @@ import {
 } from 'react-native';
 import { mockData } from '../../data/mockData';
 import { useToast } from '../../contexts/ToastContext';
+import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
+import { MagnifyingGlass, X, Plus } from 'phosphor-react-native';
+
+const GlassCard = ({ style, children }: any) => (
+  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderRadius: 16, overflow: 'hidden' }]}>
+    {children}
+  </View>
+);
+
+const GlassBadge = ({ style, children }: any) => (
+  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderRadius: 12, overflow: 'hidden' }]}>
+    {children}
+  </View>
+);
 
 // ─── Thrift Store Mock Data ──────────────────────────────────────────────────
 
@@ -143,10 +157,10 @@ const THRIFT_ITEMS = [
 const ConditionBadge = ({ condition }: { condition: string }) => {
   const color =
     condition === 'Like New'
-      ? '#2e7d32'
+      ? '#38EF7D'
       : condition === 'Excellent'
-      ? '#1565c0'
-      : '#f57c00';
+      ? '#2B86FA'
+      : '#FA7B2B';
   return (
     <View
       style={[
@@ -167,31 +181,33 @@ const ThriftItemCard = ({
   onPress: () => void;
 }) => (
   <TouchableOpacity
-    style={styles.thriftCard}
+    style={styles.thriftCardTouch}
     onPress={onPress}
     activeOpacity={0.85}
   >
-    <View style={styles.thriftEmojiBox}>
-      <Text style={styles.thriftEmoji}>{item.emoji}</Text>
-    </View>
-    <View style={styles.thriftInfo}>
-      <Text style={styles.thriftTitle} numberOfLines={1}>
-        {item.title}
-      </Text>
-      <View style={styles.thriftRow}>
-        <ConditionBadge condition={item.condition} />
-        <Text style={styles.thriftLocation}>📍 {item.location}</Text>
+    <GlassCard style={styles.thriftCard}>
+      <View style={styles.thriftEmojiBox}>
+        <Text style={styles.thriftEmoji}>{item.emoji}</Text>
       </View>
-      <View style={styles.thriftFooter}>
-        <View>
-          <Text style={styles.thriftPrice}>${item.price}</Text>
-          <Text style={styles.thriftOriginal}>${item.originalPrice} new</Text>
+      <View style={styles.thriftInfo}>
+        <Text style={styles.thriftTitle} numberOfLines={1}>
+          {item.title}
+        </Text>
+        <View style={styles.thriftRow}>
+          <ConditionBadge condition={item.condition} />
+          <Text style={styles.thriftLocation}>📍 {item.location}</Text>
         </View>
-        <View style={styles.co2Tag}>
-          <Text style={styles.co2Text}>🌱 {item.co2Saved} kg CO₂ saved</Text>
+        <View style={styles.thriftFooter}>
+          <View>
+            <Text style={styles.thriftPrice}>${item.price}</Text>
+            <Text style={styles.thriftOriginal}>${item.originalPrice} new</Text>
+          </View>
+          <View style={styles.co2Tag}>
+            <Text style={styles.co2Text}>🌱 {item.co2Saved} kg CO₂ saved</Text>
+          </View>
         </View>
       </View>
-    </View>
+    </GlassCard>
   </TouchableOpacity>
 );
 
@@ -243,7 +259,7 @@ const ThriftStoreTab = () => {
   return (
     <View style={{ flex: 1 }}>
       {/* Stats banner */}
-      <View style={styles.statsBanner}>
+      <GlassCard style={styles.statsBanner}>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{filtered.length}</Text>
           <Text style={styles.statLabel}>Items</Text>
@@ -264,21 +280,21 @@ const ThriftStoreTab = () => {
           </Text>
           <Text style={styles.statLabel}>Total savings</Text>
         </View>
-      </View>
+      </GlassCard>
 
       {/* Search */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <MagnifyingGlass size={20} color="rgba(255,255,255,0.6)" weight="bold" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder='Search thrift listings...'
-          placeholderTextColor='#aaa'
+          placeholderTextColor='rgba(255,255,255,0.4)'
           value={search}
           onChangeText={setSearch}
         />
         {search.length > 0 && (
           <TouchableOpacity onPress={() => setSearch('')}>
-            <Text style={styles.clearSearch}>✕</Text>
+            <X size={20} color="rgba(255,255,255,0.6)" weight="bold" style={styles.clearSearch} />
           </TouchableOpacity>
         )}
       </View>
@@ -338,7 +354,8 @@ const ThriftStoreTab = () => {
           )
         }
       >
-        <Text style={styles.listItemText}>+ List a Pre-Loved Item</Text>
+        <Plus size={20} color="#0f2027" weight="bold" style={{marginRight: 8}} />
+        <Text style={styles.listItemText}>List a Pre-Loved Item</Text>
       </TouchableOpacity>
     </View>
   );
@@ -353,7 +370,7 @@ const CarbonOffsetTab = () => {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       {projects.map(project => (
-        <View key={project.id} style={styles.card}>
+        <GlassCard key={project.id} style={styles.card}>
           <View style={styles.offsetEmojiBox}>
             <Text style={styles.offsetEmoji}>🌲</Text>
           </View>
@@ -379,7 +396,7 @@ const CarbonOffsetTab = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </GlassCard>
       ))}
     </ScrollView>
   );
@@ -394,6 +411,17 @@ const MarketplaceScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+        <Defs>
+          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
+            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
+            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          </SvgLinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+      </Svg>
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🛍️ Kindred Market</Text>
@@ -434,13 +462,12 @@ const MarketplaceScreen = () => {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: '#0f2027' },
 
   // Header
   header: {
     padding: 20,
-    paddingTop: 48,
-    backgroundColor: '#2e7d32',
+    paddingTop: 60,
     alignItems: 'center',
   },
   title: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 4 },
@@ -449,64 +476,55 @@ const styles = StyleSheet.create({
   // Tab switcher
   tabSwitcher: {
     flexDirection: 'row',
-    backgroundColor: '#1b5e20',
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     marginHorizontal: 4,
     borderRadius: 20,
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  tabButtonActive: { backgroundColor: 'white' },
+  tabButtonActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' },
   tabButtonText: {
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255,255,255,0.5)',
     fontWeight: '600',
     fontSize: 13,
   },
-  tabButtonTextActive: { color: '#2e7d32' },
+  tabButtonTextActive: { color: '#fff' },
 
   // Stats banner
   statsBanner: {
     flexDirection: 'row',
-    backgroundColor: 'white',
     marginHorizontal: 16,
     marginTop: 12,
-    borderRadius: 12,
     padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 16, fontWeight: 'bold', color: '#2e7d32' },
-  statLabel: { fontSize: 10, color: '#888', marginTop: 2, textAlign: 'center' },
-  statDivider: { width: 1, backgroundColor: '#eee', marginVertical: 4 },
+  statValue: { fontSize: 16, fontWeight: 'bold', color: '#38EF7D' },
+  statLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2, textAlign: 'center' },
+  statDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 4 },
 
   // Search
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(0,0,0,0.2)',
     marginHorizontal: 16,
     marginTop: 10,
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 44,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  searchIcon: { fontSize: 16, marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 15, color: '#333' },
-  clearSearch: { fontSize: 16, color: '#aaa', paddingHorizontal: 4 },
+  searchIcon: { marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 15, color: '#fff' },
+  clearSearch: { paddingHorizontal: 4 },
 
   // Category pills
   categoryScroll: { maxHeight: 50, marginTop: 10 },
@@ -515,32 +533,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  categoryPillActive: { backgroundColor: '#2e7d32', borderColor: '#2e7d32' },
-  categoryText: { fontSize: 13, color: '#555', fontWeight: '500' },
-  categoryTextActive: { color: 'white' },
+  categoryPillActive: { backgroundColor: 'rgba(56,239,125,0.2)', borderColor: '#38EF7D' },
+  categoryText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
+  categoryTextActive: { color: '#38EF7D', fontWeight: 'bold' },
 
   // Thrift item card
   thriftList: { padding: 16, paddingBottom: 80 },
+  thriftCardTouch: {
+    marginBottom: 12,
+  },
   thriftCard: {
     flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 14,
-    marginBottom: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
   },
   thriftEmojiBox: {
     width: 80,
-    backgroundColor: '#f1f8e9',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -549,7 +561,7 @@ const styles = StyleSheet.create({
   thriftTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#222',
+    color: '#fff',
     marginBottom: 6,
   },
   thriftRow: {
@@ -558,25 +570,27 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 8,
   },
-  thriftLocation: { fontSize: 11, color: '#888', flex: 1 },
+  thriftLocation: { fontSize: 11, color: 'rgba(255,255,255,0.6)', flex: 1 },
   thriftFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
   },
-  thriftPrice: { fontSize: 18, fontWeight: 'bold', color: '#2e7d32' },
+  thriftPrice: { fontSize: 18, fontWeight: 'bold', color: '#38EF7D' },
   thriftOriginal: {
     fontSize: 11,
-    color: '#aaa',
+    color: 'rgba(255,255,255,0.4)',
     textDecorationLine: 'line-through',
   },
   co2Tag: {
-    backgroundColor: '#e8f5e9',
+    backgroundColor: 'rgba(56,239,125,0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(56,239,125,0.2)',
   },
-  co2Text: { fontSize: 11, color: '#388e3c', fontWeight: '600' },
+  co2Text: { fontSize: 11, color: '#38EF7D', fontWeight: '600' },
 
   // Condition badge
   badge: {
@@ -590,7 +604,7 @@ const styles = StyleSheet.create({
   // Empty state
   emptyState: { alignItems: 'center', paddingTop: 60 },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyText: { color: '#888', fontSize: 16 },
+  emptyText: { color: 'rgba(255,255,255,0.6)', fontSize: 16 },
 
   // List item CTA
   listItemButton: {
@@ -598,35 +612,29 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 24,
     right: 24,
-    backgroundColor: '#2e7d32',
+    backgroundColor: '#38EF7D',
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#2e7d32',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    shadowColor: '#38EF7D',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
   },
-  listItemText: { color: 'white', fontWeight: '700', fontSize: 16 },
+  listItemText: { color: '#0f2027', fontWeight: '800', fontSize: 16 },
 
   // Carbon offset tab
   content: { padding: 16, paddingBottom: 32 },
   card: {
     flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 14,
     marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
   },
   offsetEmojiBox: {
     width: 72,
-    backgroundColor: '#e8f5e9',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -635,13 +643,13 @@ const styles = StyleSheet.create({
   projectTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#fff',
     marginBottom: 4,
   },
-  projectLocation: { fontSize: 13, color: '#666', marginBottom: 6 },
+  projectLocation: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 6 },
   projectDescription: {
     fontSize: 13,
-    color: '#555',
+    color: 'rgba(255,255,255,0.8)',
     lineHeight: 19,
     marginBottom: 12,
   },
@@ -650,15 +658,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  price: { fontSize: 20, fontWeight: 'bold', color: '#2e7d32' },
-  priceSub: { fontSize: 13, fontWeight: '400', color: '#888' },
+  price: { fontSize: 20, fontWeight: 'bold', color: '#38EF7D' },
+  priceSub: { fontSize: 13, fontWeight: '400', color: 'rgba(255,255,255,0.5)' },
   button: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: 'rgba(56,239,125,0.1)',
+    borderWidth: 1,
+    borderColor: '#38EF7D',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
   },
-  buttonText: { color: 'white', fontWeight: '700', fontSize: 14 },
+  buttonText: { color: '#38EF7D', fontWeight: '700', fontSize: 14 },
 });
 
 export default MarketplaceScreen;

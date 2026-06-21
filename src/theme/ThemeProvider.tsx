@@ -8,6 +8,8 @@ import { useSelector, useDispatch } from 'react-redux';
 type ThemeContextType = {
   theme: ReturnType<typeof getTheme>;
   colors: ReturnType<typeof getTheme>['colors'];
+  spacing: ReturnType<typeof getTheme>['spacing'];
+  typography: ReturnType<typeof getTheme>['typography'];
   isDark: boolean;
   isHighContrast: boolean;
   toggleTheme: () => void;
@@ -18,6 +20,8 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType>({
   theme: getTheme('light', 'light'),
   colors: getTheme('light', 'light').colors,
+  spacing: getTheme('light', 'light').spacing,
+  typography: getTheme('light', 'light').typography,
   isDark: false,
   isHighContrast: false,
   toggleTheme: () => {},
@@ -178,6 +182,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const value = {
     theme,
     colors: theme.colors,
+    spacing: theme.spacing,
+    typography: theme.typography,
     isDark,
     isHighContrast,
     toggleTheme,

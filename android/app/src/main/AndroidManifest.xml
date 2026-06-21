@@ -49,13 +49,16 @@
         <!-- Firebase Messaging Configuration -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/notification_icon" />
+            android:resource="@drawable/notification_icon"
+            tools:replace="android:resource" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/notification_color" />
+            android:resource="@color/notification_color"
+            tools:replace="android:resource" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
+            android:value="@string/default_notification_channel_id"
+            tools:replace="android:value" />
 
         <activity
             android:name=".MainActivity"

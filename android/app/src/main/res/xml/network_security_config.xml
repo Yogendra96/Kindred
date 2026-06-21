@@ -14,6 +14,11 @@
             <!-- Example: <pin digest="SHA-256">your-pin-here</pin> -->
         </pin-set>
     </domain-config>
+    <!-- Allow cleartext traffic to localhost and emulator loopback for development -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
     <debug-overrides>
         <trust-anchors>
             <certificates src="system" />

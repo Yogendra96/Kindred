@@ -4,357 +4,358 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
+import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
+
+const GlassCard = ({ style, children }: any) => (
+  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, overflow: 'hidden' }]}>
+    {children}
+  </View>
+);
+import { MotiView } from 'moti';
+import { 
+  Leaf, 
+  Car, 
+  ForkKnife, 
+  Lightbulb, 
+  Trash, 
+  Camera, 
+  ShieldCheck, 
+  Cpu,
+  ChartBar,
+  GraduationCap
+} from 'phosphor-react-native';
+
 import type { RootState } from '../../store';
 import { updateFootprint } from '../../store/slices/carbonSlice';
 import { useClimateNotifications } from '../../hooks/useClimateNotifications';
-import _FeatureButton from '../../components/ui/FeatureButton';
-import _SectionHeader from '../../components/ui/SectionHeader';
-import _StatCard from '../../components/ui/StatCard';
+import { spatialColors, animations } from '../../theme/theme';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const HomeScreen = ({ navigation }: any) => {
   const dispatch = useDispatch();
-  const { footprint, loading, error } = useSelector(
+  const { footprint, error } = useSelector(
     (state: RootState) => state.carbon,
   );
   const { profile } = useSelector((state: RootState) => state.user);
 
-  const handleAddTransportation = () => {
-    dispatch(
-      updateFootprint({ transportation: footprint.transportation + 2.5 }),
-    );
+  const handleAddActivity = (type: string, amount: number) => {
+    dispatch(updateFootprint({ [type]: footprint[type as keyof typeof footprint] + amount }));
   };
 
-  const handleAddFood = () => {
-    dispatch(updateFootprint({ food: footprint.food + 1.2 }));
-  };
-
-  const handleAddEnergy = () => {
-    dispatch(updateFootprint({ energy: footprint.energy + 3.1 }));
-  };
-
-  const handleAddWaste = () => {
-    dispatch(updateFootprint({ waste: footprint.waste + 0.8 }));
-  };
-
-  // Poll climate alerts every 30 min and show in-app banners
   useClimateNotifications({ lat: 40.7128, lng: -74.006 });
 
+  const getCarbonStatusColor = () => {
+    if (footprint.total < 10) return ['#38EF7D', '#11998E']; // Good
+    if (footprint.total < 20) return ['#F2C94C', '#F2994A']; // Medium
+    return ['#FF416C', '#FF4B2B']; // High
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>🏠 Home</Text>
-        <Text style={styles.subtitle}>
-          Welcome{profile.name ? `, ${profile.name}` : ' to Kindred'}
-        </Text>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.footprintCard}>
-          <Text style={styles.cardTitle}>Your Carbon Footprint</Text>
-          <Text style={styles.totalFootprint}>
-            {footprint.total.toFixed(1)} kg CO₂
+    <View style={styles.container}>
+      {/* Animated Gradient Background */}
+      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+        <Defs>
+          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
+            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
+            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          </SvgLinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+      </Svg>
+      
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <MotiView
+          from={{ opacity: 0, translateY: -20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={animations.spring.gentle}
+          style={styles.header}
+        >
+          <Text style={styles.title}>Home</Text>
+          <Text style={styles.subtitle}>
+            Welcome back{profile.name ? `, ${profile.name}` : ''}
           </Text>
-          <Text style={styles.footprintLabel}>Today</Text>
-        </View>
+        </MotiView>
 
-        <View style={styles.categoriesContainer}>
-          <Text style={styles.sectionTitle}>Add Activity</Text>
+        {/* Footprint Card */}
+        <MotiView
+          from={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ ...animations.spring.bouncy, delay: 100 }}
+        >
+          <GlassCard style={styles.glassCard}>
+            <View style={styles.cardGradientBar}>
+              <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+                <Defs>
+                  <SvgLinearGradient id="cardGrad" x1="0" y1="0" x2="1" y2="1">
+                    <Stop offset="0" stopColor={getCarbonStatusColor()[0]} stopOpacity="1" />
+                    <Stop offset="1" stopColor={getCarbonStatusColor()[1]} stopOpacity="1" />
+                  </SvgLinearGradient>
+                </Defs>
+                <Rect x="0" y="0" width="100%" height="100%" fill="url(#cardGrad)" />
+              </Svg>
+            </View>
+            <View style={styles.cardInner}>
+              <Text style={styles.cardTitle}>Daily Carbon Footprint</Text>
+              <Text style={styles.totalFootprint}>
+                {footprint.total.toFixed(1)} <Text style={styles.unit}>kg CO₂</Text>
+              </Text>
+              <View style={styles.statusBadge}>
+                <Leaf size={14} color="#fff" weight="fill" style={{ marginRight: 4 }} />
+                <Text style={styles.statusText}>On Track</Text>
+              </View>
+            </View>
+          </GlassCard>
+        </MotiView>
 
-          <TouchableOpacity
-            style={styles.categoryButton}
-            onPress={handleAddTransportation}
-          >
-            <Text style={styles.categoryEmoji}>🚗</Text>
-            <Text style={styles.categoryText}>Drive 10km</Text>
-            <Text style={styles.categoryValue}>+2.5 kg</Text>
-          </TouchableOpacity>
+        {/* Quick Add Section */}
+        <MotiView
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ ...animations.spring.gentle, delay: 200 }}
+          style={styles.section}
+        >
+          <Text style={styles.sectionTitle}>Log Activity</Text>
+          <View style={styles.actionGrid}>
+            {[
+              { icon: Car, label: 'Drive', value: 2.5, type: 'transportation', color: '#FF9A9E' },
+              { icon: ForkKnife, label: 'Meat', value: 1.2, type: 'food', color: '#FECFEF' },
+              { icon: Lightbulb, label: 'Energy', value: 3.1, type: 'energy', color: '#A18CD1' },
+              { icon: Trash, label: 'Waste', value: 0.8, type: 'waste', color: '#84FAB0' },
+            ].map((item, index) => (
+              <MotiView 
+                key={item.label}
+                from={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ ...animations.spring.bouncy, delay: 300 + index * 50 }}
+              >
+                <Pressable onPress={() => handleAddActivity(item.type, item.value)}>
+                  {({ pressed }) => (
+                    <MotiView
+                      animate={{ scale: pressed ? 0.95 : 1 }}
+                      transition={animations.timing.quick}
+                    >
+                      <GlassCard style={styles.actionButton}>
+                        <View style={[styles.iconContainer, { backgroundColor: item.color + '30' }]}>
+                          <item.icon size={24} color={item.color} weight="duotone" />
+                        </View>
+                        <Text style={styles.actionLabel}>{item.label}</Text>
+                        <Text style={styles.actionValue}>+{item.value}</Text>
+                      </GlassCard>
+                    </MotiView>
+                  )}
+                </Pressable>
+              </MotiView>
+            ))}
+          </View>
+        </MotiView>
 
-          <TouchableOpacity
-            style={styles.categoryButton}
-            onPress={handleAddFood}
-          >
-            <Text style={styles.categoryEmoji}>🍖</Text>
-            <Text style={styles.categoryText}>Meat meal</Text>
-            <Text style={styles.categoryValue}>+1.2 kg</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.categoryButton}
-            onPress={handleAddEnergy}
-          >
-            <Text style={styles.categoryEmoji}>💡</Text>
-            <Text style={styles.categoryText}>1 hour AC</Text>
-            <Text style={styles.categoryValue}>+3.1 kg</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.categoryButton}
-            onPress={handleAddWaste}
-          >
-            <Text style={styles.categoryEmoji}>🗑️</Text>
-            <Text style={styles.categoryText}>Plastic waste</Text>
-            <Text style={styles.categoryValue}>+0.8 kg</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.featuresContainer}>
+        {/* Features Section */}
+        <MotiView
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ ...animations.spring.gentle, delay: 400 }}
+          style={styles.section}
+        >
           <Text style={styles.sectionTitle}>Masterpiece Features</Text>
-          <View style={styles.featureGrid}>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('CarbonTwin')}
-            >
-              <Text style={styles.featureEmoji}>🧬</Text>
-              <Text style={styles.featureText}>Carbon Twin</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('VisionCamera')}
-            >
-              <Text style={styles.featureEmoji}>📷</Text>
-              <Text style={styles.featureText}>AI Vision</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('Verification')}
-            >
-              <Text style={styles.featureEmoji}>🛡️</Text>
-              <Text style={styles.featureText}>Verify</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('VeganCalculator')}
-            >
-              <Text style={styles.featureEmoji}>🌱</Text>
-              <Text style={styles.featureText}>Vegan Calc</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('SmartDevices')}
-            >
-              <Text style={styles.featureEmoji}>🔌</Text>
-              <Text style={styles.featureText}>Smart Home</Text>
-            </TouchableOpacity>
+          <View style={styles.featureList}>
+            {[
+              { icon: Cpu, label: 'Carbon Twin', route: 'CarbonTwin' },
+              { icon: Camera, label: 'AI Vision', route: 'VisionCamera' },
+              { icon: ShieldCheck, label: 'Verify', route: 'Verification' },
+              { icon: ChartBar, label: 'Analytics', route: 'Analytics' },
+              { icon: GraduationCap, label: 'Learn', route: 'LearningCenter' }
+            ].map((feat, index) => (
+              <Pressable key={feat.label} onPress={() => navigation.navigate(feat.route)}>
+                {({ pressed }) => (
+                  <MotiView
+                    animate={{ scale: pressed ? 0.98 : 1 }}
+                    transition={animations.timing.quick}
+                    >
+                      <GlassCard style={styles.featureRow}>
+                        <View style={styles.featureIconWrap}>
+                          <feat.icon size={24} color="#fff" weight="duotone" />
+                        </View>
+                        <Text style={styles.featureRowText}>{feat.label}</Text>
+                      </GlassCard>
+                    </MotiView>
+                )}
+              </Pressable>
+            ))}
           </View>
-        </View>
-
-        <View style={styles.breakdownContainer}>
-          <Text style={styles.sectionTitle}>Today's Breakdown</Text>
-          <View style={styles.breakdownItem}>
-            <Text style={styles.breakdownLabel}>🚗 Transportation</Text>
-            <Text style={styles.breakdownValue}>
-              {footprint.transportation.toFixed(1)} kg
-            </Text>
-          </View>
-          <View style={styles.breakdownItem}>
-            <Text style={styles.breakdownLabel}>🍽️ Food</Text>
-            <Text style={styles.breakdownValue}>
-              {footprint.food.toFixed(1)} kg
-            </Text>
-          </View>
-          <View style={styles.breakdownItem}>
-            <Text style={styles.breakdownLabel}>⚡ Energy</Text>
-            <Text style={styles.breakdownValue}>
-              {footprint.energy.toFixed(1)} kg
-            </Text>
-          </View>
-          <View style={styles.breakdownItem}>
-            <Text style={styles.breakdownLabel}>🗑️ Waste</Text>
-            <Text style={styles.breakdownValue}>
-              {footprint.waste.toFixed(1)} kg
-            </Text>
-          </View>
-        </View>
-
-        {/* Quick links row 2 */}
-        <View style={styles.categoriesContainer}>
-          <Text style={styles.sectionTitle}>Explore</Text>
-          <View style={styles.featureGrid}>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('Analytics')}
-            >
-              <Text style={styles.featureEmoji}>📊</Text>
-              <Text style={styles.featureText}>Analytics</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('LearningCenter')}
-            >
-              <Text style={styles.featureEmoji}>🎓</Text>
-              <Text style={styles.featureText}>Learn</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.featureBtn}
-              onPress={() => navigation.navigate('VeganCalculator')}
-            >
-              <Text style={styles.featureEmoji}>🌱</Text>
-              <Text style={styles.featureText}>Vegan Calc</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        </MotiView>
 
         {error && (
-          <View style={styles.errorContainer}>
+          <BlurView intensity={50} tint="dark" style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
-          </View>
+          </BlurView>
         )}
-      </View>
-    </ScrollView>
+        
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000',
+  },
+  scrollContent: {
+    padding: 24,
+    paddingTop: 60,
   },
   header: {
-    padding: 20,
-    backgroundColor: '#007AFF',
-    alignItems: 'center',
+    marginBottom: 32,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 8,
+    fontSize: 34,
+    fontWeight: '800',
+    color: '#fff',
+    letterSpacing: -1,
   },
   subtitle: {
     fontSize: 16,
-    color: 'white',
-    opacity: 0.9,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 4,
+    fontWeight: '500',
   },
-  content: {
-    padding: 20,
+  glassCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: spatialColors.glassBorderDark,
+    marginBottom: 32,
   },
-  footprintCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  cardGradientBar: {
+    height: 6,
+    width: '100%',
+  },
+  cardInner: {
+    padding: 24,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    color: 'rgba(255,255,255,0.6)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   totalFootprint: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    marginBottom: 4,
+    fontSize: 48,
+    fontWeight: '800',
+    color: '#fff',
+    marginTop: 8,
+    marginBottom: 16,
   },
-  footprintLabel: {
-    fontSize: 14,
-    color: '#666',
+  unit: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.5)',
   },
-  categoriesContainer: {
-    marginBottom: 20,
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(56, 239, 125, 0.2)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  statusText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  section: {
+    marginBottom: 32,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#fff',
     marginBottom: 16,
+    letterSpacing: -0.5,
   },
-  categoryButton: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+  actionGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  categoryEmoji: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  categoryText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  categoryValue: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  breakdownContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  breakdownItem: {
-    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 12,
+  },
+  actionButton: {
+    width: '100%',
+    minWidth: '47%',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    overflow: 'hidden',
   },
-  breakdownLabel: {
-    fontSize: 16,
-    color: '#333',
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
-  breakdownValue: {
+  actionLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  actionValue: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  featureList: {
+    gap: 12,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: spatialColors.glassBorderDark,
+    overflow: 'hidden',
+  },
+  featureIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  featureRowText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#007AFF',
+    color: '#fff',
   },
   errorContainer: {
-    backgroundColor: '#ffebee',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF3B30',
+    overflow: 'hidden',
   },
   errorText: {
-    color: '#d32f2f',
-    textAlign: 'center',
+    color: '#fff',
+    fontSize: 14,
   },
-  featuresContainer: {
-    marginBottom: 20,
-  },
-  featureGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  featureBtn: {
-    backgroundColor: 'white',
-    width: '31%',
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  featureEmoji: { fontSize: 24, marginBottom: 5 },
-  featureText: { fontSize: 12, fontWeight: 'bold' },
 });
 
 export default HomeScreen;

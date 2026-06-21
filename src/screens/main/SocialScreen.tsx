@@ -9,8 +9,21 @@ import {
   FlatList,
   TextInput,
 } from 'react-native';
-// import ProgressBar from '../../components/ui/ProgressBar';
 import { useToast } from '../../contexts/ToastContext';
+import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
+import { Medal, UserCircle, Handshake, Users, Lightning, Plus } from 'phosphor-react-native';
+
+const GlassCard = ({ style, children }: any) => (
+  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderRadius: 16, overflow: 'hidden' }]}>
+    {children}
+  </View>
+);
+
+const GlassBadge = ({ style, children }: any) => (
+  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderRadius: 12, overflow: 'hidden' }]}>
+    {children}
+  </View>
+);
 
 // ─── Mock Data (moved to src/data/socialData.ts) ──────────────────────────────
 
@@ -96,7 +109,7 @@ const CHALLENGES = [
     emoji: '♻️',
     description: 'Produce no landfill waste for 7 days. Log daily.',
     type: 'Weekly',
-    typeColor: '#7b1fa2',
+    typeColor: '#B242FA',
     participants: 1243,
     daysLeft: 5,
     progress: 0.58,
@@ -109,7 +122,7 @@ const CHALLENGES = [
     emoji: '🚴',
     description: 'Use zero-emission transport for all local trips this week.',
     type: 'Weekly',
-    typeColor: '#1565c0',
+    typeColor: '#2B86FA',
     participants: 892,
     daysLeft: 3,
     progress: 0.82,
@@ -122,7 +135,7 @@ const CHALLENGES = [
     emoji: '🥦',
     description: 'Go fully plant-based every Monday this month.',
     type: 'Monthly',
-    typeColor: '#2e7d32',
+    typeColor: '#38EF7D',
     participants: 3410,
     daysLeft: 18,
     progress: 0.33,
@@ -135,7 +148,7 @@ const CHALLENGES = [
     emoji: '🚿',
     description: 'Take cold showers for a week to cut hot water energy use.',
     type: 'Daily',
-    typeColor: '#00838f',
+    typeColor: '#2BD7FA',
     participants: 567,
     daysLeft: 1,
     progress: 0.9,
@@ -148,7 +161,7 @@ const CHALLENGES = [
     emoji: '🌳',
     description: 'Community goal — together offset 10,000 trees this month.',
     type: 'Global',
-    typeColor: '#e65100',
+    typeColor: '#FA7B2B',
     participants: 28400,
     daysLeft: 12,
     progress: 0.71,
@@ -222,7 +235,7 @@ const LeaderboardRow = ({
       <Text style={styles.lbRank}>
         {isTop3 ? MEDAL[index] : `#${index + 1}`}
       </Text>
-      <Text style={styles.lbAvatar}>{item.avatar}</Text>
+      <View style={styles.lbAvatarWrapper}><Text style={styles.lbAvatar}>{item.avatar}</Text></View>
       <View style={styles.lbInfo}>
         <Text style={[styles.lbName, item.you && styles.lbNameYou]}>
           {item.name} {item.you && '(You)'}
@@ -238,7 +251,7 @@ const LeaderboardRow = ({
 
 const ProgressBar = ({
   progress,
-  color = '#2e7d32',
+  color = '#38EF7D',
 }: {
   progress: number;
   color?: string;
@@ -270,9 +283,9 @@ const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
   };
 
   return (
-    <View style={styles.challengeCard}>
+    <GlassCard style={styles.challengeCard}>
       <View style={styles.challengeHeader}>
-        <Text style={styles.challengeEmoji}>{item.emoji}</Text>
+        <View style={styles.challengeEmojiWrapper}><Text style={styles.challengeEmoji}>{item.emoji}</Text></View>
         <View style={{ flex: 1 }}>
           <View style={styles.challengeTitleRow}>
             <Text style={styles.challengeTitle} numberOfLines={1}>
@@ -317,7 +330,7 @@ const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
           {joined ? '✓ Participating' : 'Join Challenge'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </GlassCard>
   );
 };
 
@@ -325,9 +338,9 @@ const GroupCard = ({ item }: { item: (typeof GROUPS)[0] }) => {
   const { showToast } = useToast();
   const pct = item.progress / item.target;
   return (
-    <View style={styles.groupCard}>
+    <GlassCard style={styles.groupCard}>
       <View style={styles.groupHeader}>
-        <Text style={styles.groupEmoji}>{item.emoji}</Text>
+        <View style={styles.groupEmojiWrapper}><Text style={styles.groupEmoji}>{item.emoji}</Text></View>
         <View style={{ flex: 1 }}>
           <Text style={styles.groupName}>{item.name}</Text>
           <Text style={styles.groupMembers}>
@@ -350,7 +363,7 @@ const GroupCard = ({ item }: { item: (typeof GROUPS)[0] }) => {
       <Text style={styles.groupGoal}>{item.goal}</Text>
 
       <View style={styles.progressRow}>
-        <ProgressBar progress={pct} color='#1565c0' />
+        <ProgressBar progress={pct} color='#2B86FA' />
         <Text style={styles.progressLabel}>
           {item.progress} / {item.target}
         </Text>
@@ -376,7 +389,7 @@ const GroupCard = ({ item }: { item: (typeof GROUPS)[0] }) => {
       <View style={styles.recentActivity}>
         <Text style={styles.recentActivityText}>💬 {item.recentActivity}</Text>
       </View>
-    </View>
+    </GlassCard>
   );
 };
 
@@ -498,17 +511,18 @@ const GroupsTab = () => {
           style={styles.createGroupBtn}
           onPress={() => setShowCreate(true)}
         >
+          <Plus size={20} color="#fff" weight="bold" style={{marginRight: 8}} />
           <Text style={styles.createGroupText}>
-            + Create Accountability Group
+            Create Accountability Group
           </Text>
         </TouchableOpacity>
       ) : (
-        <View style={styles.createGroupForm}>
+        <GlassCard style={styles.createGroupForm}>
           <Text style={styles.createGroupLabel}>New Group Name</Text>
           <TextInput
             style={styles.createGroupInput}
             placeholder='e.g. Vegans of Brooklyn'
-            placeholderTextColor='#aaa'
+            placeholderTextColor='rgba(255,255,255,0.4)'
             value={groupName}
             onChangeText={setGroupName}
             autoFocus
@@ -527,7 +541,7 @@ const GroupsTab = () => {
               <Text style={styles.createGroupSubmitText}>Create</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </GlassCard>
       )}
 
       {/* Groups */}
@@ -541,9 +555,9 @@ const GroupsTab = () => {
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'Leaderboard', label: '🏆 Leaderboard' },
-  { key: 'Challenges', label: '⚡ Challenges' },
-  { key: 'Groups', label: '🤝 Groups' },
+  { key: 'Leaderboard', label: 'Leaderboard', icon: <Medal size={20} color="#38EF7D" weight="duotone" /> },
+  { key: 'Challenges', label: 'Challenges', icon: <Lightning size={20} color="#F2C94C" weight="duotone" /> },
+  { key: 'Groups', label: 'Groups', icon: <Users size={20} color="#2B86FA" weight="duotone" /> },
 ];
 
 const SocialScreen = () => {
@@ -551,6 +565,17 @@ const SocialScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+        <Defs>
+          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
+            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
+            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          </SvgLinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+      </Svg>
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🌍 Community</Text>
@@ -570,14 +595,17 @@ const SocialScreen = () => {
             ]}
             onPress={() => setActiveTab(tab.key)}
           >
-            <Text
-              style={[
-                styles.tabLabel,
-                activeTab === tab.key && styles.tabLabelActive,
-              ]}
-            >
-              {tab.label}
-            </Text>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+              {tab.icon}
+              <Text
+                style={[
+                  styles.tabLabel,
+                  activeTab === tab.key && styles.tabLabelActive,
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -595,14 +623,14 @@ const SocialScreen = () => {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: '#0f2027' },
 
   // Header
   header: {
-    paddingTop: 48,
+    paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#1b5e20',
+    alignItems: 'center',
   },
   title: { fontSize: 26, fontWeight: 'bold', color: 'white' },
   subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
@@ -610,34 +638,36 @@ const styles = StyleSheet.create({
   // Tab bar
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#1b5e20',
     paddingHorizontal: 12,
     paddingBottom: 10,
+    marginTop: 10,
   },
   tabItem: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 20,
     marginHorizontal: 3,
   },
-  tabItemActive: { backgroundColor: 'white' },
+  tabItemActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   tabLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.65)',
+    color: 'rgba(255,255,255,0.5)',
   },
-  tabLabelActive: { color: '#1b5e20' },
+  tabLabelActive: { color: '#fff' },
 
   tabContent: { padding: 16, paddingBottom: 32 },
 
   // Leaderboard
   scopeToggle: {
     flexDirection: 'row',
-    backgroundColor: '#e8f5e9',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10,
     padding: 4,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   scopeBtn: {
     flex: 1,
@@ -645,11 +675,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  scopeBtnActive: { backgroundColor: '#2e7d32' },
-  scopeBtnText: { fontSize: 14, fontWeight: '600', color: '#555' },
-  scopeBtnTextActive: { color: 'white' },
+  scopeBtnActive: { backgroundColor: 'rgba(56,239,125,0.2)' },
+  scopeBtnText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  scopeBtnTextActive: { color: '#38EF7D' },
   yourRankCard: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: 'rgba(56,239,125,0.1)',
+    borderWidth: 1,
+    borderColor: '#38EF7D',
     borderRadius: 14,
     padding: 20,
     alignItems: 'center',
@@ -657,71 +689,82 @@ const styles = StyleSheet.create({
   },
   yourRankLabel: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
+    color: '#38EF7D',
     marginBottom: 4,
+    fontWeight: '600',
   },
   yourRankValue: { fontSize: 48, fontWeight: 'bold', color: 'white' },
   yourRankSub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   lbList: { gap: 8 },
   lbRow: {
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 12,
     padding: 14,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   lbRowYou: {
-    borderWidth: 2,
-    borderColor: '#2e7d32',
-    backgroundColor: '#f1f8f1',
+    borderWidth: 1,
+    borderColor: '#38EF7D',
+    backgroundColor: 'rgba(56,239,125,0.1)',
   },
-  lbRowTop: { backgroundColor: '#fffde7' },
-  lbRank: { fontSize: 20, width: 36, textAlign: 'center' },
-  lbAvatar: { fontSize: 28, marginHorizontal: 10 },
+  lbRowTop: { backgroundColor: 'rgba(255, 215, 0, 0.05)', borderColor: 'rgba(255, 215, 0, 0.2)' },
+  lbRank: { fontSize: 20, width: 36, textAlign: 'center', color: '#fff' },
+  lbAvatarWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+  },
+  lbAvatar: { fontSize: 20 },
   lbInfo: { flex: 1 },
-  lbName: { fontSize: 15, fontWeight: '700', color: '#222' },
-  lbNameYou: { color: '#2e7d32' },
-  lbSub: { fontSize: 12, color: '#888', marginTop: 2 },
-  lbPoints: { fontSize: 16, fontWeight: 'bold', color: '#2e7d32' },
+  lbName: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  lbNameYou: { color: '#38EF7D' },
+  lbSub: { fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 },
+  lbPoints: { fontSize: 16, fontWeight: 'bold', color: '#38EF7D' },
 
   // Challenges
-  pillScroll: { maxHeight: 48, backgroundColor: 'white' },
+  pillScroll: { maxHeight: 48 },
   pillContent: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  pillActive: { backgroundColor: '#2e7d32' },
-  pillText: { fontSize: 13, color: '#555', fontWeight: '500' },
-  pillTextActive: { color: 'white' },
+  pillActive: { backgroundColor: 'rgba(56,239,125,0.2)', borderColor: '#38EF7D' },
+  pillText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
+  pillTextActive: { color: '#38EF7D', fontWeight: 'bold' },
   challengeCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
   },
   challengeHeader: { flexDirection: 'row', gap: 12, marginBottom: 10 },
-  challengeEmoji: { fontSize: 36, alignSelf: 'flex-start' },
+  challengeEmojiWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  challengeEmoji: { fontSize: 24 },
   challengeTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 4,
   },
-  challengeTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: '#222' },
-  challengeDesc: { fontSize: 13, color: '#666', lineHeight: 18 },
+  challengeTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: '#fff' },
+  challengeDesc: { fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 18 },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -731,7 +774,7 @@ const styles = StyleSheet.create({
   typeText: { fontSize: 10, fontWeight: '700' },
   progressTrack: {
     height: 8,
-    backgroundColor: '#eee',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 4,
     overflow: 'hidden',
     marginVertical: 10,
@@ -742,55 +785,54 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  metaText: { fontSize: 11, color: '#888' },
+  metaText: { fontSize: 11, color: 'rgba(255,255,255,0.5)' },
   joinBtn: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: 'rgba(56,239,125,0.1)',
+    borderWidth: 1,
+    borderColor: '#38EF7D',
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
   },
   joinBtnJoined: {
-    backgroundColor: '#e8f5e9',
-    borderWidth: 1,
-    borderColor: '#2e7d32',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'transparent',
   },
-  joinBtnText: { color: 'white', fontWeight: '700', fontSize: 14 },
-  joinBtnTextJoined: { color: '#2e7d32' },
+  joinBtnText: { color: '#38EF7D', fontWeight: '700', fontSize: 14 },
+  joinBtnTextJoined: { color: 'rgba(255,255,255,0.5)' },
 
   // Groups
   createGroupBtn: {
-    backgroundColor: '#2e7d32',
+    flexDirection: 'row',
+    backgroundColor: 'rgba(56,239,125,0.1)',
+    borderWidth: 1,
+    borderColor: '#38EF7D',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
-  createGroupText: { color: 'white', fontWeight: '700', fontSize: 15 },
+  createGroupText: { color: '#38EF7D', fontWeight: '700', fontSize: 15 },
   createGroupForm: {
-    backgroundColor: 'white',
-    borderRadius: 14,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
   },
   createGroupLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#fff',
     marginBottom: 8,
   },
   createGroupInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'rgba(255,255,255,0.2)',
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
-    color: '#222',
+    color: '#fff',
     marginBottom: 12,
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   createGroupActions: { flexDirection: 'row', gap: 10 },
   createGroupCancel: {
@@ -798,27 +840,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  createGroupCancelText: { color: '#555', fontWeight: '600' },
+  createGroupCancelText: { color: '#fff', fontWeight: '600' },
   createGroupSubmit: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#2e7d32',
+    backgroundColor: '#38EF7D',
   },
-  createGroupSubmitText: { color: 'white', fontWeight: '700' },
+  createGroupSubmitText: { color: '#0f2027', fontWeight: '700' },
   groupCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
   },
   groupHeader: {
     flexDirection: 'row',
@@ -826,12 +861,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  groupEmoji: { fontSize: 32 },
-  groupName: { fontSize: 17, fontWeight: '700', color: '#222' },
-  groupMembers: { fontSize: 12, color: '#888', marginTop: 2 },
+  groupEmojiWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupEmoji: { fontSize: 24 },
+  groupName: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  groupMembers: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
   groupGoal: {
     fontSize: 13,
-    color: '#555',
+    color: 'rgba(255,255,255,0.8)',
     marginBottom: 8,
     fontStyle: 'italic',
   },
@@ -843,35 +886,37 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: 12,
-    color: '#888',
+    color: 'rgba(255,255,255,0.5)',
     whiteSpace: 'nowrap',
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any,
   groupStats: {
     flexDirection: 'row',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'rgba(0,0,0,0.2)',
     borderRadius: 10,
     padding: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   groupStat: { flex: 1, alignItems: 'center' },
-  groupStatValue: { fontSize: 15, fontWeight: '700', color: '#1565c0' },
+  groupStatValue: { fontSize: 15, fontWeight: '700', color: '#38EF7D' },
   groupStatLabel: {
     fontSize: 10,
-    color: '#888',
+    color: 'rgba(255,255,255,0.5)',
     marginTop: 2,
     textAlign: 'center',
   },
-  groupStatDivider: { width: 1, backgroundColor: '#e0e0e0', marginVertical: 4 },
-  recentActivity: { backgroundColor: '#e8f5e9', borderRadius: 8, padding: 10 },
-  recentActivityText: { fontSize: 13, color: '#2e7d32' },
+  groupStatDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 4 },
+  recentActivity: { backgroundColor: 'rgba(56,239,125,0.1)', borderRadius: 8, padding: 10 },
+  recentActivityText: { fontSize: 13, color: '#38EF7D' },
   nudgeBtn: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    backgroundColor: '#e3f2fd',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 10,
   },
-  nudgeBtnText: { fontSize: 13, fontWeight: '600', color: '#1565c0' },
+  nudgeBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
 });
 
 export default SocialScreen;

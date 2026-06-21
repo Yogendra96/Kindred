@@ -7,6 +7,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analyticsService from './AnalyticsService';
 import { mlCarbonPredictionService } from './MLCarbonPrediction';
+import firebase from '../utils/firebaseInit';
+import { MOCK_USER_STATS } from '../utils/demoData';
 
 type MLPredictor = typeof mlCarbonPredictionService;
 export interface PersonalCarbonTwin {
@@ -1086,6 +1088,25 @@ export class CarbonTwinEngine {
     userId: string,
     initialData: Partial<DigitalLifestyleModel>,
   ): Promise<DigitalLifestyleModel> {
+    // Demo Mode Fallback
+    let baseData = initialData;
+    if (
+      !firebase.apps.length ||
+      firebase.app().options.projectId?.includes('dummy')
+    ) {
+      baseData = {
+        ...initialData,
+        socialInfluences: [
+          {
+            factorId: 'demo',
+            type: 'social',
+            strength: 0.8,
+            description: 'Demo Community',
+          },
+        ] as any,
+      };
+    }
+
     // Build comprehensive lifestyle model
     const categories = await this.analyzeLifestyleCategories(
       userId,

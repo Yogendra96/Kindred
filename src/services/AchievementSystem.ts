@@ -5,6 +5,22 @@ import SocialFeaturesService from './SocialFeaturesService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import firebase from '../utils/firebaseInit';
+import { MOCK_ACHIEVEMENTS } from '../utils/demoData';
+
+// Safety check for Firebase app
+const ensureFirebase = () => {
+  if (!firebase.apps.length) {
+    try {
+      firebase.initializeApp({
+        apiKey: 'dummy-api-key-for-local-dev',
+        appId: '1:1234567890:ios:abcdef',
+        projectId: 'kindred-dummy-project',
+        messagingSenderId: '1234567890',
+      });
+    } catch (e) {}
+  }
+};
 
 // Types for Achievement System
 export interface Badge {
@@ -157,6 +173,7 @@ class AchievementSystemService {
   }
 
   private async initializeService(): Promise<void> {
+    ensureFirebase();
     try {
       await this.loadCachedData();
       await this.loadAvailableBadges();
@@ -168,7 +185,9 @@ class AchievementSystemService {
   }
 
   private setupAuthListener(): void {
-    auth().onAuthStateChanged(async user => {
+    try {
+      if (!firebase.apps.length) return;
+      auth().onAuthStateChanged(async user => {
       if (user) {
         await this.loadUserAchievements(user.uid);
         await this.loadUserStats(user.uid);
@@ -179,12 +198,19 @@ class AchievementSystemService {
         this.progressTracking.clear();
       }
     });
+    } catch (e) {
+      console.warn('Could not setup auth listener for Achievement System:', e);
+    }
   }
 
   // Badge Management
   private async loadAvailableBadges(): Promise<void> {
     try {
       await this.performanceService.startTrace('load_badges');
+
+      if (!firebase.apps.length) {
+        throw new Error('Firebase not initialized, using default badges');
+      }
 
       // Load from Firestore
       const badgesSnapshot = await firestore()
@@ -215,7 +241,7 @@ class AchievementSystemService {
         status: 'error',
         error: String(error),
       });
-      console.error('Error loading badges:', error);
+      console.warn('Could not load badges from Firestore:', error);
 
       // Fallback to default badges
       this.availableBadges = this.getDefaultBadges();
@@ -742,6 +768,12 @@ class AchievementSystemService {
   public async loadUserAchievements(userId: string): Promise<Achievement[]> {
     try {
       await this.performanceService.startTrace('load_user_achievements');
+
+      // Demo Mode Fallback
+      if (!firebase.apps.length || firebase.app().options.projectId?.includes('dummy')) {
+        this.userAchievements = MOCK_ACHIEVEMENTS as any;
+        return MOCK_ACHIEVEMENTS as any;
+      }
 
       const achievementsSnapshot = await firestore()
         .collection('achievements')

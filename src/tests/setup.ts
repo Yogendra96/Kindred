@@ -4,20 +4,24 @@ import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 
-jest.mock('react-native-performance', () => ({
-  performance: {
-    now: jest.fn(() => Date.now()),
-    mark: jest.fn(),
-    measure: jest.fn(),
-    getEntriesByName: jest.fn(() => []),
-    clearMarks: jest.fn(),
-    clearMeasures: jest.fn(),
-  },
-  PerformanceObserver: jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    disconnect: jest.fn(),
-  })),
-}), { virtual: true });
+jest.mock(
+  'react-native-performance',
+  () => ({
+    performance: {
+      now: jest.fn(() => Date.now()),
+      mark: jest.fn(),
+      measure: jest.fn(),
+      getEntriesByName: jest.fn(() => []),
+      clearMarks: jest.fn(),
+      clearMeasures: jest.fn(),
+    },
+    PerformanceObserver: jest.fn().mockImplementation(() => ({
+      observe: jest.fn(),
+      disconnect: jest.fn(),
+    })),
+  }),
+  { virtual: true },
+);
 
 // Global type declarations
 declare global {
@@ -31,12 +35,17 @@ jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 // Mock React Native
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');
-  
+
   // Basic NativeModules mocks
   RN.NativeModules.StatusBarManager = {
-    getHeight: jest.fn((cb) => cb && cb({ height: 44 })),
+    getHeight: jest.fn(cb => cb && cb({ height: 44 })),
+    setStyle: jest.fn(),
+    setHidden: jest.fn(),
+    setNetworkActivityIndicatorVisible: jest.fn(),
+    setBackgroundColor: jest.fn(),
+    setTranslucent: jest.fn(),
   };
-  
+
   // RNGestureHandlerModule mock for react-native-gesture-handler
   RN.NativeModules.RNGestureHandlerModule = {
     attachGestureHandler: jest.fn(),
@@ -48,7 +57,7 @@ jest.mock('react-native', () => {
   };
 
   RN.Platform.select = jest.fn(obj => obj.ios || obj.default);
-  
+
   Object.defineProperty(RN, 'Dimensions', {
     value: {
       get: jest.fn(() => ({ width: 375, height: 812 })),
@@ -59,9 +68,9 @@ jest.mock('react-native', () => {
     writable: true,
     configurable: true,
   });
-  
+
   RN.Alert.alert = jest.fn();
-  
+
   return RN;
 });
 
@@ -91,14 +100,24 @@ jest.mock('@react-navigation/native', () => {
 });
 
 // Mock Firebase
-jest.mock('@react-native-firebase/app', () => ({
-  __esModule: true,
-  default: {
-    app: jest.fn(),
-    initializeApp: jest.fn(),
+jest.mock('@react-native-firebase/app', () => {
+  const mockApp = {
+    options: {
+      projectId: 'kindred-dummy-project',
+    },
+  };
+  const mockFirebase = {
+    app: jest.fn(() => mockApp),
+    initializeApp: jest.fn(() => mockApp),
     onReady: () => Promise.resolve(),
-  },
-}));
+    apps: [],
+  };
+  return {
+    __esModule: true,
+    default: mockFirebase,
+    firebase: mockFirebase,
+  };
+});
 
 jest.mock('@react-native-firebase/auth', () => {
   const mockAuth = jest.fn(() => ({
@@ -151,71 +170,91 @@ jest.mock('@react-native-firebase/firestore', () => {
   };
 });
 
-jest.mock('@react-native-firebase/analytics', () => {
-  const mockAnalytics = jest.fn(() => ({
-    logEvent: jest.fn(),
-    setUserProperties: jest.fn(),
-    setUserId: jest.fn(),
-    setCurrentScreen: jest.fn(),
-  }));
-  mockAnalytics.default = mockAnalytics;
-  return mockAnalytics;
-}, { virtual: true });
+jest.mock(
+  '@react-native-firebase/analytics',
+  () => {
+    const mockAnalytics = jest.fn(() => ({
+      logEvent: jest.fn(),
+      setUserProperties: jest.fn(),
+      setUserId: jest.fn(),
+      setCurrentScreen: jest.fn(),
+    }));
+    mockAnalytics.default = mockAnalytics;
+    return mockAnalytics;
+  },
+  { virtual: true },
+);
 
-jest.mock('@react-native-firebase/crashlytics', () => {
-  const mockCrashlytics = jest.fn(() => ({
-    log: jest.fn(),
-    recordError: jest.fn(),
-    setUserId: jest.fn(),
-    setCrashlyticsCollectionEnabled: jest.fn(),
-    setAttribute: jest.fn(),
-  }));
-  mockCrashlytics.default = mockCrashlytics;
-  return mockCrashlytics;
-}, { virtual: true });
+jest.mock(
+  '@react-native-firebase/crashlytics',
+  () => {
+    const mockCrashlytics = jest.fn(() => ({
+      log: jest.fn(),
+      recordError: jest.fn(),
+      setUserId: jest.fn(),
+      setCrashlyticsCollectionEnabled: jest.fn(),
+      setAttribute: jest.fn(),
+    }));
+    mockCrashlytics.default = mockCrashlytics;
+    return mockCrashlytics;
+  },
+  { virtual: true },
+);
 
-jest.mock('@react-native-firebase/messaging', () => {
-  const mockMessaging = jest.fn(() => ({
-    hasPermission: jest.fn(() => Promise.resolve(1)),
-    requestPermission: jest.fn(() => Promise.resolve(1)),
-    getToken: jest.fn(() => Promise.resolve('test-fcm-token')),
-    onMessage: jest.fn(),
-    onNotificationOpenedApp: jest.fn(),
-    getInitialNotification: jest.fn(() => Promise.resolve(null)),
-    subscribeToTopic: jest.fn(),
-    unsubscribeFromTopic: jest.fn(),
-  }));
-  mockMessaging.default = mockMessaging;
-  return mockMessaging;
-}, { virtual: true });
+jest.mock(
+  '@react-native-firebase/messaging',
+  () => {
+    const mockMessaging = jest.fn(() => ({
+      hasPermission: jest.fn(() => Promise.resolve(1)),
+      requestPermission: jest.fn(() => Promise.resolve(1)),
+      getToken: jest.fn(() => Promise.resolve('test-fcm-token')),
+      onMessage: jest.fn(),
+      onNotificationOpenedApp: jest.fn(),
+      getInitialNotification: jest.fn(() => Promise.resolve(null)),
+      subscribeToTopic: jest.fn(),
+      unsubscribeFromTopic: jest.fn(),
+    }));
+    mockMessaging.default = mockMessaging;
+    return mockMessaging;
+  },
+  { virtual: true },
+);
 
-jest.mock('@react-native-firebase/perf', () => {
-  const mockPerf = jest.fn(() => ({
-    newTrace: jest.fn(() => ({
-      start: jest.fn(),
-      stop: jest.fn(),
-      putAttribute: jest.fn(),
-      putMetric: jest.fn(),
-    })),
-  }));
-  mockPerf.default = mockPerf;
-  return mockPerf;
-}, { virtual: true });
+jest.mock(
+  '@react-native-firebase/perf',
+  () => {
+    const mockPerf = jest.fn(() => ({
+      newTrace: jest.fn(() => ({
+        start: jest.fn(),
+        stop: jest.fn(),
+        putAttribute: jest.fn(),
+        putMetric: jest.fn(),
+      })),
+    }));
+    mockPerf.default = mockPerf;
+    return mockPerf;
+  },
+  { virtual: true },
+);
 
 // Mock Notifee
-jest.mock('@notifee/react-native', () => ({
-  __esModule: true,
-  default: {
-    requestPermission: jest.fn(() => Promise.resolve({ authorizationStatus: 1 })),
-    createChannel: jest.fn(() => Promise.resolve('test-channel')),
-    displayNotification: jest.fn(() => Promise.resolve('test-notification')),
-    cancelAllNotifications: jest.fn(() => Promise.resolve()),
-    onForegroundEvent: jest.fn(),
-    onBackgroundEvent: jest.fn(),
-  },
-  AndroidImportance: { HIGH: 4, DEFAULT: 3 },
-  EventType: { DELIVERED: 1, PRESS: 2 },
-}), { virtual: true });
+jest.mock(
+  '@notifee/react-native',
+  () => ({
+    __esModule: true,
+    default: {
+      requestPermission: jest.fn(() => Promise.resolve({ authorizationStatus: 1 })),
+      createChannel: jest.fn(() => Promise.resolve('test-channel')),
+      displayNotification: jest.fn(() => Promise.resolve('test-notification')),
+      cancelAllNotifications: jest.fn(() => Promise.resolve()),
+      onForegroundEvent: jest.fn(),
+      onBackgroundEvent: jest.fn(),
+    },
+    AndroidImportance: { HIGH: 4, DEFAULT: 3 },
+    EventType: { DELIVERED: 1, PRESS: 2 },
+  }),
+  { virtual: true },
+);
 
 // Mock Gesture Handler
 jest.mock('react-native-gesture-handler', () => {
@@ -404,11 +443,180 @@ jest.mock('../services/LoggingService', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
-  }
+  },
 }));
 
 // Mock axios - using our manual mock from src/__mocks__
 jest.mock('axios');
+
+// Mock react-native-config
+jest.mock('react-native-config', () => ({
+  __esModule: true,
+  default: {
+    API_URL: 'https://api.example.com',
+    ENVIRONMENT: 'test',
+    getConfig: jest.fn(() => ({})),
+  },
+  Config: {
+    API_URL: 'https://api.example.com',
+    ENVIRONMENT: 'test',
+    getConfig: jest.fn(() => ({})),
+  },
+}));
+
+// Mock react-native-device-info
+jest.mock('react-native-device-info', () => ({
+  __esModule: true,
+  default: {
+    getUniqueId: jest.fn(() => Promise.resolve('mock-id')),
+    getUniqueIdSync: jest.fn(() => 'mock-id'),
+    isEmulator: jest.fn(() => Promise.resolve(false)),
+    isEmulatorSync: jest.fn(() => false),
+    getVersion: jest.fn(() => '1.0.0'),
+    getSystemVersion: jest.fn(() => '14.0'),
+    getManufacturer: jest.fn(() => Promise.resolve('Apple')),
+    getManufacturerSync: jest.fn(() => 'Apple'),
+    getModel: jest.fn(() => 'iPhone'),
+  },
+  getUniqueId: jest.fn(() => Promise.resolve('mock-id')),
+  getUniqueIdSync: jest.fn(() => 'mock-id'),
+  isEmulator: jest.fn(() => Promise.resolve(false)),
+  isEmulatorSync: jest.fn(() => false),
+  getVersion: jest.fn(() => '1.0.0'),
+  getSystemVersion: jest.fn(() => '14.0'),
+}));
+
+// Mock tensorflow
+jest.mock(
+  '@tensorflow/tfjs-react-native',
+  () => ({
+    cameraWithTensors: jest.fn(),
+  }),
+  { virtual: true },
+);
+
+// Mock expo vector icons
+jest.mock(
+  '@expo/vector-icons',
+  () => {
+    const { View } = require('react-native');
+    return {
+      Ionicons: View,
+      MaterialIcons: View,
+      MaterialCommunityIcons: View,
+      FontAwesome: View,
+      FontAwesome5: View,
+      AntDesign: View,
+      Entypo: View,
+    };
+  },
+  { virtual: true },
+);
+
+jest.mock(
+  'expo-font',
+  () => ({
+    isLoaded: jest.fn(() => true),
+    loadAsync: jest.fn(),
+  }),
+  { virtual: true },
+);
+
+// Mock react-native-keychain
+jest.mock(
+  'react-native-keychain',
+  () => ({
+    setGenericPassword: jest.fn(() => Promise.resolve(true)),
+    getGenericPassword: jest.fn(() => Promise.resolve(false)),
+    resetGenericPassword: jest.fn(() => Promise.resolve(true)),
+  }),
+  { virtual: true },
+);
+
+// Mock expo camera and image tools
+jest.mock(
+  'expo-camera',
+  () => {
+    const { View } = require('react-native');
+    return {
+      Camera: View,
+      CameraType: { front: 'front', back: 'back' },
+      FlashMode: { on: 'on', off: 'off', auto: 'auto' },
+    };
+  },
+  { virtual: true },
+);
+
+jest.mock(
+  'expo-image-manipulator',
+  () => ({
+    manipulateAsync: jest.fn(() => Promise.resolve({ uri: 'mock-uri', width: 100, height: 100 })),
+    SaveFormat: { JPEG: 'jpeg', PNG: 'png' },
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  'expo-image-picker',
+  () => ({
+    launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true })),
+    launchCameraAsync: jest.fn(() => Promise.resolve({ canceled: true })),
+    MediaTypeOptions: { Images: 'images', Videos: 'videos', All: 'all' },
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  'expo-sensors',
+  () => ({
+    Accelerometer: {
+      isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+      setUpdateInterval: jest.fn(),
+      addListener: jest.fn(),
+    },
+    Pedometer: {
+      isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+    }
+  }),
+  { virtual: true }
+);
+
+jest.mock(
+  'expo-battery',
+  () => {
+    const mockBattery = {
+      getBatteryStateAsync: jest.fn(() => Promise.resolve(2)),
+      BatteryState: { UNKNOWN: 0, UNPLUGGED: 1, CHARGING: 2, FULL: 3 },
+    };
+    return {
+      __esModule: true,
+      default: mockBattery,
+      ...mockBattery,
+    };
+  },
+  { virtual: true }
+);
+
+jest.mock(
+  'expo-location',
+  () => ({
+    requestForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+    getCurrentPositionAsync: jest.fn(() => Promise.resolve({
+      coords: { latitude: 0, longitude: 0, altitude: 0, speed: 0 },
+      timestamp: 0,
+    })),
+  }),
+  { virtual: true }
+);
+
+jest.mock(
+  'expo-task-manager',
+  () => ({
+    defineTask: jest.fn(),
+    isTaskRegisteredAsync: jest.fn(() => Promise.resolve(false)),
+  }),
+  { virtual: true }
+);
 
 // Global setup
 global.window = {};
@@ -426,15 +634,16 @@ const originalError = console.error;
 beforeAll(() => {
   console.warn = (...args) => {
     const msg = args[0] || '';
-    if (typeof msg === 'string' && (
-      msg.includes('Animated:') ||
-      msg.includes('AsyncStorage has been extracted') ||
-      msg.includes('ViewPropTypes will be removed') ||
-      msg.includes('EventEmitter.removeListener') ||
-      msg.includes('[react-native-gesture-handler]') ||
-      msg.includes('Setting a timer') ||
-      msg.includes('RCTBridge required dispatch_sync')
-    )) {
+    if (
+      typeof msg === 'string' &&
+      (msg.includes('Animated:') ||
+        msg.includes('AsyncStorage has been extracted') ||
+        msg.includes('ViewPropTypes will be removed') ||
+        msg.includes('EventEmitter.removeListener') ||
+        msg.includes('[react-native-gesture-handler]') ||
+        msg.includes('Setting a timer') ||
+        msg.includes('RCTBridge required dispatch_sync'))
+    ) {
       return;
     }
     originalWarn.apply(console, args);

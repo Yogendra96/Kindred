@@ -12,6 +12,7 @@ import type { NetInfoState } from '@react-native-community/netinfo';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import perf from '@react-native-firebase/perf';
+import firebase from '../utils/firebaseInit';
 import loggingService from './/LoggerService';
 import type {
   PerformanceMetric,
@@ -461,6 +462,11 @@ export class ModernAPMService {
    */
   async startTrace(traceName: string): Promise<FirebasePerformance.Trace | undefined> {
     try {
+      // Safety check: Don't call perf() if firebase isn't fully initialized with a real project
+      if (!firebase.apps.length || firebase.app().options.projectId?.includes('dummy')) {
+        this.logger.debug('Skipping performance trace in demo mode');
+        return undefined;
+      }
       const trace = await perf().startTrace(traceName);
       this.firebaseTraces.set(traceName, trace);
 
@@ -734,7 +740,7 @@ export class ModernAPMService {
    * Simple stop trace for backward compatibility
    */
   async stopTraceSimple(name: string, attributes?: Record<string, string>): Promise<void> {
-    const trace = this.traces.get(name);
+    const trace = this.firebaseTraces.get(name);
     if (trace) {
       if (attributes) {
         Object.entries(attributes).forEach(([key, value]) => {
@@ -742,7 +748,7 @@ export class ModernAPMService {
         });
       }
       await trace.stop();
-      this.traces.delete(name);
+      this.firebaseTraces.delete(name);
     }
   }
 
@@ -757,6 +763,14 @@ export class ModernAPMService {
     startTime: number;
     stop: (responseCode?: number, responseSize?: number) => Promise<void>;
   }> {
+    // Safety check for demo mode
+    if (!firebase.apps.length || firebase.app().options.projectId?.includes('dummy')) {
+      return {
+        metric: { stop: async () => {} } as any,
+        startTime: performance.now(),
+        stop: async () => {}
+      };
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const metric = await perf().newHttpMetric(url, method as any);
     const startTime = performance.now();

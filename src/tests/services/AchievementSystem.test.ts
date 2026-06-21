@@ -10,6 +10,21 @@ import firestore from '@react-native-firebase/firestore';
 jest.mock('@react-native-firebase/firestore');
 jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-async-storage/async-storage');
+jest.mock('../../utils/firebaseInit', () => {
+  const mockApp = {
+    options: {
+      projectId: 'kindred-real-project',
+    },
+  };
+  return {
+    __esModule: true,
+    default: {
+      app: jest.fn(() => mockApp),
+      apps: [mockApp],
+      initializeApp: jest.fn(() => mockApp),
+    },
+  };
+});
 
 // Mock other services
 jest.mock('../../services/ModernAPMService', () => ({
@@ -53,18 +68,20 @@ describe('AchievementSystemService', () => {
     update: mockUpdate,
     onSnapshot: jest.fn(),
   }));
-  const mockOrderBy = jest.fn(() => ({
+  const mockQuery: any = {
     get: mockGet,
-  }));
-  const mockWhere = jest.fn(() => ({
-    get: mockGet,
-    orderBy: mockOrderBy,
-  }));
+    onSnapshot: jest.fn(),
+  };
+  mockQuery.orderBy = jest.fn(() => mockQuery);
+  mockQuery.where = jest.fn(() => mockQuery);
+  mockQuery.limit = jest.fn(() => mockQuery);
+
   const mockCollection = jest.fn(() => ({
     doc: mockDoc,
     add: mockAdd,
-    where: mockWhere,
-    orderBy: mockOrderBy,
+    where: mockQuery.where,
+    orderBy: mockQuery.orderBy,
+    limit: mockQuery.limit,
   }));
 
   beforeEach(async () => {

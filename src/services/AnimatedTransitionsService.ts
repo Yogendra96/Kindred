@@ -704,7 +704,7 @@ class AnimatedTransitionsService {
         // Call onStart callback
         config.onStart?.();
 
-        animation.start(finished => {
+        animation.start(async finished => {
           // Remove from active animations
           this.activeAnimations.delete(animationId);
 

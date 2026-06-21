@@ -138,10 +138,9 @@ export const VALIDATION_MESSAGES = {
 // UI CONSTANTS
 // ===================================================================
 
-import { colors } from '../theme/theme';
-
-/** @deprecated Use colors from theme instead: import { colors } from '../theme/theme' */
-export const COLORS = colors;
+import { lightTheme } from '../theme/theme';
+/** @deprecated Use colors from theme instead: import { useTheme } from '../theme/ThemeProvider' */
+export const COLORS = lightTheme.colors;
 
 export const TRANSPORT_MODE_COLORS = {
   CAR: '#FF6B6B',

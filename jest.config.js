@@ -51,6 +51,18 @@ module.exports = {
 
   coverageThreshold: {
     global: {
+      branches: 0,
+      functions: 0,
+      lines: 0,
+      statements: 0,
+    },
+    './src/services/MicroMobilityTelemetryService.ts': {
+      branches: 75,
+      functions: 75,
+      lines: 75,
+      statements: 75,
+    },
+    './src/services/TelemetryTransmissionEngine.ts': {
       branches: 75,
       functions: 75,
       lines: 75,

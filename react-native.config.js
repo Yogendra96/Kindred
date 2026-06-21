@@ -7,6 +7,11 @@ module.exports = {
         android: null,
       },
     },
+    'react-native-vision-camera': {
+      platforms: {
+        android: null,
+      },
+    },
   },
   assets: ['./assets/fonts/', './assets/images/'],
 };
