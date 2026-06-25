@@ -27,10 +27,25 @@ jest.mock(
 declare global {
   var __DEV__: boolean;
   var global: any;
+  var CARBON_API_KEY: string;
+  var CARBON_API_BASE_URL: string;
 }
+
+global.CARBON_API_KEY = 'test_carbon_key_123';
+global.CARBON_API_BASE_URL = 'https://api.carbonfootprint.com/test';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
+
+// Mock @env
+jest.mock(
+  '@env',
+  () => ({
+    CARBON_API_KEY: 'test_carbon_key_123',
+    CARBON_API_BASE_URL: 'https://api.carbonfootprint.com/test',
+  }),
+  { virtual: true },
+);
 
 // Mock React Native
 jest.mock('react-native', () => {
@@ -576,9 +591,9 @@ jest.mock(
     },
     Pedometer: {
       isAvailableAsync: jest.fn(() => Promise.resolve(true)),
-    }
+    },
   }),
-  { virtual: true }
+  { virtual: true },
 );
 
 jest.mock(
@@ -594,19 +609,21 @@ jest.mock(
       ...mockBattery,
     };
   },
-  { virtual: true }
+  { virtual: true },
 );
 
 jest.mock(
   'expo-location',
   () => ({
     requestForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
-    getCurrentPositionAsync: jest.fn(() => Promise.resolve({
-      coords: { latitude: 0, longitude: 0, altitude: 0, speed: 0 },
-      timestamp: 0,
-    })),
+    getCurrentPositionAsync: jest.fn(() =>
+      Promise.resolve({
+        coords: { latitude: 0, longitude: 0, altitude: 0, speed: 0 },
+        timestamp: 0,
+      }),
+    ),
   }),
-  { virtual: true }
+  { virtual: true },
 );
 
 jest.mock(
@@ -615,7 +632,7 @@ jest.mock(
     defineTask: jest.fn(),
     isTaskRegisteredAsync: jest.fn(() => Promise.resolve(false)),
   }),
-  { virtual: true }
+  { virtual: true },
 );
 
 // Global setup

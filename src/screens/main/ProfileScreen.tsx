@@ -1,49 +1,70 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 
 import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import type { RootState } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { 
-  Plant, 
-  Fire, 
-  Tree, 
-  Recycle, 
-  Bicycle, 
-  Carrot, 
-  Bell, 
-  ChartBar, 
-  LockKey, 
-  Moon, 
-  Ruler, 
-  Export, 
-  Trash, 
+import {
+  Plant,
+  Fire,
+  Tree,
+  Recycle,
+  Bicycle,
+  Carrot,
+  Bell,
+  ChartBar,
+  LockKey,
+  Moon,
+  Ruler,
+  Export,
+  Trash,
   CaretRight,
-  PencilSimple
+  PencilSimple,
 } from 'phosphor-react-native';
 
 const GlassCard = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, overflow: 'hidden' }]}>
+  <View
+    style={[
+      style,
+      {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        overflow: 'hidden',
+      },
+    ]}
+  >
     {children}
   </View>
 );
 
 const BADGES = [
-  { icon: <Plant size={24} color="#38EF7D" weight="duotone" />, label: 'First Step' },
-  { icon: <Fire size={24} color="#F2994A" weight="duotone" />, label: '7-Day Streak' },
-  { icon: <Tree size={24} color="#11998E" weight="duotone" />, label: 'Tree Planter' },
-  { icon: <Recycle size={24} color="#38EF7D" weight="duotone" />, label: 'Zero Waster' },
-  { icon: <Bicycle size={24} color="#F2C94C" weight="duotone" />, label: 'Bike Commuter' },
-  { icon: <Carrot size={24} color="#F2994A" weight="duotone" />, label: 'Meat-Free Week' },
+  {
+    icon: <Plant size={24} color='#38EF7D' weight='duotone' />,
+    label: 'First Step',
+  },
+  {
+    icon: <Fire size={24} color='#F2994A' weight='duotone' />,
+    label: '7-Day Streak',
+  },
+  {
+    icon: <Tree size={24} color='#11998E' weight='duotone' />,
+    label: 'Tree Planter',
+  },
+  {
+    icon: <Recycle size={24} color='#38EF7D' weight='duotone' />,
+    label: 'Zero Waster',
+  },
+  {
+    icon: <Bicycle size={24} color='#F2C94C' weight='duotone' />,
+    label: 'Bike Commuter',
+  },
+  {
+    icon: <Carrot size={24} color='#F2994A' weight='duotone' />,
+    label: 'Meat-Free Week',
+  },
 ];
 
 const SettingRow = ({
@@ -68,6 +89,7 @@ const SettingRow = ({
 );
 
 const ProfileScreen = () => {
+  const navigation = useNavigation();
   const { showToast } = useToast();
   const { profile } = useSelector((state: RootState) => state.user);
 
@@ -92,34 +114,28 @@ const ProfileScreen = () => {
   };
 
   const handleEditProfile = () => {
-    showToast(
-      "Profile editing coming in the next update!",
-      'info',
-    );
+    showToast('Profile editing coming in the next update!', 'info');
   };
 
   return (
     <View style={styles.container}>
-      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
         <Defs>
-          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
-            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
-            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
+            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
+            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
+            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
           </SvgLinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
       </Svg>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.avatarContainer}
-            onPress={handleEditProfile}
-          >
-            <Plant size={48} color="#38EF7D" weight="duotone" />
+          <TouchableOpacity style={styles.avatarContainer} onPress={handleEditProfile}>
+            <Plant size={48} color='#38EF7D' weight='duotone' />
             <View style={styles.editBadge}>
-              <PencilSimple size={12} color="#fff" weight="bold" />
+              <PencilSimple size={12} color='#fff' weight='bold' />
             </View>
           </TouchableOpacity>
           <Text style={styles.name}>{displayName}</Text>
@@ -160,29 +176,35 @@ const ProfileScreen = () => {
           <Text style={styles.sectionTitle}>Notifications</Text>
           <GlassCard style={styles.sectionCard}>
             <SettingRow
-              icon={<Bell size={24} color="#38EF7D" weight="duotone" />}
+              icon={<Bell size={24} color='#38EF7D' weight='duotone' />}
               label='Push Notifications'
               sublabel='Daily eco tips & reminders'
               right={
                 <Switch
                   value={notifications}
                   onValueChange={setNotifications}
-                  trackColor={{ true: '#38EF7D', false: 'rgba(255,255,255,0.2)' }}
-                  thumbColor="#fff"
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
                 />
               }
             />
             <View style={styles.divider} />
             <SettingRow
-              icon={<ChartBar size={24} color="#38EF7D" weight="duotone" />}
+              icon={<ChartBar size={24} color='#38EF7D' weight='duotone' />}
               label='Weekly Report'
               sublabel='Your carbon summary every Sunday'
               right={
                 <Switch
                   value={weeklyReport}
                   onValueChange={setWeeklyReport}
-                  trackColor={{ true: '#38EF7D', false: 'rgba(255,255,255,0.2)' }}
-                  thumbColor="#fff"
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
                 />
               }
             />
@@ -193,15 +215,18 @@ const ProfileScreen = () => {
           <Text style={styles.sectionTitle}>Privacy</Text>
           <GlassCard style={styles.sectionCard}>
             <SettingRow
-              icon={<LockKey size={24} color="#38EF7D" weight="duotone" />}
+              icon={<LockKey size={24} color='#38EF7D' weight='duotone' />}
               label='Private Profile'
               sublabel='Hide from public leaderboard'
               right={
                 <Switch
                   value={privateProfile}
                   onValueChange={setPrivateProfile}
-                  trackColor={{ true: '#38EF7D', false: 'rgba(255,255,255,0.2)' }}
-                  thumbColor="#fff"
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
                 />
               }
             />
@@ -209,31 +234,56 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Data & Integrations</Text>
+          <GlassCard style={styles.sectionCard}>
+            <TouchableOpacity
+              style={styles.settingRow}
+              onPress={() => (navigation as any).navigate('DataConnections')}
+            >
+              <View style={styles.settingIconWrapper}>
+                <ChartBar size={24} color='#38EF7D' weight='duotone' />
+              </View>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingLabel}>Data Connections</Text>
+                <Text style={styles.settingSubLabel}>Manage automated tracking</Text>
+              </View>
+              <CaretRight size={20} color='rgba(255,255,255,0.5)' />
+            </TouchableOpacity>
+          </GlassCard>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Preferences</Text>
           <GlassCard style={styles.sectionCard}>
             <SettingRow
-              icon={<Moon size={24} color="#38EF7D" weight="duotone" />}
+              icon={<Moon size={24} color='#38EF7D' weight='duotone' />}
               label='Dark Mode'
               right={
                 <Switch
                   value={darkMode}
                   onValueChange={setDarkMode}
-                  trackColor={{ true: '#38EF7D', false: 'rgba(255,255,255,0.2)' }}
-                  thumbColor="#fff"
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
                 />
               }
             />
             <View style={styles.divider} />
             <SettingRow
-              icon={<Ruler size={24} color="#38EF7D" weight="duotone" />}
+              icon={<Ruler size={24} color='#38EF7D' weight='duotone' />}
               label='Metric Units'
               sublabel={metricUnits ? 'kg, km, litres' : 'lbs, miles, gallons'}
               right={
                 <Switch
                   value={metricUnits}
                   onValueChange={setMetricUnits}
-                  trackColor={{ true: '#38EF7D', false: 'rgba(255,255,255,0.2)' }}
-                  thumbColor="#fff"
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
                 />
               }
             />
@@ -245,33 +295,29 @@ const ProfileScreen = () => {
           <GlassCard style={styles.sectionCard}>
             {[
               {
-                icon: <Export size={24} color="#fff" weight="duotone" />,
+                icon: <Export size={24} color='#fff' weight='duotone' />,
                 label: 'Export My Data',
                 onPress: () =>
-                  showToast(
-                    'Your data export will be emailed to you within 24 hours.',
-                    'success',
-                  ),
+                  showToast('Your data export will be emailed to you within 24 hours.', 'success'),
               },
               {
-                icon: <Trash size={24} color="#FF416C" weight="duotone" />,
+                icon: <Trash size={24} color='#FF416C' weight='duotone' />,
                 label: 'Delete Account',
                 onPress: () =>
                   Alert.alert(
                     'Delete Account',
                     'This is permanent. Contact support@kindred.earth to proceed.',
                   ),
-                color: '#FF416C'
+                color: '#FF416C',
               },
             ].map((item, index) => (
               <React.Fragment key={item.label}>
-                <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={item.onPress}
-                >
+                <TouchableOpacity style={styles.actionRow} onPress={item.onPress}>
                   <View style={styles.settingIconWrapper}>{item.icon}</View>
-                  <Text style={[styles.actionLabel, item.color ? { color: item.color } : null]}>{item.label}</Text>
-                  <CaretRight size={20} color="rgba(255,255,255,0.3)" />
+                  <Text style={[styles.actionLabel, item.color ? { color: item.color } : null]}>
+                    {item.label}
+                  </Text>
+                  <CaretRight size={20} color='rgba(255,255,255,0.3)' />
                 </TouchableOpacity>
                 {index === 0 && <View style={styles.divider} />}
               </React.Fragment>
@@ -283,9 +329,7 @@ const ProfileScreen = () => {
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
 
-        <Text style={styles.version}>
-          Kindred v1.0.0 · Made with 💚 for the planet
-        </Text>
+        <Text style={styles.version}>Kindred v1.0.0 · Made with 💚 for the planet</Text>
       </ScrollView>
     </View>
   );
@@ -310,7 +354,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)'
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   editBadge: {
     position: 'absolute',
@@ -346,8 +390,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
   },
-  statValue: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
-  statLabel: { fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'center',
+  },
 
   section: {
     paddingHorizontal: 16,
@@ -370,7 +423,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     gap: 16,
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   badgeItem: {
     width: '30%',
@@ -410,7 +463,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   settingLabel: { fontSize: 16, color: '#fff', fontWeight: '500' },
-  settingSubLabel: { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 2 },
+  settingSubLabel: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
+  },
 
   actionRow: {
     flexDirection: 'row',

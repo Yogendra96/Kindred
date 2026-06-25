@@ -6,13 +6,7 @@ import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -207,9 +201,7 @@ interface DataInputSimplificationProps {
  * Data Input Simplification Component
  * Provides a streamlined interface for complex data entry
  */
-export const DataInputSimplification: React.FC<
-  DataInputSimplificationProps
-> = ({
+export const DataInputSimplification: React.FC<DataInputSimplificationProps> = ({
   template,
   initialData = {},
   onSubmit,
@@ -220,13 +212,11 @@ export const DataInputSimplification: React.FC<
   testID,
 }) => {
   const { theme } = useTheme();
-  const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(
-    template || null,
-  );
+  const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(template || null);
   const [state, setState] = useState<DataInputState>({
     formData: initialData,
     errors: {},
-    touched: Record<string, boolean> = {},
+    touched: {} as Record<string, boolean>,
     isValid: false,
     currentStep: 0,
     totalSteps: 1,
@@ -318,10 +308,7 @@ export const DataInputSimplification: React.FC<
       const updated = [value, ...current.filter(v => v !== value)].slice(0, 5);
       const newRecentInputs = { ...state.recentInputs, [fieldId]: updated };
 
-      await AsyncStorage.setItem(
-        'recentInputs',
-        JSON.stringify(newRecentInputs),
-      );
+      await AsyncStorage.setItem('recentInputs', JSON.stringify(newRecentInputs));
       setState(prev => ({ ...prev, recentInputs: newRecentInputs }));
     } catch (error) {
       console.error('Failed to save recent input:', error);
@@ -342,25 +329,18 @@ export const DataInputSimplification: React.FC<
     }
   };
 
-  const generateSmartSuggestions = (
-    field: InputField,
-    value: string,
-  ): string[] => {
+  const generateSmartSuggestions = (field: InputField, value: string): string[] => {
     if (!field.smartSuggestions || !value) return [];
 
     const suggestions: string[] = [];
     const recent = state.recentInputs[field.id] || [];
     suggestions.push(
-      ...recent.filter(r =>
-        r.toString().toLowerCase().includes(value.toLowerCase()),
-      ),
+      ...recent.filter(r => r.toString().toLowerCase().includes(value.toLowerCase())),
     );
 
     if (field.suggestions) {
       suggestions.push(
-        ...field.suggestions.filter(s =>
-          s.toLowerCase().includes(value.toLowerCase()),
-        ),
+        ...field.suggestions.filter(s => s.toLowerCase().includes(value.toLowerCase())),
       );
     }
 
@@ -373,8 +353,7 @@ export const DataInputSimplification: React.FC<
     }
 
     if (field.validation) {
-      const { pattern, min, max, minLength, maxLength, custom } =
-        field.validation;
+      const { pattern, min, max, minLength, maxLength, custom } = field.validation;
 
       if (pattern && !pattern.test(value)) {
         return `${field.label} format is invalid`;
@@ -386,8 +365,10 @@ export const DataInputSimplification: React.FC<
       }
 
       if (typeof value === 'string') {
-        if (minLength !== undefined && value.length < minLength) return `${field.label} must be at least ${minLength}`;
-        if (maxLength !== undefined && value.length > maxLength) return `${field.label} must be at most ${maxLength}`;
+        if (minLength !== undefined && value.length < minLength)
+          return `${field.label} must be at least ${minLength}`;
+        if (maxLength !== undefined && value.length > maxLength)
+          return `${field.label} must be at most ${maxLength}`;
       }
 
       if (custom) {
@@ -425,12 +406,18 @@ export const DataInputSimplification: React.FC<
     const fieldValue = state.formData[conditionField];
 
     switch (operator) {
-      case 'equals': return fieldValue === conditionValue;
-      case 'not_equals': return fieldValue !== conditionValue;
-      case 'greater': return fieldValue > conditionValue;
-      case 'less': return fieldValue < conditionValue;
-      case 'contains': return fieldValue && fieldValue.includes(conditionValue);
-      default: return true;
+      case 'equals':
+        return fieldValue === conditionValue;
+      case 'not_equals':
+        return fieldValue !== conditionValue;
+      case 'greater':
+        return fieldValue > conditionValue;
+      case 'less':
+        return fieldValue < conditionValue;
+      case 'contains':
+        return fieldValue && fieldValue.includes(conditionValue);
+      default:
+        return true;
     }
   };
 
@@ -443,7 +430,8 @@ export const DataInputSimplification: React.FC<
       return value !== undefined && value !== null && value !== '';
     });
 
-    const progress = visibleFields.length > 0 ? (completedFields.length / visibleFields.length) * 100 : 0;
+    const progress =
+      visibleFields.length > 0 ? (completedFields.length / visibleFields.length) * 100 : 0;
     setState(prev => ({ ...prev, progress }));
   };
 
@@ -517,19 +505,26 @@ export const DataInputSimplification: React.FC<
     if (!enableTemplates || selectedTemplate) return null;
     return (
       <View style={styles.templateSelector}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Choose Template</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+          Choose Template
+        </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {COMMON_TEMPLATES.map(t => (
             <AnimatedTouchable
               key={t.id}
               onPress={() => setSelectedTemplate(t)}
-              style={[styles.templateCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+              style={[
+                styles.templateCard,
+                { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
+              ]}
             >
               <View style={[styles.templateIcon, { backgroundColor: theme.colors.primary }]}>
                 <Ionicons name={t.icon as any} size={24} color={theme.colors.onPrimary} />
               </View>
               <Text style={[styles.templateName, { color: theme.colors.onSurface }]}>{t.name}</Text>
-              <Text style={[styles.templateDescription, { color: theme.colors.onSurfaceVariant }]}>{t.description}</Text>
+              <Text style={[styles.templateDescription, { color: theme.colors.onSurfaceVariant }]}>
+                {t.description}
+              </Text>
             </AnimatedTouchable>
           ))}
         </ScrollView>
@@ -543,10 +538,17 @@ export const DataInputSimplification: React.FC<
       <View style={[styles.progressContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
         <View style={styles.progressHeader}>
           <Text style={[styles.progressTitle, { color: theme.colors.onSurface }]}>Progress</Text>
-          <Text style={[styles.progressText, { color: theme.colors.onSurfaceVariant }]}>{Math.round(state.progress)}%</Text>
+          <Text style={[styles.progressText, { color: theme.colors.onSurfaceVariant }]}>
+            {Math.round(state.progress)}%
+          </Text>
         </View>
         <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
-          <View style={[styles.progressFill, { backgroundColor: theme.colors.primary, width: `${state.progress}%` }]} />
+          <View
+            style={[
+              styles.progressFill,
+              { backgroundColor: theme.colors.primary, width: `${state.progress}%` },
+            ]}
+          />
         </View>
       </View>
     );
@@ -557,15 +559,24 @@ export const DataInputSimplification: React.FC<
     const value = state.formData[field.id];
     const error = state.errors[field.id];
     const touched = state.touched[field.id];
-    
+
     return (
-      <View key={field.id} style={[styles.fieldContainer, { borderColor: error && touched ? theme.colors.error : theme.colors.outline }]}>
+      <View
+        key={field.id}
+        style={[
+          styles.fieldContainer,
+          { borderColor: error && touched ? theme.colors.error : theme.colors.outline },
+        ]}
+      >
         <View style={styles.fieldHeader}>
           <Text style={[styles.fieldLabel, { color: theme.colors.onSurface }]}>{field.label}</Text>
           <View style={styles.fieldActions}>
             {field.voiceInput && (
-              <AnimatedTouchable onPress={() => handleVoiceInput(field.id)} style={styles.actionButton}>
-                <Ionicons name="mic" size={16} />
+              <AnimatedTouchable
+                onPress={() => handleVoiceInput(field.id)}
+                style={styles.actionButton}
+              >
+                <Ionicons name='mic' size={16} />
               </AnimatedTouchable>
             )}
           </View>
@@ -575,14 +586,36 @@ export const DataInputSimplification: React.FC<
     );
   };
 
-  const renderFieldInput = (field: InputField, value: any, error: string | undefined, touched: boolean) => {
+  const renderFieldInput = (
+    field: InputField,
+    value: any,
+    error: string | undefined,
+    touched: boolean,
+  ) => {
     switch (field.type) {
       case 'select':
         return (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {field.options?.map(o => (
-              <AnimatedTouchable key={o.value} onPress={() => handleFieldChange(field.id, o.value)} style={[styles.selectOption, { backgroundColor: value === o.value ? theme.colors.primary : theme.colors.surfaceVariant }]}>
-                <Text style={{ color: value === o.value ? theme.colors.onPrimary : theme.colors.onSurfaceVariant }}>{o.label}</Text>
+              <AnimatedTouchable
+                key={o.value}
+                onPress={() => handleFieldChange(field.id, o.value)}
+                style={[
+                  styles.selectOption,
+                  {
+                    backgroundColor:
+                      value === o.value ? theme.colors.primary : theme.colors.surfaceVariant,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    color:
+                      value === o.value ? theme.colors.onPrimary : theme.colors.onSurfaceVariant,
+                  }}
+                >
+                  {o.label}
+                </Text>
               </AnimatedTouchable>
             ))}
           </ScrollView>
@@ -590,7 +623,14 @@ export const DataInputSimplification: React.FC<
       default:
         return (
           <TextInput
-            style={[styles.textInput, { backgroundColor: theme.colors.surface, color: theme.colors.onSurface, borderColor: error && touched ? theme.colors.error : theme.colors.outline }]}
+            style={[
+              styles.textInput,
+              {
+                backgroundColor: theme.colors.surface,
+                color: theme.colors.onSurface,
+                borderColor: error && touched ? theme.colors.error : theme.colors.outline,
+              },
+            ]}
             value={value?.toString() || ''}
             onChangeText={t => handleFieldChange(field.id, t)}
             placeholder={field.placeholder}
@@ -601,7 +641,15 @@ export const DataInputSimplification: React.FC<
 
   const renderFormActions = () => (
     <View style={styles.formActions}>
-      <AnimatedTouchable onPress={handleSubmit} style={[styles.actionButton, styles.submitButton, { backgroundColor: theme.colors.primary }]} disabled={!state.isValid}>
+      <AnimatedTouchable
+        onPress={handleSubmit}
+        style={[
+          styles.actionButton,
+          styles.submitButton,
+          { backgroundColor: theme.colors.primary },
+        ]}
+        disabled={!state.isValid}
+      >
         <Text style={{ color: theme.colors.onPrimary }}>Submit</Text>
       </AnimatedTouchable>
     </View>
@@ -610,7 +658,10 @@ export const DataInputSimplification: React.FC<
   if (!selectedTemplate) return <View style={styles.container}>{renderTemplateSelector()}</View>;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       {renderProgressBar()}
       <ScrollView stretch style={styles.formContainer}>
         {selectedTemplate.fields.map(renderField)}
@@ -625,7 +676,13 @@ const styles = StyleSheet.create({
   templateSelector: { padding: 16 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold' },
   templateCard: { width: 200, padding: 16, marginRight: 12, borderRadius: 12, borderWidth: 1 },
-  templateIcon: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
+  templateIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   templateName: { fontSize: 16, fontWeight: '600' },
   templateDescription: { fontSize: 12 },
   progressContainer: { margin: 16, padding: 16, borderRadius: 12 },
@@ -639,7 +696,13 @@ const styles = StyleSheet.create({
   fieldHeader: { flexDirection: 'row', justifyContent: 'space-between' },
   fieldLabel: { fontSize: 16, fontWeight: '600' },
   fieldActions: { flexDirection: 'row', gap: 8 },
-  actionButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   textInput: { borderWidth: 1, borderRadius: 8, padding: 12 },
   selectOption: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
   formActions: { padding: 16 },

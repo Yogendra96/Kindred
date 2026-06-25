@@ -1,6 +1,7 @@
 # Development Guide - Enhanced Code Quality & Maintainability
 
-This document outlines the enhanced development tools, debugging capabilities, and code quality features implemented in the Kindred React Native application.
+This document outlines the enhanced development tools, debugging capabilities, and code quality
+features implemented in the Kindred React Native application.
 
 ## 🛠️ Enhanced Development Tools
 
@@ -37,6 +38,7 @@ Location: `src/services/EnhancedPerformanceService.ts`
 - Custom metric recording
 
 **Usage:**
+
 ```typescript
 import { EnhancedPerformanceService } from '@/services/EnhancedPerformanceService';
 
@@ -66,6 +68,7 @@ Location: `src/hooks/usePerformanceMonitoring.ts`
 - Analytics integration
 
 **Usage:**
+
 ```typescript
 import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
 
@@ -96,6 +99,7 @@ Location: `src/services/EnhancedSecurityService.ts`
 - Input sanitization
 
 **Usage:**
+
 ```typescript
 import { EnhancedSecurityService } from '@/services/EnhancedSecurityService';
 
@@ -127,16 +131,22 @@ Location: `src/services/EnhancedAnalyticsService.ts`
 - Offline queue support
 
 **Usage:**
+
 ```typescript
 import { EnhancedAnalyticsService } from '@/services/EnhancedAnalyticsService';
 
 const analyticsService = EnhancedAnalyticsService.getInstance();
 
 // Track custom events
-analyticsService.trackEvent('button_clicked', {
-  button_name: 'submit',
-  screen: 'login',
-}, 'user_interaction', 'medium');
+analyticsService.trackEvent(
+  'button_clicked',
+  {
+    button_name: 'submit',
+    screen: 'login',
+  },
+  'user_interaction',
+  'medium',
+);
 
 // Track screen views
 analyticsService.trackScreen('HomeScreen', { user_type: 'premium' });
@@ -160,6 +170,7 @@ Location: `src/components/EnhancedErrorBoundary.tsx`
 - Error recovery options
 
 **Usage:**
+
 ```typescript
 import { EnhancedErrorBoundary } from '@/components/EnhancedErrorBoundary';
 
@@ -188,6 +199,7 @@ Location: `src/components/DevTools.tsx`
 - Settings management
 
 **Access:**
+
 ```typescript
 // Available globally in development
 if (__DEV__) {
@@ -224,15 +236,14 @@ Location: `src/tests/testUtils.ts`
 - Network mocking utilities
 
 **Usage:**
+
 ```typescript
 import { renderWithProviders, createMockNavigation } from '@tests/testUtils';
 
 test('renders component correctly', () => {
   const mockNavigation = createMockNavigation();
-  const { getByText } = renderWithProviders(
-    <MyComponent navigation={mockNavigation} />
-  );
-  
+  const { getByText } = renderWithProviders(<MyComponent navigation={mockNavigation} />);
+
   expect(getByText('Hello World')).toBeTruthy();
 });
 ```
@@ -348,22 +359,22 @@ In development mode, enhanced utilities are available globally:
 if (__DEV__) {
   // Toggle features
   global.devUtils.toggleFeature('enableExperimentalFeatures');
-  
+
   // Get performance metrics
   const metrics = global.devUtils.getPerformanceMetrics();
-  
+
   // Get analytics summary
   const analytics = global.devUtils.getAnalyticsSummary();
-  
+
   // Export all data
   const data = global.devUtils.exportAllData();
-  
+
   // Clear storage
   await global.devUtils.clearStorage();
-  
+
   // Clear all service data
   await global.devUtils.clearAllData();
-  
+
   // Session management
   await global.devUtils.startSession('user123');
   await global.devUtils.endSession();
@@ -484,4 +495,6 @@ When contributing to this project:
 - ✅ Enhanced Jest configuration with better coverage
 - ✅ Comprehensive package.json scripts
 
-This enhanced development setup provides a robust foundation for building, testing, and maintaining high-quality React Native applications with comprehensive monitoring, debugging, and quality assurance capabilities.
+This enhanced development setup provides a robust foundation for building, testing, and maintaining
+high-quality React Native applications with comprehensive monitoring, debugging, and quality
+assurance capabilities.

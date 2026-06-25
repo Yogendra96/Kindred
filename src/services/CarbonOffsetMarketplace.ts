@@ -1,10 +1,10 @@
 // @ts-nocheck
 /* eslint-disable */
-import type { AxiosInstance, AxiosInstance } from 'axios';
+import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { queryClient, queryKeys } from './QueryService';
 import { modernAPMService } from './ModernAPMService';
-import axios from 'axios';
+// Types for Carbon Offset Marketplace
 
 // Types for Carbon Offset Marketplace
 export interface CarbonOffset {
@@ -126,9 +126,7 @@ class CarbonOffsetMarketplaceService {
 
   private constructor() {
     this.apiClient = axios.create({
-      baseURL:
-        process.env.CARBON_MARKETPLACE_API_URL ||
-        'https://api.carbonmarketplace.com/v1',
+      baseURL: process.env.CARBON_MARKETPLACE_API_URL || 'https://api.carbonmarketplace.com/v1',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -141,8 +139,7 @@ class CarbonOffsetMarketplaceService {
 
   public static getInstance(): CarbonOffsetMarketplaceService {
     if (!CarbonOffsetMarketplaceService.instance) {
-      CarbonOffsetMarketplaceService.instance =
-        new CarbonOffsetMarketplaceService();
+      CarbonOffsetMarketplaceService.instance = new CarbonOffsetMarketplaceService();
     }
     return CarbonOffsetMarketplaceService.instance;
   }
@@ -181,9 +178,7 @@ class CarbonOffsetMarketplaceService {
   }
 
   // Fetch available carbon offsets
-  public async getOffsets(
-    filters?: MarketplaceFilters,
-  ): Promise<CarbonOffset[]> {
+  public async getOffsets(filters?: MarketplaceFilters): Promise<CarbonOffset[]> {
     try {
       const response = await this.apiClient.get('/offsets', {
         params: filters,
@@ -273,12 +268,9 @@ class CarbonOffsetMarketplaceService {
     retirementReason: string,
   ): Promise<{ certificateUrl: string; retirementDate: string }> {
     try {
-      const response = await this.apiClient.post(
-        `/purchases/${purchaseId}/retire`,
-        {
-          retirementReason,
-        },
-      );
+      const response = await this.apiClient.post(`/purchases/${purchaseId}/retire`, {
+        retirementReason,
+      });
       return response.data;
     } catch (error) {
       console.error('Error retiring credits:', error);
@@ -298,10 +290,7 @@ class CarbonOffsetMarketplaceService {
   }
 
   // Search offsets
-  public async searchOffsets(
-    query: string,
-    filters?: MarketplaceFilters,
-  ): Promise<CarbonOffset[]> {
+  public async searchOffsets(query: string, filters?: MarketplaceFilters): Promise<CarbonOffset[]> {
     try {
       const response = await this.apiClient.get('/offsets/search', {
         params: {
@@ -339,12 +328,9 @@ class CarbonOffsetMarketplaceService {
     period: '1M' | '3M' | '6M' | '1Y' | 'ALL',
   ): Promise<{ date: string; price: number }[]> {
     try {
-      const response = await this.apiClient.get(
-        `/offsets/${offsetId}/price-history`,
-        {
-          params: { period },
-        },
-      );
+      const response = await this.apiClient.get(`/offsets/${offsetId}/price-history`, {
+        params: { period },
+      });
       return response.data.priceHistory;
     } catch (error) {
       console.error('Error fetching price history:', error);
@@ -390,9 +376,7 @@ class CarbonOffsetMarketplaceService {
     };
   }> {
     try {
-      const response = await this.apiClient.get(
-        `/users/${userId}/impact-report`,
-      );
+      const response = await this.apiClient.get(`/users/${userId}/impact-report`);
       return response.data;
     } catch (error) {
       console.error('Error fetching impact report:', error);
@@ -433,13 +417,10 @@ class CarbonOffsetMarketplaceService {
     };
   }> {
     try {
-      const response = await this.apiClient.post(
-        '/recommendations/personalized',
-        {
-          userId,
-          carbonFootprint,
-        },
-      );
+      const response = await this.apiClient.post('/recommendations/personalized', {
+        userId,
+        carbonFootprint,
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching personalized recommendations:', error);

@@ -60,7 +60,7 @@
     "test:e2e:build": "detox build",
     "test:e2e:ios": "detox test --configuration ios.sim.debug",
     "test:integration": "npx jest --selectProjects='Integration Tests'",
-    "test:maestro": "maestro test .maestro",
+    "test:maestro": "maestro test maestro",
     "test:performance": "npx jest --testNamePattern='performance'",
     "test:unit": "npx jest --selectProjects='Unit Tests'",
     "test:watch": "npx jest --watch",

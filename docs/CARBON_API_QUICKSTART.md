@@ -2,7 +2,8 @@
 
 ## 🚀 Get Live Carbon Data in 5 Minutes!
 
-Your Kindred app is ready for live carbon calculations! Currently using offline estimates - let's upgrade to real-time data.
+Your Kindred app is ready for live carbon calculations! Currently using offline estimates - let's
+upgrade to real-time data.
 
 ### ⚡ Quick Setup (Recommended)
 
@@ -12,6 +13,7 @@ bun run setup:carbon-api
 ```
 
 **What it does:**
+
 - Guides you through getting API keys
 - Updates your .env configuration
 - Tests connectivity automatically
@@ -20,6 +22,7 @@ bun run setup:carbon-api
 ### 🔧 Manual Setup
 
 #### 1. Get Carbon Interface API Key (Free)
+
 1. Visit: https://www.carboninterface.com/
 2. Sign up (free account: 200 requests/month)
 3. Get API key from dashboard
@@ -29,6 +32,7 @@ bun run setup:carbon-api
    ```
 
 #### 2. Test Your Setup
+
 ```bash
 # Test API connectivity
 bun run test:carbon-api
@@ -38,6 +42,7 @@ bun run debug:carbon-config
 ```
 
 #### 3. See It Work
+
 ```bash
 # Start the app
 bun start
@@ -48,6 +53,7 @@ bun start
 ### 📊 Current Status
 
 ✅ **What's Working:**
+
 - Multi-provider API integration (3 providers)
 - Automatic fallback to offline calculations
 - Comprehensive error handling and logging
@@ -55,18 +61,19 @@ bun start
 - Rate limiting and retry logic
 
 ⚠️ **What You Need:**
+
 - Real API keys (currently using mock/placeholder keys)
 - 5 minutes to sign up for free accounts
 
 ### 🎯 Benefits of Live APIs
 
-| Feature | Offline Calculations | Live APIs |
-|---------|---------------------|-----------|
-| **Accuracy** | ~70% accurate | 90-95% accurate |
-| **Data Sources** | Static factors | Real-time, scientific data |
-| **Regional Variations** | Limited | Precise by location |
-| **Updates** | Manual updates | Automatic updates |
-| **Confidence Score** | Medium | High |
+| Feature                 | Offline Calculations | Live APIs                  |
+| ----------------------- | -------------------- | -------------------------- |
+| **Accuracy**            | ~70% accurate        | 90-95% accurate            |
+| **Data Sources**        | Static factors       | Real-time, scientific data |
+| **Regional Variations** | Limited              | Precise by location        |
+| **Updates**             | Manual updates       | Automatic updates          |
+| **Confidence Score**    | Medium               | High                       |
 
 ### 🛠️ Available Commands
 
@@ -84,16 +91,19 @@ bun run logs:carbon           # View carbon calculation logs
 ### 🔍 Troubleshooting
 
 **No API Response?**
+
 - Check internet connection
 - Verify API keys are correct (not placeholder text)
 - Run `bun run test:carbon-api` for detailed diagnosis
 
 **Rate Limit Errors?**
+
 - App automatically falls back to next provider
 - Consider upgrading to paid tier
 - Check cache settings (reduces API calls by ~80%)
 
 **Still Using Offline Data?**
+
 - Ensure `.env` file has real API keys
 - Restart the app after updating .env
 - Look for log messages: `[CARBON_API] Using provider: carboninterface`
@@ -101,12 +111,14 @@ bun run logs:carbon           # View carbon calculation logs
 ### 📈 Usage Monitoring
 
 The app automatically tracks:
+
 - API response times
 - Cache hit rates
 - Provider fallback events
 - Error rates and types
 
 View logs with:
+
 ```bash
 # Real-time logs
 bun start --verbose
@@ -125,13 +137,13 @@ bun run logs:carbon
 ### 🎉 Success Indicators
 
 **You'll know it's working when:**
+
 - ✅ `bun run test:carbon-api` shows green checkmarks
 - ✅ Carbon activities show precise emissions (e.g., "2.34 kg CO2" instead of "~2.3 kg CO2")
 - ✅ Logs show: `[CARBON_API] Response received in 245ms`
 - ✅ Different transport modes show varied precise calculations
 
-**Ready to go live?** 
-Run `bun run setup:carbon-api` now! 🚀
+**Ready to go live?** Run `bun run setup:carbon-api` now! 🚀
 
 ### 📖 More Information
 

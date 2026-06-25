@@ -123,8 +123,7 @@ export interface TransitionPreset {
 class AnimatedTransitionsService {
   private performanceMonitor: typeof modernAPMService;
   private hapticService: typeof HapticFeedbackService;
-  private activeAnimations: Map<string, Animated.CompositeAnimation> =
-    new Map();
+  private activeAnimations: Map<string, Animated.CompositeAnimation> = new Map();
   private animationCounter: number = 0;
 
   // Common easing functions
@@ -147,8 +146,7 @@ class AnimatedTransitionsService {
     easeOutElastic: Easing.out(Easing.elastic(1)),
     easeInBounce: Easing.bounce,
     easeOutBounce: Easing.out(Easing.bounce),
-    bezier: (x1: number, y1: number, x2: number, y2: number) =>
-      Easing.bezier(x1, y1, x2, y2),
+    bezier: (x1: number, y1: number, x2: number, y2: number) => Easing.bezier(x1, y1, x2, y2),
   };
 
   // Predefined transition presets
@@ -253,12 +251,9 @@ class AnimatedTransitionsService {
     });
   }
 
-  createSlideAnimation(
-    transition: SlideTransition,
-  ): Animated.CompositeAnimation {
+  createSlideAnimation(transition: SlideTransition): Animated.CompositeAnimation {
     const animatedValue = new Animated.Value(0);
-    const distance =
-      transition.distance || this.getDefaultSlideDistance(transition.direction);
+    const distance = transition.distance || this.getDefaultSlideDistance(transition.direction);
 
     return Animated.timing(animatedValue, {
       toValue: distance,
@@ -269,9 +264,7 @@ class AnimatedTransitionsService {
     });
   }
 
-  createScaleAnimation(
-    transition: ScaleTransition,
-  ): Animated.CompositeAnimation {
+  createScaleAnimation(transition: ScaleTransition): Animated.CompositeAnimation {
     const animatedValue = new Animated.Value(transition.from || 0);
 
     return Animated.timing(animatedValue, {
@@ -283,9 +276,7 @@ class AnimatedTransitionsService {
     });
   }
 
-  createRotateAnimation(
-    transition: RotateTransition,
-  ): Animated.CompositeAnimation {
+  createRotateAnimation(transition: RotateTransition): Animated.CompositeAnimation {
     const animatedValue = new Animated.Value(0);
 
     return Animated.timing(animatedValue, {
@@ -691,7 +682,7 @@ class AnimatedTransitionsService {
     const trace = await this.performanceMonitor.startTrace('animated-transition');
     const animationId = this.generateAnimationId();
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         // Store active animation
         this.activeAnimations.set(animationId, animation);
@@ -829,17 +820,13 @@ class AnimatedTransitionsService {
       const translateX = position.interpolate({
         inputRange: [index - 1, index, index + 1],
         outputRange:
-          type === 'slide' && direction === 'left'
-            ? [initWidth, 0, -initWidth]
-            : [0, 0, 0],
+          type === 'slide' && direction === 'left' ? [initWidth, 0, -initWidth] : [0, 0, 0],
       });
 
       const translateY = position.interpolate({
         inputRange: [index - 1, index, index + 1],
         outputRange:
-          type === 'slide' && direction === 'up'
-            ? [initHeight, 0, -initHeight]
-            : [0, 0, 0],
+          type === 'slide' && direction === 'up' ? [initHeight, 0, -initHeight] : [0, 0, 0],
       });
 
       const opacity = position.interpolate({
@@ -862,9 +849,7 @@ class AnimatedTransitionsService {
   }
 
   // Utility methods
-  private getDefaultSlideDistance(
-    direction: 'left' | 'right' | 'up' | 'down',
-  ): number {
+  private getDefaultSlideDistance(direction: 'left' | 'right' | 'up' | 'down'): number {
     switch (direction) {
       case 'left':
       case 'right':
@@ -952,5 +937,7 @@ class AnimatedTransitionsService {
   }
 }
 
-export const getAnimatedTransitionsService = createSingleton(() => new AnimatedTransitionsService());
+export const getAnimatedTransitionsService = createSingleton(
+  () => new AnimatedTransitionsService(),
+);
 export default getAnimatedTransitionsService();

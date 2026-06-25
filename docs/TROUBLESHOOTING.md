@@ -7,11 +7,13 @@
 #### 1. **CarbonAPIService Initialization Failures**
 
 **Problem**: Service fails to initialize or throws connection errors
+
 ```
 Error: CarbonAPIService initialization failed: Network timeout
 ```
 
 **Diagnosis**:
+
 ```bash
 # Check service health
 bun run validate
@@ -19,6 +21,7 @@ curl -I https://api.carbon-service.com/health
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Check environment variables
 console.log('Carbon API Key:', process.env.CARBON_API_KEY?.slice(0, 8) + '...');
@@ -39,29 +42,35 @@ await CarbonAPIService.initialize();
 #### 2. **Performance Threshold Exceeded**
 
 **Problem**: Components consistently exceeding 16ms render threshold
+
 ```
 Warning: Component 'CarbonDashboard' render time: 45ms (threshold: 16ms)
 ```
 
 **Diagnosis**:
+
 ```typescript
 // Use performance profiler
 const { renderTime, bottlenecks } = usePerformanceMonitoring({
   detailed: true,
-  profileComponents: true
+  profileComponents: true,
 });
 
 console.log('Render bottlenecks:', bottlenecks);
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Implement React.memo with proper comparison
-const CarbonDashboard = React.memo(({ data, filters }) => {
-  // Component logic
-}, (prevProps, nextProps) => {
-  return prevProps.data.timestamp === nextProps.data.timestamp;
-});
+const CarbonDashboard = React.memo(
+  ({ data, filters }) => {
+    // Component logic
+  },
+  (prevProps, nextProps) => {
+    return prevProps.data.timestamp === nextProps.data.timestamp;
+  },
+);
 
 // 2. Use useMemo for expensive calculations
 const expensiveCalculation = useMemo(() => {
@@ -78,24 +87,27 @@ const LazyChart = lazy(() => import('./CarbonChart'));
 #### 3. **Memory Leaks in Monitoring**
 
 **Problem**: Memory usage continuously increasing
+
 ```
 Warning: Memory usage: 250MB (threshold: 200MB)
 Error: JavaScript heap out of memory
 ```
 
 **Diagnosis**:
+
 ```bash
 # Monitor memory in development
 npm run test:performance -- --memory
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Proper cleanup in useEffect
 useEffect(() => {
   const interval = setInterval(updateMetrics, 1000);
   const listener = AppState.addEventListener('change', handleAppState);
-  
+
   return () => {
     clearInterval(interval);
     listener?.remove();
@@ -107,8 +119,8 @@ useEffect(() => {
 // 2. Limit data retention
 const usePerformanceMonitoring = (options = {}) => {
   const [metrics, setMetrics] = useState([]);
-  
-  const addMetric = (metric) => {
+
+  const addMetric = metric => {
     setMetrics(prev => [...prev.slice(-50), metric]); // Keep only last 50
   };
 };
@@ -120,12 +132,14 @@ const componentMetrics = new WeakMap();
 #### 4. **Authentication Token Expiry**
 
 **Problem**: User randomly logged out or API calls failing
+
 ```
 Error: Authentication failed: Token expired
 Error: Session invalid
 ```
 
 **Diagnosis**:
+
 ```typescript
 // Check token status
 const isValid = await EnhancedSecurityService.validateSession();
@@ -134,6 +148,7 @@ console.log('Token expires at:', tokenInfo.expiresAt);
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Implement automatic token refresh
 const apiCall = async (endpoint, data) => {
@@ -152,11 +167,12 @@ const apiCall = async (endpoint, data) => {
 useEffect(() => {
   const checkTokenExpiry = async () => {
     const timeLeft = await EnhancedSecurityService.getTimeUntilExpiry();
-    if (timeLeft < 5 * 60 * 1000) { // 5 minutes
+    if (timeLeft < 5 * 60 * 1000) {
+      // 5 minutes
       await EnhancedSecurityService.refreshSession();
     }
   };
-  
+
   const interval = setInterval(checkTokenExpiry, 60000); // Check every minute
   return () => clearInterval(interval);
 }, []);
@@ -167,12 +183,14 @@ useEffect(() => {
 #### 5. **Metro Bundle Failures**
 
 **Problem**: Metro bundler fails or extremely slow
+
 ```
 Error: Metro bundler failed to start
 Error: Unable to resolve module '@services/CarbonAPIService'
 ```
 
 **Diagnosis**:
+
 ```bash
 # Clear all caches
 bun run clean:all
@@ -185,6 +203,7 @@ node -e "console.log(require.resolve('./src/services/CarbonAPIService'))"
 ```
 
 **Solutions**:
+
 ```bash
 # 1. Reset Metro cache
 bun run clean:metro
@@ -204,12 +223,14 @@ bun run reset
 #### 6. **iOS Build Errors**
 
 **Problem**: iOS build fails with CocoaPods errors
+
 ```
 Error: CocoaPods could not find compatible versions for pod
 Error: Undefined symbol: _OBJC_CLASS_$_TensorFlowLiteSwift
 ```
 
 **Solutions**:
+
 ```bash
 # 1. Clean and reinstall pods
 cd ios
@@ -232,12 +253,14 @@ pod install --repo-update
 #### 7. **Android Build Errors**
 
 **Problem**: Android build fails with Gradle errors
+
 ```
 Error: Task ':app:bundleReleaseJsAndAssets' FAILED
 Error: Could not resolve all files for configuration ':app:debugRuntimeClasspath'
 ```
 
 **Solutions**:
+
 ```bash
 # 1. Clean Gradle cache
 cd android
@@ -262,12 +285,14 @@ cd android
 #### 8. **E2E Test Failures**
 
 **Problem**: Detox tests failing or flaky
+
 ```
 Error: DetoxError: Failed to locate element with testID 'carbon-dashboard'
 Error: Test timed out after 60000ms
 ```
 
 **Solutions**:
+
 ```bash
 # 1. Rebuild test apps
 bun run test:e2e:build
@@ -287,12 +312,14 @@ detox test --configuration ios.sim.debug --loglevel verbose
 #### 9. **Jest Test Failures**
 
 **Problem**: Unit tests failing with mock errors
+
 ```
 Error: Cannot find module '@services/CarbonAPIService'
 Error: TypeError: mockImplementation is not a function
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Check Jest configuration in jest.config.js
 moduleNameMapper: {
@@ -318,18 +345,20 @@ beforeEach(() => {
 #### 10. **Slow App Launch**
 
 **Problem**: App takes >5 seconds to launch
+
 ```
 Performance: App launch took 8.2 seconds (target: <3 seconds)
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Lazy load non-critical services
 const initializeApp = async () => {
   // Critical services first
   await EnhancedSecurityService.initialize();
   await CarbonAPIService.initialize();
-  
+
   // Non-critical services in background
   setTimeout(() => {
     AchievementSystem.initialize();
@@ -347,11 +376,13 @@ bun run bundle:analyze
 #### 11. **High Memory Usage**
 
 **Problem**: App using >200MB RAM
+
 ```
 Warning: Memory usage: 285MB (target: <200MB)
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Monitor component memory usage
 const useMemoryMonitoring = () => {
@@ -361,7 +392,7 @@ const useMemoryMonitoring = () => {
         console.log('Memory:', performance.memory.usedJSHeapSize / 1048576, 'MB');
       }
     };
-    
+
     const interval = setInterval(checkMemory, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -376,7 +407,7 @@ useEffect(() => {
     CarbonAPIService.clearOldCache();
     PerformanceService.clearOldMetrics();
   };
-  
+
   const interval = setInterval(cleanup, 30 * 60 * 1000); // 30 minutes
   return () => clearInterval(interval);
 }, []);
@@ -385,6 +416,7 @@ useEffect(() => {
 ## 🔍 Diagnostic Commands
 
 ### Environment Check
+
 ```bash
 # Complete environment validation
 bun run validate
@@ -400,11 +432,12 @@ bun run bundle:analyze
 ```
 
 ### Service Health Check
+
 ```typescript
 // Add to DevTools component for debugging
 const ServiceHealthChecker = () => {
   const [health, setHealth] = useState({});
-  
+
   useEffect(() => {
     const checkServices = async () => {
       const services = [
@@ -412,24 +445,24 @@ const ServiceHealthChecker = () => {
         'EnhancedSecurityService',
         'EnhancedPerformanceService',
         'LocationService',
-        'MLCarbonPrediction'
+        'MLCarbonPrediction',
       ];
-      
+
       const healthCheck = {};
       for (const service of services) {
         try {
-          healthCheck[service] = await window[service]?.isHealthy() || false;
+          healthCheck[service] = (await window[service]?.isHealthy()) || false;
         } catch (error) {
           healthCheck[service] = false;
         }
       }
-      
+
       setHealth(healthCheck);
     };
-    
+
     checkServices();
   }, []);
-  
+
   return (
     <View>
       {Object.entries(health).map(([service, isHealthy]) => (
@@ -443,12 +476,13 @@ const ServiceHealthChecker = () => {
 ```
 
 ### Debug Mode Activation
+
 ```typescript
 // Add to development builds
 if (__DEV__) {
   // Enable debug mode for all services
   global.DEBUG_SERVICES = true;
-  
+
   // Add debug utilities
   global.debugUtils = {
     clearAllCaches: () => {
@@ -464,7 +498,7 @@ if (__DEV__) {
         performance: EnhancedPerformanceService.getMetrics(),
         security: EnhancedSecurityService.getMetrics(),
       };
-    }
+    },
   };
 }
 ```
@@ -472,12 +506,14 @@ if (__DEV__) {
 ## 📞 Getting Help
 
 ### Internal Resources
+
 1. **ARCHITECTURE.md** - System architecture and design patterns
-2. **PROJECT_OVERVIEW.md** - Feature overview and capabilities  
+2. **PROJECT_OVERVIEW.md** - Feature overview and capabilities
 3. **DEVELOPMENT_GUIDE.md** - Extended development practices
 4. **PERFORMANCE_GUIDE.md** - Performance optimization guide
 
 ### When to Escalate
+
 - Service initialization failures persisting >1 hour
 - Memory leaks not resolved by standard cleanup
 - Performance degradation >50% from baseline
@@ -485,6 +521,7 @@ if (__DEV__) {
 - Critical user-facing bugs in production
 
 ### Debug Information to Collect
+
 ```typescript
 const debugInfo = {
   version: require('./package.json').version,
@@ -493,7 +530,7 @@ const debugInfo = {
   memory: performance.memory?.usedJSHeapSize,
   services: global.debugUtils?.getServiceMetrics(),
   errors: ErrorBoundary.getLastErrors(),
-  performance: PerformanceService.getSummary()
+  performance: PerformanceService.getSummary(),
 };
 
 console.log('Debug Info:', JSON.stringify(debugInfo, null, 2));
@@ -501,4 +538,6 @@ console.log('Debug Info:', JSON.stringify(debugInfo, null, 2));
 
 ---
 
-**Remember**: Most issues can be resolved by following the service-first architecture and using the built-in error handling and recovery mechanisms. When in doubt, check service health and clear caches first.
+**Remember**: Most issues can be resolved by following the service-first architecture and using the
+built-in error handling and recovery mechanisms. When in doubt, check service health and clear
+caches first.

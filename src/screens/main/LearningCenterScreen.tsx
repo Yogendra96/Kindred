@@ -1,27 +1,49 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { MotiView } from 'moti';
+import { PlayCircle, Article, Question, CaretLeft, CheckCircle } from 'phosphor-react-native';
 import { useToast } from '../../contexts/ToastContext';
-// import { TOPICS, ARTICLES, QUIZ_QUESTIONS, TYPE_COLORS } from '../../data/learningData';
-// import type { LearningItem } from '../../data/learningData';
+import { spatialColors, typography, animations } from '../../theme/theme';
+
+const GlassCard = ({ style, children }: any) => (
+  <View
+    style={[
+      style,
+      {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        overflow: 'hidden',
+      },
+    ]}
+  >
+    {children}
+  </View>
+);
 
 // ─── Data imported from ../../data/learningData ───────────────────────────────
 
-const TOPICS = ['All', 'Diet', 'Energy', 'Transport', 'Waste', 'Nature'];
+const TOPICS = ['All', 'Vegan Journey', 'Diet', 'Energy', 'Transport', 'Waste', 'Nature'];
 
 const ARTICLES = [
+  {
+    id: 'v1',
+    type: 'article',
+    topic: 'Vegan Journey',
+    title: "Beginner's Guide to a Cruelty-Free Pantry",
+    icon: Article,
+    readTime: '5 min',
+    difficulty: 'Beginner',
+    preview:
+      'Transitioning to a vegan lifestyle starts in the kitchen. Here are 10 essential swaps that make cruelty-free cooking effortless and delicious.',
+  },
   {
     id: 'a1',
     type: 'article',
     topic: 'Diet',
     title: 'Why Plant-Based Diets Cut Your Carbon by 73%',
-    emoji: '🌿',
+    icon: Article,
     readTime: '4 min',
     difficulty: 'Beginner',
     preview:
@@ -32,7 +54,7 @@ const ARTICLES = [
     type: 'video',
     topic: 'Energy',
     title: "Home Solar: A Real Family's First Year",
-    emoji: '☀️',
+    icon: PlayCircle,
     readTime: '8 min video',
     difficulty: 'Beginner',
     preview:
@@ -43,7 +65,7 @@ const ARTICLES = [
     type: 'article',
     topic: 'Transport',
     title: 'The Hidden Carbon Cost of Flying',
-    emoji: '✈️',
+    icon: Article,
     readTime: '6 min',
     difficulty: 'Intermediate',
     preview:
@@ -54,7 +76,7 @@ const ARTICLES = [
     type: 'quiz',
     topic: 'Waste',
     title: 'Can You Guess These Recycling Myths?',
-    emoji: '♻️',
+    icon: Question,
     readTime: '3 min quiz',
     difficulty: 'Beginner',
     preview:
@@ -65,7 +87,7 @@ const ARTICLES = [
     type: 'article',
     topic: 'Nature',
     title: "How Forests Absorb Carbon (And Why We're Losing Them)",
-    emoji: '🌳',
+    icon: Article,
     readTime: '5 min',
     difficulty: 'Intermediate',
     preview:
@@ -76,7 +98,7 @@ const ARTICLES = [
     type: 'video',
     topic: 'Energy',
     title: 'The Spot Difference: Gas vs Induction Cooking',
-    emoji: '🔥',
+    icon: PlayCircle,
     readTime: '5 min video',
     difficulty: 'Beginner',
     preview:
@@ -87,7 +109,7 @@ const ARTICLES = [
     type: 'quiz',
     topic: 'Diet',
     title: 'Carbon Footprint of Common Foods — Quiz',
-    emoji: '🥩',
+    icon: Question,
     readTime: '4 min quiz',
     difficulty: 'Intermediate',
     preview:
@@ -98,67 +120,61 @@ const ARTICLES = [
     type: 'article',
     topic: 'Transport',
     title: 'E-Bikes: The Most Efficient Vehicle Ever?',
-    emoji: '🚴',
+    icon: Article,
     readTime: '4 min',
     difficulty: 'Beginner',
     preview:
-      "Per kilometre, e-bikes produce less than 1/50th of car emissions. Here's why more cities are going electric-pedal first.",
+      'An e-bike uses 1% of the energy of an electric car. How this simple technology is quietly transforming urban transport.',
   },
 ];
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
 const TYPE_COLORS: Record<string, string> = {
-  article: '#1565c0',
-  video: '#b71c1c',
-  quiz: '#6a1b9a',
+  article: '#0A84FF', // blue
+  video: '#FF3B30', // red
+  quiz: '#BF5AF2', // purple
 };
 
-const ContentCard = ({ item }: { item: (typeof ARTICLES)[0] }) => {
-  const { showToast } = useToast();
+// ─── Content Card ─────────────────────────────────────────────────────────────
 
-  const handlePress = () => {
-    showToast(
-      `${item.title}\nFull ${item.type} experience coming in the next update!`,
-      'info',
-    );
-  };
+const ContentCard = ({ item, completed, onPress, index }: any) => {
+  const color = TYPE_COLORS[item.type] || '#fff';
+  const Icon = item.icon;
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={handlePress}
-      activeOpacity={0.85}
+    <MotiView
+      from={{ opacity: 0, translateY: 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ ...animations.spring.gentle, delay: index * 100 }}
     >
-      <View style={styles.cardLeft}>
-        <Text style={styles.cardEmoji}>{item.emoji}</Text>
-      </View>
-      <View style={styles.cardBody}>
-        <View style={styles.cardTagRow}>
-          <View
-            style={[
-              styles.tag,
-              {
-                backgroundColor: TYPE_COLORS[item.type] + '20',
-                borderColor: TYPE_COLORS[item.type],
-              },
-            ]}
-          >
-            <Text style={[styles.tagText, { color: TYPE_COLORS[item.type] }]}>
-              {item.type.toUpperCase()}
-            </Text>
+      <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
+        <GlassCard style={[styles.card, completed && styles.cardCompleted]}>
+          <View style={styles.cardHeaderRow}>
+            <View style={styles.tagRow}>
+              <View style={[styles.typeTag, { backgroundColor: color + '20' }]}>
+                <Icon size={14} color={color} weight='fill' />
+                <Text style={[styles.typeText, { color }]}>{item.type.toUpperCase()}</Text>
+              </View>
+              <View style={styles.diffTag}>
+                <Text style={styles.diffText}>{item.difficulty}</Text>
+              </View>
+            </View>
+            {completed && <CheckCircle size={24} color='#34C759' weight='fill' />}
           </View>
-          <View style={styles.diffTag}>
-            <Text style={styles.diffText}>{item.difficulty}</Text>
+          <Text style={[styles.cardTitle, completed && styles.cardTitleCompleted]}>
+            {item.title}
+          </Text>
+          <Text style={styles.cardPreview} numberOfLines={2}>
+            {item.preview}
+          </Text>
+          <View style={styles.cardFooter}>
+            <Text style={styles.cardMeta}>{item.readTime}</Text>
+            <View style={styles.topicTag}>
+              <Text style={styles.topicTagText}>{item.topic}</Text>
+            </View>
           </View>
-        </View>
-        <Text style={styles.cardTitle}>{item.title}</Text>
-        <Text style={styles.cardPreview} numberOfLines={2}>
-          {item.preview}
-        </Text>
-        <Text style={styles.cardMeta}>⏱ {item.readTime}</Text>
-      </View>
-    </TouchableOpacity>
+        </GlassCard>
+      </TouchableOpacity>
+    </MotiView>
   );
 };
 
@@ -166,64 +182,98 @@ const ContentCard = ({ item }: { item: (typeof ARTICLES)[0] }) => {
 
 const LearningCenterScreen = () => {
   const [selectedTopic, setSelectedTopic] = useState('All');
-  const [completedIds] = useState<Set<string>>(new Set(['a1', 'a4']));
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set(['a1', 'a4']));
+  const { showToast } = useToast();
+  const navigation = useNavigation();
 
   const filtered =
-    selectedTopic === 'All'
-      ? ARTICLES
-      : ARTICLES.filter(a => a.topic === selectedTopic);
+    selectedTopic === 'All' ? ARTICLES : ARTICLES.filter(a => a.topic === selectedTopic);
 
   const progress = Math.round((completedIds.size / ARTICLES.length) * 100);
+
+  const handlePress = (id: string, title: string) => {
+    // In a real app this would navigate to content
+    if (!completedIds.has(id)) {
+      setCompletedIds(prev => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+      showToast(`Completed: ${title}`, 'success');
+    } else {
+      showToast('Opening again...', 'info');
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>🎓 Learning Center</Text>
+      <MotiView
+        style={styles.header}
+        from={{ opacity: 0, translateY: -20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={animations.spring.gentle}
+      >
+        <View style={styles.titleRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <CaretLeft size={24} color={spatialColors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Learning Center</Text>
+        </View>
         <Text style={styles.subtitle}>Articles · Videos · Quizzes</Text>
         <View style={styles.progressRow}>
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+            <MotiView
+              from={{ width: '0%' }}
+              animate={{ width: `${progress}%` }}
+              transition={animations.spring.bouncy}
+              style={[styles.progressFill]}
+            />
           </View>
           <Text style={styles.progressLabel}>
             {completedIds.size}/{ARTICLES.length} completed
           </Text>
         </View>
-      </View>
+      </MotiView>
 
       {/* Topic filter */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.topicScroll}
-        contentContainerStyle={styles.topicContent}
+      <MotiView
+        from={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ ...animations.spring.bouncy, delay: 100 }}
       >
-        {TOPICS.map(t => (
-          <TouchableOpacity
-            key={t}
-            style={[
-              styles.topicPill,
-              selectedTopic === t && styles.topicPillActive,
-            ]}
-            onPress={() => setSelectedTopic(t)}
-          >
-            <Text
-              style={[
-                styles.topicText,
-                selectedTopic === t && styles.topicTextActive,
-              ]}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.topicScroll}
+          contentContainerStyle={styles.topicContent}
+        >
+          {TOPICS.map(t => (
+            <TouchableOpacity
+              key={t}
+              style={[styles.topicPill, selectedTopic === t && styles.topicPillActive]}
+              onPress={() => setSelectedTopic(t)}
             >
-              {t}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text style={[styles.topicText, selectedTopic === t && styles.topicTextActive]}>
+                {t}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </MotiView>
 
       {/* Content list */}
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => <ContentCard item={item} />}
+        renderItem={({ item, index }) => (
+          <ContentCard
+            item={item}
+            index={index}
+            completed={completedIds.has(item.id)}
+            onPress={() => handlePress(item.id, item.title)}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -239,91 +289,180 @@ const LearningCenterScreen = () => {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: spatialColors.background },
   header: {
-    paddingTop: 48,
+    paddingTop: 16,
     paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#6a1b9a',
+    borderBottomWidth: 1,
+    borderBottomColor: spatialColors.glassBorderDark,
   },
-  title: { fontSize: 26, fontWeight: 'bold', color: 'white' },
-  subtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
-    marginBottom: 12,
-  },
-  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  progressTrack: {
-    flex: 1,
-    height: 6,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: { height: '100%', backgroundColor: '#ce93d8', borderRadius: 3 },
-  progressLabel: { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
-
-  topicScroll: { maxHeight: 52, backgroundColor: 'white' },
-  topicContent: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  topicPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#f0f0f0',
-  },
-  topicPillActive: { backgroundColor: '#6a1b9a' },
-  topicText: { fontSize: 13, fontWeight: '600', color: '#666' },
-  topicTextActive: { color: 'white' },
-
-  listContent: { padding: 16, paddingBottom: 32 },
-
-  card: {
+  titleRow: {
     flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    marginBottom: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
+    alignItems: 'center',
+    gap: 12,
   },
-  cardLeft: {
-    width: 72,
-    backgroundColor: '#f3e5f5',
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardEmoji: { fontSize: 32 },
-  cardBody: { flex: 1, padding: 14 },
-  cardTagRow: { flexDirection: 'row', gap: 8, marginBottom: 6 },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
+  title: { ...typography.title1, color: spatialColors.textPrimary },
+  subtitle: {
+    ...typography.body,
+    color: spatialColors.textSecondary,
+    marginTop: 4,
+    marginLeft: 52,
   },
-  tagText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
-  diffTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    backgroundColor: '#f0f0f0',
-  },
-  diffText: { fontSize: 9, color: '#888', fontWeight: '600' },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: 4,
-  },
-  cardPreview: { fontSize: 12, color: '#666', lineHeight: 17, marginBottom: 6 },
-  cardMeta: { fontSize: 11, color: '#aaa' },
 
-  empty: { alignItems: 'center', paddingTop: 60 },
-  emptyText: { fontSize: 16, color: '#aaa' },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    gap: 12,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#34C759',
+    borderRadius: 3,
+  },
+  progressLabel: {
+    fontSize: 13,
+    color: spatialColors.textSecondary,
+    fontWeight: '500',
+  },
+
+  topicScroll: {
+    maxHeight: 60,
+    minHeight: 60,
+  },
+  topicContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  topicPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: spatialColors.glassBorderDark,
+  },
+  topicPillActive: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  topicText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: spatialColors.textSecondary,
+  },
+  topicTextActive: {
+    color: spatialColors.textPrimary,
+  },
+
+  listContent: {
+    padding: 16,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  card: {
+    padding: 20,
+  },
+  cardCompleted: {
+    opacity: 0.7,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  typeTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
+  },
+  typeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  diffTag: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  diffText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: spatialColors.textSecondary,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: spatialColors.textPrimary,
+    marginBottom: 8,
+    lineHeight: 24,
+  },
+  cardTitleCompleted: {
+    color: spatialColors.textSecondary,
+  },
+  cardPreview: {
+    fontSize: 14,
+    color: spatialColors.textSecondary,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardMeta: {
+    fontSize: 13,
+    color: spatialColors.textSecondary,
+    fontWeight: '500',
+  },
+  topicTag: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  topicTagText: {
+    fontSize: 12,
+    color: spatialColors.textSecondary,
+    fontWeight: '500',
+  },
+
+  empty: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: spatialColors.textSecondary,
+    fontSize: 16,
+  },
 });
 
 export default LearningCenterScreen;

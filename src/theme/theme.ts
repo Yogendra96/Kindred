@@ -14,27 +14,31 @@ export const metrics = {
 
 // 2026 Modern Spatial Colors for Skia Gradients and Glows
 export const spatialColors = {
-  naturePrimary: '#11998E',    // Deep forest green
-  natureSecondary: '#38EF7D',  // Vibrant lime
-  airPrimary: '#00B4DB',       // Clear sky blue
-  airSecondary: '#0083B0',     // Deep ocean blue
+  naturePrimary: '#11998E', // Deep forest green
+  natureSecondary: '#38EF7D', // Vibrant lime
+  airPrimary: '#00B4DB', // Clear sky blue
+  airSecondary: '#0083B0', // Deep ocean blue
   glassBackgroundDark: 'rgba(28, 28, 30, 0.45)', // For dark mode frosted glass
   glassBackgroundLight: 'rgba(255, 255, 255, 0.5)', // For light mode frosted glass
   glassBorderDark: 'rgba(255, 255, 255, 0.1)',
   glassBorderLight: 'rgba(0, 0, 0, 0.1)',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#AAAAAA',
+  background: '#0A0A0A',
+  primary: '#007AFF',
 };
 
 // Moti Spring Animation Presets
-export const animations = {
+export const animations: any = {
   spring: {
-    gentle: { type: 'spring', damping: 20, stiffness: 100, mass: 1 },
-    bouncy: { type: 'spring', damping: 12, stiffness: 150, mass: 1 },
-    snappy: { type: 'spring', damping: 15, stiffness: 200, mass: 1 },
+    gentle: { type: 'spring' as const, damping: 20, stiffness: 100, mass: 1 },
+    bouncy: { type: 'spring' as const, damping: 12, stiffness: 150, mass: 1 },
+    snappy: { type: 'spring' as const, damping: 15, stiffness: 200, mass: 1 },
   },
   timing: {
-    quick: { type: 'timing', duration: 150 },
-    smooth: { type: 'timing', duration: 300 },
-  }
+    quick: { type: 'timing' as const, duration: 150 },
+    smooth: { type: 'timing' as const, duration: 300 },
+  },
 };
 
 export const colors = {
@@ -160,6 +164,18 @@ export const typography = {
     xlarge: 36,
     xxlarge: 40,
   },
+  title1: {
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+  },
+  title2: {
+    fontSize: 20,
+    fontWeight: 'bold' as const,
+  },
+  body: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
 };
 
 export const spacing = {
@@ -259,27 +275,18 @@ export type ThemeMode = 'light' | 'dark' | 'system' | 'highContrast';
 /**
  * Helper to resolve nested color objects based on mode
  */
-const resolveColors = (
-  palette: any,
-  mode: 'light' | 'dark' | 'highContrast',
-): any => {
+const resolveColors = (palette: any, mode: 'light' | 'dark' | 'highContrast'): any => {
   const resolved: any = {};
   for (const [key, value] of Object.entries(palette)) {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       // Check if this object is a leaf node containing theme modes
-      const isLeaf =
-        'light' in value || 'dark' in value || 'highContrast' in value;
+      const isLeaf = 'light' in value || 'dark' in value || 'highContrast' in value;
       if (isLeaf) {
-        if (
-          mode === 'highContrast' &&
-          (value as any).highContrast !== undefined
-        ) {
+        if (mode === 'highContrast' && (value as any).highContrast !== undefined) {
           resolved[key] = (value as any).highContrast;
         } else {
           resolved[key] =
-            (value as any)[mode] !== undefined
-              ? (value as any)[mode]
-              : (value as any).light;
+            (value as any)[mode] !== undefined ? (value as any)[mode] : (value as any).light;
         }
       } else {
         // It's a nested category (like text) that doesn't contain light/dark keys directly
@@ -292,14 +299,8 @@ const resolveColors = (
   return resolved;
 };
 
-export const getTheme = (
-  mode: ThemeMode,
-  systemScheme: 'light' | 'dark' = 'light',
-) => {
-  const actualMode =
-    mode === 'system'
-      ? systemScheme
-      : (mode as 'light' | 'dark' | 'highContrast');
+export const getTheme = (mode: ThemeMode, systemScheme: 'light' | 'dark' = 'light') => {
+  const actualMode = mode === 'system' ? systemScheme : (mode as 'light' | 'dark' | 'highContrast');
   const palette = mode === 'highContrast' ? highContrastColors : colors;
 
   const selectedColors = resolveColors(palette, actualMode);
@@ -334,13 +335,9 @@ const theme = {
 
 export type Theme = typeof theme;
 
-export function useAppTheme(
-  mode: ThemeMode = 'system',
-  isHighContrast: boolean = false,
-) {
+export function useAppTheme(mode: ThemeMode = 'system', isHighContrast: boolean = false) {
   const colorScheme = useColorScheme();
-  const systemMode: 'light' | 'dark' =
-    colorScheme === 'dark' ? 'dark' : 'light';
+  const systemMode: 'light' | 'dark' = colorScheme === 'dark' ? 'dark' : 'light';
 
   if (isHighContrast) {
     return getTheme('highContrast', systemMode);

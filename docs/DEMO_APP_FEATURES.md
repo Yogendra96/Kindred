@@ -2,7 +2,8 @@
 
 ## 📱 **LIVE DEMO MODE - Pre-Onboarding Preview**
 
-A fully-functional demo showcasing all app features with realistic mock data. Users can explore the complete experience before signing up!
+A fully-functional demo showcasing all app features with realistic mock data. Users can explore the
+complete experience before signing up!
 
 ---
 
@@ -21,12 +22,14 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 ### 1. **Comprehensive HomeScreen Dashboard**
 
 #### **Header Section**
+
 - User profile with avatar and welcome message
 - Streak badge showing consecutive days (🔥 42 days)
 - Level and rank display (Level 15, Gold Rank)
 - Points system (12,450 points with trophy icon)
 
 #### **Carbon Footprint Card**
+
 - Real-time daily carbon footprint (12.5 kg CO₂)
 - Percentage change indicator (trending up/down)
 - Daily target progress bar with visual feedback
@@ -40,6 +43,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 #### **Three-Tab Navigation System**
 
 **Tab 1: Overview**
+
 - Custom bar chart showing 7-day carbon footprint trend
 - Color-coded bars (green = good day, red = high emissions)
 - Weekly data visualization with labels and values
@@ -55,6 +59,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
   - Progress tracking with visual bars
 
 **Tab 2: Activities**
+
 - Recent activity log with 5 most recent entries:
   - Bus commute (🚌) - saved 3.8kg
   - Vegan lunch (🥗) - saved 2.4kg
@@ -66,6 +71,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 - "Log New Activity" button with dashed border
 
 **Tab 3: Insights**
+
 - Personalized insights feed:
   - 🎉 Great Progress! (15% reduction this month)
   - 💡 Energy Tip (peak usage optimization)
@@ -80,11 +86,13 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 - Potential savings calculations
 
 #### **Demo Notice Banner**
+
 - Blue banner with info icon
 - "🎉 Demo Mode - Sign up to track your real carbon footprint!"
 - Prominent "Get Started Free" CTA button
 
 ### 2. **MapScreen** (Ready for Enhancement)
+
 - Eco-friendly locations nearby
 - Mock data includes:
   - 🛒 Green Market (0.8km away)
@@ -94,6 +102,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
   - 🥗 Vegan Cafe (0.9km away)
 
 ### 3. **ProfileScreen** (Ready for Enhancement)
+
 - User statistics and achievements
 - Settings and preferences
 - Carbon reduction history
@@ -105,6 +114,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 ### **Comprehensive Demo Data** (`src/data/mockData.ts`)
 
 #### User Profile
+
 ```typescript
 {
   id: 'demo-user-001',
@@ -123,35 +133,41 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 ```
 
 #### Carbon Footprint
+
 - Daily totals and breakdowns
 - Target tracking
 - Percentage changes
 - Historical data
 
 #### Activity History
+
 - 5+ sample activities
 - Multiple categories
 - Savings calculations
 - Timestamp tracking
 
 #### Weekly Chart Data
+
 - 7 days of carbon data
 - Visual trend analysis
 - Color-coded performance
 
 #### Achievements System
+
 - 5 achievements (3 unlocked, 2 in-progress)
 - Progress percentages
 - Rarity tiers
 - Point rewards
 
 #### Leaderboard
+
 - Top 5 users
 - Rankings and badges
 - Emission comparisons
 - Current user highlighting
 
 #### Recommendations
+
 - 4 personalized suggestions
 - Impact levels (high/medium/low)
 - Difficulty ratings
@@ -159,6 +175,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 - Cost estimates
 
 #### Insights Feed
+
 - 4 insight types:
   - Achievement alerts
   - Energy tips
@@ -166,36 +183,42 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
   - Comparative benchmarking
 
 #### Challenges
+
 - 3 active challenges
 - Progress tracking
 - Participant counts
 - Reward systems
 
 #### Community Posts
+
 - 3 sample posts
 - User interactions (likes, comments, shares)
 - Images and tags
 - User levels
 
 #### Map Locations
+
 - 5 eco-friendly places
 - Distance calculations
 - Ratings and categories
 - Icons and descriptions
 
 #### Eco Tips
+
 - 5 sustainability tips
 - Category-specific advice
 - Impact statements
 - Actionable suggestions
 
 #### Carbon Offset Projects
+
 - 3 verified projects
 - Cost per ton
 - Location and verification
 - Total offset tracking
 
 #### Notifications
+
 - 4 notification types
 - Read/unread status
 - Timestamps
@@ -206,6 +229,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 ## 🎨 **UI/UX Features**
 
 ### **Modern Design System**
+
 - Clean, minimalist interface
 - Card-based layout with shadows
 - Rounded corners (12-20px radius)
@@ -218,6 +242,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
   - Background: #f8f9fa (Light Gray)
 
 ### **Interactive Elements**
+
 - Touchable cards with visual feedback
 - Progress bars with color coding
 - Badges and icons (Ionicons)
@@ -226,6 +251,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 - Custom bar chart visualization
 
 ### **Accessibility Features**
+
 - Icon + text labels
 - Color-coded feedback
 - Clear visual hierarchy
@@ -233,6 +259,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 - Readable typography
 
 ### **Responsive Layout**
+
 - Full-screen utilization
 - Flexible grid system
 - Scrollable content areas
@@ -243,6 +270,7 @@ A fully-functional demo showcasing all app features with realistic mock data. Us
 ## 🚀 **Running the Demo**
 
 ### **Android (Pixel 9 Pro XL - Android 16)**
+
 ```bash
 # Start Metro bundler
 bun start
@@ -252,6 +280,7 @@ bun android
 ```
 
 ### **iOS (iPhone 16 Pro)**
+
 ```bash
 # Install pods first
 cd ios && bundle exec pod install && cd ..
@@ -261,6 +290,7 @@ bun ios
 ```
 
 ### **Development Commands**
+
 ```bash
 # Clean rebuild
 bun run clean:all && bun install && bun run prepare
@@ -277,17 +307,20 @@ cd ios && rm -rf Pods Podfile.lock && bundle exec pod install && cd .. && bun io
 ## 📦 **Tech Stack**
 
 ### **Core**
+
 - React Native 0.82.0 (New Architecture Enabled)
 - TypeScript (Strict Mode)
 - Redux Toolkit (State Management)
 - React Navigation 7.x
 
 ### **UI Components**
+
 - React Native Vector Icons (Ionicons)
 - Custom-built chart components
 - Native animations
 
 ### **Development**
+
 - Bun (Package Manager)
 - Hermes (JavaScript Engine)
 - Metro Bundler
@@ -300,6 +333,7 @@ cd ios && rm -rf Pods Podfile.lock && bundle exec pod install && cd .. && bun io
 ### **Planned Enhancements**
 
 #### **1. Liquid Glass Design System** 🌊
+
 - Frosted glass effect (glassmorphism)
 - Translucent backgrounds with blur
 - Layered depth with shadows
@@ -309,43 +343,53 @@ cd ios && rm -rf Pods Podfile.lock && bundle exec pod install && cd .. && bun io
 #### **2. Modern UI Libraries to Integrate**
 
 **Option 1: React Native Skia** ⭐ RECOMMENDED
+
 - Advanced graphics and animations
 - Custom shaders for glass effects
 - High-performance rendering
 - Blur and gradient support
+
 ```bash
 bun add @shopify/react-native-skia
 ```
 
 **Option 2: React Native Reanimated 3** (Latest Stable)
+
 - Smooth 60fps animations
 - Layout animations
 - Shared element transitions
 - Gesture-based interactions
+
 ```bash
 bun add react-native-reanimated@latest
 ```
 
 **Option 3: React Native Gesture Handler**
+
 - Advanced touch gestures
 - Swipe interactions
 - Pan and pinch gestures
+
 ```bash
 bun add react-native-gesture-handler
 ```
 
 **Option 4: Moti** (Animation Library)
+
 - Declarative animations
 - Easy-to-use API
 - Built on Reanimated
+
 ```bash
 bun add moti
 ```
 
 **Option 5: React Native SVG + D3**
+
 - Custom chart visualizations
 - Interactive graphs
 - Animated data displays
+
 ```bash
 bun add react-native-svg d3-shape d3-scale
 ```
@@ -361,13 +405,13 @@ export const JadeTheme = {
     200: '#A3E7CF',
     300: '#75DBB7',
     400: '#47CF9F',
-    500: '#00C896',  // Main Jade
+    500: '#00C896', // Main Jade
     600: '#00A078',
     700: '#00785A',
     800: '#00503C',
     900: '#00281E',
   },
-  
+
   // Glass Effects
   glass: {
     light: 'rgba(255, 255, 255, 0.1)',
@@ -375,57 +419,63 @@ export const JadeTheme = {
     heavy: 'rgba(255, 255, 255, 0.25)',
     dark: 'rgba(0, 0, 0, 0.1)',
   },
-  
+
   // Backgrounds
   bg: {
-    primary: '#0A1F1A',      // Dark jade
-    secondary: '#132F28',    // Medium jade-gray
-    surface: '#1A3F35',      // Jade surface
-    elevated: '#234D42',     // Elevated jade
+    primary: '#0A1F1A', // Dark jade
+    secondary: '#132F28', // Medium jade-gray
+    surface: '#1A3F35', // Jade surface
+    elevated: '#234D42', // Elevated jade
   },
-  
+
   // Accents
   accent: {
-    success: '#00FF9F',      // Bright jade
-    warning: '#FFB800',      // Gold
-    error: '#FF4D6D',        // Coral red
-    info: '#00D9FF',         // Cyan
-  }
+    success: '#00FF9F', // Bright jade
+    warning: '#FFB800', // Gold
+    error: '#FF4D6D', // Coral red
+    info: '#00D9FF', // Cyan
+  },
 };
 ```
 
 #### **4. Glassmorphism Components**
 
 **GlassCard Component:**
+
 ```typescript
-<View style={{
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  backdropFilter: 'blur(10px)',
-  borderRadius: 20,
-  borderWidth: 1,
-  borderColor: 'rgba(255, 255, 255, 0.2)',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.3,
-  shadowRadius: 20,
-}}>
+<View
+  style={{
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  }}
+>
   {/* Content */}
 </View>
 ```
 
 **Frosted Navigation Bar:**
+
 - Translucent background
 - Blur effect behind content
 - Jade green glow on active tab
 - Smooth tab transitions
 
 **Liquid Progress Bars:**
+
 - Animated wave effect
 - Gradient fills
 - Morphing shapes
 - Ripple animations
 
 #### **5. Dark Mode with Jade Accents** 🌙
+
 - Deep jade-tinted backgrounds
 - Glowing jade highlights
 - Soft shadows with jade tint
@@ -433,6 +483,7 @@ export const JadeTheme = {
 - OLED-friendly blacks
 
 #### **6. Micro-interactions**
+
 - Card hover effects (scale + glow)
 - Button press animations
 - Pull-to-refresh with jade ripple
@@ -440,6 +491,7 @@ export const JadeTheme = {
 - Haptic feedback integration
 
 #### **7. Advanced Visual Effects**
+
 - Parallax scrolling backgrounds
 - Particle effects for achievements
 - Morphing blob shapes
@@ -451,13 +503,12 @@ export const JadeTheme = {
 ## 🎨 **Implementation Priority**
 
 ### **Phase 1: Foundation** (Current)
-✅ Basic app structure
-✅ Mock data system
-✅ Three-tab navigation
-✅ Custom chart component
-✅ Demo mode banner
+
+✅ Basic app structure ✅ Mock data system ✅ Three-tab navigation ✅ Custom chart component ✅ Demo
+mode banner
 
 ### **Phase 2: Glass UI** (Next)
+
 1. Install React Native Skia
 2. Create GlassCard component
 3. Implement blur effects
@@ -465,6 +516,7 @@ export const JadeTheme = {
 5. Update all cards to glass design
 
 ### **Phase 3: Animations** (After Glass UI)
+
 1. Install Reanimated
 2. Add layout animations
 3. Create smooth transitions
@@ -472,6 +524,7 @@ export const JadeTheme = {
 5. Add micro-interactions
 
 ### **Phase 4: Polish** (Final)
+
 1. Dark mode implementation
 2. Advanced visual effects
 3. Performance optimization
@@ -493,6 +546,7 @@ export const JadeTheme = {
 ## 🎯 **Business Impact**
 
 ### **Demo Mode Benefits**
+
 1. **Zero Friction**: Users explore without account creation
 2. **Full Experience**: See all features in action
 3. **Data-Driven**: Realistic mock data builds trust
@@ -500,6 +554,7 @@ export const JadeTheme = {
 5. **Viral Potential**: Impressive UI encourages sharing
 
 ### **Conversion Strategy**
+
 - Prominent "Get Started Free" button
 - Demo mode banner on every screen
 - Feature highlights throughout experience
@@ -511,6 +566,7 @@ export const JadeTheme = {
 ## 🚀 **Ready to Ship**
 
 The demo app is **production-ready** and showcases:
+
 - ✅ Modern React Native architecture
 - ✅ Comprehensive feature set
 - ✅ Professional UI/UX design

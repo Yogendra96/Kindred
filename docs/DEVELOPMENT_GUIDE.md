@@ -23,6 +23,7 @@
 ### Initial Setup
 
 1. **Clone and install dependencies**:
+
    ```bash
    git clone <repository-url>
    cd Kindred
@@ -30,12 +31,14 @@
    ```
 
 2. **Environment configuration**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration values
    ```
 
 3. **iOS setup**:
+
    ```bash
    bun run pod:install
    ```
@@ -48,24 +51,28 @@
 ### Available Scripts
 
 #### Development
+
 - `bun start` - Start Metro bundler
 - `bun run android` - Run on Android
 - `bun run ios` - Run on iOS
 - `bun run web` - Run on web (if configured)
 
 #### Code Quality
+
 - `bun run lint` - Run ESLint
 - `bun run lint:fix` - Fix ESLint issues
 - `bun run format` - Format code with Prettier
 - `bun run type-check` - Run TypeScript type checking
 
 #### Testing
+
 - `bun run test` - Run unit tests
 - `bun run test:watch` - Run tests in watch mode
 - `bun run test:coverage` - Run tests with coverage
 - `bun run test:e2e` - Run end-to-end tests
 
 #### Build
+
 - `bun run android:build` - Build Android APK
 - `bun run android:build:release` - Build Android release
 - `bun run ios:build` - Build iOS app
@@ -77,13 +84,14 @@
 
 - **main**: Production-ready code
 - **develop**: Integration branch for features
-- **feature/***: Feature development branches
-- **hotfix/***: Critical bug fixes
-- **release/***: Release preparation branches
+- **feature/\***: Feature development branches
+- **hotfix/\***: Critical bug fixes
+- **release/\***: Release preparation branches
 
 ### Feature Development Process
 
 1. **Create feature branch**:
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -91,6 +99,7 @@
    ```
 
 2. **Development cycle**:
+
    ```bash
    # Make changes
    bun run lint:fix
@@ -101,6 +110,7 @@
    ```
 
 3. **Pre-commit hooks** (automatically run):
+
    - ESLint with auto-fix
    - Prettier formatting
    - Type checking
@@ -203,16 +213,14 @@ import ExampleComponent from '../ExampleComponent';
 
 describe('ExampleComponent', () => {
   it('renders correctly', () => {
-    const { getByText } = render(<ExampleComponent title="Test" />);
+    const { getByText } = render(<ExampleComponent title='Test' />);
     expect(getByText('Test')).toBeTruthy();
   });
 
   it('calls onPress when pressed', () => {
     const mockOnPress = jest.fn();
-    const { getByText } = render(
-      <ExampleComponent title="Test" onPress={mockOnPress} />
-    );
-    
+    const { getByText } = render(<ExampleComponent title='Test' onPress={mockOnPress} />);
+
     fireEvent.press(getByText('Test'));
     expect(mockOnPress).toHaveBeenCalled();
   });
@@ -289,6 +297,7 @@ bun run ios:build:release
 ### Common Issues
 
 #### Metro Bundler Issues
+
 ```bash
 # Clear Metro cache
 bun run start:reset
@@ -298,6 +307,7 @@ bun run clean:all
 ```
 
 #### Android Build Issues
+
 ```bash
 # Clean Android build
 bun run android:clean
@@ -307,6 +317,7 @@ cd android && ./gradlew clean
 ```
 
 #### iOS Build Issues
+
 ```bash
 # Clean iOS build
 bun run ios:clean
@@ -316,6 +327,7 @@ bun run pod:clean && bun run pod:install
 ```
 
 #### Dependency Issues
+
 ```bash
 # Clean install
 rm -rf node_modules bun.lockb
@@ -375,6 +387,7 @@ src/
 ## Quick Reference
 
 ### Essential Commands
+
 ```bash
 # Start development
 bun start
@@ -393,6 +406,7 @@ bun run android:build:release
 ```
 
 ### Important Files
+
 - `.env` - Environment configuration
 - `metro.config.js` - Metro bundler configuration
 - `babel.config.js` - Babel transformation configuration
@@ -402,4 +416,4 @@ bun run android:build:release
 
 ---
 
-*This guide should be updated as the project evolves and new practices are adopted.*
+_This guide should be updated as the project evolves and new practices are adopted._

@@ -1,0 +1,15 @@
+appId: com.kindred
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Profile"
+    timeout: 60000
+- tapOn: "Profile"
+- scrollUntilVisible:
+    element:
+      text: "Data Connections"
+    direction: DOWN
+- tapOn: "Data Connections"
+- assertVisible: "Connect Email Account"
+- tapOn: "Connect Email Account"
+- assertVisible: "Connected"

@@ -15,7 +15,9 @@
 
 ## Introduction
 
-This guide provides comprehensive strategies for optimizing the performance of the Kindred React Native application. Performance optimization should be an ongoing process throughout the development lifecycle.
+This guide provides comprehensive strategies for optimizing the performance of the Kindred React
+Native application. Performance optimization should be an ongoing process throughout the development
+lifecycle.
 
 ## Build Performance
 
@@ -116,9 +118,10 @@ getItemLayout={(data, index) => (
 - **Optimize list item rendering**:
 
 ```jsx
-const renderItem = useCallback(({ item }) => (
-  <Item item={item} onPress={handlePress} />
-), [handlePress]);
+const renderItem = useCallback(
+  ({ item }) => <Item item={item} onPress={handlePress} />,
+  [handlePress],
+);
 ```
 
 ## Memory Management
@@ -144,7 +147,9 @@ useEffect(() => {
       setData(result);
     }
   });
-  return () => { isMounted = false; };
+  return () => {
+    isMounted = false;
+  };
 }, []);
 ```
 
@@ -181,7 +186,7 @@ import FastImage from 'react-native-fast-image';
 <FastImage
   source={{ uri: 'https://example.com/image.jpg', cache: FastImage.cacheControl.immutable }}
   resizeMode={FastImage.resizeMode.cover}
-/>
+/>;
 ```
 
 ## UI Performance
@@ -220,9 +225,8 @@ import { createSelector } from '@reduxjs/toolkit';
 const selectItems = state => state.items;
 const selectFilter = state => state.filter;
 
-const selectFilteredItems = createSelector(
-  [selectItems, selectFilter],
-  (items, filter) => items.filter(item => item.type === filter)
+const selectFilteredItems = createSelector([selectItems, selectFilter], (items, filter) =>
+  items.filter(item => item.type === filter),
 );
 ```
 
@@ -292,4 +296,5 @@ const selectFilteredItems = createSelector(
 
 ---
 
-*This guide is a living document and should be updated as new performance optimization techniques and best practices emerge.*
+_This guide is a living document and should be updated as new performance optimization techniques
+and best practices emerge._

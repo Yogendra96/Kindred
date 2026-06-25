@@ -1,10 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import axios, {
-  type AxiosInstance,
-  type AxiosResponse,
-  type AxiosError,
-} from 'axios';
+import axios, { type AxiosInstance, type AxiosResponse, type AxiosError } from 'axios';
 import { CARBON_API_KEY, CARBON_API_BASE_URL } from '@env';
 import loggingService from './/LoggerService';
 
@@ -141,13 +137,11 @@ interface APIErrorResponse {
   details?: any;
 }
 
-class CarbonAPIService {
+export class CarbonAPIService {
   private api: AxiosInstance;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private cache: Map<string, { data: any; timestamp: number; ttl: number }> =
-    new Map();
-  private rateLimitTracker: Map<string, { count: number; resetTime: number }> =
-    new Map();
+  private cache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
+  private rateLimitTracker: Map<string, { count: number; resetTime: number }> = new Map();
   private logger: typeof loggingService;
 
   constructor() {
@@ -230,13 +224,8 @@ class CarbonAPIService {
   }
 
   // Emission Factors
-  async getEmissionFactors(
-    category?: string,
-    region?: string,
-  ): Promise<CarbonEmissionFactor[]> {
-    const cacheKey = `emission-factors-${category || 'all'}-${
-      region || 'global'
-    }`;
+  async getEmissionFactors(category?: string, region?: string): Promise<CarbonEmissionFactor[]> {
+    const cacheKey = `emission-factors-${category || 'all'}-${region || 'global'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 
@@ -285,9 +274,7 @@ class CarbonAPIService {
   }
 
   // Carbon Calculations
-  async calculateEmissions(
-    request: CarbonCalculationRequest,
-  ): Promise<CarbonCalculationResponse> {
+  async calculateEmissions(request: CarbonCalculationRequest): Promise<CarbonCalculationResponse> {
     const startTime = Date.now();
 
     try {
@@ -350,9 +337,7 @@ class CarbonAPIService {
   }
 
   // Product Carbon Footprint
-  async getProductFootprint(
-    barcode: string,
-  ): Promise<ProductCarbonFootprint | null> {
+  async getProductFootprint(barcode: string): Promise<ProductCarbonFootprint | null> {
     const cacheKey = `product-footprint-${barcode}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -396,9 +381,7 @@ class CarbonAPIService {
     location?: string,
     maxPrice?: number,
   ): Promise<CarbonOffsetProject[]> {
-    const cacheKey = `offset-projects-${type || 'all'}-${location || 'all'}-${
-      maxPrice || 'any'
-    }`;
+    const cacheKey = `offset-projects-${type || 'all'}-${location || 'all'}-${maxPrice || 'any'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 

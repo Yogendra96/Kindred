@@ -12,6 +12,8 @@ import VeganCalculatorScreen from '../screens/main/VeganCalculatorScreen';
 import AnalyticsDashboardScreen from '../screens/main/AnalyticsDashboardScreen';
 import LearningCenterScreen from '../screens/main/LearningCenterScreen';
 import SmartDevicesScreen from '../screens/main/SmartDevicesScreen';
+import DataConnectionsScreen from '../screens/main/DataConnectionsScreen';
+import OffsetScreen from '../screens/main/OffsetScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
@@ -31,18 +33,20 @@ const MainTabs = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           const weight = focused ? 'fill' : 'regular';
-          
+
           if (route.name === 'Home') return <House size={size} color={color} weight={weight} />;
           if (route.name === 'Map') return <MapTrifold size={size} color={color} weight={weight} />;
           if (route.name === 'Profile') return <User size={size} color={color} weight={weight} />;
           if (route.name === 'Social') return <Users size={size} color={color} weight={weight} />;
-          if (route.name === 'Market') return <ShoppingCart size={size} color={color} weight={weight} />;
+          if (route.name === 'Market')
+            return <ShoppingCart size={size} color={color} weight={weight} />;
           if (route.name === 'Awards') return <Trophy size={size} color={color} weight={weight} />;
-          
+
           return null;
         },
         tabBarActiveTintColor: '#007AFF', // You could use spatialColors.primary here
         tabBarInactiveTintColor: 'gray',
+        tabBarTestID: `${route.name.toLowerCase()}-tab`,
         tabBarStyle: {
           backgroundColor: '#1C1C1E', // Dark mode support
           borderTopColor: 'rgba(255,255,255,0.1)',
@@ -74,20 +78,16 @@ const AppNavigator = () => {
           headerShown: false,
         }}
       >
-        <Stack.Screen name='MainTabs' component={MainTabs} />
+        <Stack.Screen name='MainTabs' component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name='CarbonTwin' component={CarbonTwinScreen} />
         <Stack.Screen name='VisionCamera' component={VisionCameraScreen} />
-        <Stack.Screen
-          name='Verification'
-          component={VerificationCenterScreen}
-        />
-        <Stack.Screen
-          name='VeganCalculator'
-          component={VeganCalculatorScreen}
-        />
+        <Stack.Screen name='Verification' component={VerificationCenterScreen} />
+        <Stack.Screen name='VeganCalculator' component={VeganCalculatorScreen} />
         <Stack.Screen name='Analytics' component={AnalyticsDashboardScreen} />
         <Stack.Screen name='LearningCenter' component={LearningCenterScreen} />
         <Stack.Screen name='SmartDevices' component={SmartDevicesScreen} />
+        <Stack.Screen name='DataConnections' component={DataConnectionsScreen} />
+        <Stack.Screen name='Offset' component={OffsetScreen} />
       </Stack.Navigator>
     </AppErrorBoundary>
   );

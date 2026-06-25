@@ -397,3 +397,10 @@ BOOTUP_ISSUE_RESOLUTION_LOG.md
 *.backup
 *.old
 
+
+# Temp debug files
+hierarchy.json
+logcat.txt
+test_output.txt
+silent_test_output.txt
+capture_android.sh

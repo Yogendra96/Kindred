@@ -245,26 +245,11 @@ Enable via `.env` feature flags: `FEATURE_SKIA_DASHBOARD`, `FEATURE_MOTI_ANIMATI
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation Map
 
-### Core Documentation
+We have over 20+ specialized guides, technical specs, and issue logs in our documentation folder.
 
-- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Current project state and metrics
-- **[PROJECT_UNDERSTANDING.md](./PROJECT_UNDERSTANDING.md)** - Complete codebase guide
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Architecture details with diagrams
-- **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidelines
-
-### Development Guides
-
-- **[DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)** - Extended development practices
-- **[PERFORMANCE_GUIDE.md](./PERFORMANCE_GUIDE.md)** - Performance optimization
-- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
-
-### Project Management
-
-- **[CURRENT_TODOS.json](./CURRENT_TODOS.json)** - Prioritized task list
-- **[INTEGRATION_ISSUES.md](./INTEGRATION_ISSUES.md)** - Known issues and solutions
-- **[ENHANCEMENT_ROADMAP.md](./ENHANCEMENT_ROADMAP.md)** - Feature roadmap
+👉 **[Click here to view the complete Map of Docs](./docs/README.md)**
 
 ---
 
