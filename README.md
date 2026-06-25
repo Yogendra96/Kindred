@@ -298,9 +298,72 @@ KindredFixed/
 5. **CommunityVerificationNetwork** (2,029 lines) - Decentralized trust
 6. **NextGenInteractionEngine** (1,949 lines) - Multi-modal interactions
 
-### 🛡️ Security Services
+### 📚 Documentation Map
 
-- **ZeroTrustSecurityService** - Multi-layered behavioral analysis
+The `docs/` directory contains comprehensive guides for the project:
+
+### Project Management & Status
+
+- [Project Overview](file:///Users/yogibairagi/Developer/Kindred/docs/PROJECT_OVERVIEW.md) - The
+  high-level view of Kindred's goals and functionality.
+- [Project Status](file:///Users/yogibairagi/Developer/Kindred/docs/PROJECT_STATUS.md) - Current
+  state of all features and components.
+- [Enhancement Roadmap](file:///Users/yogibairagi/Developer/Kindred/docs/ENHANCEMENT_ROADMAP.md) -
+  Future feature planning (Path B and beyond).
+- [Issues To Fix](file:///Users/yogibairagi/Developer/Kindred/docs/ISSUES_TO_FIX.md) - Known bugs
+  and technical debt items.
+- [Implementation Checklist](file:///Users/yogibairagi/Developer/Kindred/docs/IMPLEMENTATION_CHECKLIST.md) -
+  Checklists for feature completion.
+- [Execution Summary](file:///Users/yogibairagi/Developer/Kindred/docs/EXECUTION_SUMMARY.md) - Log
+  of completed significant milestones.
+
+### Architecture & Development
+
+- [Architecture](file:///Users/yogibairagi/Developer/Kindred/docs/ARCHITECTURE.md) - Deep dive into
+  Kindred's technical stack and patterns.
+- [Development Guide](file:///Users/yogibairagi/Developer/Kindred/docs/DEVELOPMENT_GUIDE.md) - Guide
+  on how to write code for Kindred.
+- [Development](file:///Users/yogibairagi/Developer/Kindred/docs/DEVELOPMENT.md) - General developer
+  onboarding instructions.
+- [Complete Project Guide](file:///Users/yogibairagi/Developer/Kindred/docs/COMPLETE_PROJECT_GUIDE.md) -
+  End-to-end documentation of project setup and concepts.
+- [TypeScript Fixes Todo](file:///Users/yogibairagi/Developer/Kindred/docs/TYPESCRIPT_FIXES_TODO.md) -
+  Log of TypeScript strictness resolutions.
+- [React Native Upgrade](file:///Users/yogibairagi/Developer/Kindred/docs/REACT_NATIVE_UPGRADE.md) -
+  Documentation on upgrading React Native to 0.74+.
+- [Upgrade Summary](file:///Users/yogibairagi/Developer/Kindred/docs/UPGRADE_SUMMARY.md) - Summary
+  of recent package upgrades.
+
+### Features & Integrations
+
+- [Demo App Features](file:///Users/yogibairagi/Developer/Kindred/docs/DEMO_APP_FEATURES.md) -
+  Details on mock features for demo purposes.
+- [Game Theory Integration](file:///Users/yogibairagi/Developer/Kindred/docs/GAME_THEORY_INTEGRATION.md) -
+  Details on gamification and psychology.
+- [Carbon API Quickstart](file:///Users/yogibairagi/Developer/Kindred/docs/CARBON_API_QUICKSTART.md) -
+  How to connect to the Carbon API.
+- [Carbon API Setup](file:///Users/yogibairagi/Developer/Kindred/docs/CARBON_API_SETUP.md) -
+  Detailed setup for Carbon Integrations.
+- [Integration Issues](file:///Users/yogibairagi/Developer/Kindred/docs/INTEGRATION_ISSUES.md) -
+  Troubleshooting third-party integrations.
+
+### Debugging & Troubleshooting
+
+- [Troubleshooting](file:///Users/yogibairagi/Developer/Kindred/docs/TROUBLESHOOTING.md) - Solutions
+  for common crashes and build errors.
+- [Performance Guide](file:///Users/yogibairagi/Developer/Kindred/docs/PERFORMANCE_GUIDE.md) - How
+  to optimize React Native app performance.
+- [Bootup Issue Resolution Log](file:///Users/yogibairagi/Developer/Kindred/docs/BOOTUP_ISSUE_RESOLUTION_LOG.md) -
+  History of resolved critical startup bugs.
+- [Build Verification](file:///Users/yogibairagi/Developer/Kindred/docs/BUILD_VERIFICATION.md) -
+  Scripts and processes to verify successful builds.
+
+---
+
+## 🔒 Security & Privacy
+
+- **Zero Trust Security:** `ZeroTrustSecurityService.ts` handles end-to-end encryption and secure
+  storage.
 - **BiometricAuthenticationService** (1,351 lines) - Multi-modal biometrics
 - **VulnerabilityScanner** (1,503 lines) - AI-powered penetration testing
 

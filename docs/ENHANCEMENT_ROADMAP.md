@@ -7,6 +7,34 @@ industry-leading.
 
 ---
 
+## 🎯 Path B: Next-Gen Innovation (Up Next)
+
+_The following features are slated for immediate development in Path B to establish Kindred as an
+industry differentiator._
+
+### 1. Real-Time Social & Gamification (WebSockets)
+
+- **Objective:** Build real-time leaderboards and live community challenges.
+- **Tech Stack:** Socket.io / Native WebSockets, Redux real-time middleware.
+- **Differentiator:** Instant eco-nudge notifications, live progress tracking against friends, and
+  multiplayer environmental missions.
+
+### 2. AI Vision for Waste Categorization (TensorFlow.js)
+
+- **Objective:** Camera integration to scan products/waste for automatic carbon footprinting.
+- **Tech Stack:** `ComputerVisionCarbonEngine`, TensorFlow.js for React Native, device camera APIs.
+- **Differentiator:** Frictionless logging. Users just point their camera at their meal or
+  recycling, and the AI logs the footprint instantly.
+
+### 3. Smart Device & Health Integrations (IoT)
+
+- **Objective:** Passive carbon tracking through smart home devices and wearables.
+- **Tech Stack:** Apple HealthKit / Google Fit (transport modes), Smart Thermostat APIs.
+- **Differentiator:** Zero-touch tracking. The app automatically knows if the user walked instead of
+  drove, or reduced home energy.
+
+---
+
 ## 🎯 Phase 1: High-Impact Features (Priority)
 
 ### 1. Real-Time Social Features
