@@ -14,13 +14,35 @@ import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'reac
 import { Medal, UserCircle, Handshake, Users, Lightning, Plus } from 'phosphor-react-native';
 
 const GlassCard = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderRadius: 16, overflow: 'hidden' }]}>
+  <View
+    style={[
+      style,
+      {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        borderRadius: 16,
+        overflow: 'hidden',
+      },
+    ]}
+  >
     {children}
   </View>
 );
 
 const GlassBadge = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderRadius: 12, overflow: 'hidden' }]}>
+  <View
+    style={[
+      style,
+      {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 1,
+        borderRadius: 12,
+        overflow: 'hidden',
+      },
+    ]}
+  >
     {children}
   </View>
 );
@@ -216,26 +238,14 @@ const GROUPS = [
 
 const MEDAL = ['🥇', '🥈', '🥉'];
 
-const LeaderboardRow = ({
-  item,
-  index,
-}: {
-  item: (typeof LEADERBOARD)[0];
-  index: number;
-}) => {
+const LeaderboardRow = ({ item, index }: { item: (typeof LEADERBOARD)[0]; index: number }) => {
   const isTop3 = index < 3;
   return (
-    <View
-      style={[
-        styles.lbRow,
-        item.you && styles.lbRowYou,
-        isTop3 && styles.lbRowTop,
-      ]}
-    >
-      <Text style={styles.lbRank}>
-        {isTop3 ? MEDAL[index] : `#${index + 1}`}
-      </Text>
-      <View style={styles.lbAvatarWrapper}><Text style={styles.lbAvatar}>{item.avatar}</Text></View>
+    <View style={[styles.lbRow, item.you && styles.lbRowYou, isTop3 && styles.lbRowTop]}>
+      <Text style={styles.lbRank}>{isTop3 ? MEDAL[index] : `#${index + 1}`}</Text>
+      <View style={styles.lbAvatarWrapper}>
+        <Text style={styles.lbAvatar}>{item.avatar}</Text>
+      </View>
       <View style={styles.lbInfo}>
         <Text style={[styles.lbName, item.you && styles.lbNameYou]}>
           {item.name} {item.you && '(You)'}
@@ -249,13 +259,7 @@ const LeaderboardRow = ({
   );
 };
 
-const ProgressBar = ({
-  progress,
-  color = '#38EF7D',
-}: {
-  progress: number;
-  color?: string;
-}) => (
+const ProgressBar = ({ progress, color = '#38EF7D' }: { progress: number; color?: string }) => (
   <View style={styles.progressTrack}>
     <View
       style={[
@@ -285,7 +289,9 @@ const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
   return (
     <GlassCard style={styles.challengeCard}>
       <View style={styles.challengeHeader}>
-        <View style={styles.challengeEmojiWrapper}><Text style={styles.challengeEmoji}>{item.emoji}</Text></View>
+        <View style={styles.challengeEmojiWrapper}>
+          <Text style={styles.challengeEmoji}>{item.emoji}</Text>
+        </View>
         <View style={{ flex: 1 }}>
           <View style={styles.challengeTitleRow}>
             <Text style={styles.challengeTitle} numberOfLines={1}>
@@ -300,9 +306,7 @@ const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
                 },
               ]}
             >
-              <Text style={[styles.typeText, { color: item.typeColor }]}>
-                {item.type}
-              </Text>
+              <Text style={[styles.typeText, { color: item.typeColor }]}>{item.type}</Text>
             </View>
           </View>
           <Text style={styles.challengeDesc} numberOfLines={2}>
@@ -314,9 +318,7 @@ const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
       <ProgressBar progress={item.progress} color={item.typeColor} />
 
       <View style={styles.challengeMeta}>
-        <Text style={styles.metaText}>
-          👥 {item.participants.toLocaleString()} participants
-        </Text>
+        <Text style={styles.metaText}>👥 {item.participants.toLocaleString()} participants</Text>
         <Text style={styles.metaText}>⏰ {item.daysLeft}d left</Text>
         <Text style={styles.metaText}>🎁 {item.reward}</Text>
       </View>
@@ -340,7 +342,9 @@ const GroupCard = ({ item }: { item: (typeof GROUPS)[0] }) => {
   return (
     <GlassCard style={styles.groupCard}>
       <View style={styles.groupHeader}>
-        <View style={styles.groupEmojiWrapper}><Text style={styles.groupEmoji}>{item.emoji}</Text></View>
+        <View style={styles.groupEmojiWrapper}>
+          <Text style={styles.groupEmoji}>{item.emoji}</Text>
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.groupName}>{item.name}</Text>
           <Text style={styles.groupMembers}>
@@ -408,12 +412,7 @@ const LeaderboardTab = () => {
             style={[styles.scopeBtn, scope === s && styles.scopeBtnActive]}
             onPress={() => setScope(s)}
           >
-            <Text
-              style={[
-                styles.scopeBtnText,
-                scope === s && styles.scopeBtnTextActive,
-              ]}
-            >
+            <Text style={[styles.scopeBtnText, scope === s && styles.scopeBtnTextActive]}>
               {s === 'friends' ? '👥 Friends' : '🌍 Global'}
             </Text>
           </TouchableOpacity>
@@ -424,9 +423,7 @@ const LeaderboardTab = () => {
       <View style={styles.yourRankCard}>
         <Text style={styles.yourRankLabel}>Your Rank</Text>
         <Text style={styles.yourRankValue}>#3</Text>
-        <Text style={styles.yourRankSub}>
-          214 pts behind #2 · Keep going! 💪
-        </Text>
+        <Text style={styles.yourRankSub}>214 pts behind #2 · Keep going! 💪</Text>
       </View>
 
       {/* List */}
@@ -443,8 +440,7 @@ const ChallengesTab = () => {
   const [filter, setFilter] = useState('All');
   const types = ['All', 'Daily', 'Weekly', 'Monthly', 'Global'];
 
-  const filtered =
-    filter === 'All' ? CHALLENGES : CHALLENGES.filter(c => c.type === filter);
+  const filtered = filter === 'All' ? CHALLENGES : CHALLENGES.filter(c => c.type === filter);
 
   return (
     <View style={{ flex: 1 }}>
@@ -461,11 +457,7 @@ const ChallengesTab = () => {
             style={[styles.pill, filter === t && styles.pillActive]}
             onPress={() => setFilter(t)}
           >
-            <Text
-              style={[styles.pillText, filter === t && styles.pillTextActive]}
-            >
-              {t}
-            </Text>
+            <Text style={[styles.pillText, filter === t && styles.pillTextActive]}>{t}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -501,20 +493,12 @@ const GroupsTab = () => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.tabContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <ScrollView contentContainerStyle={styles.tabContent} showsVerticalScrollIndicator={false}>
       {/* Create group CTA */}
       {!showCreate ? (
-        <TouchableOpacity
-          style={styles.createGroupBtn}
-          onPress={() => setShowCreate(true)}
-        >
-          <Plus size={20} color="#fff" weight="bold" style={{marginRight: 8}} />
-          <Text style={styles.createGroupText}>
-            Create Accountability Group
-          </Text>
+        <TouchableOpacity style={styles.createGroupBtn} onPress={() => setShowCreate(true)}>
+          <Plus size={20} color='#fff' weight='bold' style={{ marginRight: 8 }} />
+          <Text style={styles.createGroupText}>Create Accountability Group</Text>
         </TouchableOpacity>
       ) : (
         <GlassCard style={styles.createGroupForm}>
@@ -528,16 +512,10 @@ const GroupsTab = () => {
             autoFocus
           />
           <View style={styles.createGroupActions}>
-            <TouchableOpacity
-              style={styles.createGroupCancel}
-              onPress={() => setShowCreate(false)}
-            >
+            <TouchableOpacity style={styles.createGroupCancel} onPress={() => setShowCreate(false)}>
               <Text style={styles.createGroupCancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.createGroupSubmit}
-              onPress={handleCreate}
-            >
+            <TouchableOpacity style={styles.createGroupSubmit} onPress={handleCreate}>
               <Text style={styles.createGroupSubmitText}>Create</Text>
             </TouchableOpacity>
           </View>
@@ -553,35 +531,51 @@ const GroupsTab = () => {
 };
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
+import RealTimeSocialDashboard from '../../components/RealTimeSocialDashboard';
 
 const TABS = [
-  { key: 'Leaderboard', label: 'Leaderboard', icon: <Medal size={20} color="#38EF7D" weight="duotone" /> },
-  { key: 'Challenges', label: 'Challenges', icon: <Lightning size={20} color="#F2C94C" weight="duotone" /> },
-  { key: 'Groups', label: 'Groups', icon: <Users size={20} color="#2B86FA" weight="duotone" /> },
+  {
+    key: 'Live',
+    label: 'Live',
+    icon: <Lightning size={20} color='#FF2D55' weight='duotone' />,
+  },
+  {
+    key: 'Leaderboard',
+    label: 'Leaderboard',
+    icon: <Medal size={20} color='#38EF7D' weight='duotone' />,
+  },
+  {
+    key: 'Challenges',
+    label: 'Challenges',
+    icon: <Lightning size={20} color='#F2C94C' weight='duotone' />,
+  },
+  {
+    key: 'Groups',
+    label: 'Groups',
+    icon: <Users size={20} color='#2B86FA' weight='duotone' />,
+  },
 ];
 
 const SocialScreen = () => {
-  const [activeTab, setActiveTab] = useState('Leaderboard');
+  const [activeTab, setActiveTab] = useState('Live');
 
   return (
     <View style={styles.container}>
-      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
         <Defs>
-          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
-            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
-            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
+            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
+            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
+            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
           </SvgLinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
       </Svg>
 
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🌍 Community</Text>
-        <Text style={styles.subtitle}>
-          Challenge friends. Save the planet together.
-        </Text>
+        <Text style={styles.subtitle}>Challenge friends. Save the planet together.</Text>
       </View>
 
       {/* Tab bar */}
@@ -589,20 +583,12 @@ const SocialScreen = () => {
         {TABS.map(tab => (
           <TouchableOpacity
             key={tab.key}
-            style={[
-              styles.tabItem,
-              activeTab === tab.key && styles.tabItemActive,
-            ]}
+            style={[styles.tabItem, activeTab === tab.key && styles.tabItemActive]}
             onPress={() => setActiveTab(tab.key)}
           >
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               {tab.icon}
-              <Text
-                style={[
-                  styles.tabLabel,
-                  activeTab === tab.key && styles.tabLabelActive,
-                ]}
-              >
+              <Text style={[styles.tabLabel, activeTab === tab.key && styles.tabLabelActive]}>
                 {tab.label}
               </Text>
             </View>
@@ -615,6 +601,7 @@ const SocialScreen = () => {
         {activeTab === 'Leaderboard' && <LeaderboardTab />}
         {activeTab === 'Challenges' && <ChallengesTab />}
         {activeTab === 'Groups' && <GroupsTab />}
+        {activeTab === 'Live' && <RealTimeSocialDashboard />}
       </View>
     </View>
   );
@@ -649,7 +636,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 3,
   },
-  tabItemActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  tabItemActive: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
   tabLabel: {
     fontSize: 13,
     fontWeight: '600',
@@ -676,7 +667,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   scopeBtnActive: { backgroundColor: 'rgba(56,239,125,0.2)' },
-  scopeBtnText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  scopeBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.6)',
+  },
   scopeBtnTextActive: { color: '#38EF7D' },
   yourRankCard: {
     backgroundColor: 'rgba(56,239,125,0.1)',
@@ -710,7 +705,10 @@ const styles = StyleSheet.create({
     borderColor: '#38EF7D',
     backgroundColor: 'rgba(56,239,125,0.1)',
   },
-  lbRowTop: { backgroundColor: 'rgba(255, 215, 0, 0.05)', borderColor: 'rgba(255, 215, 0, 0.2)' },
+  lbRowTop: {
+    backgroundColor: 'rgba(255, 215, 0, 0.05)',
+    borderColor: 'rgba(255, 215, 0, 0.2)',
+  },
   lbRank: { fontSize: 20, width: 36, textAlign: 'center', color: '#fff' },
   lbAvatarWrapper: {
     width: 40,
@@ -739,7 +737,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  pillActive: { backgroundColor: 'rgba(56,239,125,0.2)', borderColor: '#38EF7D' },
+  pillActive: {
+    backgroundColor: 'rgba(56,239,125,0.2)',
+    borderColor: '#38EF7D',
+  },
   pillText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
   pillTextActive: { color: '#38EF7D', fontWeight: 'bold' },
   challengeCard: {
@@ -764,7 +765,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   challengeTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: '#fff' },
-  challengeDesc: { fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 18 },
+  challengeDesc: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+    lineHeight: 18,
+  },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -907,8 +912,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'center',
   },
-  groupStatDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 4 },
-  recentActivity: { backgroundColor: 'rgba(56,239,125,0.1)', borderRadius: 8, padding: 10 },
+  groupStatDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: 4,
+  },
+  recentActivity: {
+    backgroundColor: 'rgba(56,239,125,0.1)',
+    borderRadius: 8,
+    padding: 10,
+  },
   recentActivityText: { fontSize: 13, color: '#38EF7D' },
   nudgeBtn: {
     paddingHorizontal: 14,

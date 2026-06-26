@@ -135,6 +135,8 @@
     "react-native-vision-camera": "^4.7.3",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
+    "redux-persist-transform-compress": "^4.2.0",
+    "redux-persist-transform-filter": "^0.0.22",
     "reflect-metadata": "^0.2.2",
     "tsyringe": "^4.10.0",
     "zod": "^4.3.6"

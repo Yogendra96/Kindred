@@ -12,6 +12,7 @@ interface CarbonFootprint {
 interface HistoryEntry {
   date: string;
   footprint: CarbonFootprint;
+  pendingSync?: boolean; // true while the action is in the offline queue
 }
 
 export interface EcosystemState {
@@ -81,10 +82,7 @@ const carbonSlice = createSlice({
     setGoalsLoading: (state, action: PayloadAction<boolean>) => {
       state.loading.goals = action.payload;
     },
-    updateFootprint: (
-      state,
-      action: PayloadAction<Partial<CarbonFootprint>>,
-    ) => {
+    updateFootprint: (state, action: PayloadAction<Partial<CarbonFootprint>>) => {
       state.footprint = {
         ...state.footprint,
         ...action.payload,
@@ -98,18 +96,16 @@ const carbonSlice = createSlice({
       state.history = action.payload;
     },
     addHistoryEntry: (state, action: PayloadAction<HistoryEntry>) => {
-      state.history = [action.payload, ...state.history].slice(0, 30); // Keep last 30 days
+      const entry = {
+        ...action.payload,
+        pendingSync: action.payload.pendingSync ?? false,
+      };
+      state.history = [entry, ...state.history].slice(0, 30); // Keep last 30 days
     },
-    setGoals: (
-      state,
-      action: PayloadAction<{ target: number; deadline: string }>,
-    ) => {
+    setGoals: (state, action: PayloadAction<{ target: number; deadline: string }>) => {
       state.goals = action.payload;
     },
-    updateEcosystem: (
-      state,
-      action: PayloadAction<Partial<EcosystemState>>,
-    ) => {
+    updateEcosystem: (state, action: PayloadAction<Partial<EcosystemState>>) => {
       state.ecosystem = {
         ...state.ecosystem,
         ...action.payload,
@@ -118,6 +114,16 @@ const carbonSlice = createSlice({
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
+    },
+    /** Mark a history entry as synced (clears pendingSync flag) */
+    markEntrySynced: (state, action: PayloadAction<string>) => {
+      const entry = state.history.find(h => h.date === action.payload);
+      if (entry) entry.pendingSync = false;
+    },
+    /** Mark a history entry as pending sync */
+    markEntryPendingSync: (state, action: PayloadAction<string>) => {
+      const entry = state.history.find(h => h.date === action.payload);
+      if (entry) entry.pendingSync = true;
     },
     resetState: state => {
       Object.assign(state, initialState);
@@ -135,6 +141,8 @@ export const {
   setGoals,
   updateEcosystem,
   setError,
+  markEntrySynced,
+  markEntryPendingSync,
   resetState,
 } = carbonSlice.actions;
 

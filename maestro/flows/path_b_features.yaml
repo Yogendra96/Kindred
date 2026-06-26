@@ -1,0 +1,22 @@
+appId: com.kindred
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Home"
+    timeout: 30000
+
+# Test Path B: Real-Time Social Dashboard
+- tapOn: "Social"
+- assertVisible: "Live"
+- tapOn: "Live"
+- assertVisible: "Feed"
+
+# Test Path B: AI Vision Camera
+- tapOn: "Home"
+- swipe:
+    direction: UP
+- tapOn: "AI Vision"
+- assertVisible: "Smart Waste"
+- tapOn: "Smart Waste"
+- assertVisible: "Cancel"

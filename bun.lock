@@ -66,6 +66,8 @@
         "react-native-vision-camera": "^4.7.3",
         "react-redux": "^9.2.0",
         "redux-persist": "^6.0.0",
+        "redux-persist-transform-compress": "^4.2.0",
+        "redux-persist-transform-filter": "^0.0.22",
         "reflect-metadata": "^0.2.2",
         "tsyringe": "^4.10.0",
         "zod": "^4.3.6",
@@ -2072,6 +2074,8 @@
 
     "json-stable-stringify-without-jsonify": ["json-stable-stringify-without-jsonify@1.0.1", "", {}, "sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw=="],
 
+    "json-stringify-safe": ["json-stringify-safe@5.0.1", "", {}, "sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA=="],
+
     "json5": ["json5@2.2.3", "", { "bin": { "json5": "lib/cli.js" } }, "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg=="],
 
     "jsonfile": ["jsonfile@4.0.0", "", { "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg=="],
@@ -2607,6 +2611,10 @@
     "redux": ["redux@5.0.1", "", {}, "sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w=="],
 
     "redux-persist": ["redux-persist@6.0.0", "", { "peerDependencies": { "redux": ">4.0.0" } }, "sha512-71LLMbUq2r02ng2We9S215LtPu3fY0KgaGE0k8WRgl6RkqxtGfl7HUozz1Dftwsb0D/5mZ8dwAaPbtnzfvbEwQ=="],
+
+    "redux-persist-transform-compress": ["redux-persist-transform-compress@4.2.0", "", { "dependencies": { "json-stringify-safe": "^5.0.1", "lz-string": "^1.4.4" }, "peerDependencies": { "redux-persist": ">=4.0.0" } }, "sha512-sg+KIfMUlm3/N38/wlmr+ZqoF/7a2Q9MAjFdM/FOtfmlAfZQy0+LhUA+tDWCFgXqglViCtmivtmpWWwmNUGJuw=="],
+
+    "redux-persist-transform-filter": ["redux-persist-transform-filter@0.0.22", "", { "dependencies": { "lodash": "^4.17.21" }, "peerDependencies": { "redux": ">3.0.0", "redux-persist": "^3.4.0 || ^4 || ^5 || ^6" } }, "sha512-XtGN7UQ8w7b3qaxQfdYY1UmuYULqIIemD47IWxIyM8AOF48I6C74m9XxA7gQoC2nIi+rz4URi9Mye4fIbHhZPQ=="],
 
     "redux-thunk": ["redux-thunk@3.1.0", "", { "peerDependencies": { "redux": "^5.0.0" } }, "sha512-NW2r5T6ksUKXCabzhL9z+h206HQw/NJkcLm1GPImRQ8IzfXwRGqjVhKJGauHirT0DAuyy6hjdnMZaRoAcy0Klw=="],
 
