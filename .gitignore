@@ -404,3 +404,8 @@ logcat.txt
 test_output.txt
 silent_test_output.txt
 capture_android.sh
+
+# Google Services config files (credentials)
+ios/Kindred/GoogleService-Info.plist
+android/app/google-services.json
+
