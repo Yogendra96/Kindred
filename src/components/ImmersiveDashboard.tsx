@@ -87,9 +87,7 @@ export const ImmersiveDashboard: React.FC = () => {
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* 1. Dynamic Ambience (Sky/Fog) */}
       <LinearGradient
         colors={getSkyColors()}
@@ -103,42 +101,28 @@ export const ImmersiveDashboard: React.FC = () => {
           style={[
             styles.ground,
             {
-              backgroundColor: `rgba(46, 204, 113, ${
-                0.3 + ecosystem.health * 0.7
-              })`,
+              backgroundColor: `rgba(46, 204, 113, ${0.3 + ecosystem.health * 0.7})`,
             },
           ]}
         />
 
         {/* Trees (Instanced via mapped views for this prototype) */}
         <View style={styles.treeContainer}>
-          {Array.from({ length: Math.min(ecosystem.treeCount, 20) }).map(
-            (_, i) => (
-              <Animated.Text
-                key={i}
-                style={[
-                  styles.treeEmoji,
-                  { transform: [{ scale: treeScale }] },
-                ]}
-              >
-                🌳
-              </Animated.Text>
-            ),
-          )}
+          {Array.from({ length: Math.min(ecosystem.treeCount, 20) }).map((_, i) => (
+            <Animated.Text
+              key={i}
+              style={[styles.treeEmoji, { transform: [{ scale: treeScale }] }]}
+            >
+              🌳
+            </Animated.Text>
+          ))}
           {ecosystem.treeCount > 20 && (
-            <Text style={styles.moreTrees}>
-              +{ecosystem.treeCount - 20} more...
-            </Text>
+            <Text style={styles.moreTrees}>+{ecosystem.treeCount - 20} more...</Text>
           )}
         </View>
 
         {/* Water (Updated by waterClarity) */}
-        <View
-          style={[
-            styles.water,
-            { opacity: 0.5 + ecosystem.waterClarity * 0.5 },
-          ]}
-        />
+        <View style={[styles.water, { opacity: 0.5 + ecosystem.waterClarity * 0.5 }]} />
       </View>
 
       {/* 3. Feedback Overlay */}
@@ -154,9 +138,7 @@ export const ImmersiveDashboard: React.FC = () => {
       <View style={styles.hud}>
         <View style={styles.statBadge}>
           <Text style={styles.statLabel}>Health</Text>
-          <Text style={styles.statValue}>
-            {(ecosystem.health * 100).toFixed(0)}%
-          </Text>
+          <Text style={styles.statValue}>{(ecosystem.health * 100).toFixed(0)}%</Text>
         </View>
         <View style={styles.statBadge}>
           <Text style={styles.statLabel}>Trees</Text>

@@ -36,9 +36,7 @@ const RegisterScreen = () => {
     if (errors.length > 0) {
       setFormErrors(errors);
       AccessibilityInfo.announceForAccessibility(
-        `Form has ${errors.length} error${
-          errors.length > 1 ? 's' : ''
-        }: ${errors.join(', ')}`,
+        `Form has ${errors.length} error${errors.length > 1 ? 's' : ''}: ${errors.join(', ')}`,
       );
       return;
     }
@@ -47,21 +45,14 @@ const RegisterScreen = () => {
 
     try {
       setLoading(true);
-      const userCredential = await auth().createUserWithEmailAndPassword(
-        email,
-        password,
-      );
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       await userCredential.user.updateProfile({ displayName: name });
     } catch (error) {
       console.error('Error during registration:', error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'An error occurred during registration';
+        error instanceof Error ? error.message : 'An error occurred during registration';
       setFormErrors([errorMessage]);
-      AccessibilityInfo.announceForAccessibility(
-        `Registration failed: ${errorMessage}`,
-      );
+      AccessibilityInfo.announceForAccessibility(`Registration failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -80,11 +71,7 @@ const RegisterScreen = () => {
           accessibilityLabel='Kindred app logo'
           accessibilityRole='image'
         />
-        <Text
-          style={styles.title}
-          accessibilityRole='header'
-          accessibilityLevel={1}
-        >
+        <Text style={styles.title} accessibilityRole='header' accessibilityLevel={1}>
           Create Account
         </Text>
       </View>
@@ -93,11 +80,7 @@ const RegisterScreen = () => {
         {formErrors.length > 0 && (
           <View style={styles.errorContainer} accessibilityLiveRegion='polite'>
             {formErrors.map((error, index) => (
-              <Text
-                key={index}
-                style={styles.errorText}
-                accessibilityRole='text'
-              >
+              <Text key={index} style={styles.errorText} accessibilityRole='text'>
                 ⚠ {error}
               </Text>
             ))}
@@ -105,10 +88,7 @@ const RegisterScreen = () => {
         )}
 
         <TextInput
-          style={[
-            styles.input,
-            formErrors.some(e => e.includes('name')) && styles.inputError,
-          ]}
+          style={[styles.input, formErrors.some(e => e.includes('name')) && styles.inputError]}
           placeholder='Full Name'
           value={name}
           onChangeText={setName}
@@ -118,10 +98,7 @@ const RegisterScreen = () => {
           accessibilityInvalid={formErrors.some(e => e.includes('name'))}
         />
         <TextInput
-          style={[
-            styles.input,
-            formErrors.some(e => e.includes('Email')) && styles.inputError,
-          ]}
+          style={[styles.input, formErrors.some(e => e.includes('Email')) && styles.inputError]}
           placeholder='Email'
           value={email}
           onChangeText={setEmail}
@@ -133,10 +110,7 @@ const RegisterScreen = () => {
           accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
-          style={[
-            styles.input,
-            formErrors.some(e => e.includes('Password')) && styles.inputError,
-          ]}
+          style={[styles.input, formErrors.some(e => e.includes('Password')) && styles.inputError]}
           placeholder='Password'
           value={password}
           onChangeText={setPassword}
@@ -149,8 +123,7 @@ const RegisterScreen = () => {
         <TextInput
           style={[
             styles.input,
-            formErrors.some(e => e.includes('confirmation')) &&
-              styles.inputError,
+            formErrors.some(e => e.includes('confirmation')) && styles.inputError,
           ]}
           placeholder='Confirm Password'
           value={confirmPassword}
@@ -159,9 +132,7 @@ const RegisterScreen = () => {
           accessibilityLabel='Confirm password'
           accessibilityHint='Re-enter your password to confirm'
           accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e =>
-            e.includes('confirmation'),
-          )}
+          accessibilityInvalid={formErrors.some(e => e.includes('confirmation'))}
         />
 
         <TouchableOpacity
@@ -173,9 +144,7 @@ const RegisterScreen = () => {
           accessibilityHint='Creates a new account'
           accessibilityRole='button'
         >
-          <Text style={styles.buttonText}>
-            {loading ? 'Creating Account...' : 'Register'}
-          </Text>
+          <Text style={styles.buttonText}>{loading ? 'Creating Account...' : 'Register'}</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>

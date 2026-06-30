@@ -15,7 +15,7 @@ device:
     simulator: "iPhone 14 Pro"
     version: "16.0"
   android:
-    emulator: "Pixel_9_Pro_XL_API_35"
+    emulator: "Pixel_10_Pro_XL_API_36_1"
     version: "11"
 
 # Environment variables

@@ -4,7 +4,45 @@
  * Features: Dependency injection, event sourcing, CQRS, micro-frontends, clean architecture
  */
 
-import { EventEmitter } from 'events';
+class EventEmitter {
+  private listeners: { [key: string]: Array<(...args: any[]) => void> } = {};
+
+  on(event: string, listener: (...args: any[]) => void) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event].push(listener);
+    return this;
+  }
+
+  off(event: string, listener: (...args: any[]) => void) {
+    if (!this.listeners[event]) return this;
+    this.listeners[event] = this.listeners[event].filter(l => l !== listener);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]) {
+    if (!this.listeners[event]) return false;
+    this.listeners[event].forEach(listener => {
+      try {
+        listener(...args);
+      } catch (e) {
+        console.error('EventEmitter error:', e);
+      }
+    });
+    return true;
+  }
+
+  removeAllListeners(event?: string) {
+    if (event) {
+      delete this.listeners[event];
+    } else {
+      this.listeners = {};
+    }
+    return this;
+  }
+}
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analyticsService from '../services/AnalyticsService';
 
@@ -109,11 +147,7 @@ export class AdvancedServiceContainer implements ServiceContainer {
   }
 
   private hasService(token: string): boolean {
-    return (
-      this.services.has(token) ||
-      this.factories.has(token) ||
-      this.scopedFactories.has(token)
-    );
+    return this.services.has(token) || this.factories.has(token) || this.scopedFactories.has(token);
   }
 
   dispose(): void {
@@ -140,10 +174,7 @@ export class AdvancedServiceContainer implements ServiceContainer {
 export class EventStore {
   private readonly events: Event[] = [];
   private readonly snapshots = new Map<string, any>();
-  private readonly eventHandlers = new Map<
-    string,
-    Array<(event: Event) => void>
-  >();
+  private readonly eventHandlers = new Map<string, Array<(event: Event) => void>>();
 
   async appendEvent(event: Event): Promise<void> {
     this.events.push(event);
@@ -179,11 +210,7 @@ export class EventStore {
     return this.events.filter(event => event.type === eventType);
   }
 
-  async createSnapshot(
-    aggregateId: string,
-    state: any,
-    version: number,
-  ): Promise<void> {
+  async createSnapshot(aggregateId: string, state: any, version: number): Promise<void> {
     const snapshot = {
       aggregateId,
       state,
@@ -192,10 +219,7 @@ export class EventStore {
     };
 
     this.snapshots.set(aggregateId, snapshot);
-    await AsyncStorage.setItem(
-      `snapshot_${aggregateId}`,
-      JSON.stringify(snapshot),
-    );
+    await AsyncStorage.setItem(`snapshot_${aggregateId}`, JSON.stringify(snapshot));
   }
 
   async getSnapshot(aggregateId: string): Promise<any> {
@@ -243,10 +267,7 @@ export class EventStore {
 
   async replay(aggregateId: string): Promise<any> {
     const snapshot = await this.getSnapshot(aggregateId);
-    const events = await this.getEvents(
-      aggregateId,
-      snapshot ? snapshot.version + 1 : 0,
-    );
+    const events = await this.getEvents(aggregateId, snapshot ? snapshot.version + 1 : 0);
 
     return {
       snapshot: snapshot?.state,
@@ -284,16 +305,11 @@ export class CommandBus {
     (command: Command, next: () => Promise<void>) => Promise<void>
   > = [];
 
-  register<T extends Command>(
-    commandType: string,
-    handler: CommandHandler<T>,
-  ): void {
+  register<T extends Command>(commandType: string, handler: CommandHandler<T>): void {
     this.handlers.set(commandType, handler);
   }
 
-  addMiddleware(
-    middleware: (command: Command, next: () => Promise<void>) => Promise<void>,
-  ): void {
+  addMiddleware(middleware: (command: Command, next: () => Promise<void>) => Promise<void>): void {
     this.middleware.push(middleware);
   }
 
@@ -320,15 +336,9 @@ export class CommandBus {
 
 export class QueryBus {
   private readonly handlers = new Map<string, QueryHandler<any, any>>();
-  private readonly cache = new Map<
-    string,
-    { data: any; timestamp: number; ttl: number }
-  >();
+  private readonly cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 
-  register<T extends Query, R>(
-    queryType: string,
-    handler: QueryHandler<T, R>,
-  ): void {
+  register<T extends Query, R>(queryType: string, handler: QueryHandler<T, R>): void {
     this.handlers.set(queryType, handler);
   }
 
@@ -617,16 +627,11 @@ export class ModernArchitectureCore {
       await next();
       const duration = Date.now() - start;
 
-      analyticsService.trackPerformance(
-        'command_execution_time',
-        duration,
-        'MILLISECONDS',
-        {
-          metricType: 'custom',
-          severity: duration > 1000 ? 'warning' : 'info',
-          context: { commandType: command.type },
-        },
-      );
+      analyticsService.trackPerformance('command_execution_time', duration, 'MILLISECONDS', {
+        metricType: 'custom',
+        severity: duration > 1000 ? 'warning' : 'info',
+        context: { commandType: command.type },
+      });
     });
   }
 
@@ -692,9 +697,7 @@ export class ModernArchitectureCore {
         handlersCount: this.eventStore['eventHandlers'].size,
       };
 
-      const status = details.container.dependenciesValid
-        ? 'healthy'
-        : 'degraded';
+      const status = details.container.dependenciesValid ? 'healthy' : 'degraded';
 
       return { status, details };
     } catch (error) {

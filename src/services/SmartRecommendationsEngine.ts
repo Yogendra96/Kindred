@@ -193,18 +193,10 @@ class SmartRecommendationsEngine {
       maxDifficulty?: 'easy' | 'medium' | 'hard';
     } = {},
   ): Promise<Recommendation[]> {
-    const trace = this.performanceMonitor.startTrace(
-      'generate-recommendations',
-    );
+    const trace = this.performanceMonitor.startTrace('generate-recommendations');
 
     try {
-      const {
-        count = 10,
-        categories,
-        types,
-        minImpact = 0,
-        maxDifficulty = 'hard',
-      } = options;
+      const { count = 10, categories, types, minImpact = 0, maxDifficulty = 'hard' } = options;
 
       // Check cache first
       const cacheKey = this.generateCacheKey(userProfile.id, context, options);
@@ -233,21 +225,15 @@ class SmartRecommendationsEngine {
       );
 
       // Filter and rank recommendations
-      let filteredRecommendations = this.filterRecommendations(
-        personalizedRecommendations,
-        {
-          categories,
-          types,
-          minImpact,
-          maxDifficulty,
-        },
-      );
+      let filteredRecommendations = this.filterRecommendations(personalizedRecommendations, {
+        categories,
+        types,
+        minImpact,
+        maxDifficulty,
+      });
 
       // Apply diversity and novelty
-      filteredRecommendations = this.applyDiversityAndNovelty(
-        filteredRecommendations,
-        userProfile,
-      );
+      filteredRecommendations = this.applyDiversityAndNovelty(filteredRecommendations, userProfile);
 
       // Final ranking
       const rankedRecommendations = this.rankRecommendations(
@@ -259,10 +245,7 @@ class SmartRecommendationsEngine {
       // Cache results
       this.recommendationCache.set(cacheKey, rankedRecommendations);
 
-      trace.putAttribute(
-        'recommendations_generated',
-        rankedRecommendations.length,
-      );
+      trace.putAttribute('recommendations_generated', rankedRecommendations.length);
       trace.stop();
 
       return rankedRecommendations.slice(0, count);
@@ -280,34 +263,22 @@ class SmartRecommendationsEngine {
     const recommendations: Recommendation[] = [];
 
     // Transport recommendations
-    recommendations.push(
-      ...(await this.generateTransportRecommendations(userProfile, context)),
-    );
+    recommendations.push(...(await this.generateTransportRecommendations(userProfile, context)));
 
     // Energy recommendations
-    recommendations.push(
-      ...(await this.generateEnergyRecommendations(userProfile, context)),
-    );
+    recommendations.push(...(await this.generateEnergyRecommendations(userProfile, context)));
 
     // Food recommendations
-    recommendations.push(
-      ...(await this.generateFoodRecommendations(userProfile, context)),
-    );
+    recommendations.push(...(await this.generateFoodRecommendations(userProfile, context)));
 
     // Consumption recommendations
-    recommendations.push(
-      ...(await this.generateConsumptionRecommendations(userProfile, context)),
-    );
+    recommendations.push(...(await this.generateConsumptionRecommendations(userProfile, context)));
 
     // Lifestyle recommendations
-    recommendations.push(
-      ...(await this.generateLifestyleRecommendations(userProfile, context)),
-    );
+    recommendations.push(...(await this.generateLifestyleRecommendations(userProfile, context)));
 
     // Educational recommendations
-    recommendations.push(
-      ...(await this.generateEducationalRecommendations(userProfile, context)),
-    );
+    recommendations.push(...(await this.generateEducationalRecommendations(userProfile, context)));
 
     return recommendations;
   }
@@ -317,15 +288,12 @@ class SmartRecommendationsEngine {
     context: RecommendationContext,
   ): Promise<Recommendation[]> {
     const recommendations: Recommendation[] = [];
-    const transportEmissions =
-      userProfile.carbonFootprint.breakdown.transport || 0;
+    const transportEmissions = userProfile.carbonFootprint.breakdown.transport || 0;
 
     if (transportEmissions > 50) {
       // High transport emissions
       // Public transport recommendation
-      if (
-        !userProfile.preferences.transportModes.includes('public_transport')
-      ) {
+      if (!userProfile.preferences.transportModes.includes('public_transport')) {
         recommendations.push({
           id: `transport_public_${Date.now()}`,
           type: 'action',
@@ -366,11 +334,7 @@ class SmartRecommendationsEngine {
               },
             ],
             timeline: '1 week to start, 1 month to establish habit',
-            milestones: [
-              'First trip',
-              'One week consistent use',
-              'One month habit',
-            ],
+            milestones: ['First trip', 'One week consistent use', 'One month habit'],
           },
           tracking: {
             metrics: ['trips_taken', 'carbon_saved', 'cost_saved'],
@@ -398,8 +362,7 @@ class SmartRecommendationsEngine {
           type: 'action',
           category: 'transport',
           title: 'Cycle for Short Trips',
-          description:
-            'Use a bicycle for trips under 5km to stay healthy and reduce emissions.',
+          description: 'Use a bicycle for trips under 5km to stay healthy and reduce emissions.',
           impact: {
             carbonReduction: 780,
             costSavings: 800,
@@ -410,11 +373,7 @@ class SmartRecommendationsEngine {
           confidence: 0.75,
           personalization: {
             relevanceScore: 0.8,
-            reasoningFactors: [
-              'Good weather',
-              'Short distance trips',
-              'Health benefits',
-            ],
+            reasoningFactors: ['Good weather', 'Short distance trips', 'Health benefits'],
             userSegment: 'health_conscious',
           },
           implementation: {
@@ -437,11 +396,7 @@ class SmartRecommendationsEngine {
               },
             ],
             timeline: '2 weeks to start, 2 months to establish habit',
-            milestones: [
-              'First cycling trip',
-              'Weekly cycling',
-              'Daily short trips',
-            ],
+            milestones: ['First cycling trip', 'Weekly cycling', 'Daily short trips'],
           },
           tracking: {
             metrics: ['distance_cycled', 'trips_replaced', 'carbon_saved'],
@@ -486,11 +441,7 @@ class SmartRecommendationsEngine {
         confidence: 0.95,
         personalization: {
           relevanceScore: 0.85,
-          reasoningFactors: [
-            'High energy usage',
-            'Easy implementation',
-            'Immediate savings',
-          ],
+          reasoningFactors: ['High energy usage', 'Easy implementation', 'Immediate savings'],
           userSegment: 'energy_saver',
         },
         implementation: {
@@ -513,11 +464,7 @@ class SmartRecommendationsEngine {
             },
           ],
           timeline: '1 weekend to complete',
-          milestones: [
-            'Bulbs purchased',
-            'First room completed',
-            'All bulbs replaced',
-          ],
+          milestones: ['Bulbs purchased', 'First room completed', 'All bulbs replaced'],
         },
         tracking: {
           metrics: ['bulbs_replaced', 'energy_saved', 'cost_saved'],
@@ -543,17 +490,13 @@ class SmartRecommendationsEngine {
     const recommendations: Recommendation[] = [];
     const foodEmissions = userProfile.carbonFootprint.breakdown.food || 0;
 
-    if (
-      foodEmissions > 80 &&
-      !userProfile.preferences.dietaryRestrictions.includes('vegetarian')
-    ) {
+    if (foodEmissions > 80 && !userProfile.preferences.dietaryRestrictions.includes('vegetarian')) {
       recommendations.push({
         id: `food_meatless_${Date.now()}`,
         type: 'challenge',
         category: 'food',
         title: 'Meatless Monday Challenge',
-        description:
-          'Try going meat-free one day per week to reduce your food carbon footprint.',
+        description: 'Try going meat-free one day per week to reduce your food carbon footprint.',
         impact: {
           carbonReduction: 312,
           costSavings: 200,
@@ -564,11 +507,7 @@ class SmartRecommendationsEngine {
         confidence: 0.8,
         personalization: {
           relevanceScore: 0.75,
-          reasoningFactors: [
-            'High food emissions',
-            'Not vegetarian',
-            'Easy to try',
-          ],
+          reasoningFactors: ['High food emissions', 'Not vegetarian', 'Easy to try'],
           userSegment: 'flexitarian_curious',
         },
         implementation: {
@@ -591,11 +530,7 @@ class SmartRecommendationsEngine {
             },
           ],
           timeline: '4 weeks to establish habit',
-          milestones: [
-            'First meatless day',
-            'One week success',
-            'One month habit',
-          ],
+          milestones: ['First meatless day', 'One week success', 'One month habit'],
         },
         tracking: {
           metrics: ['meatless_days', 'carbon_saved', 'new_recipes_tried'],
@@ -642,11 +577,7 @@ class SmartRecommendationsEngine {
       confidence: 0.7,
       personalization: {
         relevanceScore: 0.8,
-        reasoningFactors: [
-          'Cost savings',
-          'Environmental impact',
-          'Unique finds',
-        ],
+        reasoningFactors: ['Cost savings', 'Environmental impact', 'Unique finds'],
         userSegment: 'conscious_consumer',
       },
       implementation: {
@@ -703,8 +634,7 @@ class SmartRecommendationsEngine {
         type: 'action',
         category: 'lifestyle',
         title: 'Become a Climate Advocate',
-        description:
-          'Share your climate journey and inspire others to take action.',
+        description: 'Share your climate journey and inspire others to take action.',
         impact: {
           carbonReduction: 1000, // Through influence
           costSavings: 0,
@@ -715,11 +645,7 @@ class SmartRecommendationsEngine {
         confidence: 0.6,
         personalization: {
           relevanceScore: 0.9,
-          reasoningFactors: [
-            'High engagement',
-            'Leadership potential',
-            'Social impact',
-          ],
+          reasoningFactors: ['High engagement', 'Leadership potential', 'Social impact'],
           userSegment: 'climate_leader',
         },
         implementation: {
@@ -742,11 +668,7 @@ class SmartRecommendationsEngine {
             },
           ],
           timeline: '3 months to establish influence',
-          milestones: [
-            'First social share',
-            'Community event',
-            'Mentoring others',
-          ],
+          milestones: ['First social share', 'Community event', 'Mentoring others'],
         },
         tracking: {
           metrics: ['shares_made', 'people_influenced', 'events_organized'],
@@ -781,8 +703,7 @@ class SmartRecommendationsEngine {
       type: 'education',
       category: 'lifestyle',
       title: 'Learn About Carbon Footprints',
-      description:
-        'Understand the science behind carbon footprints and climate change.',
+      description: 'Understand the science behind carbon footprints and climate change.',
       impact: {
         carbonReduction: 200, // Through better decisions
         costSavings: 0,
@@ -793,11 +714,7 @@ class SmartRecommendationsEngine {
       confidence: 0.8,
       personalization: {
         relevanceScore: 0.7,
-        reasoningFactors: [
-          'Knowledge gap',
-          'Foundation for action',
-          'Personal growth',
-        ],
+        reasoningFactors: ['Knowledge gap', 'Foundation for action', 'Personal growth'],
         userSegment: 'knowledge_seeker',
       },
       implementation: {
@@ -847,11 +764,7 @@ class SmartRecommendationsEngine {
   ): Promise<Recommendation[]> {
     return recommendations.map(rec => {
       // Adjust relevance based on user model
-      const personalizedScore = this.calculatePersonalizedScore(
-        rec,
-        userProfile,
-        userModel,
-      );
+      const personalizedScore = this.calculatePersonalizedScore(rec, userProfile, userModel);
 
       // Adjust for context
       const contextualScore = this.adjustForContext(rec, context);
@@ -863,9 +776,7 @@ class SmartRecommendationsEngine {
           ...rec.personalization,
           relevanceScore: personalizedScore * contextualScore,
         },
-        priority: Math.round(
-          rec.priority * personalizedScore * contextualScore,
-        ),
+        priority: Math.round(rec.priority * personalizedScore * contextualScore),
       };
     });
   }
@@ -901,25 +812,16 @@ class SmartRecommendationsEngine {
     return Math.max(0.1, Math.min(1.0, score));
   }
 
-  private adjustForContext(
-    recommendation: Recommendation,
-    context: RecommendationContext,
-  ): number {
+  private adjustForContext(recommendation: Recommendation, context: RecommendationContext): number {
     let score = 1.0;
 
     // Time-based adjustments
-    if (
-      recommendation.category === 'transport' &&
-      context.timeOfDay === 'morning'
-    ) {
+    if (recommendation.category === 'transport' && context.timeOfDay === 'morning') {
       score *= 1.1; // Transport recommendations more relevant in morning
     }
 
     // Weather-based adjustments
-    if (
-      recommendation.title.includes('Cycle') &&
-      context.weather?.condition === 'rain'
-    ) {
+    if (recommendation.title.includes('Cycle') && context.weather?.condition === 'rain') {
       score *= 0.5; // Cycling less relevant in rain
     }
 
@@ -975,8 +877,7 @@ class SmartRecommendationsEngine {
 
     // Sort by relevance first
     const sorted = recommendations.sort(
-      (a, b) =>
-        b.personalization.relevanceScore - a.personalization.relevanceScore,
+      (a, b) => b.personalization.relevanceScore - a.personalization.relevanceScore,
     );
 
     for (const rec of sorted) {
@@ -1002,12 +903,8 @@ class SmartRecommendationsEngine {
       }
 
       // Secondary sort: relevance score
-      if (
-        a.personalization.relevanceScore !== b.personalization.relevanceScore
-      ) {
-        return (
-          b.personalization.relevanceScore - a.personalization.relevanceScore
-        );
+      if (a.personalization.relevanceScore !== b.personalization.relevanceScore) {
+        return b.personalization.relevanceScore - a.personalization.relevanceScore;
       }
 
       // Tertiary sort: impact
@@ -1025,9 +922,7 @@ class SmartRecommendationsEngine {
     }
   }
 
-  private async processFeedback(
-    feedback: RecommendationFeedback,
-  ): Promise<void> {
+  private async processFeedback(feedback: RecommendationFeedback): Promise<void> {
     const userModel = await this.getUserModel(feedback.userId);
 
     // Update user preferences based on feedback
@@ -1094,21 +989,14 @@ class SmartRecommendationsEngine {
     }
   }
 
-  private async refreshUserModel(
-    userId: string,
-    model: LearningModel,
-  ): Promise<void> {
+  private async refreshUserModel(userId: string, model: LearningModel): Promise<void> {
     // Implementation would fetch latest user data and update model
     // This is a simplified version
     model.lastUpdated = new Date();
   }
 
   // Utility Methods
-  private generateCacheKey(
-    userId: string,
-    context: RecommendationContext,
-    options: any,
-  ): string {
+  private generateCacheKey(userId: string, context: RecommendationContext, options: any): string {
     const contextKey = `${context.timeOfDay}-${context.dayOfWeek}-${context.season}`;
     const optionsKey = JSON.stringify(options);
     return `${userId}-${contextKey}-${optionsKey}`;
@@ -1117,9 +1005,7 @@ class SmartRecommendationsEngine {
   private clearExpiredRecommendations(): void {
     const now = new Date();
     for (const [key, recommendations] of this.recommendationCache) {
-      const filtered = recommendations.filter(
-        rec => !rec.expiresAt || rec.expiresAt > now,
-      );
+      const filtered = recommendations.filter(rec => !rec.expiresAt || rec.expiresAt > now);
       if (filtered.length !== recommendations.length) {
         this.recommendationCache.set(key, filtered);
       }
@@ -1160,5 +1046,7 @@ class SmartRecommendationsEngine {
   }
 }
 
-export const getSmartRecommendationsEngine = createSingleton(() => new SmartRecommendationsEngine());
+export const getSmartRecommendationsEngine = createSingleton(
+  () => new SmartRecommendationsEngine(),
+);
 export default getSmartRecommendationsEngine();

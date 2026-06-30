@@ -3,6 +3,7 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 # Resolve react_native_pods.rb with node to allow for hoisting
 require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/expo/scripts/autolinking'
 
 platform :ios, '15.1'
 prepare_react_native_project!
@@ -10,6 +11,7 @@ prepare_react_native_project!
 target 'Kindred' do
   use_frameworks! :linkage => :static
   config = use_native_modules!
+  use_expo_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],

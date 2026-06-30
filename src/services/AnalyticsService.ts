@@ -3,6 +3,7 @@
 import loggingService from './/LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import analytics from '@react-native-firebase/analytics';
 
 // Global type declarations
 declare global {
@@ -18,13 +19,7 @@ interface AnalyticsEvent {
   timestamp: number;
   sessionId: string;
   userId?: string;
-  category:
-    | 'user_action'
-    | 'performance'
-    | 'error'
-    | 'navigation'
-    | 'feature_usage'
-    | 'custom';
+  category: 'user_action' | 'performance' | 'error' | 'navigation' | 'feature_usage' | 'custom';
   priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
@@ -161,6 +156,7 @@ export class AnalyticsService {
   private currentScreen: string | null = null;
   private screenStartTime: number | null = null;
   private userProfile: UserProfile | null = null;
+  private isAnalyticsEnabled: boolean = true;
 
   private constructor(config: AnalyticsConfig = {}) {
     this.logger = loggingService;
@@ -183,6 +179,28 @@ export class AnalyticsService {
       AnalyticsService.instance = new AnalyticsService(config);
     }
     return AnalyticsService.instance;
+  }
+
+  /**
+   * Enable/disable analytics dynamically (respects GDPR opt-out)
+   */
+  setAnalyticsEnabled(enabled: boolean): void {
+    this.isAnalyticsEnabled = enabled;
+    if (__DEV__) {
+      this.logger.info(`Analytics collection set to: ${enabled}`);
+    }
+    try {
+      analytics().setAnalyticsCollectionEnabled(enabled);
+    } catch (e) {
+      this.logger.error('Failed to set Firebase Analytics status:', e);
+    }
+  }
+
+  /**
+   * Check if telemetry is enabled
+   */
+  isTelemetryEnabled(): boolean {
+    return this.isAnalyticsEnabled;
   }
 
   /**
@@ -253,10 +271,7 @@ export class AnalyticsService {
   /**
    * Identify user and update traits
    */
-  async identifyUser(
-    userId: string,
-    traits?: Record<string, any>,
-  ): Promise<void> {
+  async identifyUser(userId: string, traits?: Record<string, any>): Promise<void> {
     if (!this.userProfile) {
       this.userProfile = {
         userId,
@@ -330,6 +345,9 @@ export class AnalyticsService {
     category: AnalyticsEvent['category'] = 'custom',
     priority: AnalyticsEvent['priority'] = 'medium',
   ): void {
+    if (!this.isAnalyticsEnabled) {
+      return;
+    }
     const event: AnalyticsEvent = {
       name,
       properties: {
@@ -416,11 +434,7 @@ export class AnalyticsService {
   /**
    * Track user action
    */
-  trackUserAction(
-    action: string,
-    target: string,
-    properties?: Record<string, any>,
-  ): void {
+  trackUserAction(action: string, target: string, properties?: Record<string, any>): void {
     const userAction: UserAction = {
       action,
       target,
@@ -455,11 +469,7 @@ export class AnalyticsService {
   /**
    * Track error
    */
-  trackError(
-    error: Error | string,
-    context?: Record<string, any>,
-    isFatal: boolean = false,
-  ): void {
+  trackError(error: Error | string, context?: Record<string, any>, isFatal: boolean = false): void {
     const errorMessage = error instanceof Error ? error.message : error;
     const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -536,11 +546,7 @@ export class AnalyticsService {
   /**
    * Unlock achievement
    */
-  unlockAchievement(
-    achievementId: string,
-    name: string,
-    points: number,
-  ): void {
+  unlockAchievement(achievementId: string, name: string, points: number): void {
     if (this.userProfile) {
       if (!this.userProfile.achievements.find(a => a.id === achievementId)) {
         this.userProfile.achievements.push({
@@ -567,11 +573,7 @@ export class AnalyticsService {
   /**
    * Track feature usage
    */
-  trackFeatureUsage(
-    feature: string,
-    action: string,
-    properties?: Record<string, any>,
-  ): void {
+  trackFeatureUsage(feature: string, action: string, properties?: Record<string, any>): void {
     this.trackEvent(
       'feature_usage',
       {
@@ -603,6 +605,7 @@ export class AnalyticsService {
    * Start a new session
    */
   async startSession(userId?: string): Promise<void> {
+    if (!this.isAnalyticsEnabled) return;
     try {
       // End current session if exists
       if (this.currentSession) {
@@ -654,6 +657,10 @@ export class AnalyticsService {
    * End current session
    */
   async endSession(): Promise<void> {
+    if (!this.isAnalyticsEnabled) {
+      this.currentSession = null;
+      return;
+    }
     if (!this.currentSession) return;
 
     try {
@@ -696,20 +703,13 @@ export class AnalyticsService {
   /**
    * Get analytics summary
    */
-  getAnalyticsSummary(timeRange?: {
-    start: number;
-    end: number;
-  }): AnalyticsSummary {
+  getAnalyticsSummary(timeRange?: { start: number; end: number }): AnalyticsSummary {
     const now = Date.now();
     const start = timeRange?.start || now - 7 * 24 * 60 * 60 * 1000; // Last 7 days
     const end = timeRange?.end || now;
 
-    const filteredEvents = this.events.filter(
-      e => e.timestamp >= start && e.timestamp <= end,
-    );
-    const filteredSessions = this.sessions.filter(
-      s => s.startTime >= start && s.startTime <= end,
-    );
+    const filteredEvents = this.events.filter(e => e.timestamp >= start && e.timestamp <= end);
+    const filteredSessions = this.sessions.filter(s => s.startTime >= start && s.startTime <= end);
     const filteredScreenViews = this.screenViews.filter(
       s => s.timestamp >= start && s.timestamp <= end,
     );
@@ -723,10 +723,7 @@ export class AnalyticsService {
         ? completedSessions.reduce((sum, s) => sum + (s.duration || 0), 0) /
           completedSessions.length
         : 0;
-    const totalDuration = completedSessions.reduce(
-      (sum, s) => sum + (s.duration || 0),
-      0,
-    );
+    const totalDuration = completedSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
 
     // Calculate event metrics
     const eventsByCategory = filteredEvents.reduce((acc, event) => {
@@ -751,43 +748,30 @@ export class AnalyticsService {
       .map(([screen, views]) => ({ screen, views }));
 
     // Calculate user metrics
-    const uniqueUsers = new Set(
-      filteredSessions.map(s => s.userId).filter(Boolean),
-    ).size;
+    const uniqueUsers = new Set(filteredSessions.map(s => s.userId).filter(Boolean)).size;
     const returningUsers = filteredSessions.filter(s => {
-      const userSessions = this.sessions.filter(
-        session => session.userId === s.userId,
-      );
+      const userSessions = this.sessions.filter(session => session.userId === s.userId);
       return userSessions.length > 1;
     }).length;
 
     // Calculate performance metrics
-    const performanceEvents = filteredEvents.filter(
-      e => e.category === 'performance',
-    );
+    const performanceEvents = filteredEvents.filter(e => e.category === 'performance');
     const errorEvents = filteredEvents.filter(e => e.category === 'error');
     const loadTimeEvents = performanceEvents.filter(
-      e =>
-        e.name === 'performance_metric' && e.properties?.metric === 'load_time',
+      e => e.name === 'performance_metric' && e.properties?.metric === 'load_time',
     );
 
     const averageLoadTime =
       loadTimeEvents.length > 0
-        ? loadTimeEvents.reduce(
-            (sum, e) => sum + (e.properties?.value || 0),
-            0,
-          ) / loadTimeEvents.length
+        ? loadTimeEvents.reduce((sum, e) => sum + (e.properties?.value || 0), 0) /
+          loadTimeEvents.length
         : 0;
 
     const errorRate =
-      filteredEvents.length > 0
-        ? (errorEvents.length / filteredEvents.length) * 100
-        : 0;
+      filteredEvents.length > 0 ? (errorEvents.length / filteredEvents.length) * 100 : 0;
     const crashEvents = errorEvents.filter(e => e.properties?.is_fatal);
     const crashRate =
-      filteredSessions.length > 0
-        ? (crashEvents.length / filteredSessions.length) * 100
-        : 0;
+      filteredSessions.length > 0 ? (crashEvents.length / filteredSessions.length) * 100 : 0;
 
     return {
       sessions: {
@@ -822,13 +806,8 @@ export class AnalyticsService {
   /**
    * Get events by category
    */
-  getEventsByCategory(
-    category: AnalyticsEvent['category'],
-    limit: number = 100,
-  ): AnalyticsEvent[] {
-    return this.events
-      .filter(event => event.category === category)
-      .slice(-limit);
+  getEventsByCategory(category: AnalyticsEvent['category'], limit: number = 100): AnalyticsEvent[] {
+    return this.events.filter(event => event.category === category).slice(-limit);
   }
 
   /**
@@ -1014,13 +993,12 @@ export class AnalyticsService {
    */
   private async loadStoredData(): Promise<void> {
     try {
-      const [events, sessions, screenViews, userActions] =
-        await AsyncStorage.multiGet([
-          'analytics_events',
-          'analytics_sessions',
-          'analytics_screen_views',
-          'analytics_user_actions',
-        ]);
+      const [events, sessions, screenViews, userActions] = await AsyncStorage.multiGet([
+        'analytics_events',
+        'analytics_sessions',
+        'analytics_screen_views',
+        'analytics_user_actions',
+      ]);
 
       if (events[1]) this.events = JSON.parse(events[1]);
       if (sessions[1]) this.sessions = JSON.parse(sessions[1]);
@@ -1039,14 +1017,8 @@ export class AnalyticsService {
       await AsyncStorage.multiSet([
         ['analytics_events', JSON.stringify(this.events.slice(-1000))], // Keep last 1000
         ['analytics_sessions', JSON.stringify(this.sessions.slice(-100))], // Keep last 100
-        [
-          'analytics_screen_views',
-          JSON.stringify(this.screenViews.slice(-500)),
-        ], // Keep last 500
-        [
-          'analytics_user_actions',
-          JSON.stringify(this.userActions.slice(-1000)),
-        ], // Keep last 1000
+        ['analytics_screen_views', JSON.stringify(this.screenViews.slice(-500))], // Keep last 500
+        ['analytics_user_actions', JSON.stringify(this.userActions.slice(-1000))], // Keep last 1000
       ]);
     } catch (error) {
       this.logger.error('Failed to save analytics data:', error);
@@ -1057,19 +1029,12 @@ export class AnalyticsService {
    * Cleanup old data
    */
   private cleanupOldData(): void {
-    const cutoffTime =
-      Date.now() - this.config.dataRetentionDays! * 24 * 60 * 60 * 1000;
+    const cutoffTime = Date.now() - this.config.dataRetentionDays! * 24 * 60 * 60 * 1000;
 
     this.events = this.events.filter(event => event.timestamp > cutoffTime);
-    this.sessions = this.sessions.filter(
-      session => session.startTime > cutoffTime,
-    );
-    this.screenViews = this.screenViews.filter(
-      view => view.timestamp > cutoffTime,
-    );
-    this.userActions = this.userActions.filter(
-      action => action.timestamp > cutoffTime,
-    );
+    this.sessions = this.sessions.filter(session => session.startTime > cutoffTime);
+    this.screenViews = this.screenViews.filter(view => view.timestamp > cutoffTime);
+    this.userActions = this.userActions.filter(action => action.timestamp > cutoffTime);
   }
 }
 

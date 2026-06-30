@@ -124,9 +124,7 @@ export class CarbonService {
   /**
    * Calculate carbon emissions with intelligent fallback strategy
    */
-  async calculateEmissions(
-    request: CarbonCalculationRequest,
-  ): Promise<CarbonCalculationResponse> {
+  async calculateEmissions(request: CarbonCalculationRequest): Promise<CarbonCalculationResponse> {
     this.metrics.totalCalculations++;
 
     return this.performanceLogger.measureAsync(
@@ -177,13 +175,10 @@ export class CarbonService {
               return result;
             }
           } catch (error) {
-            this.logger.warn(
-              'API calculation failed, falling back to offline',
-              {
-                activityType: request.activityType,
-                error: error instanceof Error ? error.message : 'Unknown error',
-              },
-            );
+            this.logger.warn('API calculation failed, falling back to offline', {
+              activityType: request.activityType,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            });
           }
         }
 
@@ -199,11 +194,7 @@ export class CarbonService {
 
         // Cache the offline result (with shorter TTL)
         if (this.config.enableCaching) {
-          this.cacheManager.cacheCalculation(
-            request,
-            result,
-            API_CONFIG.CACHE_TTL_SHORT,
-          );
+          this.cacheManager.cacheCalculation(request, result, API_CONFIG.CACHE_TTL_SHORT);
         }
 
         return result;
@@ -244,16 +235,10 @@ export class CarbonService {
   /**
    * Get emission factors with caching
    */
-  async getEmissionFactors(
-    category?: string,
-    region?: string,
-  ): Promise<CarbonEmissionFactor[]> {
+  async getEmissionFactors(category?: string, region?: string): Promise<CarbonEmissionFactor[]> {
     // Check cache first
     if (this.config.enableCaching) {
-      const cached = this.cacheManager.getCachedEmissionFactors(
-        category,
-        region,
-      );
+      const cached = this.cacheManager.getCachedEmissionFactors(category, region);
       if (cached) {
         return cached;
       }
@@ -262,10 +247,7 @@ export class CarbonService {
     try {
       // Try API first
       if (this.config.enableAPIFallback && !this.config.enableMocking) {
-        const factors = await this.apiAdapter.getEmissionFactors(
-          category,
-          region,
-        );
+        const factors = await this.apiAdapter.getEmissionFactors(category, region);
 
         // Cache the results
         if (this.config.enableCaching) {
@@ -289,9 +271,7 @@ export class CarbonService {
   /**
    * Convert calculation response to form-friendly format
    */
-  convertToFormCalculation(
-    response: CarbonCalculationResponse,
-  ): CarbonEmissionCalculation {
+  convertToFormCalculation(response: CarbonCalculationResponse): CarbonEmissionCalculation {
     return CarbonCalculatorCore.convertToFormCalculation(response);
   }
 

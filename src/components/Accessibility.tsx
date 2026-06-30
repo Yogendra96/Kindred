@@ -5,13 +5,7 @@ import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeProvider';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -34,12 +28,7 @@ interface AccessibilitySettings {
   lineHeight: number;
   buttonSize: number;
   touchTargetSize: number;
-  colorBlindnessType:
-    | 'none'
-    | 'protanopia'
-    | 'deuteranopia'
-    | 'tritanopia'
-    | 'achromatopsia';
+  colorBlindnessType: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
   announceChanges: boolean;
   skipToContent: boolean;
   keyboardNavigation: boolean;
@@ -48,10 +37,7 @@ interface AccessibilitySettings {
 interface AccessibilityContextType {
   settings: AccessibilitySettings;
   updateSettings: (newSettings: Partial<AccessibilitySettings>) => void;
-  announceMessage: (
-    message: string,
-    priority?: 'low' | 'medium' | 'high',
-  ) => void;
+  announceMessage: (message: string, priority?: 'low' | 'medium' | 'high') => void;
   focusElement: (elementId: string) => void;
   getAccessibleProps: (props: AccessibleElementProps) => any;
   isScreenReaderActive: boolean;
@@ -102,16 +88,12 @@ const defaultSettings: AccessibilitySettings = {
   keyboardNavigation: false,
 };
 
-const AccessibilityContext = createContext<AccessibilityContextType | null>(
-  null,
-);
+const AccessibilityContext = createContext<AccessibilityContextType | null>(null);
 
 export const useAccessibility = () => {
   const context = useContext(AccessibilityContext);
   if (!context) {
-    throw new Error(
-      'useAccessibility must be used within AccessibilityProvider',
-    );
+    throw new Error('useAccessibility must be used within AccessibilityProvider');
   }
   return context;
 };
@@ -123,12 +105,9 @@ interface AccessibilityProviderProps {
 /**
  * Accessibility Provider for comprehensive app accessibility support
  */
-export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
-  children,
-}) => {
+export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ children }) => {
   const { theme } = useTheme();
-  const [settings, setSettings] =
-    useState<AccessibilitySettings>(defaultSettings);
+  const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
   const [isScreenReaderActive, setIsScreenReaderActive] = useState(false);
   const [isHighContrastActive, setIsHighContrastActive] = useState(false);
 
@@ -157,9 +136,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
 
   const loadAccessibilitySettings = async () => {
     try {
-      const savedSettings = await AsyncStorage.getItem(
-        'accessibility_settings',
-      );
+      const savedSettings = await AsyncStorage.getItem('accessibility_settings');
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
         setSettings({ ...defaultSettings, ...parsed });
@@ -169,14 +146,9 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
     }
   };
 
-  const saveAccessibilitySettings = async (
-    newSettings: AccessibilitySettings,
-  ) => {
+  const saveAccessibilitySettings = async (newSettings: AccessibilitySettings) => {
     try {
-      await AsyncStorage.setItem(
-        'accessibility_settings',
-        JSON.stringify(newSettings),
-      );
+      await AsyncStorage.setItem('accessibility_settings', JSON.stringify(newSettings));
     } catch (error) {
       console.error('Error saving accessibility settings:', error);
     }
@@ -184,10 +156,8 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
 
   const checkSystemAccessibilitySettings = async () => {
     try {
-      const screenReaderEnabled =
-        await AccessibilityInfo.isScreenReaderEnabled();
-      const reduceMotionEnabled =
-        await AccessibilityInfo.isReduceMotionEnabled();
+      const screenReaderEnabled = await AccessibilityInfo.isScreenReaderEnabled();
+      const reduceMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
 
       setIsScreenReaderActive(screenReaderEnabled);
 
@@ -202,20 +172,17 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
     }
   };
 
-  const updateSettings = useCallback(
-    (newSettings: Partial<AccessibilitySettings>) => {
-      setSettings(prev => {
-        const updated = { ...prev, ...newSettings };
-        saveAccessibilitySettings(updated);
+  const updateSettings = useCallback((newSettings: Partial<AccessibilitySettings>) => {
+    setSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      saveAccessibilitySettings(updated);
 
-        // Update derived states
-        setIsHighContrastActive(updated.highContrastEnabled);
+      // Update derived states
+      setIsHighContrastActive(updated.highContrastEnabled);
 
-        return updated;
-      });
-    },
-    [],
-  );
+      return updated;
+    });
+  }, []);
 
   const announceMessage = useCallback(
     (message: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
@@ -243,11 +210,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
         }
       }
     },
-    [
-      settings.announceChanges,
-      settings.hapticFeedbackEnabled,
-      isScreenReaderActive,
-    ],
+    [settings.announceChanges, settings.hapticFeedbackEnabled, isScreenReaderActive],
   );
 
   const focusElement = useCallback((elementId: string) => {
@@ -361,10 +324,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
     return baseColors;
   }, [settings.highContrastEnabled, settings.colorBlindnessType, theme.colors]);
 
-  const applyColorBlindnessFilter = (
-    colors: AccessibleColors,
-    type: string,
-  ): AccessibleColors => {
+  const applyColorBlindnessFilter = (colors: AccessibleColors, type: string): AccessibleColors => {
     switch (type) {
       case 'protanopia':
         return {
@@ -413,9 +373,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
   };
 
   return (
-    <AccessibilityContext.Provider value={contextValue}>
-      {children}
-    </AccessibilityContext.Provider>
+    <AccessibilityContext.Provider value={contextValue}>{children}</AccessibilityContext.Provider>
   );
 };
 
@@ -460,17 +418,12 @@ export const AccessibleText: React.FC<AccessibleTextProps> = ({
 
   const accessibilityProps = {
     accessible,
-    accessibilityRole: (accessibilityRole ||
-      (variant === 'heading' ? 'header' : 'text')) as any,
+    accessibilityRole: (accessibilityRole || (variant === 'heading' ? 'header' : 'text')) as any,
     ...(variant === 'heading' && { accessibilityLevel: level }),
   };
 
   return (
-    <Text
-      style={[getTextStyle(), style]}
-      testID={testID}
-      {...accessibilityProps}
-    >
+    <Text style={[getTextStyle(), style]} testID={testID} {...accessibilityProps}>
       {children}
     </Text>
   );
@@ -500,8 +453,7 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   accessibilityHint,
   testID,
 }) => {
-  const { getScaledSize, getAccessibleColors, settings, announceMessage } =
-    useAccessibility();
+  const { getScaledSize, getAccessibleColors, settings, announceMessage } = useAccessibility();
   const colors = getAccessibleColors();
 
   const handlePress = () => {
@@ -635,7 +587,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
       <View style={styles.settingGroup}>
         <AccessibleText variant='heading' level={3}>
           Visual
-         </AccessibleText>
+        </AccessibleText>
 
         <View style={styles.settingItem}>
           <AccessibleText>High Contrast</AccessibleText>
@@ -644,9 +596,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.highContrastEnabled
-                  ? colors.primary
-                  : colors.border,
+                backgroundColor: settings.highContrastEnabled ? colors.primary : colors.border,
               },
             ]}
             accessible={true}
@@ -677,9 +627,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.largeTextEnabled
-                  ? colors.primary
-                  : colors.border,
+                backgroundColor: settings.largeTextEnabled ? colors.primary : colors.border,
               },
             ]}
             accessible={true}
@@ -710,9 +658,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.reducedMotionEnabled
-                  ? colors.primary
-                  : colors.border,
+                backgroundColor: settings.reducedMotionEnabled ? colors.primary : colors.border,
               },
             ]}
             accessible={true}
@@ -749,9 +695,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.hapticFeedbackEnabled
-                  ? colors.primary
-                  : colors.border,
+                backgroundColor: settings.hapticFeedbackEnabled ? colors.primary : colors.border,
               },
             ]}
             accessible={true}
@@ -782,9 +726,7 @@ export const AccessibilitySettingsPanel: React.FC = () => {
             style={[
               styles.toggle,
               {
-                backgroundColor: settings.announceChanges
-                  ? colors.primary
-                  : colors.border,
+                backgroundColor: settings.announceChanges ? colors.primary : colors.border,
               },
             ]}
             accessible={true}

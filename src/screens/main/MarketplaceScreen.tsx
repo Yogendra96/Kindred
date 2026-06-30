@@ -9,34 +9,27 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 import { mockData } from '../../data/mockData';
 import { useToast } from '../../contexts/ToastContext';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { MagnifyingGlass, X, Plus } from 'phosphor-react-native';
+import { MagnifyingGlass, X, Plus, ShieldCheck } from 'phosphor-react-native';
 
-const GlassCard = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderRadius: 16, overflow: 'hidden' }]}>
-    {children}
-  </View>
-);
+interface GlassCardProps {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}
 
-const GlassBadge = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderRadius: 12, overflow: 'hidden' }]}>
-    {children}
-  </View>
+const GlassCard = ({ style, children }: GlassCardProps) => (
+  <View style={[styles.glassCard, style]}>{children}</View>
 );
 
 // ─── Thrift Store Mock Data ──────────────────────────────────────────────────
 
-const CATEGORIES = [
-  'All',
-  'Clothing',
-  'Electronics',
-  'Furniture',
-  'Books',
-  'Toys',
-  'Other',
-];
+const CATEGORIES = ['All', 'Clothing', 'Electronics', 'Furniture', 'Books', 'Toys', 'Other'];
 
 const THRIFT_ITEMS = [
   {
@@ -50,8 +43,7 @@ const THRIFT_ITEMS = [
     location: 'Brooklyn, NY',
     co2Saved: 8.2,
     emoji: '🧥',
-    description:
-      "Classic 90s Levi's trucker jacket. Size M. Minor fading — adds to the charm!",
+    description: "Classic 90s Levi's trucker jacket. Size M. Minor fading — adds to the charm!",
   },
   {
     id: 't2',
@@ -64,8 +56,7 @@ const THRIFT_ITEMS = [
     location: 'Austin, TX',
     co2Saved: 24.5,
     emoji: '🎧',
-    description:
-      'Barely used. Comes with original carry case, cables, and box.',
+    description: 'Barely used. Comes with original carry case, cables, and box.',
   },
   {
     id: 't3',
@@ -78,8 +69,7 @@ const THRIFT_ITEMS = [
     location: 'Seattle, WA',
     co2Saved: 45.0,
     emoji: '📚',
-    description:
-      '3-shelf solid wood bookcase. Small scratch on bottom shelf. Pet-free home.',
+    description: '3-shelf solid wood bookcase. Small scratch on bottom shelf. Pet-free home.',
   },
   {
     id: 't4',
@@ -106,8 +96,7 @@ const THRIFT_ITEMS = [
     location: 'Chicago, IL',
     co2Saved: 12.3,
     emoji: '📖',
-    description:
-      'Works perfectly. Small scratch on back. 8GB, waterproof. Charger included.',
+    description: 'Works perfectly. Small scratch on back. 8GB, waterproof. Charger included.',
   },
   {
     id: 't6',
@@ -120,8 +109,7 @@ const THRIFT_ITEMS = [
     location: 'Miami, FL',
     co2Saved: 6.8,
     emoji: '🚀',
-    description:
-      'Complete set with all pieces and instructions. Missing one minifigure.',
+    description: 'Complete set with all pieces and instructions. Missing one minifigure.',
   },
   {
     id: 't7',
@@ -147,8 +135,7 @@ const THRIFT_ITEMS = [
     location: 'Denver, CO',
     co2Saved: 5.4,
     emoji: '🧘',
-    description:
-      'Eco-friendly bamboo fibre mat. Non-slip. Includes carry strap. Used ~10 times.',
+    description: 'Eco-friendly bamboo fibre mat. Non-slip. Includes carry strap. Used ~10 times.',
   },
 ];
 
@@ -156,18 +143,9 @@ const THRIFT_ITEMS = [
 
 const ConditionBadge = ({ condition }: { condition: string }) => {
   const color =
-    condition === 'Like New'
-      ? '#38EF7D'
-      : condition === 'Excellent'
-      ? '#2B86FA'
-      : '#FA7B2B';
+    condition === 'Like New' ? '#38EF7D' : condition === 'Excellent' ? '#2B86FA' : '#FA7B2B';
   return (
-    <View
-      style={[
-        styles.badge,
-        { backgroundColor: color + '20', borderColor: color },
-      ]}
-    >
+    <View style={[styles.badge, { backgroundColor: color + '20', borderColor: color }]}>
       <Text style={[styles.badgeText, { color }]}>{condition}</Text>
     </View>
   );
@@ -180,11 +158,7 @@ const ThriftItemCard = ({
   item: (typeof THRIFT_ITEMS)[0];
   onPress: () => void;
 }) => (
-  <TouchableOpacity
-    style={styles.thriftCardTouch}
-    onPress={onPress}
-    activeOpacity={0.85}
-  >
+  <TouchableOpacity style={styles.thriftCardTouch} onPress={onPress} activeOpacity={0.85}>
     <GlassCard style={styles.thriftCard}>
       <View style={styles.thriftEmojiBox}>
         <Text style={styles.thriftEmoji}>{item.emoji}</Text>
@@ -219,17 +193,12 @@ const ThriftStoreTab = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const filtered = THRIFT_ITEMS.filter(item => {
-    const matchesSearch = item.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const matchesCategory =
-      selectedCategory === 'All' || item.category === selectedCategory;
+    const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const totalCO2 = filtered
-    .reduce((sum, item) => sum + item.co2Saved, 0)
-    .toFixed(1);
+  const totalCO2 = filtered.reduce((sum, item) => sum + item.co2Saved, 0).toFixed(1);
 
   const handleItemPress = (item: (typeof THRIFT_ITEMS)[0]) => {
     Alert.alert(
@@ -239,16 +208,15 @@ const ThriftStoreTab = () => {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Message Seller',
-          onPress: () =>
-            showToast('In-app messaging is coming in the next update!', 'info'),
+          onPress: () => showToast('In-app messaging is coming in the next update!', 'info'),
         },
         {
           text: 'Buy — $' + item.price,
           onPress: () =>
             showToast(
-              `🎉 Purchased! You saved $${
-                item.originalPrice - item.price
-              } and ${item.co2Saved} kg of CO₂!`,
+              `🎉 Purchased! You saved $${item.originalPrice - item.price} and ${
+                item.co2Saved
+              } kg of CO₂!`,
               'success',
             ),
         },
@@ -257,7 +225,7 @@ const ThriftStoreTab = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.flexContainer}>
       {/* Stats banner */}
       <GlassCard style={styles.statsBanner}>
         <View style={styles.statItem}>
@@ -272,11 +240,7 @@ const ThriftStoreTab = () => {
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statValue}>
-            -
-            {Math.round(
-              filtered.reduce((s, i) => s + (i.originalPrice - i.price), 0),
-            )}
-            $
+            -{Math.round(filtered.reduce((s, i) => s + (i.originalPrice - i.price), 0))}$
           </Text>
           <Text style={styles.statLabel}>Total savings</Text>
         </View>
@@ -284,7 +248,12 @@ const ThriftStoreTab = () => {
 
       {/* Search */}
       <View style={styles.searchContainer}>
-        <MagnifyingGlass size={20} color="rgba(255,255,255,0.6)" weight="bold" style={styles.searchIcon} />
+        <MagnifyingGlass
+          size={20}
+          color='rgba(255,255,255,0.6)'
+          weight='bold'
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
           placeholder='Search thrift listings...'
@@ -294,7 +263,7 @@ const ThriftStoreTab = () => {
         />
         {search.length > 0 && (
           <TouchableOpacity onPress={() => setSearch('')}>
-            <X size={20} color="rgba(255,255,255,0.6)" weight="bold" style={styles.clearSearch} />
+            <X size={20} color='rgba(255,255,255,0.6)' weight='bold' style={styles.clearSearch} />
           </TouchableOpacity>
         )}
       </View>
@@ -309,17 +278,11 @@ const ThriftStoreTab = () => {
         {CATEGORIES.map(cat => (
           <TouchableOpacity
             key={cat}
-            style={[
-              styles.categoryPill,
-              selectedCategory === cat && styles.categoryPillActive,
-            ]}
+            style={[styles.categoryPill, selectedCategory === cat && styles.categoryPillActive]}
             onPress={() => setSelectedCategory(cat)}
           >
             <Text
-              style={[
-                styles.categoryText,
-                selectedCategory === cat && styles.categoryTextActive,
-              ]}
+              style={[styles.categoryText, selectedCategory === cat && styles.categoryTextActive]}
             >
               {cat}
             </Text>
@@ -354,7 +317,7 @@ const ThriftStoreTab = () => {
           )
         }
       >
-        <Plus size={20} color="#0f2027" weight="bold" style={{marginRight: 8}} />
+        <Plus size={20} color='#0f2027' weight='bold' style={styles.plusIcon} />
         <Text style={styles.listItemText}>List a Pre-Loved Item</Text>
       </TouchableOpacity>
     </View>
@@ -364,11 +327,41 @@ const ThriftStoreTab = () => {
 // ─── Carbon Offset Tab ───────────────────────────────────────────────────────
 
 const CarbonOffsetTab = () => {
-  const { showToast } = useToast();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const navigation = useNavigation<any>();
+  const subscription = useSelector(
+    (state: RootState) =>
+      state.carbon?.offsets?.subscription ?? {
+        active: false,
+        tier: 'none',
+        monthlyCost: 0,
+      },
+  );
+
   const projects = mockData.offsetProjects;
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      {/* Active Subscription Banner */}
+      <GlassCard style={styles.subBanner}>
+        <View style={styles.subBannerHeader}>
+          <ShieldCheck color='#38EF7D' size={20} weight='fill' />
+          <Text style={styles.subBannerTitle}>Carbon Offset Subscription</Text>
+        </View>
+        <Text style={styles.subBannerText}>
+          {subscription.active
+            ? `Status: Active (${subscription.tier.toUpperCase()} - $${
+                subscription.monthlyCost
+              }/mo)`
+            : 'Status: Inactive / Paused'}
+        </Text>
+        <TouchableOpacity style={styles.subBannerBtn} onPress={() => navigation.navigate('Offset')}>
+          <Text style={styles.subBannerBtnText}>Manage Subscriptions</Text>
+        </TouchableOpacity>
+      </GlassCard>
+
+      <Text style={styles.subFeaturedTitle}>Featured Verified Projects</Text>
+
       {projects.map(project => (
         <GlassCard key={project.id} style={styles.card}>
           <View style={styles.offsetEmojiBox}>
@@ -383,16 +376,8 @@ const CarbonOffsetTab = () => {
                 ${project.costPerTon}
                 <Text style={styles.priceSub}>/ton</Text>
               </Text>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  showToast(
-                    `You've offset carbon via ${project.name}. Great choice! 🌍`,
-                    'success',
-                  )
-                }
-              >
-                <Text style={styles.buttonText}>Offset Now</Text>
+              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Offset')}>
+                <Text style={styles.buttonText}>Retire Carbon</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -411,15 +396,15 @@ const MarketplaceScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
         <Defs>
-          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
-            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
-            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
+            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
+            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
+            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
           </SvgLinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
       </Svg>
 
       {/* Header */}
@@ -433,18 +418,10 @@ const MarketplaceScreen = () => {
         {TABS.map((tab, index) => (
           <TouchableOpacity
             key={tab}
-            style={[
-              styles.tabButton,
-              activeTab === index && styles.tabButtonActive,
-            ]}
+            style={[styles.tabButton, activeTab === index && styles.tabButtonActive]}
             onPress={() => setActiveTab(index)}
           >
-            <Text
-              style={[
-                styles.tabButtonText,
-                activeTab === index && styles.tabButtonTextActive,
-              ]}
-            >
+            <Text style={[styles.tabButtonText, activeTab === index && styles.tabButtonTextActive]}>
               {tab}
             </Text>
           </TouchableOpacity>
@@ -452,7 +429,7 @@ const MarketplaceScreen = () => {
       </View>
 
       {/* Tab content */}
-      <View style={{ flex: 1 }}>
+      <View style={styles.flexContainer}>
         {activeTab === 0 ? <ThriftStoreTab /> : <CarbonOffsetTab />}
       </View>
     </View>
@@ -489,7 +466,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  tabButtonActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' },
+  tabButtonActive: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
   tabButtonText: {
     color: 'rgba(255,255,255,0.5)',
     fontWeight: '600',
@@ -506,8 +486,17 @@ const styles = StyleSheet.create({
   },
   statItem: { flex: 1, alignItems: 'center' },
   statValue: { fontSize: 16, fontWeight: 'bold', color: '#38EF7D' },
-  statLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2, textAlign: 'center' },
-  statDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 4 },
+  statLabel: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: 4,
+  },
 
   // Search
   searchContainer: {
@@ -538,8 +527,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  categoryPillActive: { backgroundColor: 'rgba(56,239,125,0.2)', borderColor: '#38EF7D' },
-  categoryText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
+  categoryPillActive: {
+    backgroundColor: 'rgba(56,239,125,0.2)',
+    borderColor: '#38EF7D',
+  },
+  categoryText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '500',
+  },
   categoryTextActive: { color: '#38EF7D', fontWeight: 'bold' },
 
   // Thrift item card
@@ -646,7 +642,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 4,
   },
-  projectLocation: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 6 },
+  projectLocation: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 6,
+  },
   projectDescription: {
     fontSize: 13,
     color: 'rgba(255,255,255,0.8)',
@@ -669,6 +669,59 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: { color: '#38EF7D', fontWeight: '700', fontSize: 14 },
+  glassCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  flexContainer: {
+    flex: 1,
+  },
+  plusIcon: {
+    marginRight: 8,
+  },
+  subBanner: {
+    padding: 16,
+    marginBottom: 20,
+    backgroundColor: 'rgba(56, 239, 125, 0.05)',
+    borderColor: 'rgba(56, 239, 125, 0.15)',
+    borderWidth: 1,
+  },
+  subBannerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  subBannerTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  subBannerText: {
+    fontSize: 13,
+    color: '#ccc',
+    marginBottom: 12,
+  },
+  subBannerBtn: {
+    backgroundColor: '#38EF7D',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  subBannerBtnText: {
+    color: '#0f2027',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  subFeaturedTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
 });
 
 export default MarketplaceScreen;

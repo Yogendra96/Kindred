@@ -35,9 +35,7 @@ const LoginScreen = () => {
     if (errors.length > 0) {
       setFormErrors(errors);
       AccessibilityInfo.announceForAccessibility(
-        `Form has ${errors.length} error${
-          errors.length > 1 ? 's' : ''
-        }: ${errors.join(', ')}`,
+        `Form has ${errors.length} error${errors.length > 1 ? 's' : ''}: ${errors.join(', ')}`,
       );
       return;
     }
@@ -48,12 +46,9 @@ const LoginScreen = () => {
       setLoading(true);
       await auth().signInWithEmailAndPassword(email, password);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Login failed';
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
       setFormErrors([errorMessage]);
-      AccessibilityInfo.announceForAccessibility(
-        `Login failed: ${errorMessage}`,
-      );
+      AccessibilityInfo.announceForAccessibility(`Login failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -66,12 +61,9 @@ const LoginScreen = () => {
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(googleCredential);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Google sign in failed';
+      const errorMessage = error instanceof Error ? error.message : 'Google sign in failed';
       setFormErrors([errorMessage]);
-      AccessibilityInfo.announceForAccessibility(
-        `Google sign in failed: ${errorMessage}`,
-      );
+      AccessibilityInfo.announceForAccessibility(`Google sign in failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -90,11 +82,7 @@ const LoginScreen = () => {
           accessibilityLabel='Kindred app logo'
           accessibilityRole='image'
         />
-        <Text
-          style={styles.title}
-          accessibilityRole='header'
-          accessibilityLevel={1}
-        >
+        <Text style={styles.title} accessibilityRole='header' accessibilityLevel={1}>
           Welcome to Kindred
         </Text>
       </View>
@@ -103,11 +91,7 @@ const LoginScreen = () => {
         {formErrors.length > 0 && (
           <View style={styles.errorContainer} accessibilityLiveRegion='polite'>
             {formErrors.map((error, index) => (
-              <Text
-                key={index}
-                style={styles.errorText}
-                accessibilityRole='text'
-              >
+              <Text key={index} style={styles.errorText} accessibilityRole='text'>
                 ⚠ {error}
               </Text>
             ))}
@@ -115,10 +99,7 @@ const LoginScreen = () => {
         )}
 
         <TextInput
-          style={[
-            styles.input,
-            formErrors.some(e => e.includes('Email')) && styles.inputError,
-          ]}
+          style={[styles.input, formErrors.some(e => e.includes('Email')) && styles.inputError]}
           placeholder='Email'
           value={email}
           onChangeText={setEmail}
@@ -130,10 +111,7 @@ const LoginScreen = () => {
           accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
-          style={[
-            styles.input,
-            formErrors.some(e => e.includes('Password')) && styles.inputError,
-          ]}
+          style={[styles.input, formErrors.some(e => e.includes('Password')) && styles.inputError]}
           placeholder='Password'
           value={password}
           onChangeText={setPassword}
@@ -153,9 +131,7 @@ const LoginScreen = () => {
           accessibilityHint='Log in to your account'
           accessibilityRole='button'
         >
-          <Text style={styles.buttonText}>
-            {loading ? 'Logging in...' : 'Login'}
-          </Text>
+          <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

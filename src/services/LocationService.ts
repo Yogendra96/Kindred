@@ -188,7 +188,12 @@ class LocationService {
 
       this.isInitialized = true;
 
-      this.apmService.recordMetric({ name: 'location_service_init', value: Date.now() - startTime, unit: 'ms', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'location_service_init',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       this.logger.info('Location service initialized', {
         config: this.config,
@@ -257,7 +262,12 @@ class LocationService {
       const location = await this.getLocationFromNavigator(highAccuracy);
       await this.handleLocationUpdate(location, 'manual');
 
-      this.apmService.recordMetric({ name: 'location_retrieved', value: Date.now() - startTime, unit: 'ms', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'location_retrieved',
+        value: Date.now() - startTime,
+        unit: 'ms',
+        severity: 'low',
+      });
 
       this.logger.info('Current location retrieved', {
         accuracy: this.currentLocation?.accuracy,
@@ -297,9 +307,19 @@ class LocationService {
       );
 
       this.isTracking = true;
-      this.apmService.recordMetric({ name: 'location_tracking_started', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'location_tracking_started',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
-      this.apmService.recordMetric({ name: 'location_tracking_start_error', value: 1, unit: 'count', severity: 'high' });
+      this.apmService.recordMetric({
+        name: 'location_tracking_start_error',
+        value: 1,
+        unit: 'count',
+        severity: 'high',
+      });
       throw error;
     }
   }
@@ -314,9 +334,19 @@ class LocationService {
       }
 
       this.isTracking = false;
-      this.apmService.recordMetric({ name: 'location_tracking_stopped', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'location_tracking_stopped',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
-      this.apmService.recordMetric({ name: 'location_tracking_stop_error', value: 1, unit: 'count', severity: 'high' });
+      this.apmService.recordMetric({
+        name: 'location_tracking_stop_error',
+        value: 1,
+        unit: 'count',
+        severity: 'high',
+      });
       throw error;
     }
   }
@@ -343,9 +373,19 @@ class LocationService {
         },
       });
 
-      this.apmService.recordMetric({ name: 'background_location_started', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'background_location_started',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
-      this.apmService.recordMetric({ name: 'background_location_setup_error', value: 1, unit: 'count', severity: 'high' });
+      this.apmService.recordMetric({
+        name: 'background_location_setup_error',
+        value: 1,
+        unit: 'count',
+        severity: 'high',
+      });
       throw error;
     }
   }
@@ -366,9 +406,19 @@ class LocationService {
         }));
 
       await Location.startGeofencingAsync(GEOFENCE_TASK_NAME, regions);
-      this.apmService.recordMetric({ name: 'geofencing_started', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'geofencing_started',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
-      this.apmService.recordMetric({ name: 'geofencing_setup_error', value: 1, unit: 'count', severity: 'high' });
+      this.apmService.recordMetric({
+        name: 'geofencing_setup_error',
+        value: 1,
+        unit: 'count',
+        severity: 'high',
+      });
       throw error;
     }
   }
@@ -457,9 +507,19 @@ class LocationService {
         });
       }
 
-      this.apmService.recordMetric({ name: 'geofence_event_processed', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'geofence_event_processed',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
-      this.apmService.recordMetric({ name: 'geofence_event_error', value: 1, unit: 'count', severity: 'high' });
+      this.apmService.recordMetric({
+        name: 'geofence_event_error',
+        value: 1,
+        unit: 'count',
+        severity: 'high',
+      });
       this.logger.error('Error handling geofence event:', error);
     }
   }
@@ -586,7 +646,12 @@ class LocationService {
     try {
       const sharedLocation = this.prepareLocationForSharing(location);
       // Send to sharing service
-      this.apmService.recordMetric({ name: 'location_shared', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'location_shared',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
       this.logger.error('Error sharing location:', error);
     }
@@ -865,7 +930,12 @@ class LocationService {
       this.geofenceListeners.clear();
       this.isInitialized = false;
 
-      this.apmService.recordMetric({ name: 'location_service_cleanup', value: 1, unit: 'count', severity: 'low' });
+      this.apmService.recordMetric({
+        name: 'location_service_cleanup',
+        value: 1,
+        unit: 'count',
+        severity: 'low',
+      });
     } catch (error) {
       this.logger.error('Error during location service cleanup:', error);
     }

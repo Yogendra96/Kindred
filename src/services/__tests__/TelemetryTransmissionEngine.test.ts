@@ -34,17 +34,13 @@ describe('TelemetryTransmissionEngine', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    getBufferedPayloadsMock = jest.fn(() =>
-      Promise.resolve([{ lat: 0, lon: 0 }]),
-    );
+    getBufferedPayloadsMock = jest.fn(() => Promise.resolve([{ lat: 0, lon: 0 }]));
     clearBufferMock = jest.fn(() => Promise.resolve());
 
     jest
       .spyOn(microMobilityTelemetryService, 'getBufferedPayloads')
       .mockImplementation(getBufferedPayloadsMock);
-    jest
-      .spyOn(microMobilityTelemetryService, 'clearBuffer')
-      .mockImplementation(clearBufferMock);
+    jest.spyOn(microMobilityTelemetryService, 'clearBuffer').mockImplementation(clearBufferMock);
   });
 
   afterEach(() => {
@@ -82,10 +78,10 @@ describe('TelemetryTransmissionEngine', () => {
     expect(result).toBe(true);
     expect(modernAPMService.startTraceSimple).toHaveBeenCalled();
     expect(clearBufferMock).toHaveBeenCalled();
-    expect(modernAPMService.stopTraceSimple).toHaveBeenCalledWith(
-      'telemetry_bulk_upload_job',
-      { success: 'true', count: '1' },
-    );
+    expect(modernAPMService.stopTraceSimple).toHaveBeenCalledWith('telemetry_bulk_upload_job', {
+      success: 'true',
+      count: '1',
+    });
   });
 
   it('bypasses constraints on developer force override', async () => {

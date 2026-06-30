@@ -41,8 +41,23 @@ import { spatialColors, animations } from '../../theme/theme';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const HomeScreen = ({ navigation }: any) => {
   const dispatch = useDispatch();
-  const { footprint, error } = useSelector((state: RootState) => state.carbon);
-  const { profile } = useSelector((state: RootState) => state.user);
+  const carbon = useSelector((state: RootState) => state.carbon);
+  const footprint = carbon?.footprint || {
+    total: 0,
+    transportation: 0,
+    food: 0,
+    energy: 0,
+    waste: 0,
+  };
+  const error = carbon?.error || null;
+  const user = useSelector((state: RootState) => state.user);
+  const profile = user?.profile || {
+    id: '',
+    name: '',
+    email: '',
+    avatar: null,
+    bio: null,
+  };
 
   const handleAddActivity = (type: string, amount: number) => {
     dispatch(

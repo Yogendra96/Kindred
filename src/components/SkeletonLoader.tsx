@@ -124,7 +124,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     if (shimmerColors) return shimmerColors;
     const base = isDark ? theme.colors.surface : '#f0f0f0';
     const highlight = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)';
-    
+
     switch (intensity) {
       case 'low':
         return [base, isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.4)', base];
@@ -163,7 +163,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         style,
       ]}
       testID={testID}
-      accessibilityRole="progressbar"
+      accessibilityRole='progressbar'
       accessibilityLabel={accessibilityLabel || `Loading ${variant}`}
       accessibilityHint={accessibilityHint}
     >
@@ -178,7 +178,13 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         </Animated.View>
       )}
       {animation === 'pulse' && !isScreenReaderEnabled && (
-        <Animated.View style={[StyleSheet.absoluteFillObject, animatedStyle, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFillObject,
+            animatedStyle,
+            { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+          ]}
+        />
       )}
     </View>
   );
@@ -214,7 +220,7 @@ export const SkeletonText: React.FC<any> = ({
 // Skeleton Circle
 export const SkeletonCircle: React.FC<any> = ({ size = 50, style, isLoading = true, ...props }) => (
   <SkeletonLoader
-    variant="circle"
+    variant='circle'
     width={size}
     height={size}
     borderRadius={size / 2}
@@ -225,7 +231,14 @@ export const SkeletonCircle: React.FC<any> = ({ size = 50, style, isLoading = tr
 );
 
 // Skeleton Image
-export const SkeletonImage: React.FC<any> = ({ width = '100%', height = 200, borderRadius = 8, style, isLoading = true, ...props }) => (
+export const SkeletonImage: React.FC<any> = ({
+  width = '100%',
+  height = 200,
+  borderRadius = 8,
+  style,
+  isLoading = true,
+  ...props
+}) => (
   <SkeletonLoader
     width={width}
     height={height}
@@ -245,7 +258,13 @@ export const SkeletonCard: React.FC<any> = ({ style, isLoading = true, ...props 
         <SkeletonCircle size={40} isLoading={isLoading} {...props} />
         <View style={styles.cardHeaderText}>
           <SkeletonText lines={1} lineHeight={18} isLoading={isLoading} {...props} />
-          <SkeletonLoader width='60%' height={14} style={{ marginTop: 4 }} isLoading={isLoading} {...props} />
+          <SkeletonLoader
+            width='60%'
+            height={14}
+            style={{ marginTop: 4 }}
+            isLoading={isLoading}
+            {...props}
+          />
         </View>
       </View>
       <SkeletonText lines={3} lineHeight={16} lineSpacing={6} isLoading={isLoading} {...props} />

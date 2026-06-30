@@ -11,6 +11,7 @@ import { ErrorHandler } from './src/utils/errorHandler';
 import { NotificationService } from './src/services/NotificationService';
 import { backgroundSyncService } from './src/services/BackgroundSyncService';
 import { OfflineBanner } from './src/components/OfflineBanner';
+import { PrivacyConsentModal } from './src/components/ui/PrivacyConsentModal';
 
 // Disable Metro yellow boxes
 LogBox.ignoreAllLogs();
@@ -38,6 +39,7 @@ const App = () => {
                 <AppNavigator />
                 {/* Offline banner sits on top of everything — only visible when offline/syncing */}
                 <OfflineBanner />
+                <PrivacyConsentModal />
               </View>
             </NavigationContainer>
           </ThemeProvider>

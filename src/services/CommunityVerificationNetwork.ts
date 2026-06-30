@@ -162,11 +162,7 @@ interface ValidationConsensus {
 interface ValidationOpinion {
   readonly opinionId: string;
   readonly validatorId: string;
-  readonly stance:
-    | 'approve'
-    | 'reject'
-    | 'needs_revision'
-    | 'insufficient_data';
+  readonly stance: 'approve' | 'reject' | 'needs_revision' | 'insufficient_data';
   readonly confidence: number;
   readonly reasoning: string;
   readonly supportingEvidence: Evidence[];
@@ -201,11 +197,7 @@ interface ConflictResolution {
 
 interface FinalDecision {
   readonly decisionId: string;
-  readonly result:
-    | 'validated'
-    | 'rejected'
-    | 'needs_improvement'
-    | 'pending_review';
+  readonly result: 'validated' | 'rejected' | 'needs_improvement' | 'pending_review';
   readonly confidence: number;
   readonly reasoning: string;
   readonly recommendations: string[];
@@ -283,11 +275,7 @@ interface ScientificReview {
 }
 
 interface ReviewMethodology {
-  readonly approach:
-    | 'systematic_review'
-    | 'meta_analysis'
-    | 'expert_panel'
-    | 'delphi_method';
+  readonly approach: 'systematic_review' | 'meta_analysis' | 'expert_panel' | 'delphi_method';
   readonly criteria: ReviewCriteria[];
   readonly timeline: number; // weeks
   readonly quality_standards: QualityStandard[];
@@ -542,11 +530,7 @@ interface ExpertConsensusProcess {
 }
 
 interface ConsensusMethodology {
-  readonly method:
-    | 'delphi'
-    | 'nominal_group'
-    | 'consensus_development'
-    | 'structured_voting';
+  readonly method: 'delphi' | 'nominal_group' | 'consensus_development' | 'structured_voting';
   readonly rounds_planned: number;
   readonly convergence_criteria: number;
   readonly anonymity: boolean;
@@ -736,12 +720,7 @@ interface DataTransformation {
 }
 
 interface DataQualityMetric {
-  readonly metric:
-    | 'completeness'
-    | 'accuracy'
-    | 'consistency'
-    | 'timeliness'
-    | 'validity';
+  readonly metric: 'completeness' | 'accuracy' | 'consistency' | 'timeliness' | 'validity';
   readonly score: number;
   readonly benchmark: number;
   readonly assessment_method: string;
@@ -758,10 +737,7 @@ interface DigitalSignature {
 
 interface ConsensusProtocol {
   readonly protocolId: string;
-  readonly mechanism:
-    | 'proof_of_stake'
-    | 'proof_of_authority'
-    | 'delegated_proof_of_stake';
+  readonly mechanism: 'proof_of_stake' | 'proof_of_authority' | 'delegated_proof_of_stake';
   readonly validators: BlockchainValidator[];
   readonly consensus_threshold: number;
   readonly finality_time: number; // seconds
@@ -894,12 +870,7 @@ interface TokenSupply {
 }
 
 interface TokenDistribution {
-  readonly category:
-    | 'validators'
-    | 'contributors'
-    | 'researchers'
-    | 'community'
-    | 'reserve';
+  readonly category: 'validators' | 'contributors' | 'researchers' | 'community' | 'reserve';
   readonly percentage: number;
   readonly vesting: VestingSchedule;
   readonly conditions: string[];
@@ -1202,11 +1173,7 @@ interface SocialFeature {
 }
 
 interface SocialMechanic {
-  readonly mechanic:
-    | 'collaboration'
-    | 'competition'
-    | 'mentorship'
-    | 'community_building';
+  readonly mechanic: 'collaboration' | 'competition' | 'mentorship' | 'community_building';
   readonly implementation: string;
   readonly incentives: string[];
 }
@@ -1415,12 +1382,7 @@ interface CollaborationMilestone {
 
 interface ProjectOutcome {
   readonly outcomeId: string;
-  readonly type:
-    | 'methodology'
-    | 'dataset'
-    | 'tool'
-    | 'validation'
-    | 'publication';
+  readonly type: 'methodology' | 'dataset' | 'tool' | 'validation' | 'publication';
   readonly description: string;
   readonly impact: number;
   readonly accessibility: 'public' | 'community' | 'restricted';
@@ -1451,12 +1413,7 @@ interface MemberContribution {
 
 interface WorkgroupActivity {
   readonly activityId: string;
-  readonly type:
-    | 'research'
-    | 'validation'
-    | 'methodology'
-    | 'review'
-    | 'education';
+  readonly type: 'research' | 'validation' | 'methodology' | 'review' | 'education';
   readonly description: string;
   readonly timeline: ActivityTimeline;
   readonly resources: ActivityResource[];
@@ -1535,12 +1492,7 @@ interface KnowledgeResource {
 
 interface KnowledgeEvent {
   readonly eventId: string;
-  readonly type:
-    | 'webinar'
-    | 'workshop'
-    | 'conference'
-    | 'training'
-    | 'hackathon';
+  readonly type: 'webinar' | 'workshop' | 'conference' | 'training' | 'hackathon';
   readonly title: string;
   readonly date: number;
   readonly duration: number; // hours
@@ -1644,10 +1596,7 @@ export class CommunityVerificationNetworkEngine {
       this.isInitialized = true;
       console.log('✅ Community Verification Network initialized successfully');
     } catch (error) {
-      console.error(
-        '❌ Failed to initialize Community Verification Network:',
-        error,
-      );
+      console.error('❌ Failed to initialize Community Verification Network:', error);
       throw error;
     }
   }
@@ -1656,20 +1605,13 @@ export class CommunityVerificationNetworkEngine {
     dataPoint: DataPointToValidate,
     requiredValidators = 5,
   ): Promise<CommunityChecks> {
-    console.log(
-      `🔍 Submitting data point for community validation: ${dataPoint.dataId}`,
-    );
+    console.log(`🔍 Submitting data point for community validation: ${dataPoint.dataId}`);
 
-    const validationId = `validation_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(2)}`;
+    const validationId = `validation_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
     try {
       // Select appropriate validators
-      const selectedValidators = await this.selectValidators(
-        dataPoint,
-        requiredValidators,
-      );
+      const selectedValidators = await this.selectValidators(dataPoint, requiredValidators);
 
       // Create validation process
       const validation: CommunityChecks = {
@@ -1721,9 +1663,7 @@ export class CommunityVerificationNetworkEngine {
       throw new Error(`Validation not found: ${validationId}`);
     }
 
-    console.log(
-      `📝 Validator ${validatorId} submitting opinion for ${validationId}`,
-    );
+    console.log(`📝 Validator ${validatorId} submitting opinion for ${validationId}`);
 
     try {
       // Update validator's opinion
@@ -1823,9 +1763,7 @@ export class CommunityVerificationNetworkEngine {
   ): Promise<BlockchainRecord> {
     console.log('⛓️ Recording verification data on blockchain...');
 
-    const recordId = `record_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(2)}`;
+    const recordId = `record_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
     try {
       // Create blockchain record
@@ -1865,11 +1803,7 @@ export class CommunityVerificationNetworkEngine {
 
   async updateTrustScore(
     userId: string,
-    action:
-      | 'validation_accurate'
-      | 'validation_inaccurate'
-      | 'expert_endorsement'
-      | 'penalty',
+    action: 'validation_accurate' | 'validation_inaccurate' | 'expert_endorsement' | 'penalty',
     impact: number,
   ): Promise<UserTrustMetric> {
     let trustMetric = this.trustScores.get(userId);
@@ -1878,9 +1812,7 @@ export class CommunityVerificationNetworkEngine {
       trustMetric = await this.createInitialTrustScore(userId);
     }
 
-    console.log(
-      `📊 Updating trust score for user ${userId}: ${action} (${impact})`,
-    );
+    console.log(`📊 Updating trust score for user ${userId}: ${action} (${impact})`);
 
     try {
       // Calculate impact on different components
@@ -1905,8 +1837,7 @@ export class CommunityVerificationNetworkEngine {
       });
 
       // Calculate new overall score
-      const newOverallScore =
-        this.calculateOverallTrustScore(updatedComponents);
+      const newOverallScore = this.calculateOverallTrustScore(updatedComponents);
 
       // Create updated trust metric
       const updatedTrustMetric: UserTrustMetric = {
@@ -1944,9 +1875,7 @@ export class CommunityVerificationNetworkEngine {
     }
   }
 
-  async getValidationStatus(
-    validationId: string,
-  ): Promise<CommunityChecks | null> {
+  async getValidationStatus(validationId: string): Promise<CommunityChecks | null> {
     return this.validations.get(validationId) || null;
   }
 
@@ -2042,14 +1971,11 @@ export class CommunityVerificationNetworkEngine {
     // Check if validator has relevant expertise
     const relevantDomains = this.getRelevantDomains(dataPoint.type);
     return validator.expertise.domains.some(
-      domain =>
-        relevantDomains.includes(domain.domain) && domain.proficiencyLevel > 60,
+      domain => relevantDomains.includes(domain.domain) && domain.proficiencyLevel > 60,
     );
   }
 
-  private getRelevantDomains(
-    dataType: string,
-  ): Array<ExpertiseDomain['domain']> {
+  private getRelevantDomains(dataType: string): Array<ExpertiseDomain['domain']> {
     const domainMap: Record<string, Array<ExpertiseDomain['domain']>> = {
       carbon_calculation: ['carbon_accounting', 'life_cycle_assessment'],
       product_footprint: ['life_cycle_assessment', 'manufacturing'],
@@ -2061,9 +1987,7 @@ export class CommunityVerificationNetworkEngine {
     return domainMap[dataType] || ['carbon_accounting'];
   }
 
-  private async createInitialTrustScore(
-    userId: string,
-  ): Promise<UserTrustMetric> {
+  private async createInitialTrustScore(userId: string): Promise<UserTrustMetric> {
     const initialScore: UserTrustMetric = {
       userId,
       overallScore: 500, // Start at middle
@@ -2098,21 +2022,12 @@ export class CommunityVerificationNetworkEngine {
   }
 
   private calculateOverallTrustScore(components: TrustComponent[]): number {
-    return components.reduce(
-      (sum, component) => sum + component.score * component.weight,
-      0,
-    );
+    return components.reduce((sum, component) => sum + component.score * component.weight, 0);
   }
 
-  private async persistTrustScore(
-    userId: string,
-    trustScore: UserTrustMetric,
-  ): Promise<void> {
+  private async persistTrustScore(userId: string, trustScore: UserTrustMetric): Promise<void> {
     try {
-      await AsyncStorage.setItem(
-        `trust_score_${userId}`,
-        JSON.stringify(trustScore),
-      );
+      await AsyncStorage.setItem(`trust_score_${userId}`, JSON.stringify(trustScore));
     } catch (error) {
       console.error('Failed to persist trust score:', error);
     }
@@ -2137,6 +2052,5 @@ interface DataSource {
 }
 
 // Export singleton instance
-export const communityVerificationNetwork =
-  new CommunityVerificationNetworkEngine();
+export const communityVerificationNetwork = new CommunityVerificationNetworkEngine();
 export default communityVerificationNetwork;

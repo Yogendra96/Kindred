@@ -37,13 +37,7 @@ interface BiometricTemplate {
   readonly antiSpoofingData: AntiSpoofingData;
 }
 
-type BiometricType =
-  | 'fingerprint'
-  | 'face'
-  | 'voice'
-  | 'iris'
-  | 'palm'
-  | 'behavioral';
+type BiometricType = 'fingerprint' | 'face' | 'voice' | 'iris' | 'palm' | 'behavioral';
 
 interface AntiSpoofingData {
   readonly livenessScore: number;
@@ -298,10 +292,7 @@ class LivenessDetectionEngine {
     let confidence = 0.85;
 
     // Check for blood flow patterns
-    if (
-      !fingerprintData.bloodFlow ||
-      fingerprintData.bloodFlow.detected === false
-    ) {
+    if (!fingerprintData.bloodFlow || fingerprintData.bloodFlow.detected === false) {
       indicators.push('no_blood_flow_detected');
       confidence -= 0.3;
     }
@@ -345,10 +336,7 @@ class LivenessDetectionEngine {
     let confidence = 0.8;
 
     // Check for breathing patterns
-    if (
-      !voiceData.breathingPatterns ||
-      voiceData.breathingPatterns.length === 0
-    ) {
+    if (!voiceData.breathingPatterns || voiceData.breathingPatterns.length === 0) {
       indicators.push('no_breathing_patterns');
       confidence -= 0.2;
     }
@@ -487,10 +475,7 @@ class DeviceAttestationEngine {
         integrityCheck,
         securityFeatures,
       );
-      const riskScore = this.calculateRiskScore(
-        integrityCheck,
-        securityFeatures,
-      );
+      const riskScore = this.calculateRiskScore(integrityCheck, securityFeatures);
 
       return {
         verified: trustLevel !== 'unknown',
@@ -589,9 +574,7 @@ class DeviceAttestationEngine {
     };
   }
 
-  private async checkBootState(): Promise<
-    'verified' | 'warning' | 'compromised'
-  > {
+  private async checkBootState(): Promise<'verified' | 'warning' | 'compromised'> {
     // In production, check secure boot status
     return 'verified';
   }
@@ -621,9 +604,7 @@ class DeviceAttestationEngine {
     return [];
   }
 
-  private calculateIntegrityScore(
-    integrity: Partial<DeviceIntegrityCheck>,
-  ): number {
+  private calculateIntegrityScore(integrity: Partial<DeviceIntegrityCheck>): number {
     let score = 1.0;
 
     if (integrity.bootState === 'compromised') score -= 0.4;
@@ -632,8 +613,7 @@ class DeviceAttestationEngine {
     if (integrity.debuggingEnabled) score -= 0.1;
     if (integrity.rootDetected) score -= 0.3;
     if (integrity.hookedApis && integrity.hookedApis.length > 0) score -= 0.2;
-    if (integrity.suspiciousApps && integrity.suspiciousApps.length > 0)
-      score -= 0.25;
+    if (integrity.suspiciousApps && integrity.suspiciousApps.length > 0) score -= 0.25;
 
     return Math.max(0, score);
   }
@@ -683,17 +663,13 @@ class DeviceAttestationEngine {
       f => f.name.includes('Hardware') && f.enabled && f.trustLevel > 0.8,
     );
 
-    if (hasHardwareSecurity && integrity.integrityScore > 0.9)
-      return 'strongbox';
+    if (hasHardwareSecurity && integrity.integrityScore > 0.9) return 'strongbox';
     if (hasHardwareSecurity) return 'hardware';
 
     return 'basic';
   }
 
-  private calculateRiskScore(
-    integrity: DeviceIntegrityCheck,
-    features: SecurityFeature[],
-  ): number {
+  private calculateRiskScore(integrity: DeviceIntegrityCheck, features: SecurityFeature[]): number {
     return 1.0 - integrity.integrityScore;
   }
 }
@@ -771,40 +747,28 @@ class BehavioralBiometricsEngine {
     let confidence = 1.0;
 
     // Analyze typing patterns
-    const typingAnalysis = this.analyzeTypingPattern(
-      pattern.patterns.typing,
-      sessionData,
-    );
+    const typingAnalysis = this.analyzeTypingPattern(pattern.patterns.typing, sessionData);
     if (typingAnalysis.deviation > 0.3) {
       anomalies.push('typing_pattern_deviation');
       confidence -= 0.2;
     }
 
     // Analyze touch patterns
-    const touchAnalysis = this.analyzeTouchPattern(
-      pattern.patterns.touch,
-      sessionData,
-    );
+    const touchAnalysis = this.analyzeTouchPattern(pattern.patterns.touch, sessionData);
     if (touchAnalysis.deviation > 0.25) {
       anomalies.push('touch_pattern_deviation');
       confidence -= 0.15;
     }
 
     // Analyze motion patterns
-    const motionAnalysis = this.analyzeMotionPattern(
-      pattern.patterns.motion,
-      sessionData,
-    );
+    const motionAnalysis = this.analyzeMotionPattern(pattern.patterns.motion, sessionData);
     if (motionAnalysis.deviation > 0.35) {
       anomalies.push('motion_pattern_deviation');
       confidence -= 0.1;
     }
 
     // Analyze usage patterns
-    const usageAnalysis = this.analyzeUsagePattern(
-      pattern.patterns.usage,
-      sessionData,
-    );
+    const usageAnalysis = this.analyzeUsagePattern(pattern.patterns.usage, sessionData);
     if (usageAnalysis.deviation > 0.4) {
       anomalies.push('usage_pattern_deviation');
       confidence -= 0.1;
@@ -911,10 +875,7 @@ class BehavioralBiometricsEngine {
     // Mark baseline as established after sufficient samples
     if (pattern.baseline.sampleSize >= 10) {
       pattern.baseline.established = true;
-      pattern.baseline.confidence = Math.min(
-        0.9,
-        pattern.baseline.sampleSize / 20,
-      );
+      pattern.baseline.confidence = Math.min(0.9, pattern.baseline.sampleSize / 20);
     }
   }
 }
@@ -951,14 +912,9 @@ export class BiometricAuthenticationService {
       await this.loadBiometricTemplates();
 
       this.isInitialized = true;
-      console.log(
-        '✅ Biometric Authentication Service initialized successfully',
-      );
+      console.log('✅ Biometric Authentication Service initialized successfully');
     } catch (error) {
-      console.error(
-        '❌ Failed to initialize Biometric Authentication Service:',
-        error,
-      );
+      console.error('❌ Failed to initialize Biometric Authentication Service:', error);
       throw error;
     }
   }
@@ -1003,9 +959,7 @@ export class BiometricAuthenticationService {
     errors: BiometricError[];
   }> {
     try {
-      console.log(
-        `🔐 Enrolling ${biometricType} biometric for user ${userId}...`,
-      );
+      console.log(`🔐 Enrolling ${biometricType} biometric for user ${userId}...`);
 
       // Perform liveness detection
       const metadata: CaptureMetadata = {
@@ -1142,10 +1096,7 @@ export class BiometricAuthenticationService {
                 description: 'Device failed integrity checks',
               },
             ],
-            recommendations: [
-              'Use fallback authentication',
-              'Verify device security',
-            ],
+            recommendations: ['Use fallback authentication', 'Verify device security'],
             confidenceLevel: 0.1,
           },
         };
@@ -1169,11 +1120,7 @@ export class BiometricAuthenticationService {
       );
 
       // Find matching template
-      const matchResult = await this.findMatchingTemplate(
-        biometricType,
-        biometricData,
-        userId,
-      );
+      const matchResult = await this.findMatchingTemplate(biometricType, biometricData, userId);
 
       if (!matchResult.success) {
         return {
@@ -1190,20 +1137,13 @@ export class BiometricAuthenticationService {
               message: 'Biometric template not found or does not match',
               severity: 'medium',
               recoverable: true,
-              suggestions: [
-                'Try again',
-                'Use alternative authentication',
-                'Re-enroll biometric',
-              ],
+              suggestions: ['Try again', 'Use alternative authentication', 'Re-enroll biometric'],
             },
           ],
           riskAssessment: {
             overallRisk: 'medium',
             factors: [],
-            recommendations: [
-              'Try alternative biometric',
-              'Use password authentication',
-            ],
+            recommendations: ['Try alternative biometric', 'Use password authentication'],
             confidenceLevel: matchResult.confidence,
           },
         };
@@ -1250,10 +1190,7 @@ export class BiometricAuthenticationService {
         });
       }
 
-      const overallRisk = this.calculateOverallRisk(
-        riskFactors,
-        overallConfidence,
-      );
+      const overallRisk = this.calculateOverallRisk(riskFactors, overallConfidence);
 
       // Update template usage
       const template = this.biometricTemplates.get(matchResult.templateId);
@@ -1263,9 +1200,7 @@ export class BiometricAuthenticationService {
       }
 
       // Generate authentication token
-      const authToken = await zeroTrustSecurityService[
-        'crypto'
-      ].generateSecureKey('signing');
+      const authToken = await zeroTrustSecurityService['crypto'].generateSecureKey('signing');
 
       // Track authentication
       analyticsService.trackEvent('biometric_authentication', {
@@ -1292,10 +1227,7 @@ export class BiometricAuthenticationService {
         riskAssessment: {
           overallRisk,
           factors: riskFactors,
-          recommendations: this.generateRecommendations(
-            riskFactors,
-            overallConfidence,
-          ),
+          recommendations: this.generateRecommendations(riskFactors, overallConfidence),
           confidenceLevel: overallConfidence,
         },
       };
@@ -1334,17 +1266,12 @@ export class BiometricAuthenticationService {
     // This would use proper template extraction algorithms
     const templateData = JSON.stringify({
       features: biometricData.features || 'mock_features',
-      hash: await zeroTrustSecurityService['crypto'].hash(
-        JSON.stringify(biometricData),
-      ),
+      hash: await zeroTrustSecurityService['crypto'].hash(JSON.stringify(biometricData)),
       timestamp: Date.now(),
     });
 
     // Encrypt the template
-    return zeroTrustSecurityService.encryptSensitiveData(
-      templateData,
-      'biometric_template',
-    );
+    return zeroTrustSecurityService.encryptSensitiveData(templateData, 'biometric_template');
   }
 
   private async findMatchingTemplate(
@@ -1357,12 +1284,8 @@ export class BiometricAuthenticationService {
     templateId: string;
     confidence: number;
   }> {
-    const candidateTemplates = Array.from(
-      this.biometricTemplates.values(),
-    ).filter(
-      template =>
-        template.type === biometricType &&
-        (!userId || template.userId === userId),
+    const candidateTemplates = Array.from(this.biometricTemplates.values()).filter(
+      template => template.type === biometricType && (!userId || template.userId === userId),
     );
 
     if (candidateTemplates.length === 0) {
@@ -1386,9 +1309,7 @@ export class BiometricAuthenticationService {
     return { success: false, templateId: '', confidence: 0.5 };
   }
 
-  private extractEnvironmentalFactors(
-    metadata: CaptureMetadata,
-  ): EnvironmentalFactors {
+  private extractEnvironmentalFactors(metadata: CaptureMetadata): EnvironmentalFactors {
     return {
       lighting: 'medium',
       motion: 'stable',
@@ -1405,10 +1326,7 @@ export class BiometricAuthenticationService {
   private async saveBiometricTemplates(): Promise<void> {
     try {
       const templates = Array.from(this.biometricTemplates.values());
-      await AsyncStorage.setItem(
-        'biometric_templates',
-        JSON.stringify(templates),
-      );
+      await AsyncStorage.setItem('biometric_templates', JSON.stringify(templates));
     } catch (error) {
       console.error('Failed to save biometric templates:', error);
     }
@@ -1433,10 +1351,7 @@ export class BiometricAuthenticationService {
     return 'very-low';
   }
 
-  private generateRecommendations(
-    factors: RiskFactor[],
-    confidence: number,
-  ): string[] {
+  private generateRecommendations(factors: RiskFactor[], confidence: number): string[] {
     const recommendations: string[] = [];
 
     if (confidence < 0.7) {
@@ -1503,6 +1418,5 @@ export class BiometricAuthenticationService {
 }
 
 // Export singleton instance
-export const biometricAuthenticationService =
-  new BiometricAuthenticationService();
+export const biometricAuthenticationService = new BiometricAuthenticationService();
 export default biometricAuthenticationService;

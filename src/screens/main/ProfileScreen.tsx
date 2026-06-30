@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 
-import { useSelector } from 'react-redux';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import type { NavigationProp } from '@react-navigation/native';
 import type { RootState } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+import { zeroTrustSecurityService } from '../../services/ZeroTrustSecurityService';
+import {
+  logout,
+  clearUserState,
+  resetCarbonState,
+  resetLocationState,
+  resetAnalytics,
+  resetSettings,
+  updateNotificationSettings,
+  updatePrivacySettings,
+  updateAppSettings,
+} from '../../store';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
 import {
   Plant,
@@ -22,22 +38,17 @@ import {
   Trash,
   CaretRight,
   PencilSimple,
+  EyeSlash,
+  MapPin,
 } from 'phosphor-react-native';
 
-const GlassCard = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        overflow: 'hidden',
-      },
-    ]}
-  >
-    {children}
-  </View>
+interface GlassCardProps {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}
+
+const GlassCard = ({ style, children }: GlassCardProps) => (
+  <View style={[styles.glassCard, style]}>{children}</View>
 );
 
 const BADGES = [
@@ -89,15 +100,49 @@ const SettingRow = ({
 );
 
 const ProfileScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<Record<string, object | undefined>>>();
   const { showToast } = useToast();
-  const { profile } = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch();
 
-  const [notifications, setNotifications] = useState(true);
-  const [weeklyReport, setWeeklyReport] = useState(true);
-  const [privateProfile, setPrivateProfile] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [metricUnits, setMetricUnits] = useState(true);
+  const user = useSelector((state: RootState) => state.user);
+  const profile = user?.profile;
+  const settings = useSelector((state: RootState) => state.settings);
+
+  const notifications = settings?.notifications?.pushEnabled ?? true;
+  const weeklyReport = settings?.notifications?.weeklyReports ?? true;
+  const privateProfile = settings?.privacy?.dataSharing ?? false;
+  const analytics = settings?.privacy?.analytics ?? true;
+  const locationTracking = settings?.privacy?.locationTracking ?? true;
+  const darkMode = (settings?.app?.theme ?? 'dark') === 'dark';
+  const metricUnits = (settings?.app?.units ?? 'metric') === 'metric';
+
+  const handleToggleNotifications = (value: boolean) => {
+    dispatch(updateNotificationSettings({ pushEnabled: value }));
+  };
+
+  const handleToggleWeeklyReport = (value: boolean) => {
+    dispatch(updateNotificationSettings({ weeklyReports: value }));
+  };
+
+  const handleTogglePrivateProfile = (value: boolean) => {
+    dispatch(updatePrivacySettings({ dataSharing: value }));
+  };
+
+  const handleToggleAnalytics = (value: boolean) => {
+    dispatch(updatePrivacySettings({ analytics: value }));
+  };
+
+  const handleToggleLocationTracking = (value: boolean) => {
+    dispatch(updatePrivacySettings({ locationTracking: value }));
+  };
+
+  const handleToggleDarkMode = (value: boolean) => {
+    dispatch(updateAppSettings({ theme: value ? 'dark' : 'light' }));
+  };
+
+  const handleToggleMetricUnits = (value: boolean) => {
+    dispatch(updateAppSettings({ units: value ? 'metric' : 'imperial' }));
+  };
 
   const displayName = profile?.name || 'Eco Explorer';
   const displayEmail = profile?.email || 'hello@kindred.earth';
@@ -108,9 +153,72 @@ const ProfileScreen = () => {
       {
         text: 'Sign Out',
         style: 'destructive',
-        onPress: () => showToast('Signed out. See you next time! 🌿', 'info'),
+        onPress: () => {
+          dispatch(logout());
+          showToast('Signed out. See you next time! 🌿', 'info');
+        },
       },
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This is permanent. All your carbon savings history, user settings, profile data, and session credentials will be permanently erased. Are you sure you want to proceed?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Permanently',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // 1. Call Firebase user deletion if logged in
+              const currentUser = auth().currentUser;
+              if (currentUser) {
+                await currentUser.delete();
+              }
+
+              // 2. Clear all AsyncStorage caches
+              await AsyncStorage.clear();
+
+              // 3. Destroy Zero-Trust Session
+              await zeroTrustSecurityService.destroySession();
+
+              // 4. Reset Redux stores
+              dispatch(logout());
+              dispatch(clearUserState());
+              dispatch(resetCarbonState());
+              dispatch(resetLocationState());
+              dispatch(resetAnalytics());
+              dispatch(resetSettings());
+
+              showToast('Account and all personal data deleted successfully.', 'success');
+            } catch (error) {
+              console.error('Error during account deletion:', error);
+              const authError = error as { code?: string };
+              if (authError.code === 'auth/requires-recent-login') {
+                Alert.alert(
+                  'Re-authentication Required',
+                  'For security reasons, you must sign out and sign back in before deleting your account.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Sign Out',
+                      style: 'destructive',
+                      onPress: () => {
+                        dispatch(logout());
+                      },
+                    },
+                  ],
+                );
+              } else {
+                showToast('Failed to delete account. Please try again.', 'error');
+              }
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleEditProfile = () => {
@@ -182,7 +290,7 @@ const ProfileScreen = () => {
               right={
                 <Switch
                   value={notifications}
-                  onValueChange={setNotifications}
+                  onValueChange={handleToggleNotifications}
                   trackColor={{
                     true: '#38EF7D',
                     false: 'rgba(255,255,255,0.2)',
@@ -199,7 +307,7 @@ const ProfileScreen = () => {
               right={
                 <Switch
                   value={weeklyReport}
-                  onValueChange={setWeeklyReport}
+                  onValueChange={handleToggleWeeklyReport}
                   trackColor={{
                     true: '#38EF7D',
                     false: 'rgba(255,255,255,0.2)',
@@ -221,7 +329,41 @@ const ProfileScreen = () => {
               right={
                 <Switch
                   value={privateProfile}
-                  onValueChange={setPrivateProfile}
+                  onValueChange={handleTogglePrivateProfile}
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
+                />
+              }
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon={<EyeSlash size={24} color='#38EF7D' weight='duotone' />}
+              label='Telemetry & Analytics'
+              sublabel='Help improve the app with anonymous usage data'
+              right={
+                <Switch
+                  value={analytics}
+                  onValueChange={handleToggleAnalytics}
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
+                />
+              }
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon={<MapPin size={24} color='#38EF7D' weight='duotone' />}
+              label='Eco-Location Tracking'
+              sublabel='Local commuting detection (zero data shared)'
+              right={
+                <Switch
+                  value={locationTracking}
+                  onValueChange={handleToggleLocationTracking}
                   trackColor={{
                     true: '#38EF7D',
                     false: 'rgba(255,255,255,0.2)',
@@ -238,7 +380,7 @@ const ProfileScreen = () => {
           <GlassCard style={styles.sectionCard}>
             <TouchableOpacity
               style={styles.settingRow}
-              onPress={() => (navigation as any).navigate('DataConnections')}
+              onPress={() => navigation.navigate('DataConnections')}
             >
               <View style={styles.settingIconWrapper}>
                 <ChartBar size={24} color='#38EF7D' weight='duotone' />
@@ -261,7 +403,7 @@ const ProfileScreen = () => {
               right={
                 <Switch
                   value={darkMode}
-                  onValueChange={setDarkMode}
+                  onValueChange={handleToggleDarkMode}
                   trackColor={{
                     true: '#38EF7D',
                     false: 'rgba(255,255,255,0.2)',
@@ -278,7 +420,7 @@ const ProfileScreen = () => {
               right={
                 <Switch
                   value={metricUnits}
-                  onValueChange={setMetricUnits}
+                  onValueChange={handleToggleMetricUnits}
                   trackColor={{
                     true: '#38EF7D',
                     false: 'rgba(255,255,255,0.2)',
@@ -303,11 +445,7 @@ const ProfileScreen = () => {
               {
                 icon: <Trash size={24} color='#FF416C' weight='duotone' />,
                 label: 'Delete Account',
-                onPress: () =>
-                  Alert.alert(
-                    'Delete Account',
-                    'This is permanent. Contact support@kindred.earth to proceed.',
-                  ),
+                onPress: handleDeleteAccount,
                 color: '#FF416C',
               },
             ].map((item, index) => (
@@ -503,6 +641,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
     fontSize: 12,
     marginBottom: 20,
+  },
+  glassCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    overflow: 'hidden',
   },
 });
 

@@ -28,10 +28,7 @@ export class CrashReportingService {
 
   static async setUser(userId: string): Promise<void> {
     try {
-      await Promise.all([
-        crashlytics().setUserId(userId),
-        analytics().setUserId(userId),
-      ]);
+      await Promise.all([crashlytics().setUserId(userId), analytics().setUserId(userId)]);
     } catch (error) {
       console.error('Failed to set user for crash reporting:', error);
     }
@@ -68,10 +65,7 @@ export class CrashReportingService {
     }
   }
 
-  static async logWarning(
-    message: string,
-    context?: ErrorContext,
-  ): Promise<void> {
+  static async logWarning(message: string, context?: ErrorContext): Promise<void> {
     try {
       await analytics().logEvent('app_warning', {
         warning_message: message,
@@ -103,9 +97,7 @@ export class CrashReportingService {
     }
   }
 
-  static async setAttributes(
-    attributes: Record<string, string>,
-  ): Promise<void> {
+  static async setAttributes(attributes: Record<string, string>): Promise<void> {
     try {
       await crashlytics().setAttributes(attributes);
     } catch (error) {
@@ -125,9 +117,7 @@ export class CrashReportingService {
     try {
       await promise;
     } catch (error) {
-      await this.logError(
-        error instanceof Error ? error : new Error(String(error)),
-      );
+      await this.logError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }

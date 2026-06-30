@@ -106,24 +106,14 @@ export const usePerformanceMonitoring = (
         const endTime = performance.now();
         const duration = endTime - startTime;
 
-        performanceService.current.recordMetric(
-          `${componentName}_${name}`,
-          duration,
-          'ms',
-          {
-            component: componentName,
-          },
-        );
+        performanceService.current.recordMetric(`${componentName}_${name}`, duration, 'ms', {
+          component: componentName,
+        });
 
         if (enableAnalytics) {
-          analyticsServiceRef.current.trackPerformance(
-            `${componentName}_${name}`,
-            duration,
-            'ms',
-            {
-              component: componentName,
-            },
-          );
+          analyticsServiceRef.current.trackPerformance(`${componentName}_${name}`, duration, 'ms', {
+            component: componentName,
+          });
         }
 
         measurements.current.delete(name);
@@ -139,24 +129,14 @@ export const usePerformanceMonitoring = (
     (name: string, value: number, unit: string = 'ms') => {
       if (!shouldSample()) return;
 
-      performanceService.current.recordMetric(
-        `${componentName}_${name}`,
-        value,
-        unit,
-        {
-          component: componentName,
-        },
-      );
+      performanceService.current.recordMetric(`${componentName}_${name}`, value, unit, {
+        component: componentName,
+      });
 
       if (enableAnalytics) {
-        analyticsServiceRef.current.trackPerformance(
-          `${componentName}_${name}`,
-          value,
-          unit,
-          {
-            component: componentName,
-          },
-        );
+        analyticsServiceRef.current.trackPerformance(`${componentName}_${name}`, value, unit, {
+          component: componentName,
+        });
       }
     },
     [componentName, enableAnalytics, shouldSample],
@@ -197,11 +177,7 @@ export const usePerformanceMonitoring = (
 
       // Track slow renders
       if (trackSlowRenders && isSlow) {
-        logger.current.warn(
-          `Slow render detected in ${componentName}: ${renderTime.toFixed(
-            2,
-          )}ms`,
-        );
+        logger.current.warn(`Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`);
 
         if (enableAnalytics) {
           analyticsServiceRef.current.trackEvent(
@@ -295,10 +271,7 @@ export const usePerformanceMonitoring = (
     }
 
     // Setup app state listener
-    const appStateSubscription = AppState.addEventListener(
-      'change',
-      handleAppStateChange,
-    );
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
 
     // Setup memory tracking interval
     let memoryInterval: NodeJS.Timeout | null = null;
@@ -375,22 +348,13 @@ export const withPerformanceMonitoring = <P extends object>(
 ): React.ComponentType<P> => {
   const ComponentWithPerformanceMonitoring = (props: P) => {
     const componentName =
-      options.componentName ||
-      WrappedComponent.displayName ||
-      WrappedComponent.name ||
-      'Component';
+      options.componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
 
-    const {
-      metrics,
-      startMeasurement,
-      recordMetric,
-      trackRender,
-      isSlowRender,
-      performanceScore,
-    } = usePerformanceMonitoring({
-      ...options,
-      componentName,
-    });
+    const { metrics, startMeasurement, recordMetric, trackRender, isSlowRender, performanceScore } =
+      usePerformanceMonitoring({
+        ...options,
+        componentName,
+      });
 
     // Add performance props to the wrapped component
     const enhancedProps = {
@@ -433,8 +397,11 @@ export const useAsyncPerformance = () => {
       asyncFn: () => Promise<T>,
       context?: Record<string, any>,
     ): Promise<{ result: T; duration: number }> => {
-      const { result, duration } =
-        await performanceService.current.measureAsync(name, asyncFn, context);
+      const { result, duration } = await performanceService.current.measureAsync(
+        name,
+        asyncFn,
+        context,
+      );
 
       // Track in analytics
       analyticsServiceRef.current.trackPerformance(name, duration, 'ms', context);
@@ -450,11 +417,7 @@ export const useAsyncPerformance = () => {
       syncFn: () => T,
       context?: Record<string, any>,
     ): { result: T; duration: number } => {
-      const { result, duration } = performanceService.current.measure(
-        name,
-        syncFn,
-        context,
-      );
+      const { result, duration } = performanceService.current.measure(name, syncFn, context);
 
       // Track in analytics
       analyticsServiceRef.current.trackPerformance(name, duration, 'ms', context);

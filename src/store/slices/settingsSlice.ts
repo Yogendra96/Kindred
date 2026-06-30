@@ -17,6 +17,7 @@ interface PrivacySettings {
   analytics: boolean;
   biometricAuth: boolean;
   dataRetentionDays: number;
+  consentAccepted: boolean;
 }
 
 interface AppSettings {
@@ -64,6 +65,7 @@ const initialState: SettingsState = {
     analytics: true,
     biometricAuth: false,
     dataRetentionDays: 365,
+    consentAccepted: false,
   },
   app: {
     theme: 'system',
@@ -97,40 +99,31 @@ const settingsSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-    updateNotificationSettings: (
-      state,
-      action: PayloadAction<Partial<NotificationSettings>>,
-    ) => {
+    updateNotificationSettings: (state, action: PayloadAction<Partial<NotificationSettings>>) => {
       state.notifications = { ...state.notifications, ...action.payload };
       state.lastSynced = Date.now();
     },
-    updatePrivacySettings: (
-      state,
-      action: PayloadAction<Partial<PrivacySettings>>,
-    ) => {
+    updatePrivacySettings: (state, action: PayloadAction<Partial<PrivacySettings>>) => {
       state.privacy = { ...state.privacy, ...action.payload };
+      state.lastSynced = Date.now();
+    },
+    acceptPrivacyConsent: state => {
+      state.privacy.consentAccepted = true;
       state.lastSynced = Date.now();
     },
     updateAppSettings: (state, action: PayloadAction<Partial<AppSettings>>) => {
       state.app = { ...state.app, ...action.payload };
       state.lastSynced = Date.now();
     },
-    updateSecuritySettings: (
-      state,
-      action: PayloadAction<Partial<SecuritySettings>>,
-    ) => {
+    updateSecuritySettings: (state, action: PayloadAction<Partial<SecuritySettings>>) => {
       state.security = { ...state.security, ...action.payload };
       state.lastSynced = Date.now();
     },
     resetSettings: state => {
       Object.assign(state, initialState);
     },
-    syncSettings: (
-      state,
-      action: PayloadAction<Omit<SettingsState, 'isLoading' | 'error'>>,
-    ) => {
-      const { notifications, privacy, app, security, lastSynced } =
-        action.payload;
+    syncSettings: (state, action: PayloadAction<Omit<SettingsState, 'isLoading' | 'error'>>) => {
+      const { notifications, privacy, app, security, lastSynced } = action.payload;
       state.notifications = notifications;
       state.privacy = privacy;
       state.app = app;
@@ -145,6 +138,7 @@ export const {
   setError,
   updateNotificationSettings,
   updatePrivacySettings,
+  acceptPrivacyConsent,
   updateAppSettings,
   updateSecuritySettings,
   resetSettings,

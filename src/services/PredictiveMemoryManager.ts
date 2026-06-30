@@ -31,13 +31,7 @@ interface AdvancedMemoryMetrics {
 // Memory Leak Detection
 interface MemoryLeakSignature {
   readonly id: string;
-  readonly type:
-    | 'component'
-    | 'event-listener'
-    | 'timer'
-    | 'network'
-    | 'cache'
-    | 'unknown';
+  readonly type: 'component' | 'event-listener' | 'timer' | 'network' | 'cache' | 'unknown';
   readonly pattern:
     | 'linear-growth'
     | 'exponential-growth'
@@ -48,11 +42,7 @@ interface MemoryLeakSignature {
   readonly detectedAt: number;
   readonly component?: string;
   readonly stackTrace?: string;
-  readonly memoryRegion:
-    | 'js-heap'
-    | 'native-heap'
-    | 'image-cache'
-    | 'network-cache';
+  readonly memoryRegion: 'js-heap' | 'native-heap' | 'image-cache' | 'network-cache';
   readonly predictedImpact: {
     timeToOOM: number; // milliseconds until out of memory
     performanceImpact: number; // 0-100 scale
@@ -194,10 +184,7 @@ class AdvancedObjectPool<T> {
 // Memory Pattern Analyzer using ML-like algorithms
 class MemoryPatternAnalyzer {
   private readonly memoryHistory: AdvancedMemoryMetrics[] = [];
-  private readonly componentHistory = new Map<
-    string,
-    ComponentLifecycleTracker[]
-  >();
+  private readonly componentHistory = new Map<string, ComponentLifecycleTracker[]>();
   private readonly leakSignatures: MemoryLeakSignature[] = [];
   private readonly maxHistorySize = 1000;
 
@@ -266,16 +253,8 @@ class MemoryPatternAnalyzer {
     return { slope, correlation, variance };
   }
 
-  private calculateCorrelation(
-    x: number[],
-    y: number[],
-    meanX: number,
-    meanY: number,
-  ): number {
-    const numerator = x.reduce(
-      (sum, xi, i) => sum + (xi - meanX) * (y[i] - meanY),
-      0,
-    );
+  private calculateCorrelation(x: number[], y: number[], meanX: number, meanY: number): number {
+    const numerator = x.reduce((sum, xi, i) => sum + (xi - meanX) * (y[i] - meanY), 0);
     const denomX = Math.sqrt(x.reduce((sum, xi) => sum + (xi - meanX) ** 2, 0));
     const denomY = Math.sqrt(y.reduce((sum, yi) => sum + (yi - meanY) ** 2, 0));
 
@@ -300,8 +279,7 @@ class MemoryPatternAnalyzer {
         predictedImpact: {
           timeToOOM: this.calculateTimeToOOM(trend.slope, currentMetrics),
           performanceImpact: Math.min(100, (trend.slope / (1024 * 1024)) * 10),
-          userExperienceRisk:
-            trend.slope > 5 * 1024 * 1024 ? 'critical' : 'high',
+          userExperienceRisk: trend.slope > 5 * 1024 * 1024 ? 'critical' : 'high',
         },
       };
 
@@ -327,8 +305,7 @@ class MemoryPatternAnalyzer {
         type: 'event-listener',
         pattern: 'periodic-spike',
         severity: 'medium',
-        growthRate:
-          spikes.reduce((sum, s) => sum + s.usedMemory, 0) / spikes.length,
+        growthRate: spikes.reduce((sum, s) => sum + s.usedMemory, 0) / spikes.length,
         detectedAt: currentMetrics.timestamp,
         memoryRegion: 'js-heap',
         predictedImpact: {
@@ -357,8 +334,7 @@ class MemoryPatternAnalyzer {
         predictedImpact: {
           timeToOOM: 7200000, // 2 hours estimate
           performanceImpact: currentMetrics.fragmentationRatio * 100,
-          userExperienceRisk:
-            currentMetrics.fragmentationRatio > 0.6 ? 'high' : 'medium',
+          userExperienceRisk: currentMetrics.fragmentationRatio > 0.6 ? 'high' : 'medium',
         },
       };
 
@@ -367,12 +343,8 @@ class MemoryPatternAnalyzer {
     }
   }
 
-  private calculateTimeToOOM(
-    growthRate: number,
-    currentMetrics: AdvancedMemoryMetrics,
-  ): number {
-    const availableMemory =
-      currentMetrics.totalMemory - currentMetrics.usedMemory;
+  private calculateTimeToOOM(growthRate: number, currentMetrics: AdvancedMemoryMetrics): number {
+    const availableMemory = currentMetrics.totalMemory - currentMetrics.usedMemory;
     if (growthRate <= 0) return Infinity;
 
     return (availableMemory / growthRate) * 1000; // Convert to milliseconds
@@ -400,21 +372,18 @@ class MemoryPatternAnalyzer {
   } {
     if (this.memoryHistory.length < 5) {
       return {
-        predictedUsage:
-          this.memoryHistory[this.memoryHistory.length - 1]?.usedMemory || 0,
+        predictedUsage: this.memoryHistory[this.memoryHistory.length - 1]?.usedMemory || 0,
         confidence: 0.1,
         riskLevel: 'low',
       };
     }
 
     const trend = this.calculateMemoryTrend(this.memoryHistory.slice(-20));
-    const currentUsage =
-      this.memoryHistory[this.memoryHistory.length - 1].usedMemory;
+    const currentUsage = this.memoryHistory[this.memoryHistory.length - 1].usedMemory;
     const predictedUsage = currentUsage + (trend.slope * timeframeMs) / 1000;
 
     const confidence = Math.abs(trend.correlation);
-    const totalMemory =
-      this.memoryHistory[this.memoryHistory.length - 1].totalMemory;
+    const totalMemory = this.memoryHistory[this.memoryHistory.length - 1].totalMemory;
     const usageRatio = predictedUsage / totalMemory;
 
     let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
@@ -431,10 +400,7 @@ export class PredictiveMemoryManager {
   private readonly analyzer: MemoryPatternAnalyzer;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly objectPools = new Map<string, AdvancedObjectPool<any>>();
-  private readonly componentTrackers = new Map<
-    string,
-    ComponentLifecycleTracker
-  >();
+  private readonly componentTrackers = new Map<string, ComponentLifecycleTracker>();
   private readonly gcScheduler: NodeJS.Timeout;
   private readonly metricsCollector: NodeJS.Timeout;
   private isInitialized = false;
@@ -485,10 +451,7 @@ export class PredictiveMemoryManager {
       this.isInitialized = true;
       console.log('✅ Predictive Memory Manager initialized successfully');
     } catch (error) {
-      console.error(
-        '❌ Failed to initialize Predictive Memory Manager:',
-        error,
-      );
+      console.error('❌ Failed to initialize Predictive Memory Manager:', error);
       throw error;
     }
   }
@@ -506,22 +469,14 @@ export class PredictiveMemoryManager {
     // Setup component lifecycle event listeners
     DeviceEventEmitter.addListener(
       'componentDidMount',
-      (data: {
-        componentName: string;
-        timestamp: number;
-        memoryUsage: number;
-      }) => {
+      (data: { componentName: string; timestamp: number; memoryUsage: number }) => {
         this.trackComponentMount(data);
       },
     );
 
     DeviceEventEmitter.addListener(
       'componentWillUnmount',
-      (data: {
-        componentName: string;
-        timestamp: number;
-        memoryUsage: number;
-      }) => {
+      (data: { componentName: string; timestamp: number; memoryUsage: number }) => {
         this.trackComponentUnmount(data);
       },
     );
@@ -649,10 +604,7 @@ export class PredictiveMemoryManager {
     try {
       const prediction = this.analyzer.getMemoryPrediction(60000); // 1 minute prediction
 
-      if (
-        prediction.riskLevel === 'high' ||
-        prediction.riskLevel === 'critical'
-      ) {
+      if (prediction.riskLevel === 'high' || prediction.riskLevel === 'critical') {
         console.log('🧹 Triggering predictive garbage collection...');
 
         // Clear least valuable caches
@@ -692,9 +644,7 @@ export class PredictiveMemoryManager {
     }
   }
 
-  private async handleCriticalMemoryUsage(
-    metrics: AdvancedMemoryMetrics,
-  ): Promise<void> {
+  private async handleCriticalMemoryUsage(metrics: AdvancedMemoryMetrics): Promise<void> {
     console.warn('🚨 Critical memory usage detected!');
 
     // Immediate aggressive cleanup
@@ -727,19 +677,13 @@ export class PredictiveMemoryManager {
   private async clearAllCaches(): Promise<void> {
     // Clear all application caches
     try {
-      await AsyncStorage.multiRemove([
-        'image_cache',
-        'network_cache',
-        'computed_cache',
-      ]);
+      await AsyncStorage.multiRemove(['image_cache', 'network_cache', 'computed_cache']);
     } catch (error) {
       console.error('Failed to clear caches:', error);
     }
   }
 
-  private handleMemoryPressure(
-    level: 'low' | 'medium' | 'high' | 'critical',
-  ): void {
+  private handleMemoryPressure(level: 'low' | 'medium' | 'high' | 'critical'): void {
     console.log(`🧠 Memory pressure level: ${level}`);
 
     switch (level) {
@@ -789,11 +733,7 @@ export class PredictiveMemoryManager {
       poolStatistics[name] = pool.getStatistics();
     }
 
-    const recommendations = this.generateRecommendations(
-      currentUsage,
-      leaks,
-      prediction,
-    );
+    const recommendations = this.generateRecommendations(currentUsage, leaks, prediction);
 
     return {
       currentUsage,
@@ -812,28 +752,19 @@ export class PredictiveMemoryManager {
     const recommendations: string[] = [];
 
     if (usage.fragmentationRatio > 0.3) {
-      recommendations.push(
-        'Consider memory defragmentation to improve allocation efficiency',
-      );
+      recommendations.push('Consider memory defragmentation to improve allocation efficiency');
     }
 
     if (leaks.length > 0) {
       recommendations.push(`Address ${leaks.length} detected memory leak(s)`);
     }
 
-    if (
-      prediction.riskLevel === 'high' ||
-      prediction.riskLevel === 'critical'
-    ) {
-      recommendations.push(
-        'Immediate memory optimization required to prevent OOM',
-      );
+    if (prediction.riskLevel === 'high' || prediction.riskLevel === 'critical') {
+      recommendations.push('Immediate memory optimization required to prevent OOM');
     }
 
     if (usage.usedMemory / usage.totalMemory > 0.8) {
-      recommendations.push(
-        'Memory usage is high, consider reducing cache sizes',
-      );
+      recommendations.push('Memory usage is high, consider reducing cache sizes');
     }
 
     return recommendations;

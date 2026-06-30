@@ -23,9 +23,7 @@ export class BiometricAuthService {
 
   constructor() {
     this.fullService = new BiometricAuthenticationService();
-    log.warn(
-      'BiometricAuthService is deprecated — use BiometricAuthenticationService',
-    );
+    log.warn('BiometricAuthService is deprecated — use BiometricAuthenticationService');
   }
 
   /** @deprecated Use BiometricAuthenticationService.authenticate() */
@@ -39,7 +37,5 @@ export class BiometricAuthService {
   }
 }
 
-export const getBiometricAuthService = createSingleton(
-  () => new BiometricAuthService(),
-);
+export const getBiometricAuthService = createSingleton(() => new BiometricAuthService());
 export default getBiometricAuthService();

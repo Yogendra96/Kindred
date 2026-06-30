@@ -1,258 +1,194 @@
-# Kindred App Enhancement Roadmap 🚀
+# Kindred Enhancement Roadmap 🚀
 
-## Current Status: 100% Production Ready ✅
-
-All core features implemented. This roadmap outlines advanced enhancements to make Kindred
-industry-leading.
+**Last Updated:** June 27, 2026  
+**Current Phase:** Path B — Advanced Feature Development
 
 ---
 
-## 🎯 Path B: Next-Gen Innovation (Up Next)
+## ✅ Completed
 
-_The following features are slated for immediate development in Path B to establish Kindred as an
-industry differentiator._
+### Path A: Tech Debt & Quality
 
-### 1. Real-Time Social & Gamification (WebSockets)
+- [x] TypeScript strict mode, ESLint, Prettier, pre-commit hooks
+- [x] Jest test suite configuration + 75% coverage target
+- [x] Documentation overhaul (README, docs map, all guides)
+- [x] Metro bundler stabilisation + 16KB page alignment fix
 
-- **Objective:** Build real-time leaderboards and live community challenges.
-- **Tech Stack:** Socket.io / Native WebSockets, Redux real-time middleware.
-- **Differentiator:** Instant eco-nudge notifications, live progress tracking against friends, and
-  multiplayer environmental missions.
+### Path B1: Real-Time Social & Gamification
 
-### 2. AI Vision for Waste Categorization (TensorFlow.js)
+- [x] WebSocket service with room-based pub/sub + reconnect
+- [x] Real-time activity feed with live pulse animation
+- [x] Neighbourhood leaderboards (anonymous + friends)
+- [x] Streaks, missions, weekly/monthly challenges
+- [x] Live connection status indicator
 
-- **Objective:** Camera integration to scan products/waste for automatic carbon footprinting.
-- **Tech Stack:** `ComputerVisionCarbonEngine`, TensorFlow.js for React Native, device camera APIs.
-- **Differentiator:** Frictionless logging. Users just point their camera at their meal or
-  recycling, and the AI logs the footprint instantly.
+### Path B2: AI Vision for Waste Categorization
 
-### 3. Smart Device & Health Integrations (IoT)
+- [x] Camera integration (`SmartCameraCapture.tsx`)
+- [x] TensorFlow.js prediction pipeline with dev mock fallback
+- [x] `AIVisionService.ts` — model download, cache, inference
+- [x] `ComputerVisionCarbonEngine.ts` — image preprocessing
+- [x] E2E Maestro test covering camera flow
 
-- **Objective:** Passive carbon tracking through smart home devices and wearables.
-- **Tech Stack:** Apple HealthKit / Google Fit (transport modes), Smart Thermostat APIs.
-- **Differentiator:** Zero-touch tracking. The app automatically knows if the user walked instead of
-  drove, or reduced home energy.
+### Path B3: Advanced Offline Data Persistence
 
----
+- [x] `OfflineQueueService` — FIFO, idempotent, MERGE/LWW conflict resolution
+- [x] `BackgroundSyncService` — background drain via expo-task-manager
+- [x] `CacheService v2` — LRU memory + disk TTL policies
+- [x] `OfflineBanner` — 4-state animated status banner
+- [x] Redux store: field filters, compression, migration versioning
+- [x] `useNetworkStatus v2` — auto-triggers drain on reconnect
+- [x] 10/10 unit tests passing
 
-## 🎯 Phase 1: High-Impact Features (Priority)
+### Path B4: Advanced Insights Dashboard
 
-### 1. Real-Time Social Features
+- [x] Period selector tab bar (Week / Month / Year)
+- [x] Carbon overview hero card wired to real Redux history
+- [x] GitHub-style activity heatmap (`CarbonHeatmap.tsx`)
+- [x] Category donut chart + animated breakdown bars (circular Svg segments)
+- [x] Predictive forecasting (linear regression on history)
+- [x] Behavioural pattern insight cards
+- [x] City average / community comparative analytics
+- [x] Pure `insightsEngine.ts` utility (no side effects, fully testable)
 
-**Status**: Planning **Impact**: High engagement driver **Timeline**: 2-3 weeks
+### Path B6: Theme & UI/UX Consistency Redesigns
 
-#### Tasks:
+- [x] Rebuilt **Carbon Twin**, **Verification Center**, **Direct Offsetting** (Offset Screen), and
+      **Learning Center** screens with deep dark SVG linear gradients, Phosphor icons, and
+      frosted-glass `GlassCard` panels.
+- [x] Refactored reusable components (`GlassCard`, `GlassBadge`) with React Native `StyleProp`
+      typings and moved all inline styling to stylesheets.
+- [x] Cleaned up remaining ESLint/TypeScript compilation warnings across `MapScreen`,
+      `MarketplaceScreen`, `ProfileScreen`, `SocialScreen`, and `VeganCalculatorScreen` (zero
+      compiler or linter warnings across all main screens).
 
-- [ ] WebSocket integration for real-time updates
-- [ ] Live carbon tracking competitions with friends
-- [ ] Real-time community challenges and leaderboards
-- [ ] Instant notifications for friend achievements
-- [ ] Live chat in eco-groups or challenges
-- [ ] Friend activity feed with live updates
-- [ ] Real-time challenge progress bars
+### Path B7: GDPR Compliance & Privacy Security
 
-**Technical Requirements:**
+- [x] Built first-launch `PrivacyConsentModal` overlay detailing location processing, telemetry, and
+      caching.
+- [x] Dynamic telemetry & analytics opt-out toggles synced between Settings Redux store and Firebase
+      Analytics.
+- [x] Local Eco-location tracking toggle in Settings.
+- [x] Self-service account deletion and data purge flow in ProfileScreen.
 
-- WebSocket service implementation
-- Real-time Redux state management
-- Push notification enhancements
-- Live data synchronization
+### Path B8: Enhanced Gamification & Rewards Center
 
----
+- [x] Standardized badges gallery distinguishing unlocked vs locked achievements with criteria
+      targets
+- [x] Interactive Eco-Buddy "Carbon Pet" SVG seedling growing dynamically based on Redux ecosystem
+      health
+- [x] Water Buddy, Plant Seedling, and Nurture Biodiversity points-based interactions
+- [x] Virtual Rewards Store for custom themes, vouchers, and certificates utilizing `AsyncStorage`
+      caching
+- [x] Climate Leagues & Tournaments standings and reward pool previews
+- [x] Automated test integration with Haptic and Blur mocks mapped in `setup.ts`
 
-### 2. Advanced AI/ML Features
+### Path B9: Verified Carbon Marketplace & Subscriptions
 
-**Status**: Planning **Impact**: Unique market differentiator **Timeline**: 3-4 weeks
-
-#### Tasks:
-
-- [ ] Image recognition for waste categorization
-- [ ] Camera integration for photo-to-carbon tracking
-- [ ] Predictive analytics for personal carbon trends
-- [ ] Smart recommendations based on behavior patterns
-- [ ] Voice-to-carbon tracking integration
-- [ ] ML model for habit prediction
-- [ ] Advanced neural network optimization
-
-**Technical Requirements:**
-
-- TensorFlow.js computer vision models
-- Camera API integration
-- Speech-to-text processing
-- Enhanced ML prediction service
-- Image preprocessing pipeline
-
----
-
-### 3. Smart Home & IoT Integration
-
-**Status**: Planning **Impact**: Automation reduces user friction **Timeline**: 3-4 weeks
-
-#### Tasks:
-
-- [ ] Smart thermostat integration (Nest, Ecobee)
-- [ ] Smart car integration (Tesla, Connected cars)
-- [ ] Smart home energy monitoring
-- [ ] Fitness tracker integration (Apple Health, Google Fit)
-- [ ] Automatic transport detection
-- [ ] IoT device carbon footprint calculation
-- [ ] Home automation triggers based on carbon goals
-
-**Technical Requirements:**
-
-- Third-party API integrations
-- Bluetooth/WiFi device communication
-- Health kit integration
-- Automated data collection services
+- [x] Rebuilt OffsetScreen.tsx with multi-tab layout (Offsets, Subscription, My Certifications)
+- [x] Integrated Gold Standard & Verra registry details drawer showing VCS/GS IDs, methodologies,
+      and registry links
+- [x] Rendered interactive UN SDG alignment grids on project sheets
+- [x] Implemented sliders for custom retirement weights with secure mock checkout overlays
+- [x] Wired up dynamic monthly subscription tiers auto-calculated from user footprint history
+- [x] Embedded active subscription summaries and redirect selectors inside the Marketplace tab
 
 ---
 
-### 4. Advanced Insights Dashboard
+## 🔄 In Progress
 
-**Status**: Planning **Impact**: Long-term user retention **Timeline**: 2-3 weeks
+### Path B5: Smart Health & IoT Integration (PLANNED)
 
-#### Tasks:
+**Status:** In backlog — ready to draft implementation plan  
+**Timeline:** ~1 session
 
-- [ ] Predictive carbon forecasting
-- [ ] Advanced trend analysis with actionable insights
-- [ ] Comparative analytics (vs friends, city average)
-- [ ] Carbon impact heatmaps and visualizations
-- [ ] Weekly/monthly insight reports
-- [ ] Goal progression analytics
-- [ ] Behavioral pattern recognition
-
-**Technical Requirements:**
-
-- Advanced data visualization library
-- Statistical analysis algorithms
-- Comparative data processing
-- Report generation system
+- [ ] HealthKit/Google Fit permission flow
+- [ ] Automatic transport mode detection (walk/cycle/drive)
+- [ ] Smart home energy monitoring stubs
+- [ ] Automatic carbon logging from health data
 
 ---
 
-## 🌟 Phase 2: Market Expansion Features
+## 🔲 Backlog — Priority Order
 
-### 5. Enhanced Gamification System
+### 1. Smart Health & IoT Integration 📱
 
-**Status**: Planning **Impact**: Increased user engagement **Timeline**: 2-3 weeks
+**Impact:** Removes all manual logging friction — the app tracks passively  
+**Tech:** Apple HealthKit, Google Fit, Nest/Ecobee thermostat APIs
 
-#### Tasks:
+- [ ] HealthKit/Google Fit permission flow
+- [ ] Automatic transport mode detection (walk/cycle/drive)
+- [ ] Smart home energy monitoring stubs
+- [ ] Automatic carbon logging from health data
 
-- [ ] Virtual carbon credits and rewards marketplace
-- [ ] Team challenges with real prizes
-- [ ] Seasonal events and limited-time achievements
-- [ ] Personal carbon "pets" that grow with good habits
-- [ ] Achievement unlocking system
-- [ ] Streak bonuses and multipliers
-- [ ] Leaderboard tournaments
+---
 
-### 6. Carbon Marketplace Integration
+### 2. Sustainable Marketplace Extensions 🌳
 
-**Status**: Planning **Impact**: Revenue generation + real-world impact **Timeline**: 3-4 weeks
+**Impact:** Direct partner integrations and ecosystem growth
 
-#### Tasks:
+- [ ] Local eco-business directory
+- [ ] Sustainable product recommendations with affiliate integration
 
-- [ ] Integration with verified carbon offset providers
-- [ ] Purchase real carbon credits within app
-- [ ] Local eco-business directory and rewards
-- [ ] Sustainable product recommendations
-- [ ] Affiliate marketing integration
-- [ ] Carbon credit trading platform
-- [ ] Impact verification system
+### 4. Enterprise / B2B Features 🏢
 
-### 7. Enterprise Features
-
-**Status**: Planning **Impact**: B2B market expansion **Timeline**: 4-5 weeks
-
-#### Tasks:
+**Impact:** B2B revenue stream
 
 - [ ] Corporate carbon tracking dashboard
 - [ ] Team leaderboards and reporting
-- [ ] Admin dashboard for organizations
-- [ ] White-label customization options
-- [ ] Enterprise API development
-- [ ] Multi-tenant architecture
-- [ ] Corporate sustainability reporting
+- [ ] Admin dashboard for organisations
+- [ ] White-label customisation options
+- [ ] Enterprise API
+- [ ] Corporate sustainability reporting (GHG Protocol)
 
 ---
 
-## 🔧 Phase 3: Technical Excellence
+### 5. Advanced Offline Capabilities 📡
 
-### 8. Advanced Offline Capabilities
+**Impact:** Reliability in low-connectivity areas
 
-**Status**: Planning **Impact**: Better user experience **Timeline**: 2-3 weeks
-
-#### Tasks:
-
-- [ ] Full offline mode with smart sync
-- [ ] Progressive Web App (PWA) features
-- [ ] Background carbon tracking
-- [ ] Offline-first data architecture
-- [ ] Smart conflict resolution
+- [ ] Full offline mode with background sync (queue foundation done ✅)
 - [ ] Offline analytics processing
-- [ ] Background sync optimization
+- [ ] Smart conflict resolution UI (user resolves merge conflicts)
+- [ ] Offline map tiles for eco-location Map screen
 
-### 9. Community Platform
+---
 
-**Status**: Planning **Impact**: Network effects and retention **Timeline**: 3-4 weeks
+### 6. Community Platform 🌍
 
-#### Tasks:
+**Impact:** Network effects and long-term retention
 
-- [ ] Local eco-events and meetups
+- [ ] Local eco-events and meetups calendar
 - [ ] Community carbon challenges by city/region
 - [ ] Expert-led content and webinars
-- [ ] User-generated eco-tips and reviews
+- [ ] User-generated eco-tips
 - [ ] Community moderation system
-- [ ] Content creation tools
-- [ ] Event management system
-
-### 10. Accessibility & Internationalization
-
-**Status**: Planning **Impact**: Global market reach **Timeline**: 2-3 weeks
-
-#### Tasks:
-
-- [ ] Voice control and commands
-- [ ] Screen reader optimization
-- [ ] Multi-language support (i18n)
-- [ ] Cultural carbon calculation variations
-- [ ] Right-to-left language support
-- [ ] Accessibility compliance (WCAG 2.1)
-- [ ] Voice navigation system
 
 ---
 
-## 🛠️ Technical Architecture Enhancements
+### 7. Accessibility & Internationalisation 🌐
 
-### Core Infrastructure Improvements
+**Impact:** Global market reach
 
-- [ ] Microservices architecture migration
-- [ ] Advanced caching strategies (Redis)
-- [ ] GraphQL API implementation
-- [ ] Real-time database optimization
-- [ ] CDN integration for global performance
-- [ ] Advanced monitoring and alerting
-- [ ] Automated testing pipeline enhancement
+- [ ] Multi-language support (i18n) — Arabic, Spanish, French priority
+- [ ] Right-to-left layout support
+- [ ] Screen reader optimisation (WCAG 2.1 AA)
+- [ ] Voice-to-carbon tracking integration
+- [ ] Cultural carbon calculation variations
 
-### Security Enhancements
+---
 
-- [ ] Advanced threat detection
-- [ ] Zero-trust security model
-- [ ] Advanced encryption for all data
-- [ ] Security audit and penetration testing
-- [ ] GDPR and privacy compliance
-- [ ] Multi-factor authentication
-- [ ] Fraud detection systems
+## 🔒 Privacy & Compliance (Critical — Run Alongside All Features)
 
-### Performance Optimizations
+> See `docs/PRIVACY_AUDIT.md` (pending) for full findings.
 
-- [ ] Advanced lazy loading strategies
-- [ ] Bundle splitting optimization
-- [ ] Image optimization pipeline
-- [ ] Memory usage optimization
-- [ ] Battery usage optimization
-- [ ] Network request optimization
-- [ ] Rendering performance improvements
+- [ ] GDPR consent screen on first launch
+- [ ] Data deletion flow (user can delete all data)
+- [ ] Analytics opt-out mechanism
+- [ ] Token storage audit (AsyncStorage → Keychain for sensitive tokens)
+- [ ] Location permission gating audit
+- [ ] Privacy policy screen in-app
+- [ ] CCPA compliance for US users
 
 ---
 
@@ -260,49 +196,20 @@ industry differentiator._
 
 ### User Engagement
 
-- Daily Active Users (DAU) increase by 300%
-- Session duration increase by 200%
-- Feature adoption rate > 70%
-- User retention (7-day) > 60%
+- Daily Active Users (DAU) increase +300%
+- Session duration +200%
+- Feature adoption rate >70%
+- 7-day retention >60%
 
-### Business Impact
+### Business
 
-- Revenue generation through marketplace
+- Revenue via marketplace + subscriptions
 - Enterprise client acquisition
-- Global market expansion
-- Sustainable user growth
+- App Store rating >4.5⭐
 
-### Technical Excellence
+### Technical
 
-- App performance scores > 95%
+- App performance scores >95%
 - Zero critical security vulnerabilities
-- 99.9% uptime
-- <2 second load times globally
-
----
-
-## 🎯 Implementation Priority
-
-**Immediate (Next 4 weeks):**
-
-1. Real-Time Social Features
-2. Advanced AI/ML Features
-3. Smart Home Integration
-4. Advanced Insights Dashboard
-
-**Near-term (Weeks 5-8):** 5. Enhanced Gamification 6. Carbon Marketplace 7. Advanced Offline
-Capabilities
-
-**Medium-term (Weeks 9-16):** 8. Enterprise Features 9. Community Platform 10. Accessibility & i18n
-
----
-
-## 📝 Notes
-
-- All features will be implemented with the same production-ready standards
-- Each feature includes comprehensive testing and documentation
-- Progressive rollout strategy for all major features
-- User feedback integration at every phase
-- Continuous performance monitoring
-
-**Last Updated**: January 27, 2025 **Status**: Ready to begin implementation 🚀
+- 99.9% crash-free sessions
+- <2s cold start globally

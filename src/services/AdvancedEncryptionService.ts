@@ -51,11 +51,7 @@ class AdvancedEncryptionService {
       // Test encryption capabilities
       await this.validateEncryptionCapabilities();
 
-      modernAPMService.recordMetric(
-        'encryption_service_init',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric('encryption_service_init', Date.now() - startTime, 'ms');
 
       loggingService.info('Advanced Encryption Service initialized', {
         algorithm: this.config.algorithm,
@@ -87,11 +83,7 @@ class AdvancedEncryptionService {
         padding: CryptoJS.pad.Pkcs7,
       });
 
-      modernAPMService.recordMetric(
-        'data_encryption_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric('data_encryption_time', Date.now() - startTime, 'ms');
 
       return {
         // Convert WordArray to numeric arrays to match existing interface
@@ -131,10 +123,7 @@ class AdvancedEncryptionService {
   /**
    * Decrypt data
    */
-  async decryptData(
-    encryptedData: EncryptedData,
-    keyId?: string,
-  ): Promise<string> {
+  async decryptData(encryptedData: EncryptedData, keyId?: string): Promise<string> {
     const startTime = Date.now();
 
     try {
@@ -157,11 +146,7 @@ class AdvancedEncryptionService {
 
       const result = decrypted.toString(CryptoJS.enc.Utf8);
 
-      modernAPMService.recordMetric(
-        'data_decryption_time',
-        Date.now() - startTime,
-        'ms',
-      );
+      modernAPMService.recordMetric('data_decryption_time', Date.now() - startTime, 'ms');
 
       if (!result) {
         throw new Error('Malformed UTF-8 data or incorrect key');
@@ -178,9 +163,7 @@ class AdvancedEncryptionService {
   }
 
   // Helper to convert numeric arrays back to WordArray
-  private numericArrayToWordArray(
-    arr: readonly number[],
-  ): CryptoJS.lib.WordArray {
+  private numericArrayToWordArray(arr: readonly number[]): CryptoJS.lib.WordArray {
     const uint8Array = new Uint8Array(arr);
     const words = [];
     for (let i = 0; i < uint8Array.length; i += 4) {
@@ -287,11 +270,7 @@ class AdvancedEncryptionService {
   /**
    * Verify HMAC signature
    */
-  async verifyHMAC(
-    data: string,
-    signature: string,
-    secret: string,
-  ): Promise<boolean> {
+  async verifyHMAC(data: string, signature: string, secret: string): Promise<boolean> {
     try {
       const computedSignature = await this.createHMAC(data, secret);
       return this.constantTimeCompare(signature, computedSignature);
@@ -409,9 +388,7 @@ class AdvancedEncryptionService {
     return newKeys;
   }
 
-  private async reEncryptDataWithNewKeys(
-    _newKeys: Map<string, string>,
-  ): Promise<void> {
+  private async reEncryptDataWithNewKeys(_newKeys: Map<string, string>): Promise<void> {
     // Implementation would depend on how data is stored
     // This would typically involve:
     // 1. Retrieving all encrypted data

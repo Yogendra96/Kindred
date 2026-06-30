@@ -1,5 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
+import 'reflect-metadata';
 import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -439,6 +440,21 @@ jest.mock('expo-barcode-scanner', () => ({
 
 jest.mock('expo-linear-gradient', () => ({
   LinearGradient: 'LinearGradient',
+}));
+
+jest.mock('expo-blur', () => ({
+  BlurView: 'BlurView',
+}));
+
+jest.mock('../services/HapticFeedbackService', () => ({
+  __esModule: true,
+  default: {
+    triggerSuccess: jest.fn(() => Promise.resolve()),
+    triggerError: jest.fn(() => Promise.resolve()),
+    triggerWarning: jest.fn(() => Promise.resolve()),
+    triggerSelection: jest.fn(() => Promise.resolve()),
+    triggerImpact: jest.fn(() => Promise.resolve()),
+  },
 }));
 
 // Mock Internal Services

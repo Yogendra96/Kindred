@@ -20,16 +20,7 @@ const meta: Meta<typeof SkeletonLoader> = {
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: [
-        'base',
-        'text',
-        'circle',
-        'image',
-        'card',
-        'list',
-        'grid',
-        'chart',
-      ],
+      options: ['base', 'text', 'circle', 'image', 'card', 'list', 'grid', 'chart'],
       description: 'The type of skeleton loader to display',
     },
     width: {
@@ -110,8 +101,7 @@ export const Circle: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Circular skeleton loader perfect for user avatars and profile pictures.',
+        story: 'Circular skeleton loader perfect for user avatars and profile pictures.',
       },
     },
   },
@@ -157,8 +147,7 @@ export const List: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'List skeleton with multiple items, each containing avatar and text lines.',
+        story: 'List skeleton with multiple items, each containing avatar and text lines.',
       },
     },
   },
@@ -190,8 +179,7 @@ export const Chart: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Chart skeleton with bars and axis lines to simulate data visualization.',
+        story: 'Chart skeleton with bars and axis lines to simulate data visualization.',
       },
     },
   },
@@ -279,8 +267,7 @@ export const ProfileCard: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Custom profile card layout combining circle and text skeletons.',
+        story: 'Custom profile card layout combining circle and text skeletons.',
       },
     },
   },
@@ -382,12 +369,7 @@ export const ProductGrid: Story = {
           <View style={styles.productInfo}>
             <SkeletonLoader variant='text' lines={1} width={120} />
             <SkeletonLoader variant='text' lines={1} width={80} />
-            <SkeletonLoader
-              variant='base'
-              width={60}
-              height={25}
-              borderRadius={12}
-            />
+            <SkeletonLoader variant='base' width={60} height={25} borderRadius={12} />
           </View>
         </View>
       ))}
@@ -396,8 +378,7 @@ export const ProductGrid: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'E-commerce product grid with image, title, price, and button skeletons.',
+        story: 'E-commerce product grid with image, title, price, and button skeletons.',
       },
     },
   },
@@ -436,8 +417,7 @@ export const AccessibilityShowcase: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Skeleton loader with accessibility labels and hints for screen readers.',
+        story: 'Skeleton loader with accessibility labels and hints for screen readers.',
       },
     },
   },

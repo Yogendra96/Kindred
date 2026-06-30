@@ -7,22 +7,8 @@ import NetInfo from '@react-native-community/netinfo';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeProvider';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  Alert,
-} from 'react-native';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, Animated, Dimensions, Alert } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -99,14 +85,25 @@ export const NetworkStatusIndicator = () => {
   if (isOnline) return null;
   return (
     <View style={styles.statusIndicator}>
-      <Ionicons name="cloud-offline" size={16} color="white" />
+      <Ionicons name='cloud-offline' size={16} color='white' />
       <Text style={styles.statusText}>No internet connection</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  statusIndicator: { position: 'absolute', top: 0, left: 0, right: 0, height: 32, backgroundColor: '#F44336', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  statusIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 32,
+    backgroundColor: '#F44336',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
   statusText: { color: 'white', fontSize: 12, fontWeight: '600' },
 });
 

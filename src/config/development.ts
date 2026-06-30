@@ -145,9 +145,7 @@ export class DevelopmentUtils {
       this.setupGlobalDevUtils();
 
       this.isInitialized = true;
-      this.logger.info(
-        '🛠️ Development utilities initialized with enhanced services',
-      );
+      this.logger.info('🛠️ Development utilities initialized with enhanced services');
     } catch (error) {
       console.error('Failed to initialize development utilities:', error);
     }
@@ -203,24 +201,15 @@ export class DevelopmentUtils {
     if (typeof PerformanceObserver !== 'undefined') {
       const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
-          if (
-            entry.duration > developmentConfig.performance.slowRenderThreshold
-          ) {
+          if (entry.duration > developmentConfig.performance.slowRenderThreshold) {
             this.logger.warn(
-              `🐌 Slow operation detected: ${
-                entry.name
-              } took ${entry.duration.toFixed(2)}ms`,
+              `🐌 Slow operation detected: ${entry.name} took ${entry.duration.toFixed(2)}ms`,
             );
 
             // Track in analytics
-            this.analyticsService.trackPerformance(
-              'slow_operation',
-              entry.duration,
-              'ms',
-              {
-                operation: entry.name,
-              },
-            );
+            this.analyticsService.trackPerformance('slow_operation', entry.duration, 'ms', {
+              operation: entry.name,
+            });
           }
         }
       });
@@ -277,11 +266,7 @@ export class DevelopmentUtils {
         this.logger.error('🚨 Unhandled Promise Rejection:', event.reason);
 
         // Track in analytics and security
-        this.analyticsService.trackError(
-          event.reason,
-          { type: 'unhandled_rejection' },
-          true,
-        );
+        this.analyticsService.trackError(event.reason, { type: 'unhandled_rejection' }, true);
       });
     }
 
@@ -307,10 +292,7 @@ export class DevelopmentUtils {
           const flags = (global as any).featureFlags;
           if (flags && feature in flags) {
             flags[feature] = !flags[feature];
-            this.logger.info(
-              `🔄 Feature '${feature}' toggled to:`,
-              flags[feature],
-            );
+            this.logger.info(`🔄 Feature '${feature}' toggled to:`, flags[feature]);
 
             // Track feature toggle
             this.analyticsService.trackEvent(
@@ -348,12 +330,7 @@ export class DevelopmentUtils {
             this.logger.info('🗑️ Storage cleared');
 
             // Track storage clear
-            this.analyticsService.trackEvent(
-              'storage_cleared',
-              {},
-              'custom',
-              'medium',
-            );
+            this.analyticsService.trackEvent('storage_cleared', {}, 'custom', 'medium');
           } catch (error) {
             this.logger.error('Failed to clear storage:', error);
           }
@@ -380,9 +357,7 @@ export class DevelopmentUtils {
       };
     }
 
-    this.logger.info(
-      '🌐 Enhanced global dev utils available at global.devUtils',
-    );
+    this.logger.info('🌐 Enhanced global dev utils available at global.devUtils');
   }
 
   /**
@@ -395,9 +370,7 @@ export class DevelopmentUtils {
   /**
    * Check if feature is enabled
    */
-  isFeatureEnabled(
-    feature: keyof typeof developmentConfig.featureFlags,
-  ): boolean {
+  isFeatureEnabled(feature: keyof typeof developmentConfig.featureFlags): boolean {
     return developmentConfig.featureFlags[feature];
   }
 

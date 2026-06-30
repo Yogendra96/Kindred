@@ -243,12 +243,9 @@ class GridCarbonService {
       // Try ElectricityMaps first
       const apiKey = Config.ELECTRICITY_MAPS_API_KEY;
       if (apiKey) {
-        const response = await fetch(
-          `https://api.electricitymap.org/v3/zones`,
-          {
-            headers: { 'auth-token': apiKey },
-          },
-        );
+        const response = await fetch(`https://api.electricitymap.org/v3/zones`, {
+          headers: { 'auth-token': apiKey },
+        });
 
         if (response.ok) {
           // ElectricityMaps zone lookup would go here
@@ -343,9 +340,7 @@ class GridCarbonService {
   /**
    * Fetch from ElectricityMaps API
    */
-  private async fetchFromElectricityMaps(
-    zone: string,
-  ): Promise<GridCarbonIntensity | null> {
+  private async fetchFromElectricityMaps(zone: string): Promise<GridCarbonIntensity | null> {
     const apiKey = Config.ELECTRICITY_MAPS_API_KEY;
     if (!apiKey) return null;
 
@@ -396,9 +391,7 @@ class GridCarbonService {
   /**
    * Fetch from WattTime API
    */
-  private async fetchFromWattTime(
-    zone: string,
-  ): Promise<GridCarbonIntensity | null> {
+  private async fetchFromWattTime(zone: string): Promise<GridCarbonIntensity | null> {
     const username = Config.WATTTIME_USERNAME;
     const password = Config.WATTTIME_PASSWORD;
     if (!username || !password) return null;
@@ -411,12 +404,9 @@ class GridCarbonService {
       // Convert zone to WattTime region
       const region = this.convertToWattTimeRegion(zone);
 
-      const response = await fetch(
-        `https://api.watttime.org/v3/signal-index?region=${region}`,
-        {
-          headers: { Authorization: `Bearer ${this.wattTimeToken}` },
-        },
-      );
+      const response = await fetch(`https://api.watttime.org/v3/signal-index?region=${region}`, {
+        headers: { Authorization: `Bearer ${this.wattTimeToken}` },
+      });
 
       if (!response.ok) return null;
 
@@ -444,18 +434,13 @@ class GridCarbonService {
   /**
    * Authenticate with WattTime
    */
-  private async authenticateWattTime(
-    username: string,
-    password: string,
-  ): Promise<void> {
+  private async authenticateWattTime(username: string, password: string): Promise<void> {
     if (this.wattTimeToken && Date.now() < this.wattTimeTokenExpiry) {
       return;
     }
 
     try {
-      const credentials = Buffer.from(`${username}:${password}`).toString(
-        'base64',
-      );
+      const credentials = Buffer.from(`${username}:${password}`).toString('base64');
       const response = await fetch('https://api.watttime.org/login', {
         headers: { Authorization: `Basic ${credentials}` },
       });
@@ -480,8 +465,7 @@ class GridCarbonService {
       countryCode = 'USA';
     }
 
-    const intensity =
-      FALLBACK_INTENSITY[countryCode] || FALLBACK_INTENSITY.WORLD;
+    const intensity = FALLBACK_INTENSITY[countryCode] || FALLBACK_INTENSITY.WORLD;
 
     return {
       zone,
@@ -523,14 +507,12 @@ class GridCarbonService {
             datetime: string;
             carbonIntensity: number;
           }
-          const forecasts = data.forecast
-            .slice(0, hours)
-            .map((point: ForecastPointAPI) => ({
-              datetime: point.datetime,
-              carbonIntensity: point.carbonIntensity,
-              fossilFuelPercentage: 50, // Not provided in forecast
-              isOptimalWindow: false, // Will be calculated
-            }));
+          const forecasts = data.forecast.slice(0, hours).map((point: ForecastPointAPI) => ({
+            datetime: point.datetime,
+            carbonIntensity: point.carbonIntensity,
+            fossilFuelPercentage: 50, // Not provided in forecast
+            isOptimalWindow: false, // Will be calculated
+          }));
 
           // Mark optimal windows
           this.markOptimalWindows(forecasts);
@@ -583,14 +565,12 @@ class GridCarbonService {
 
     const windowSize = Math.min(durationHours, forecast.forecasts.length);
     const avgDay =
-      forecast.forecasts.reduce((sum, f) => sum + f.carbonIntensity, 0) /
-      forecast.forecasts.length;
+      forecast.forecasts.reduce((sum, f) => sum + f.carbonIntensity, 0) / forecast.forecasts.length;
 
     for (let i = 0; i <= forecast.forecasts.length - windowSize; i++) {
       const windowIntensity =
-        forecast.forecasts
-          .slice(i, i + windowSize)
-          .reduce((sum, f) => sum + f.carbonIntensity, 0) / windowSize;
+        forecast.forecasts.slice(i, i + windowSize).reduce((sum, f) => sum + f.carbonIntensity, 0) /
+        windowSize;
 
       if (windowIntensity < bestWindow.avgIntensity) {
         bestWindow = { startIndex: i, avgIntensity: windowIntensity };
@@ -598,22 +578,17 @@ class GridCarbonService {
     }
 
     const startForecast = forecast.forecasts[bestWindow.startIndex];
-    const endForecast =
-      forecast.forecasts[bestWindow.startIndex + windowSize - 1];
+    const endForecast = forecast.forecasts[bestWindow.startIndex + windowSize - 1];
 
     const vsNow =
-      ((current.carbonIntensity - bestWindow.avgIntensity) /
-        current.carbonIntensity) *
-      100;
+      ((current.carbonIntensity - bestWindow.avgIntensity) / current.carbonIntensity) * 100;
     const vsAverage = ((avgDay - bestWindow.avgIntensity) / avgDay) * 100;
 
     let recommendation: string;
     if (vsNow > 20) {
       recommendation = `Wait! Grid will be ${vsNow.toFixed(0)}% cleaner later`;
     } else if (vsNow > 10) {
-      recommendation = `Grid will be slightly cleaner (${vsNow.toFixed(
-        0,
-      )}%) later`;
+      recommendation = `Grid will be slightly cleaner (${vsNow.toFixed(0)}%) later`;
     } else if (vsNow < -10) {
       recommendation = 'Now is a good time - grid is relatively clean!';
     } else {
@@ -638,9 +613,7 @@ class GridCarbonService {
   private markOptimalWindows(forecasts: GridForecastPoint[]): void {
     if (forecasts.length === 0) return;
 
-    const avg =
-      forecasts.reduce((sum, f) => sum + f.carbonIntensity, 0) /
-      forecasts.length;
+    const avg = forecasts.reduce((sum, f) => sum + f.carbonIntensity, 0) / forecasts.length;
     const threshold = avg * 0.8; // 20% below average = optimal
 
     forecasts.forEach(f => {
@@ -652,8 +625,7 @@ class GridCarbonService {
    * Generate synthetic forecast when no API available
    */
   private generateSyntheticForecast(zone: string, hours: number): GridForecast {
-    const baseIntensity =
-      FALLBACK_INTENSITY[zone.split('-')[0]] || FALLBACK_INTENSITY.WORLD;
+    const baseIntensity = FALLBACK_INTENSITY[zone.split('-')[0]] || FALLBACK_INTENSITY.WORLD;
     const forecasts: GridForecastPoint[] = [];
 
     const now = new Date();
@@ -667,8 +639,7 @@ class GridCarbonService {
       if (hour >= 23 || hour <= 5) multiplier = 0.8; // Night valley
       if (hour >= 11 && hour <= 14) multiplier = 0.9; // Solar dip
 
-      const intensity =
-        baseIntensity * multiplier * (0.9 + Math.random() * 0.2);
+      const intensity = baseIntensity * multiplier * (0.9 + Math.random() * 0.2);
 
       forecasts.push({
         datetime: new Date(now.getTime() + i * 3600000).toISOString(),
@@ -839,11 +810,7 @@ class GridCarbonService {
     }
   }
 
-  private async setCache<T>(
-    key: string,
-    data: T,
-    durationMs: number,
-  ): Promise<void> {
+  private async setCache<T>(key: string, data: T, durationMs: number): Promise<void> {
     try {
       await AsyncStorage.setItem(
         key,

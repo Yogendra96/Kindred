@@ -2,14 +2,7 @@
 /* eslint-disable */
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -54,7 +47,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDis
   }, []);
 
   return (
-    <Animated.View style={[styles.notificationContainer, { opacity, backgroundColor: theme.colors.surface }]}>
+    <Animated.View
+      style={[styles.notificationContainer, { opacity, backgroundColor: theme.colors.surface }]}
+    >
       <Text style={{ color: theme.colors.onSurface }}>{notification.title}</Text>
       <Text style={{ color: theme.colors.onSurfaceVariant }}>{notification.message}</Text>
     </Animated.View>
@@ -70,7 +65,10 @@ interface NotificationSystemProps {
  * Notification System Component
  * Manages app-wide notifications and alerts
  */
-export const NotificationSystem: React.FC<NotificationSystemProps> = ({ maxNotifications = 5, testID }) => {
+export const NotificationSystem: React.FC<NotificationSystemProps> = ({
+  maxNotifications = 5,
+  testID,
+}) => {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
   const removeNotification = (id: string) => {
@@ -78,7 +76,7 @@ export const NotificationSystem: React.FC<NotificationSystemProps> = ({ maxNotif
   };
 
   return (
-    <View style={styles.container} testID={testID} pointerEvents="box-none">
+    <View style={styles.container} testID={testID} pointerEvents='box-none'>
       {notifications.map((n, i) => (
         <NotificationItem key={n.id} notification={n} onDismiss={removeNotification} index={i} />
       ))}

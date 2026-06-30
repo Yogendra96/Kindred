@@ -11,11 +11,7 @@
  * @version 2.0.0
  */
 
-import {
-  EMISSION_FACTORS,
-  CARBON_CONVERSION,
-  LOG_PREFIXES,
-} from '../../utils/constants';
+import { EMISSION_FACTORS, CARBON_CONVERSION, LOG_PREFIXES } from '../../utils/constants';
 import { createLogger, logCarbonCalculation } from '../../utils/loggingUtils';
 
 // ===================================================================
@@ -90,9 +86,7 @@ export class CarbonCalculatorCore {
   /**
    * Calculate carbon emissions using offline emission factors
    */
-  async calculate(
-    request: CarbonCalculationRequest,
-  ): Promise<CarbonCalculationResponse> {
+  async calculate(request: CarbonCalculationRequest): Promise<CarbonCalculationResponse> {
     const startTime = performance.now();
 
     this.logger.info('Starting offline carbon calculation', {
@@ -132,9 +126,7 @@ export class CarbonCalculatorCore {
   /**
    * Batch calculate multiple emissions
    */
-  async batchCalculate(
-    requests: CarbonCalculationRequest[],
-  ): Promise<CarbonCalculationResponse[]> {
+  async batchCalculate(requests: CarbonCalculationRequest[]): Promise<CarbonCalculationResponse[]> {
     const startTime = performance.now();
 
     this.logger.info('Starting batch carbon calculation', {
@@ -142,9 +134,7 @@ export class CarbonCalculatorCore {
     });
 
     try {
-      const results = await Promise.all(
-        requests.map(request => this.calculateOffline(request)),
-      );
+      const results = await Promise.all(requests.map(request => this.calculateOffline(request)));
 
       const duration = performance.now() - startTime;
       this.logger.success('Batch calculation completed', {
@@ -170,9 +160,7 @@ export class CarbonCalculatorCore {
   /**
    * Convert calculation response to form-friendly format
    */
-  static convertToFormCalculation(
-    response: CarbonCalculationResponse,
-  ): CarbonEmissionCalculation {
+  static convertToFormCalculation(response: CarbonCalculationResponse): CarbonEmissionCalculation {
     return {
       carbon_footprint_kg: Number(response.emissions.toFixed(2)),
       equivalent_trees_planted: CARBON_CONVERSION.TREES_PER_TON_CO2
@@ -194,9 +182,7 @@ export class CarbonCalculatorCore {
   /**
    * Offline carbon calculation using built-in emission factors
    */
-  private calculateOffline(
-    request: CarbonCalculationRequest,
-  ): CarbonCalculationResponse {
+  private calculateOffline(request: CarbonCalculationRequest): CarbonCalculationResponse {
     const { activityType, amount, unit, additionalParams = {} } = request;
 
     // Get emission factor
@@ -206,11 +192,7 @@ export class CarbonCalculatorCore {
     }
 
     // Convert units if needed
-    const convertedAmount = this.convertUnits(
-      amount,
-      unit,
-      factorData.targetUnit,
-    );
+    const convertedAmount = this.convertUnits(amount, unit, factorData.targetUnit);
 
     // Calculate base emissions
     let emissions = convertedAmount * factorData.factor;
@@ -234,11 +216,7 @@ export class CarbonCalculatorCore {
         direct: emissions * 0.7,
         indirect: emissions * 0.3,
       },
-      recommendations: this.getRecommendations(
-        activityType,
-        factorData.key,
-        emissions,
-      ),
+      recommendations: this.getRecommendations(activityType, factorData.key, emissions),
     };
   }
 
@@ -259,9 +237,7 @@ export class CarbonCalculatorCore {
       case 'transport': {
         const vehicleType = params.vehicleType || 'car_gasoline';
         const factor =
-          EMISSION_FACTORS.TRANSPORT[
-            vehicleType as keyof typeof EMISSION_FACTORS.TRANSPORT
-          ];
+          EMISSION_FACTORS.TRANSPORT[vehicleType as keyof typeof EMISSION_FACTORS.TRANSPORT];
         if (!factor) return null;
 
         return {
@@ -276,9 +252,7 @@ export class CarbonCalculatorCore {
       case 'energy': {
         const energySource = params.energySource || 'electricity_us';
         const factor =
-          EMISSION_FACTORS.ENERGY[
-            energySource as keyof typeof EMISSION_FACTORS.ENERGY
-          ];
+          EMISSION_FACTORS.ENERGY[energySource as keyof typeof EMISSION_FACTORS.ENERGY];
         if (!factor) return null;
 
         return {
@@ -292,8 +266,7 @@ export class CarbonCalculatorCore {
 
       case 'food': {
         const foodType = params.foodType || 'vegetables';
-        const factor =
-          EMISSION_FACTORS.FOOD[foodType as keyof typeof EMISSION_FACTORS.FOOD];
+        const factor = EMISSION_FACTORS.FOOD[foodType as keyof typeof EMISSION_FACTORS.FOOD];
         if (!factor) return null;
 
         return {
@@ -313,11 +286,7 @@ export class CarbonCalculatorCore {
   /**
    * Convert units for calculations
    */
-  private convertUnits(
-    value: number,
-    fromUnit: string,
-    toUnit: string,
-  ): number {
+  private convertUnits(value: number, fromUnit: string, toUnit: string): number {
     if (fromUnit === toUnit) return value;
 
     // Distance conversions
@@ -379,11 +348,7 @@ export class CarbonCalculatorCore {
     }
 
     // Apply passengers for transportation (divide by passenger count)
-    if (
-      activityType === 'transport' &&
-      params.passengers &&
-      params.passengers > 1
-    ) {
+    if (activityType === 'transport' && params.passengers && params.passengers > 1) {
       emissions = emissions / params.passengers;
     }
 
@@ -393,54 +358,34 @@ export class CarbonCalculatorCore {
   /**
    * Get recommendations based on activity and emissions
    */
-  private getRecommendations(
-    category: string,
-    activityType: string,
-    emissions: number,
-  ): string[] {
+  private getRecommendations(category: string, activityType: string, emissions: number): string[] {
     const recommendations: string[] = [];
 
     switch (category) {
       case 'transport':
         if (activityType.includes('car')) {
-          recommendations.push(
-            'Consider using public transport or cycling for shorter trips',
-          );
+          recommendations.push('Consider using public transport or cycling for shorter trips');
           if (emissions > 5) {
-            recommendations.push(
-              'Look into carpooling or ride-sharing options',
-            );
+            recommendations.push('Look into carpooling or ride-sharing options');
           }
           if (!activityType.includes('electric')) {
-            recommendations.push(
-              'Consider switching to an electric or hybrid vehicle',
-            );
+            recommendations.push('Consider switching to an electric or hybrid vehicle');
           }
         }
         if (activityType.includes('plane')) {
           recommendations.push('Consider train travel for shorter distances');
-          recommendations.push(
-            'Purchase carbon offsets for unavoidable flights',
-          );
+          recommendations.push('Purchase carbon offsets for unavoidable flights');
         }
         break;
 
       case 'energy':
-        recommendations.push(
-          'Switch to renewable energy sources when possible',
-        );
+        recommendations.push('Switch to renewable energy sources when possible');
         if (emissions > 10) {
-          recommendations.push(
-            'Consider energy-efficient appliances and LED lighting',
-          );
+          recommendations.push('Consider energy-efficient appliances and LED lighting');
         }
-        recommendations.push(
-          'Improve home insulation to reduce energy consumption',
-        );
+        recommendations.push('Improve home insulation to reduce energy consumption');
         if (activityType.includes('electricity')) {
-          recommendations.push(
-            'Use smart thermostats and programmable devices',
-          );
+          recommendations.push('Use smart thermostats and programmable devices');
         }
         break;
 
@@ -450,12 +395,8 @@ export class CarbonCalculatorCore {
             'Try reducing meat consumption or choosing plant-based alternatives',
           );
         }
-        recommendations.push(
-          'Choose locally sourced and seasonal produce when possible',
-        );
-        recommendations.push(
-          'Consider organic options to support sustainable farming',
-        );
+        recommendations.push('Choose locally sourced and seasonal produce when possible');
+        recommendations.push('Consider organic options to support sustainable farming');
         if (emissions > 5) {
           recommendations.push('Plan meals to reduce food waste');
         }
@@ -464,9 +405,7 @@ export class CarbonCalculatorCore {
 
     // Add general recommendation if no specific ones
     if (recommendations.length === 0) {
-      recommendations.push(
-        'Consider more sustainable alternatives for this activity',
-      );
+      recommendations.push('Consider more sustainable alternatives for this activity');
     }
 
     return recommendations;

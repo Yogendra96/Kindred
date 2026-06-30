@@ -9,7 +9,10 @@ import analyticsReducer, { addEvent, startSession } from './slices/analyticsSlic
 import authReducer, { loginSuccess, logout } from './slices/authSlice';
 import carbonReducer from './slices/carbonSlice';
 import locationReducer from './slices/locationSlice';
-import settingsReducer from './slices/settingsSlice';
+import settingsReducer, {
+  updatePrivacySettings,
+  acceptPrivacyConsent,
+} from './slices/settingsSlice';
 import userReducer from './slices/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { configureStore, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
@@ -80,6 +83,28 @@ listenerMiddleware.startListening({
   },
 });
 
+// Listen for settings and privacy updates to sync with analytics service
+listenerMiddleware.startListening({
+  matcher: isAnyOf(updatePrivacySettings, acceptPrivacyConsent),
+  effect: async (action, listenerApi) => {
+    const state = listenerApi.getState() as RootState;
+    const analyticsEnabled = state.settings?.privacy?.analytics ?? true;
+    analyticsService.setAnalyticsEnabled(analyticsEnabled);
+  },
+});
+
+// Sync analytics service on store hydration
+listenerMiddleware.startListening({
+  predicate: action => action.type === 'persist/REHYDRATE',
+  effect: async (action, listenerApi) => {
+    // Wait a tick for persist/REHYDRATE to be fully applied to the store
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const state = listenerApi.getState() as RootState;
+    const analyticsEnabled = state.settings?.privacy?.analytics ?? true;
+    analyticsService.setAnalyticsEnabled(analyticsEnabled);
+  },
+});
+
 // ─── State Migrations ─────────────────────────────────────────────────────────
 // Add new versions here when the persisted state shape changes.
 // This prevents users from getting corrupted / incompatible state after upgrades.
@@ -104,7 +129,13 @@ const migrations = {
 // Only persist the fields we need — strips ephemeral loading/error state
 // so the rehydrated store is always clean.
 
-const carbonFilter = createFilter('carbon', ['footprint', 'history', 'goals', 'ecosystem']);
+const carbonFilter = createFilter('carbon', [
+  'footprint',
+  'history',
+  'goals',
+  'ecosystem',
+  'offsets',
+]);
 
 const userFilter = createFilter('user', ['profile', 'preferences']);
 
@@ -158,20 +189,29 @@ export type AppDispatch = typeof store.dispatch;
 
 // Action creators for easy access
 export { loginSuccess, logout } from './slices/authSlice';
-export { updateProfile, updatePreferences } from './slices/userSlice';
-export { updateFootprint, addHistoryEntry } from './slices/carbonSlice';
+export { updateProfile, updatePreferences, clearUserState } from './slices/userSlice';
+export {
+  updateFootprint,
+  addHistoryEntry,
+  resetState as resetCarbonState,
+  updateEcosystem,
+} from './slices/carbonSlice';
 export {
   updateNotificationSettings,
   updatePrivacySettings,
+  acceptPrivacyConsent,
   updateAppSettings,
+  resetSettings,
 } from './slices/settingsSlice';
 export {
   addEvent,
   addMetric,
   startSession as startAnalyticsSession,
+  resetAnalytics,
 } from './slices/analyticsSlice';
 export {
   updateCurrentLocation,
   addLocationHistory,
   setTrackingStatus,
+  resetLocationState,
 } from './slices/locationSlice';

@@ -1,5 +1,4 @@
 import { store } from '../index';
-import { RootState } from '../index';
 
 jest.mock('redux-persist', () => {
   const real = jest.requireActual('redux-persist');
@@ -75,6 +74,17 @@ describe('Redux Store', () => {
         airQuality: 0.5,
         lastUpdated: expect.any(String),
       },
+      offsets: {
+        transactions: [],
+        subscription: {
+          active: false,
+          tier: 'none',
+          monthlyCost: 0,
+          offsetTonsPerMonth: 0,
+          nextBillingDate: '',
+          billingHistory: [],
+        },
+      },
       loading: {
         footprint: false,
         history: false,
@@ -144,9 +154,7 @@ describe('Redux Store', () => {
       type: 'analytics/startSession',
       payload: { sessionId: 'test-session', timestamp: Date.now() },
     });
-    expect(store.getState().analytics.currentSession?.sessionId).toBe(
-      'test-session',
-    );
+    expect(store.getState().analytics.currentSession?.sessionId).toBe('test-session');
 
     // Test location actions
     store.dispatch({

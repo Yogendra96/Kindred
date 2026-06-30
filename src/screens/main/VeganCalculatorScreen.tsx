@@ -53,9 +53,7 @@ const PulsingDot = () => {
     ).start();
   }, [pulse]);
 
-  return (
-    <Animated.View style={[styles.dot, { transform: [{ scale: pulse }] }]} />
-  );
+  return <Animated.View style={[styles.dot, { transform: [{ scale: pulse }] }]} />;
 };
 
 const LiveCounter = ({
@@ -95,6 +93,7 @@ const LiveCounter = ({
         }),
       ]).start();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Math.floor(value / 10)]);
 
   return (
@@ -105,13 +104,7 @@ const LiveCounter = ({
       ]}
     >
       <Text style={styles.counterEmoji}>{emoji}</Text>
-      <Text
-        style={[
-          styles.counterValue,
-          large && styles.counterValueLarge,
-          { color },
-        ]}
-      >
+      <Text style={[styles.counterValue, large && styles.counterValueLarge, { color }]}>
         {value >= 1_000_000
           ? (value / 1_000_000).toFixed(4) + 'M'
           : value >= 1000
@@ -126,13 +119,7 @@ const LiveCounter = ({
 
 // ─── Ad Reward ───────────────────────────────────────────────────────────────
 
-const AdRewardBanner = ({
-  credits,
-  onWatch,
-}: {
-  credits: number;
-  onWatch: () => void;
-}) => {
+const AdRewardBanner = ({ credits, onWatch }: { credits: number; onWatch: () => void }) => {
   const [watching, setWatching] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
 
@@ -157,9 +144,7 @@ const AdRewardBanner = ({
       <View style={styles.adTop}>
         <View>
           <Text style={styles.adTitle}>🎁 Earn Carbon Credits</Text>
-          <Text style={styles.adSub}>
-            Watch a short ad → get 10 offset credits
-          </Text>
+          <Text style={styles.adSub}>Watch a short ad → get 10 offset credits</Text>
         </View>
         <View style={styles.adCredits}>
           <Text style={styles.adCreditsValue}>{credits}</Text>
@@ -219,33 +204,21 @@ const VeganCalculatorScreen = () => {
   }, []);
 
   const isGlobal = mode === 'global';
-  const animals =
-    elapsed * (isGlobal ? ANIMALS_PER_SECOND : PERSONAL_ANIMALS_PER_SECOND);
-  const co2 =
-    elapsed * (isGlobal ? CO2_KG_PER_SECOND : PERSONAL_CO2_KG_PER_SECOND);
-  const water =
-    elapsed * (isGlobal ? WATER_L_PER_SECOND : PERSONAL_WATER_L_PER_SECOND);
+  const animals = elapsed * (isGlobal ? ANIMALS_PER_SECOND : PERSONAL_ANIMALS_PER_SECOND);
+  const co2 = elapsed * (isGlobal ? CO2_KG_PER_SECOND : PERSONAL_CO2_KG_PER_SECOND);
+  const water = elapsed * (isGlobal ? WATER_L_PER_SECOND : PERSONAL_WATER_L_PER_SECOND);
 
   const handleAdComplete = useCallback(() => {
     setCredits(c => c + 10);
-    showToast(
-      '+10 Credits Earned! Keep watching to plant more trees!',
-      'success',
-    );
+    showToast('+10 Credits Earned! Keep watching to plant more trees!', 'success');
   }, [showToast]);
 
   const handleRedeem = () => {
     if (credits < 50) {
-      showToast(
-        `Not enough credits. You need 50 to plant a tree. You have ${credits}.`,
-        'warning',
-      );
+      showToast(`Not enough credits. You need 50 to plant a tree. You have ${credits}.`, 'warning');
     } else {
       setCredits(c => c - 50);
-      showToast(
-        '🌳 Tree Planted! A real tree has been planted in your name.',
-        'success',
-      );
+      showToast('🌳 Tree Planted! A real tree has been planted in your name.', 'success');
     }
   };
 
@@ -254,14 +227,13 @@ const VeganCalculatorScreen = () => {
       '📤 Share Your Impact',
       `Since I checked the Kindred Vegan Calculator:\n\n🐾 ${Math.floor(
         animals,
-      ).toLocaleString()} animals counted\n🌿 ${co2.toFixed(
-        1,
-      )} kg CO₂\n💧 ${water.toFixed(0)} L water\n\nGo vegan. Save lives. 🌍`,
+      ).toLocaleString()} animals counted\n🌿 ${co2.toFixed(1)} kg CO₂\n💧 ${water.toFixed(
+        0,
+      )} L water\n\nGo vegan. Save lives. 🌍`,
       [
         {
           text: 'Copy & Share',
-          onPress: () =>
-            showToast('Share link copied to clipboard.', 'success'),
+          onPress: () => showToast('Share link copied to clipboard.', 'success'),
         },
         { text: 'Cancel', style: 'cancel' },
       ],
@@ -290,12 +262,7 @@ const VeganCalculatorScreen = () => {
           style={[styles.modeBtn, mode === 'global' && styles.modeBtnActive]}
           onPress={() => setMode('global')}
         >
-          <Text
-            style={[
-              styles.modeBtnText,
-              mode === 'global' && styles.modeBtnTextActive,
-            ]}
-          >
+          <Text style={[styles.modeBtnText, mode === 'global' && styles.modeBtnTextActive]}>
             🌍 Global Now
           </Text>
         </TouchableOpacity>
@@ -303,12 +270,7 @@ const VeganCalculatorScreen = () => {
           style={[styles.modeBtn, mode === 'personal' && styles.modeBtnActive]}
           onPress={() => setMode('personal')}
         >
-          <Text
-            style={[
-              styles.modeBtnText,
-              mode === 'personal' && styles.modeBtnTextActive,
-            ]}
-          >
+          <Text style={[styles.modeBtnText, mode === 'personal' && styles.modeBtnTextActive]}>
             🧍 If You Go Vegan
           </Text>
         </TouchableOpacity>
@@ -317,9 +279,7 @@ const VeganCalculatorScreen = () => {
       {/* Main animal counter */}
       <View style={styles.mainCounter}>
         <Text style={styles.mainLabel}>
-          {isGlobal
-            ? 'Animals Killed Since You Opened This'
-            : "Animals You'd Save Per Year"}
+          {isGlobal ? 'Animals Killed Since You Opened This' : "Animals You'd Save Per Year"}
         </Text>
         <View style={styles.mainValueRow}>
           <Text style={styles.mainEmoji}>{ANIMAL_EMOJIS[emojiIndex]}</Text>
@@ -330,9 +290,7 @@ const VeganCalculatorScreen = () => {
           </Text>
         </View>
         {isGlobal && (
-          <Text style={styles.mainRate}>
-            +{ANIMALS_PER_SECOND.toLocaleString()} per second
-          </Text>
+          <Text style={styles.mainRate}>+{ANIMALS_PER_SECOND.toLocaleString()} per second</Text>
         )}
       </View>
 
@@ -387,9 +345,7 @@ const VeganCalculatorScreen = () => {
 
       {/* Redeem */}
       <TouchableOpacity style={styles.redeemBtn} onPress={handleRedeem}>
-        <Text style={styles.redeemBtnText}>
-          🌳 Redeem 50 Credits → Plant a Tree
-        </Text>
+        <Text style={styles.redeemBtnText}>🌳 Redeem 50 Credits → Plant a Tree</Text>
       </TouchableOpacity>
 
       {/* Share */}
@@ -398,8 +354,8 @@ const VeganCalculatorScreen = () => {
       </TouchableOpacity>
 
       <Text style={styles.disclaimer}>
-        Global figures based on FAO data. Personal figures are annual estimates
-        for a person transitioning to a vegan diet.
+        Global figures based on FAO data. Personal figures are annual estimates for a person
+        transitioning to a vegan diet.
       </Text>
     </ScrollView>
   );

@@ -1,37 +1,66 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { useToast } from '../../contexts/ToastContext';
 import { useGreenRouteTelemetry } from '../../hooks/useGreenRouteTelemetry';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { Leaf, Recycle, Lightning, Tree, Tote, Compass, CheckCircle, Trophy } from 'phosphor-react-native';
+import {
+  Leaf,
+  Recycle,
+  Lightning,
+  Tree,
+  Tote,
+  Compass,
+  CheckCircle,
+  Trophy,
+} from 'phosphor-react-native';
 
-const GlassCard = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderRadius: 16, overflow: 'hidden' }]}>
-    {children}
-  </View>
+interface GlassCardProps {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}
+
+const GlassCard = ({ style, children }: GlassCardProps) => (
+  <View style={[styles.glassCard, style]}>{children}</View>
 );
 
-const GlassBadge = ({ style, children }: any) => (
-  <View style={[style, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderRadius: 12, overflow: 'hidden' }]}>
-    {children}
-  </View>
+interface GlassBadgeProps {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}
+
+const GlassBadge = ({ style, children }: GlassBadgeProps) => (
+  <View style={[styles.glassBadge, style]}>{children}</View>
 );
 
 const CATEGORIES = [
   { id: 'All', icon: null, label: 'All' },
-  { id: '♻️ Recycling', icon: <Recycle size={16} color="#38EF7D" weight="duotone" />, label: 'Recycling' },
-  { id: '🌱 Organic', icon: <Leaf size={16} color="#38EF7D" weight="duotone" />, label: 'Organic' },
-  { id: '⚡ EV Charging', icon: <Lightning size={16} color="#F2C94C" weight="duotone" />, label: 'EV Charging' },
-  { id: '🌳 Green Space', icon: <Tree size={16} color="#11998E" weight="duotone" />, label: 'Green Space' },
-  { id: '🛍️ Thrift', icon: <Tote size={16} color="#F2994A" weight="duotone" />, label: 'Thrift' },
+  {
+    id: '♻️ Recycling',
+    icon: <Recycle size={16} color='#38EF7D' weight='duotone' />,
+    label: 'Recycling',
+  },
+  {
+    id: '🌱 Organic',
+    icon: <Leaf size={16} color='#38EF7D' weight='duotone' />,
+    label: 'Organic',
+  },
+  {
+    id: '⚡ EV Charging',
+    icon: <Lightning size={16} color='#F2C94C' weight='duotone' />,
+    label: 'EV Charging',
+  },
+  {
+    id: '🌳 Green Space',
+    icon: <Tree size={16} color='#11998E' weight='duotone' />,
+    label: 'Green Space',
+  },
+  {
+    id: '🛍️ Thrift',
+    icon: <Tote size={16} color='#F2994A' weight='duotone' />,
+    label: 'Thrift',
+  },
 ];
 
 const LOCATIONS = [
@@ -41,8 +70,7 @@ const LOCATIONS = [
     category: '🌱 Organic',
     distance: '0.3 km',
     rating: 4.8,
-    description:
-      'Farmers market with 140+ vendors. Organic produce, low food miles.',
+    description: 'Farmers market with 140+ vendors. Organic produce, low food miles.',
     impact: '↓ 2.1 kg CO₂ vs supermarket trip',
     open: true,
     coordinate: { latitude: 40.73061, longitude: -73.935242 },
@@ -53,8 +81,7 @@ const LOCATIONS = [
     category: '♻️ Recycling',
     distance: '0.6 km',
     rating: 4.5,
-    description:
-      'Zero-waste drop-off point. Accepts hard-to-recycle plastics, batteries.',
+    description: 'Zero-waste drop-off point. Accepts hard-to-recycle plastics, batteries.',
     impact: '↓ 1.4 kg CO₂ per visit',
     open: true,
     coordinate: { latitude: 40.73561, longitude: -73.940242 },
@@ -76,8 +103,7 @@ const LOCATIONS = [
     category: '🌳 Green Space',
     distance: '1.1 km',
     rating: 4.9,
-    description:
-      '585 acres of trees, meadows, and lake. Natural air filtration.',
+    description: '585 acres of trees, meadows, and lake. Natural air filtration.',
     impact: 'Absorbs ~850 t CO₂/year',
     open: true,
     coordinate: { latitude: 40.6602, longitude: -73.969 },
@@ -88,8 +114,7 @@ const LOCATIONS = [
     category: '🛍️ Thrift',
     distance: '1.4 km',
     rating: 4.6,
-    description:
-      'Award-winning thrift store. 100% of profits to HIV/AIDS services.',
+    description: 'Award-winning thrift store. 100% of profits to HIV/AIDS services.',
     impact: '↓ 8+ kg CO₂ per purchase vs new',
     open: true,
     coordinate: { latitude: 40.72061, longitude: -73.955242 },
@@ -100,8 +125,7 @@ const LOCATIONS = [
     category: '⚡ EV Charging',
     distance: '1.6 km',
     rating: 4.4,
-    description:
-      'Citi Bike dock with 30 bikes. E-bike available. Biggest rack.',
+    description: 'Citi Bike dock with 30 bikes. E-bike available. Biggest rack.',
     impact: '↓ 1.2 kg CO₂ vs 5km car trip',
     open: true,
     coordinate: { latitude: 40.6802, longitude: -73.979 },
@@ -131,9 +155,21 @@ const LOCATIONS = [
 ];
 
 const IMPACT_STATS = [
-  { icon: <Recycle size={28} color="#38EF7D" weight="duotone" />, value: '12', label: 'eco spots near you' },
-  { icon: <Leaf size={28} color="#38EF7D" weight="duotone" />, value: '4.2 t', label: 'CO₂ avoided nearby/month' },
-  { icon: <Trophy size={28} color="#F2C94C" weight="duotone" />, value: '#3', label: 'greenest zip in Brooklyn' },
+  {
+    icon: <Recycle size={28} color='#38EF7D' weight='duotone' />,
+    value: '12',
+    label: 'eco spots near you',
+  },
+  {
+    icon: <Leaf size={28} color='#38EF7D' weight='duotone' />,
+    value: '4.2 t',
+    label: 'CO₂ avoided nearby/month',
+  },
+  {
+    icon: <Trophy size={28} color='#F2C94C' weight='duotone' />,
+    value: '#3',
+    label: 'greenest zip in Brooklyn',
+  },
 ];
 
 const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
@@ -148,8 +184,7 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
           [
             {
               text: 'Directions',
-              onPress: () =>
-                showToast('Opens in Maps app — coming in next update!', 'info'),
+              onPress: () => showToast('Opens in Maps app — coming in next update!', 'info'),
             },
             { text: 'Close', style: 'cancel' },
           ],
@@ -162,7 +197,9 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
             <Text style={styles.locationName}>{item.name}</Text>
             <View style={styles.locationTagRow}>
               <GlassBadge style={styles.catChip}>
-                <Text style={styles.catChipText}>{CATEGORIES.find(c => c.id === item.category)?.label || 'Eco'}</Text>
+                <Text style={styles.catChipText}>
+                  {CATEGORIES.find(c => c.id === item.category)?.label || 'Eco'}
+                </Text>
               </GlassBadge>
               <View style={[styles.openChip, !item.open && styles.closedChip]}>
                 <Text style={[styles.openText, !item.open && styles.closedText]}>
@@ -180,7 +217,7 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
           {item.description}
         </Text>
         <View style={styles.impactChip}>
-          <Leaf size={14} color="#38EF7D" weight="duotone" />
+          <Leaf size={14} color='#38EF7D' weight='duotone' />
           <Text style={styles.impactText}>{item.impact}</Text>
         </View>
       </GlassCard>
@@ -190,25 +227,22 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
 
 const MapScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const { isTracking, bufferedCount, startGreenRoute, stopGreenRoute } =
-    useGreenRouteTelemetry();
+  const { isTracking, bufferedCount, startGreenRoute, stopGreenRoute } = useGreenRouteTelemetry();
 
   const filtered =
-    selectedCategory === 'All'
-      ? LOCATIONS
-      : LOCATIONS.filter(l => l.category === selectedCategory);
+    selectedCategory === 'All' ? LOCATIONS : LOCATIONS.filter(l => l.category === selectedCategory);
 
   return (
     <View style={styles.container}>
-      <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
         <Defs>
-          <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#0f2027" stopOpacity="1" />
-            <Stop offset="0.5" stopColor="#203a43" stopOpacity="1" />
-            <Stop offset="1" stopColor="#2c5364" stopOpacity="1" />
+          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
+            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
+            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
+            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
           </SvgLinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
       </Svg>
 
       <View style={styles.header}>
@@ -230,7 +264,7 @@ const MapScreen = () => {
         <View style={styles.mapContainer}>
           <MapView
             style={styles.map}
-            userInterfaceStyle="dark"
+            userInterfaceStyle='dark'
             initialRegion={{
               latitude: 40.73061,
               longitude: -73.935242,
@@ -245,22 +279,25 @@ const MapScreen = () => {
                 title={location.name}
                 description={location.description}
               >
-                <View
-                  style={[
-                    styles.markerBadge,
-                    !location.open && styles.markerBadgeClosed,
-                  ]}
-                >
+                <View style={[styles.markerBadge, !location.open && styles.markerBadgeClosed]}>
                   <Text style={styles.markerText}>
-                    {location.category.includes('♻️') ? '♻️' : location.category.includes('🌱') ? '🌱' : location.category.includes('⚡') ? '⚡' : location.category.includes('🌳') ? '🌳' : location.category.includes('🛍️') ? '🛍️' : '📍'}
+                    {location.category.includes('♻️')
+                      ? '♻️'
+                      : location.category.includes('🌱')
+                      ? '🌱'
+                      : location.category.includes('⚡')
+                      ? '⚡'
+                      : location.category.includes('🌳')
+                      ? '🌳'
+                      : location.category.includes('🛍️')
+                      ? '🛍️'
+                      : '📍'}
                   </Text>
                 </View>
                 <Callout>
                   <View style={styles.calloutContainer}>
                     <Text style={styles.calloutTitle}>{location.name}</Text>
-                    <Text style={styles.calloutDesc}>
-                      {location.description}
-                    </Text>
+                    <Text style={styles.calloutDesc}>{location.description}</Text>
                     <Text style={styles.calloutImpact}>{location.impact}</Text>
                   </View>
                 </Callout>
@@ -276,22 +313,13 @@ const MapScreen = () => {
           contentContainerStyle={styles.filterContent}
         >
           {CATEGORIES.map(c => (
-            <TouchableOpacity
-              key={c.id}
-              onPress={() => setSelectedCategory(c.id)}
-            >
+            <TouchableOpacity key={c.id} onPress={() => setSelectedCategory(c.id)}>
               <View
-                style={[
-                  styles.filterPill,
-                  selectedCategory === c.id && styles.filterPillActive,
-                ]}
+                style={[styles.filterPill, selectedCategory === c.id && styles.filterPillActive]}
               >
-                {c.icon && <View style={{marginRight: 6}}>{c.icon}</View>}
+                {c.icon && <View style={styles.categoryIconContainer}>{c.icon}</View>}
                 <Text
-                  style={[
-                    styles.filterText,
-                    selectedCategory === c.id && styles.filterTextActive,
-                  ]}
+                  style={[styles.filterText, selectedCategory === c.id && styles.filterTextActive]}
                 >
                   {c.label}
                 </Text>
@@ -301,29 +329,31 @@ const MapScreen = () => {
         </ScrollView>
 
         <View style={styles.listContainer}>
-          <Text style={styles.listTitle}>
-            {filtered.length} locations found
-          </Text>
+          <Text style={styles.listTitle}>{filtered.length} locations found</Text>
           {filtered.map(item => (
             <LocationCard key={item.id} item={item} />
           ))}
         </View>
-        <View style={{ height: 100 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       <View style={styles.fabContainer}>
         <TouchableOpacity
           style={[styles.fab, isTracking && styles.fabTracking]}
-          onPress={() => isTracking ? stopGreenRoute() : startGreenRoute('walking')}
+          onPress={() => (isTracking ? stopGreenRoute() : startGreenRoute('walking'))}
         >
           <View style={styles.fabIconWrapper}>
-            {isTracking ? <CheckCircle size={24} color="#fff" weight="fill" /> : <Compass size={24} color="#0f2027" weight="fill" />}
+            {isTracking ? (
+              <CheckCircle size={24} color='#fff' weight='fill' />
+            ) : (
+              <Compass size={24} color='#0f2027' weight='fill' />
+            )}
           </View>
           <View>
-            <Text style={[styles.fabTitle, isTracking && { color: '#fff' }]}>
+            <Text style={[styles.fabTitle, isTracking && styles.fabTitleTracking]}>
               {isTracking ? 'End Green Route' : 'Start Green Route'}
             </Text>
-            <Text style={[styles.fabSub, isTracking && { color: 'rgba(255,255,255,0.8)' }]}>
+            <Text style={[styles.fabSub, isTracking && styles.fabSubTracking]}>
               {isTracking
                 ? `Saved ${bufferedCount} eco-points so far`
                 : 'Passive emissions tracking'}
@@ -346,7 +376,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 26, fontWeight: 'bold', color: '#fff' },
   subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
 
-  statsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 10, marginTop: 10 },
+  statsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 10,
+    marginTop: 10,
+  },
   statCard: {
     flex: 1,
     padding: 14,
@@ -354,7 +389,12 @@ const styles = StyleSheet.create({
   },
   statEmojiWrapper: { marginBottom: 4 },
   statValue: { fontSize: 18, fontWeight: '900', color: '#fff' },
-  statLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: 2 },
+  statLabel: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'center',
+    marginTop: 2,
+  },
 
   mapContainer: {
     marginHorizontal: 16,
@@ -425,8 +465,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  filterPillActive: { backgroundColor: 'rgba(56,239,125,0.2)', borderColor: '#38EF7D' },
-  filterText: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
+  filterPillActive: {
+    backgroundColor: 'rgba(56,239,125,0.2)',
+    borderColor: '#38EF7D',
+  },
+  filterText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '500',
+  },
   filterTextActive: { color: '#38EF7D', fontWeight: 'bold' },
 
   listContainer: { padding: 16, paddingBottom: 32 },
@@ -473,7 +520,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  impactText: { fontSize: 12, color: '#38EF7D', fontWeight: '600', marginLeft: 6 },
+  impactText: {
+    fontSize: 12,
+    color: '#38EF7D',
+    fontWeight: '600',
+    marginLeft: 6,
+  },
 
   fabContainer: {
     position: 'absolute',
@@ -517,6 +569,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     marginTop: 2,
+  },
+  glassCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  glassBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  categoryIconContainer: {
+    marginRight: 6,
+  },
+  bottomSpacer: {
+    height: 100,
+  },
+  fabTitleTracking: {
+    color: '#fff',
+  },
+  fabSubTracking: {
+    color: 'rgba(255, 255, 255, 0.8)',
   },
 });
 

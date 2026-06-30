@@ -14,10 +14,7 @@
 import { API_CONFIG, STORAGE_KEYS } from '../../utils/constants';
 import { createLogger, logCacheOperation } from '../../utils/loggingUtils';
 
-import type {
-  CarbonCalculationRequest,
-  CarbonCalculationResponse,
-} from './CarbonCalculatorCore';
+import type { CarbonCalculationRequest, CarbonCalculationResponse } from './CarbonCalculatorCore';
 
 // ===================================================================
 // TYPES
@@ -101,9 +98,7 @@ export class CarbonCacheManager {
   /**
    * Get calculation result from cache
    */
-  getCachedCalculation(
-    request: CarbonCalculationRequest,
-  ): CarbonCalculationResponse | null {
+  getCachedCalculation(request: CarbonCalculationRequest): CarbonCalculationResponse | null {
     const key = this.generateCacheKey(request);
     return this.get<CarbonCalculationResponse>(key);
   }
@@ -131,12 +126,7 @@ export class CarbonCacheManager {
   /**
    * Cache emission factors
    */
-  cacheEmissionFactors(
-    factors: any[],
-    category?: string,
-    region?: string,
-    ttl?: number,
-  ): void {
+  cacheEmissionFactors(factors: any[], category?: string, region?: string, ttl?: number): void {
     const key = `emission-factors-${category ?? 'all'}-${region ?? 'global'}`;
     this.set(key, factors, ttl ?? API_CONFIG.CACHE_TTL_LONG);
   }
@@ -416,17 +406,13 @@ export class CarbonCacheManager {
     this.metrics.size = this.getCurrentSize();
 
     if (this.metrics.totalRequests > 0) {
-      this.metrics.hitRate =
-        this.metrics.totalHits / this.metrics.totalRequests;
-      this.metrics.missRate =
-        this.metrics.totalMisses / this.metrics.totalRequests;
+      this.metrics.hitRate = this.metrics.totalHits / this.metrics.totalRequests;
+      this.metrics.missRate = this.metrics.totalMisses / this.metrics.totalRequests;
     }
 
     // Update oldest/newest item timestamps
     if (this.cache.size > 0) {
-      const timestamps = Array.from(this.cache.values()).map(
-        item => item.timestamp,
-      );
+      const timestamps = Array.from(this.cache.values()).map(item => item.timestamp);
       this.metrics.oldestItem = Math.min(...timestamps);
       this.metrics.newestItem = Math.max(...timestamps);
     }
@@ -468,11 +454,7 @@ export class CarbonCacheManager {
         size: JSON.stringify(persistentData).length,
       });
     } catch (error) {
-      this.logger.error(
-        'Failed to save cache to persistence',
-        {},
-        error as Error,
-      );
+      this.logger.error('Failed to save cache to persistence', {}, error as Error);
     }
   }
 
@@ -485,11 +467,7 @@ export class CarbonCacheManager {
       // For now, we'll just log the operation
       this.logger.debug('Cache loaded from persistence');
     } catch (error) {
-      this.logger.error(
-        'Failed to load cache from persistence',
-        {},
-        error as Error,
-      );
+      this.logger.error('Failed to load cache from persistence', {}, error as Error);
     }
   }
 }

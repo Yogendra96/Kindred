@@ -3,23 +3,17 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from '
 import { useNavigation } from '@react-navigation/native';
 import { MotiView } from 'moti';
 import { PlayCircle, Article, Question, CaretLeft, CheckCircle } from 'phosphor-react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
 import { spatialColors, typography, animations } from '../../theme/theme';
 
-const GlassCard = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        overflow: 'hidden',
-      },
-    ]}
-  >
-    {children}
-  </View>
+interface GlassCardProps {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}
+
+const GlassCard = ({ style, children }: GlassCardProps) => (
+  <View style={[styles.glassCard, style]}>{children}</View>
 );
 
 // ─── Data imported from ../../data/learningData ───────────────────────────────
@@ -136,7 +130,29 @@ const TYPE_COLORS: Record<string, string> = {
 
 // ─── Content Card ─────────────────────────────────────────────────────────────
 
-const ContentCard = ({ item, completed, onPress, index }: any) => {
+interface ArticleItem {
+  id: string;
+  type: string;
+  topic: string;
+  title: string;
+  icon: React.ComponentType<{
+    size?: number;
+    color?: string;
+    weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  }>;
+  readTime: string;
+  difficulty: string;
+  preview: string;
+}
+
+interface ContentCardProps {
+  item: ArticleItem;
+  completed: boolean;
+  onPress: () => void;
+  index: number;
+}
+
+const ContentCard = ({ item, completed, onPress, index }: ContentCardProps) => {
   const color = TYPE_COLORS[item.type] || '#fff';
   const Icon = item.icon;
 
@@ -462,6 +478,12 @@ const styles = StyleSheet.create({
   emptyText: {
     color: spatialColors.textSecondary,
     fontSize: 16,
+  },
+  glassCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    overflow: 'hidden',
   },
 });
 

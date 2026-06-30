@@ -144,27 +144,19 @@ class ObservabilityService {
       // Track app startup metrics
       this.trackStartupMetrics(Date.now() - startTime);
 
-      loggingService.info(
-        'Observability',
-        'Observability Service initialized',
-        {
-          sessionId: this.sessionId,
-          platform: Platform.OS,
-          enabledFeatures: {
-            rum: this.config.enableRUM,
-            apm: this.config.enableAPM,
-            businessMetrics: this.config.enableBusinessMetrics,
-          },
+      loggingService.info('Observability', 'Observability Service initialized', {
+        sessionId: this.sessionId,
+        platform: Platform.OS,
+        enabledFeatures: {
+          rum: this.config.enableRUM,
+          apm: this.config.enableAPM,
+          businessMetrics: this.config.enableBusinessMetrics,
         },
-      );
+      });
     } catch (error) {
-      loggingService.error(
-        'Observability',
-        'Failed to initialize Observability Service',
-        {
-          error: error instanceof Error ? error.message : String(error),
-        },
-      );
+      loggingService.error('Observability', 'Failed to initialize Observability Service', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -197,9 +189,7 @@ class ObservabilityService {
   /**
    * Track business events
    */
-  trackBusinessEvent(
-    data: Omit<BusinessMetric, 'sessionId' | 'timestamp'>,
-  ): void {
+  trackBusinessEvent(data: Omit<BusinessMetric, 'sessionId' | 'timestamp'>): void {
     if (!this.config.enableBusinessMetrics || !this.shouldSample()) return;
 
     const event: BusinessMetric = {
@@ -251,10 +241,7 @@ class ObservabilityService {
     this.checkBufferSize();
 
     // Log performance issues immediately
-    if (
-      perfMetric.severity === 'critical' ||
-      perfMetric.severity === 'warning'
-    ) {
+    if (perfMetric.severity === 'critical' || perfMetric.severity === 'warning') {
       loggingService.warn('Observability', 'Performance issue detected', {
         metric: perfMetric.name,
         value: perfMetric.value,
@@ -283,11 +270,7 @@ class ObservabilityService {
   /**
    * Track screen transitions
    */
-  trackScreenTransition(
-    fromScreen: string,
-    toScreen: string,
-    duration: number,
-  ): void {
+  trackScreenTransition(fromScreen: string, toScreen: string, duration: number): void {
     this.trackUserJourney({
       stepName: 'screen_transition',
       screenName: toScreen,
@@ -322,8 +305,7 @@ class ObservabilityService {
       name: 'api_call_duration',
       value: duration,
       threshold: 2000, // 2 seconds
-      severity:
-        duration > 5000 ? 'critical' : duration > 2000 ? 'warning' : 'info',
+      severity: duration > 5000 ? 'critical' : duration > 2000 ? 'warning' : 'info',
       context: { endpoint, method, status, success },
     });
 
@@ -343,11 +325,7 @@ class ObservabilityService {
   /**
    * Track user actions
    */
-  trackUserAction(
-    action: string,
-    screen: string,
-    properties: Record<string, any> = {},
-  ): void {
+  trackUserAction(action: string, screen: string, properties: Record<string, any> = {}): void {
     this.trackBusinessEvent({
       eventName: 'user_action',
       userId: this.userId,
@@ -383,11 +361,7 @@ class ObservabilityService {
 
     // Log immediately for critical errors
     if (severity === 'critical' || severity === 'high') {
-      loggingService.error(
-        'Observability',
-        'Critical error tracked',
-        errorData,
-      );
+      loggingService.error('Observability', 'Critical error tracked', errorData);
     }
 
     this.trackBusinessEvent({
@@ -427,17 +401,13 @@ class ObservabilityService {
       topEvents: Array<{ name: string; count: number }>;
     };
   } {
-    const sessionDuration = this.sessionStartTime
-      ? Date.now() - this.sessionStartTime
-      : 0;
+    const sessionDuration = this.sessionStartTime ? Date.now() - this.sessionStartTime : 0;
 
     const apiCalls = this.performanceMetricsBuffer.filter(
       m => m.metricType === 'network' && m.name === 'api_call_duration',
     );
 
-    const errors = this.businessMetricsBuffer.filter(
-      e => e.eventName === 'error_occurred',
-    );
+    const errors = this.businessMetricsBuffer.filter(e => e.eventName === 'error_occurred');
 
     const eventCounts = this.businessMetricsBuffer.reduce((acc, event) => {
       acc[event.eventName] = (acc[event.eventName] || 0) + 1;
@@ -455,30 +425,26 @@ class ObservabilityService {
         sessionId: this.sessionId,
         userId: this.userId,
         duration: sessionDuration,
-        screenViews: this.journeyEventsBuffer.filter(
-          e => e.stepName === 'screen_transition',
-        ).length,
+        screenViews: this.journeyEventsBuffer.filter(e => e.stepName === 'screen_transition')
+          .length,
         errors: errors.length,
       },
       performanceOverview: {
         avgResponseTime:
           apiCalls.length > 0
-            ? apiCalls.reduce((sum, call) => sum + call.value, 0) /
-              apiCalls.length
+            ? apiCalls.reduce((sum, call) => sum + call.value, 0) / apiCalls.length
             : 0,
         errorRate: apiCalls.length > 0 ? errors.length / apiCalls.length : 0,
         throughput: apiCalls.length,
         availability:
           apiCalls.length > 0
-            ? apiCalls.filter(call => call.context.success === true).length /
-              apiCalls.length
+            ? apiCalls.filter(call => call.context.success === true).length / apiCalls.length
             : 1,
       },
       businessMetrics: {
         totalEvents: this.businessMetricsBuffer.length,
-        uniqueUsers: new Set(
-          this.businessMetricsBuffer.filter(e => e.userId).map(e => e.userId),
-        ).size,
+        uniqueUsers: new Set(this.businessMetricsBuffer.filter(e => e.userId).map(e => e.userId))
+          .size,
         topEvents,
       },
     };
@@ -524,13 +490,9 @@ class ObservabilityService {
         performanceMetricsCount: batchData.performanceMetrics.length,
       });
     } catch (error) {
-      loggingService.error(
-        'Observability',
-        'Failed to flush observability data',
-        {
-          error: error instanceof Error ? error.message : String(error),
-        },
-      );
+      loggingService.error('Observability', 'Failed to flush observability data', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -591,9 +553,7 @@ class ObservabilityService {
 
   private async getSessionStartTime(): Promise<number | null> {
     try {
-      const startTime = await AsyncStorage.getItem(
-        'observability_session_start',
-      );
+      const startTime = await AsyncStorage.getItem('observability_session_start');
       return startTime ? parseInt(startTime, 10) : null;
     } catch {
       return null;
@@ -618,10 +578,7 @@ class ObservabilityService {
   }
 
   private setupAppStateMonitoring(): void {
-    this.appStateSubscription = AppState.addEventListener(
-      'change',
-      this.handleAppStateChange,
-    );
+    this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
   }
 
   private setupNetworkMonitoring(): void {
@@ -658,8 +615,7 @@ class ObservabilityService {
       name: 'app_startup_time',
       value: duration,
       threshold: 3000, // 3 seconds
-      severity:
-        duration > 5000 ? 'critical' : duration > 3000 ? 'warning' : 'info',
+      severity: duration > 5000 ? 'critical' : duration > 3000 ? 'warning' : 'info',
       context: { platform: Platform.OS },
     });
   }
@@ -695,8 +651,7 @@ class ObservabilityService {
       memory_usage: 80,
     };
 
-    const threshold =
-      criticalThresholds[metric.name as keyof typeof criticalThresholds];
+    const threshold = criticalThresholds[metric.name as keyof typeof criticalThresholds];
     if (threshold && metric.value > threshold) {
       this.triggerAlert({
         id: `alert_${metric.name}`,
@@ -763,19 +718,13 @@ class ObservabilityService {
       //   body: JSON.stringify(data),
       // });
 
-      loggingService.debug(
-        'Observability',
-        'Data sent to observability platform',
-        {
-          dataType: typeof data,
-        },
-      );
+      loggingService.debug('Observability', 'Data sent to observability platform', {
+        dataType: typeof data,
+      });
     } catch (error) {
-      loggingService.error(
-        'Observability',
-        'Failed to send data to observability platform',
-        { error },
-      );
+      loggingService.error('Observability', 'Failed to send data to observability platform', {
+        error,
+      });
     }
   }
 
@@ -824,11 +773,9 @@ class ObservabilityService {
    */
   cleanup(): void {
     if (this.flushTimer) {
-      loggingService.info(
-        'Observability',
-        'Cleaning up Observability Service',
-        { sessionId: this.sessionId },
-      );
+      loggingService.info('Observability', 'Cleaning up Observability Service', {
+        sessionId: this.sessionId,
+      });
       clearInterval(this.flushTimer);
       this.flushTimer = undefined;
     }

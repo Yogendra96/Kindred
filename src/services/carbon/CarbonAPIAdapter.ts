@@ -62,8 +62,7 @@ export class CarbonAPIAdapter {
   private logger = createLogger({ prefix: 'CARBON_API' });
   private performanceLogger = new PerformanceLogger('CARBON_API');
   private apis: Map<string, AxiosInstance> = new Map();
-  private rateLimitTracker: Map<string, { count: number; resetTime: number }> =
-    new Map();
+  private rateLimitTracker: Map<string, { count: number; resetTime: number }> = new Map();
 
   // API provider configuration
   private providers: APIProvider[] = [
@@ -114,9 +113,7 @@ export class CarbonAPIAdapter {
     });
 
     // Try each provider in order of priority
-    const sortedProviders = [...this.providers].sort(
-      (a, b) => a.priority - b.priority,
-    );
+    const sortedProviders = [...this.providers].sort((a, b) => a.priority - b.priority);
 
     for (const provider of sortedProviders) {
       try {
@@ -124,21 +121,17 @@ export class CarbonAPIAdapter {
           requestId,
         });
 
-        const result = await this.performanceLogger.measureAsync(
-          `api_call_${provider.name}`,
-          () => this.calculateWithProvider(provider.name, request, requestId),
+        const result = await this.performanceLogger.measureAsync(`api_call_${provider.name}`, () =>
+          this.calculateWithProvider(provider.name, request, requestId),
         );
 
         if (result) {
-          this.logger.success(
-            `API calculation successful with ${provider.name}`,
-            {
-              requestId,
-              activityType: request.activityType,
-              emissions: result.emissions,
-              provider: provider.name,
-            },
-          );
+          this.logger.success(`API calculation successful with ${provider.name}`, {
+            requestId,
+            activityType: request.activityType,
+            emissions: result.emissions,
+            provider: provider.name,
+          });
           return result;
         }
       } catch (error) {
@@ -164,10 +157,7 @@ export class CarbonAPIAdapter {
   /**
    * Get emission factors from external API
    */
-  async getEmissionFactors(
-    category?: string,
-    region?: string,
-  ): Promise<CarbonEmissionFactor[]> {
+  async getEmissionFactors(category?: string, region?: string): Promise<CarbonEmissionFactor[]> {
     const requestId = this.generateRequestId();
 
     for (const provider of this.providers) {
@@ -203,13 +193,7 @@ export class CarbonAPIAdapter {
 
         return factors;
       } catch (error) {
-        logAPIError(
-          this.logger,
-          'GET',
-          '/emission-factors',
-          error as Error,
-          requestId,
-        );
+        logAPIError(this.logger, 'GET', '/emission-factors', error as Error, requestId);
         continue;
       }
     }
@@ -388,14 +372,7 @@ export class CarbonAPIAdapter {
     const response = await api.post(endpoint, data);
     const duration = performance.now() - startTime;
 
-    logAPIResponse(
-      this.logger,
-      'POST',
-      endpoint,
-      response.status,
-      duration,
-      requestId,
-    );
+    logAPIResponse(this.logger, 'POST', endpoint, response.status, duration, requestId);
 
     const result = response.data.data.attributes;
 
@@ -437,9 +414,7 @@ export class CarbonAPIAdapter {
       'food-beef': 'consumer_goods-type_food_products-food_type_beef',
     };
 
-    const factorKey = `${activityType}-${
-      request.additionalParams?.subtype || 'default'
-    }`;
+    const factorKey = `${activityType}-${request.additionalParams?.subtype || 'default'}`;
     const factorId = emissionFactorMap[factorKey];
 
     if (!factorId) {
@@ -463,14 +438,7 @@ export class CarbonAPIAdapter {
     const response = await api.post('/estimate', data);
     const duration = performance.now() - startTime;
 
-    logAPIResponse(
-      this.logger,
-      'POST',
-      '/estimate',
-      response.status,
-      duration,
-      requestId,
-    );
+    logAPIResponse(this.logger, 'POST', '/estimate', response.status, duration, requestId);
 
     const result = response.data;
 
@@ -532,14 +500,7 @@ export class CarbonAPIAdapter {
     const response = await api.get(endpoint, { params });
     const duration = performance.now() - startTime;
 
-    logAPIResponse(
-      this.logger,
-      'GET',
-      endpoint,
-      response.status,
-      duration,
-      requestId,
-    );
+    logAPIResponse(this.logger, 'GET', endpoint, response.status, duration, requestId);
 
     const result = response.data;
 

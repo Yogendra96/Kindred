@@ -9,15 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useRef, useEffect } from 'react';
 import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  ScrollView,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Animated, ScrollView, Image } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -58,13 +50,22 @@ export const Onboarding: React.FC<OnboardingProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} scrollEnabled={false}>
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        scrollEnabled={false}
+      >
         {steps.map((step, index) => (
           <View key={step.id} style={[styles.stepContainer, { width: screenWidth }]}>
             <Text style={[styles.title, { color: theme.colors.onBackground }]}>{step.title}</Text>
-            <Text style={[styles.description, { color: theme.colors.onBackground }]}>{step.description}</Text>
+            <Text style={[styles.description, { color: theme.colors.onBackground }]}>
+              {step.description}
+            </Text>
             <AnimatedTouchable onPress={handleNext} style={styles.nextButton}>
-              <Text style={{ color: theme.colors.onPrimary }}>{index === steps.length - 1 ? 'Finish' : 'Next'}</Text>
+              <Text style={{ color: theme.colors.onPrimary }}>
+                {index === steps.length - 1 ? 'Finish' : 'Next'}
+              </Text>
             </AnimatedTouchable>
           </View>
         ))}

@@ -75,11 +75,7 @@ interface OptimizationAction {
   readonly priority: 'low' | 'medium' | 'high' | 'critical';
   readonly action: string;
   readonly expectedImprovement: number;
-  readonly implementationComplexity:
-    | 'trivial'
-    | 'simple'
-    | 'moderate'
-    | 'complex';
+  readonly implementationComplexity: 'trivial' | 'simple' | 'moderate' | 'complex';
   readonly autoApplicable: boolean;
 }
 
@@ -187,8 +183,7 @@ class IntelligentCache {
 
     // Calculate access frequency
     const intervals = pattern.slice(1).map((time, i) => time - pattern[i]);
-    const avgInterval =
-      intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+    const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
 
     // Adaptive TTL based on access pattern
     return Math.min(Math.max(avgInterval * 2, 60000), 3600000); // Between 1 minute and 1 hour
@@ -217,8 +212,7 @@ class IntelligentCache {
 
     // Score based on frequency and recency
     const frequency = pattern.length;
-    const recency =
-      pattern.length > 0 ? now - pattern[pattern.length - 1] : Infinity;
+    const recency = pattern.length > 0 ? now - pattern[pattern.length - 1] : Infinity;
 
     return frequency / (recency / 1000 + 1); // Higher score = more valuable
   }
@@ -311,8 +305,7 @@ class AIPerformanceOptimizer {
     if (data.length < 2) return 0;
 
     const mean = data.reduce((sum, val) => sum + val, 0) / data.length;
-    const variance =
-      data.reduce((sum, val) => sum + (val - mean) ** 2, 0) / data.length;
+    const variance = data.reduce((sum, val) => sum + (val - mean) ** 2, 0) / data.length;
 
     return variance;
   }
@@ -330,8 +323,7 @@ class AIPerformanceOptimizer {
         weight: 0.3,
         currentValue: context.memoryUsage,
         optimalRange: [0, 150 * 1024 * 1024], // 150MB
-        impact:
-          context.memoryUsage > 200 * 1024 * 1024 ? 'negative' : 'neutral',
+        impact: context.memoryUsage > 200 * 1024 * 1024 ? 'negative' : 'neutral',
       });
     }
 
@@ -445,9 +437,7 @@ class AIPerformanceOptimizer {
     }
   }
 
-  private async applyMemoryOptimization(
-    action: OptimizationAction,
-  ): Promise<void> {
+  private async applyMemoryOptimization(action: OptimizationAction): Promise<void> {
     switch (action.id) {
       case 'memory-cleanup':
         // Trigger garbage collection if available
@@ -458,21 +448,15 @@ class AIPerformanceOptimizer {
     }
   }
 
-  private async applyNetworkOptimization(
-    action: OptimizationAction,
-  ): Promise<void> {
+  private async applyNetworkOptimization(action: OptimizationAction): Promise<void> {
     // Network optimization implementations would go here
   }
 
-  private async applyRenderOptimization(
-    action: OptimizationAction,
-  ): Promise<void> {
+  private async applyRenderOptimization(action: OptimizationAction): Promise<void> {
     // Render optimization implementations would go here
   }
 
-  private async applyBatteryOptimization(
-    action: OptimizationAction,
-  ): Promise<void> {
+  private async applyBatteryOptimization(action: OptimizationAction): Promise<void> {
     // Battery optimization implementations would go here
   }
 }
@@ -571,10 +555,7 @@ export class AdvancedPerformanceEngine {
         severity: 'info',
       });
     } catch (error) {
-      console.error(
-        '❌ Failed to initialize Advanced Performance Engine:',
-        error,
-      );
+      console.error('❌ Failed to initialize Advanced Performance Engine:', error);
       throw error;
     }
   }
@@ -749,10 +730,7 @@ export class AdvancedPerformanceEngine {
   async optimizeForCurrentConditions(): Promise<OptimizationRecommendation[]> {
     const metrics = await this.collectPerformanceMetrics();
     const context = await this.getContextData();
-    const predictions = await this.aiOptimizer.analyzePerformancePattern(
-      metrics,
-      context,
-    );
+    const predictions = await this.aiOptimizer.analyzePerformancePattern(metrics, context);
 
     return predictions.flatMap(p =>
       p.recommendedActions.map(action => ({
@@ -786,15 +764,11 @@ export class AdvancedPerformanceEngine {
   }> {
     const metrics = await this.collectPerformanceMetrics();
     const context = await this.getContextData();
-    const predictions = await this.aiOptimizer.analyzePerformancePattern(
-      metrics,
-      context,
-    );
+    const predictions = await this.aiOptimizer.analyzePerformancePattern(metrics, context);
     const recommendations = await this.optimizeForCurrentConditions();
 
     return {
-      summary:
-        'Advanced Performance Engine is actively optimizing application performance',
+      summary: 'Advanced Performance Engine is actively optimizing application performance',
       metrics,
       predictions,
       recommendations,

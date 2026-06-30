@@ -4,7 +4,7 @@ import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Camera } from 'expo-camera';
 // import { runOnJS } from 'react-native-reanimated'; // Optional dependency
 // Commented out unused imports - kept for future camera integration
 // import {
@@ -118,8 +118,7 @@ class BarcodeScannerService {
 
   private constructor() {
     this.apiClient = axios.create({
-      baseURL:
-        process.env.PRODUCT_API_URL || 'https://api.openfoodfacts.org/api/v0',
+      baseURL: process.env.PRODUCT_API_URL || 'https://api.openfoodfacts.org/api/v0',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -145,10 +144,8 @@ class BarcodeScannerService {
           config.url || '',
           config.method?.toUpperCase() || 'GET',
         );
-        (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          config as InternalAxiosRequestConfig & { metadata?: any }
-        ).metadata = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (config as InternalAxiosRequestConfig & { metadata?: any }).metadata = {
           trace,
           startTime: performance.now(),
         };
@@ -190,7 +187,7 @@ class BarcodeScannerService {
   // Request camera permissions
   public async requestCameraPermissions(): Promise<boolean> {
     try {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       return status === 'granted';
     } catch (error) {
       console.error('Error requesting camera permissions:', error);
@@ -201,7 +198,7 @@ class BarcodeScannerService {
   // Check if camera permissions are granted
   public async hasCameraPermissions(): Promise<boolean> {
     try {
-      const { status } = await BarCodeScanner.getPermissionsAsync();
+      const { status } = await Camera.getCameraPermissionsAsync();
       return status === 'granted';
     } catch (error) {
       console.error('Error checking camera permissions:', error);
@@ -252,10 +249,7 @@ class BarcodeScannerService {
         scanResult.productInfo = productInfo;
 
         // Get carbon footprint data
-        const carbonFootprint = await this.getCarbonFootprint(
-          barcode,
-          productInfo,
-        );
+        const carbonFootprint = await this.getCarbonFootprint(barcode, productInfo);
         if (carbonFootprint) {
           scanResult.carbonFootprint = carbonFootprint;
         }
@@ -312,9 +306,7 @@ class BarcodeScannerService {
     }
   }
 
-  private async getProductFromOpenFoodFacts(
-    barcode: string,
-  ): Promise<ProductInfo | null> {
+  private async getProductFromOpenFoodFacts(barcode: string): Promise<ProductInfo | null> {
     try {
       const response = await this.apiClient.get(`/product/${barcode}.json`);
       const product = response.data.product;
@@ -334,8 +326,7 @@ class BarcodeScannerService {
         packaging: {
           materials: product.packaging_tags || [],
           recyclable: product.packaging_tags?.includes('recyclable') || false,
-          biodegradable:
-            product.packaging_tags?.includes('biodegradable') || false,
+          biodegradable: product.packaging_tags?.includes('biodegradable') || false,
           packagingWeight: 0, // Not available in OpenFoodFacts
         },
         nutritionalInfo: product.nutriments
@@ -364,9 +355,7 @@ class BarcodeScannerService {
     }
   }
 
-  private async getProductFromUPCDatabase(
-    _barcode: string,
-  ): Promise<ProductInfo | null> {
+  private async getProductFromUPCDatabase(_barcode: string): Promise<ProductInfo | null> {
     try {
       // This would use a UPC database API
       // Implementation depends on the specific API chosen
@@ -377,9 +366,7 @@ class BarcodeScannerService {
     return null;
   }
 
-  private async getProductFromBarcodeLookup(
-    _barcode: string,
-  ): Promise<ProductInfo | null> {
+  private async getProductFromBarcodeLookup(_barcode: string): Promise<ProductInfo | null> {
     try {
       // This would use a barcode lookup API
       // Implementation depends on the specific API chosen
@@ -405,10 +392,7 @@ class BarcodeScannerService {
       let carbonData = await this.getCarbonFromHowGoodAPI(barcode, productInfo);
 
       if (!carbonData) {
-        carbonData = await this.getCarbonFromCarbonTrustAPI(
-          barcode,
-          productInfo,
-        );
+        carbonData = await this.getCarbonFromCarbonTrustAPI(barcode, productInfo);
       }
 
       if (!carbonData) {
@@ -461,15 +445,9 @@ class BarcodeScannerService {
     productInfo: ProductInfo,
   ): Promise<CarbonFootprintData> {
     // Calculate estimated carbon footprint based on product category and origin
-    const categoryEmissions = this.getCategoryEmissionFactor(
-      productInfo.category,
-    );
-    const transportEmissions = this.calculateTransportEmissions(
-      productInfo.origin.country,
-    );
-    const packagingEmissions = this.calculatePackagingEmissions(
-      productInfo.packaging,
-    );
+    const categoryEmissions = this.getCategoryEmissionFactor(productInfo.category);
+    const transportEmissions = this.calculateTransportEmissions(productInfo.origin.country);
+    const packagingEmissions = this.calculatePackagingEmissions(productInfo.packaging);
 
     const production = categoryEmissions * (productInfo.weight || 1);
     const transportation = transportEmissions;
@@ -553,9 +531,7 @@ class BarcodeScannerService {
     return 1.0; // Default transport emission
   }
 
-  private calculatePackagingEmissions(
-    packaging: ProductInfo['packaging'],
-  ): number {
+  private calculatePackagingEmissions(packaging: ProductInfo['packaging']): number {
     let emissions = 0;
 
     for (const material of packaging.materials) {
@@ -681,10 +657,7 @@ class BarcodeScannerService {
         this.scanHistory = this.scanHistory.slice(0, 100);
       }
 
-      await AsyncStorage.setItem(
-        'barcode_scan_history',
-        JSON.stringify(this.scanHistory),
-      );
+      await AsyncStorage.setItem('barcode_scan_history', JSON.stringify(this.scanHistory));
     } catch (error) {
       console.error('Error saving scan to history:', error);
     }
@@ -698,21 +671,13 @@ class BarcodeScannerService {
   // Update scan history item
   public async updateScanHistory(
     scanId: string,
-    updates: Partial<
-      Pick<
-        ScanHistory,
-        'userRating' | 'userNotes' | 'purchased' | 'alternatives'
-      >
-    >,
+    updates: Partial<Pick<ScanHistory, 'userRating' | 'userNotes' | 'purchased' | 'alternatives'>>,
   ): Promise<void> {
     try {
       const index = this.scanHistory.findIndex(item => item.id === scanId);
       if (index !== -1) {
         this.scanHistory[index] = { ...this.scanHistory[index], ...updates };
-        await AsyncStorage.setItem(
-          'barcode_scan_history',
-          JSON.stringify(this.scanHistory),
-        );
+        await AsyncStorage.setItem('barcode_scan_history', JSON.stringify(this.scanHistory));
       }
     } catch (error) {
       console.error('Error updating scan history:', error);
@@ -722,12 +687,11 @@ class BarcodeScannerService {
   // Load cached data
   private async loadCachedData(): Promise<void> {
     try {
-      const [historyData, productCacheData, carbonCacheData] =
-        await Promise.all([
-          AsyncStorage.getItem('barcode_scan_history'),
-          AsyncStorage.getItem('product_cache'),
-          AsyncStorage.getItem('carbon_cache'),
-        ]);
+      const [historyData, productCacheData, carbonCacheData] = await Promise.all([
+        AsyncStorage.getItem('barcode_scan_history'),
+        AsyncStorage.getItem('product_cache'),
+        AsyncStorage.getItem('carbon_cache'),
+      ]);
 
       if (historyData) {
         this.scanHistory = JSON.parse(historyData);
@@ -817,9 +781,7 @@ export const BarcodeUtils = {
       return `${barcode.slice(0, 6)} ${barcode.slice(6)}`;
     } else if (barcode.length === 13) {
       // EAN-13 format: 1 234567 890123
-      return `${barcode.slice(0, 1)} ${barcode.slice(1, 7)} ${barcode.slice(
-        7,
-      )}`;
+      return `${barcode.slice(0, 1)} ${barcode.slice(1, 7)} ${barcode.slice(7)}`;
     }
     return barcode;
   },

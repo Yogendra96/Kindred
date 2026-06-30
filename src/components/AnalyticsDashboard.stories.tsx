@@ -3,12 +3,7 @@
 import { ThemeProvider } from '../theme/ThemeProvider';
 import { lightTheme, darkTheme } from '../theme/themes';
 import AnalyticsDashboard from './AnalyticsDashboard';
-import type {
-  MetricCard,
-  ChartData,
-  PieChartData,
-  TimeSeriesData,
-} from './AnalyticsDashboard';
+import type { MetricCard, ChartData, PieChartData, TimeSeriesData } from './AnalyticsDashboard';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { View } from 'react-native';
@@ -529,14 +524,10 @@ export const LargeDataset: Story = {
       change: Math.random() * 40 - 20,
       changeType: Math.random() > 0.5 ? 'increase' : 'decrease',
       icon: ['📊', '📈', '📉', '💹', '🎯'][Math.floor(Math.random() * 5)],
-      color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][
-        Math.floor(Math.random() * 5)
-      ],
+      color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][Math.floor(Math.random() * 5)],
     })) as MetricCard[],
     timeSeriesData: Array.from({ length: 30 }, (_, i) => ({
-      timestamp: new Date(
-        Date.now() - (29 - i) * 24 * 60 * 60 * 1000,
-      ).toISOString(),
+      timestamp: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
       value: Math.floor(Math.random() * 1000),
     })),
     showComparison: true,

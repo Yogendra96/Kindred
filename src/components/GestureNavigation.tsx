@@ -8,11 +8,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeProvider';
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, Dimensions, Animated } from 'react-native';
-import {
-  PanGestureHandler,
-  State,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
+import { PanGestureHandler, State, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -94,7 +90,9 @@ export const GestureNavigation: React.FC<GestureNavigationProps> = ({
   return (
     <GestureHandlerRootView style={styles.container} testID={testID}>
       <PanGestureHandler onHandlerStateChange={onHandlerStateChange} enabled={config.enabled}>
-        <Animated.View style={[styles.gestureContainer, { transform: [{ translateX }, { translateY }] }]}>
+        <Animated.View
+          style={[styles.gestureContainer, { transform: [{ translateX }, { translateY }] }]}
+        >
           {children}
         </Animated.View>
       </PanGestureHandler>
@@ -104,16 +102,19 @@ export const GestureNavigation: React.FC<GestureNavigationProps> = ({
 
 export const useGestureNavigation = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-  const createNavigationActions = useCallback((): SwipeAction[] => [
-    {
-      direction: 'right',
-      action: () => navigation.canGoBack() && navigation.goBack(),
-      icon: 'arrow-back',
-      label: 'Back',
-      color: '#2196F3',
-      enabled: navigation.canGoBack(),
-    }
-  ], [navigation]);
+  const createNavigationActions = useCallback(
+    (): SwipeAction[] => [
+      {
+        direction: 'right',
+        action: () => navigation.canGoBack() && navigation.goBack(),
+        icon: 'arrow-back',
+        label: 'Back',
+        color: '#2196F3',
+        enabled: navigation.canGoBack(),
+      },
+    ],
+    [navigation],
+  );
 
   return { createNavigationActions };
 };

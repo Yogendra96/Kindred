@@ -6,14 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeProvider';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -126,7 +119,12 @@ export const useGamification = () => {
  */
 export const GamificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userLevel, setUserLevel] = useState({
-    level: 1, currentXP: 0, xpToNext: 100, totalXP: 0, title: 'Eco Beginner', perks: []
+    level: 1,
+    currentXP: 0,
+    xpToNext: 100,
+    totalXP: 0,
+    title: 'Eco Beginner',
+    perks: [],
   });
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [streaks, setStreaks] = useState<Record<string, Streak>>({});
@@ -181,15 +179,32 @@ export const GamificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         HapticFeedbackService.triggerSuccess();
       }
 
-      return { ...prev, level: newLevel, currentXP: newXP, xpToNext, totalXP: prev.totalXP + amount };
+      return {
+        ...prev,
+        level: newLevel,
+        currentXP: newXP,
+        xpToNext,
+        totalXP: prev.totalXP + amount,
+      };
     });
   };
 
-  // Other context functions omitted for brevity in this refactor, 
+  // Other context functions omitted for brevity in this refactor,
   // keeping the core structure and types.
-  
+
   return (
-    <GamificationContext.Provider value={{ userLevel, achievements, streaks, rewards, challenges, totalPoints, unlockedAchievements: achievements.filter(a => a.unlocked), addXP }}>
+    <GamificationContext.Provider
+      value={{
+        userLevel,
+        achievements,
+        streaks,
+        rewards,
+        challenges,
+        totalPoints,
+        unlockedAchievements: achievements.filter(a => a.unlocked),
+        addXP,
+      }}
+    >
       {children}
     </GamificationContext.Provider>
   );
@@ -201,7 +216,9 @@ export const UserLevelDisplay = () => {
   const { userLevel } = useGamification();
   return (
     <View style={styles.levelDisplay}>
-      <Text style={{ color: theme.colors.onSurface }}>Level {userLevel.level}: {userLevel.title}</Text>
+      <Text style={{ color: theme.colors.onSurface }}>
+        Level {userLevel.level}: {userLevel.title}
+      </Text>
     </View>
   );
 };

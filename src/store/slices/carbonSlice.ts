@@ -24,6 +24,33 @@ export interface EcosystemState {
   lastUpdated: string;
 }
 
+export interface OffsetTransaction {
+  id: string;
+  projectId: string;
+  projectName: string;
+  cost: number;
+  tons: number;
+  date: string;
+  certificateUrl: string;
+  registryLink: string;
+  registryProvider: 'Gold Standard' | 'Verra';
+  registryId: string;
+}
+
+export interface OffsetSubscription {
+  active: boolean;
+  tier: 'none' | 'starter' | 'neutral' | 'positive'; // 0%, 50%, 100%, 150% offset
+  monthlyCost: number;
+  offsetTonsPerMonth: number;
+  nextBillingDate: string;
+  billingHistory: {
+    id: string;
+    date: string;
+    amount: number;
+    tons: number;
+  }[];
+}
+
 interface CarbonState {
   footprint: CarbonFootprint;
   history: HistoryEntry[];
@@ -32,6 +59,10 @@ interface CarbonState {
     deadline: string;
   };
   ecosystem: EcosystemState;
+  offsets: {
+    transactions: OffsetTransaction[];
+    subscription: OffsetSubscription;
+  };
   loading: {
     footprint: boolean;
     history: boolean;
@@ -60,6 +91,17 @@ const initialState: CarbonState = {
     waterClarity: 0.5,
     airQuality: 0.5,
     lastUpdated: new Date().toISOString(),
+  },
+  offsets: {
+    transactions: [],
+    subscription: {
+      active: false,
+      tier: 'none',
+      monthlyCost: 0,
+      offsetTonsPerMonth: 0,
+      nextBillingDate: '',
+      billingHistory: [],
+    },
   },
   loading: {
     footprint: false,
@@ -125,6 +167,35 @@ const carbonSlice = createSlice({
       const entry = state.history.find(h => h.date === action.payload);
       if (entry) entry.pendingSync = true;
     },
+    addOffsetTransaction: (state, action: PayloadAction<OffsetTransaction>) => {
+      state.offsets.transactions = [action.payload, ...state.offsets.transactions];
+      // Also update ecosystem health
+      state.ecosystem.health = Math.min(1.0, state.ecosystem.health + 0.05);
+      state.ecosystem.lastUpdated = new Date().toISOString();
+    },
+    updateOffsetSubscription: (state, action: PayloadAction<Partial<OffsetSubscription>>) => {
+      state.offsets.subscription = {
+        ...state.offsets.subscription,
+        ...action.payload,
+      };
+    },
+    addSubscriptionBillingRecord: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        date: string;
+        amount: number;
+        tons: number;
+      }>,
+    ) => {
+      state.offsets.subscription.billingHistory = [
+        action.payload,
+        ...state.offsets.subscription.billingHistory,
+      ];
+      // Also update ecosystem health
+      state.ecosystem.health = Math.min(1.0, state.ecosystem.health + 0.1);
+      state.ecosystem.lastUpdated = new Date().toISOString();
+    },
     resetState: state => {
       Object.assign(state, initialState);
     },
@@ -143,6 +214,9 @@ export const {
   setError,
   markEntrySynced,
   markEntryPendingSync,
+  addOffsetTransaction,
+  updateOffsetSubscription,
+  addSubscriptionBillingRecord,
   resetState,
 } = carbonSlice.actions;
 

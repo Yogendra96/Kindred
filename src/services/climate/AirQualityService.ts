@@ -116,16 +116,14 @@ const AQI_RECOMMENDATIONS: Record<AQICategory, AQIRecommendation> = {
     exerciseAdvice: 'Great conditions for outdoor exercise',
     transportAdvice: 'Perfect day for walking or cycling',
     sensitiveGroupsAdvice: 'No precautions needed',
-    carbonReduction:
-      'Consider walking or cycling to reduce your carbon footprint',
+    carbonReduction: 'Consider walking or cycling to reduce your carbon footprint',
   },
   moderate: {
     category: 'moderate',
     generalAdvice: 'Air quality is acceptable for most people',
     exerciseAdvice: 'Outdoor exercise is fine for most people',
     transportAdvice: 'Good conditions for active transport',
-    sensitiveGroupsAdvice:
-      'Unusually sensitive individuals may experience symptoms',
+    sensitiveGroupsAdvice: 'Unusually sensitive individuals may experience symptoms',
     carbonReduction:
       "Walking or cycling still recommended - you'll contribute less to air pollution",
   },
@@ -143,12 +141,10 @@ const AQI_RECOMMENDATIONS: Record<AQICategory, AQIRecommendation> = {
     category: 'unhealthy',
     generalAdvice: 'Everyone may begin to experience health effects',
     exerciseAdvice: 'Move strenuous activities indoors',
-    transportAdvice:
-      'Consider alternatives to walking/cycling for long distances',
+    transportAdvice: 'Consider alternatives to walking/cycling for long distances',
     sensitiveGroupsAdvice:
       'Avoid all outdoor physical activity. Stay indoors with air filtration if possible',
-    carbonReduction:
-      'Use public transit if available. Every car off the road helps',
+    carbonReduction: 'Use public transit if available. Every car off the road helps',
   },
   'very-unhealthy': {
     category: 'very-unhealthy',
@@ -156,15 +152,13 @@ const AQI_RECOMMENDATIONS: Record<AQICategory, AQIRecommendation> = {
     exerciseAdvice: 'Avoid all outdoor exercise',
     transportAdvice: 'Minimize time outdoors. Use enclosed transport',
     sensitiveGroupsAdvice: 'Remain indoors. If you must go out, wear N95 mask',
-    carbonReduction:
-      'This is often caused by vehicle emissions. Reduce driving if possible',
+    carbonReduction: 'This is often caused by vehicle emissions. Reduce driving if possible',
   },
   hazardous: {
     category: 'hazardous',
     generalAdvice: 'Health alert: everyone may experience serious effects',
     exerciseAdvice: 'No outdoor exercise',
-    transportAdvice:
-      'Stay indoors. Use enclosed, filtered transport only when necessary',
+    transportAdvice: 'Stay indoors. Use enclosed, filtered transport only when necessary',
     sensitiveGroupsAdvice: 'Do not go outdoors. Use air purifiers indoors',
     carbonReduction: 'Air quality emergency. Limit all non-essential travel',
   },
@@ -209,13 +203,8 @@ class AirQualityService {
   /**
    * Get current air quality for a location
    */
-  async getCurrentAirQuality(
-    lat: number,
-    lng: number,
-  ): Promise<AirQualityData> {
-    const cacheKey = `${this.CACHE_PREFIX}current_${lat.toFixed(
-      2,
-    )}_${lng.toFixed(2)}`;
+  async getCurrentAirQuality(lat: number, lng: number): Promise<AirQualityData> {
+    const cacheKey = `${this.CACHE_PREFIX}current_${lat.toFixed(2)}_${lng.toFixed(2)}`;
 
     // Check cache
     const cached = await this.getFromCache<AirQualityData>(cacheKey);
@@ -247,10 +236,7 @@ class AirQualityService {
   /**
    * Fetch from OpenAQ API
    */
-  private async fetchFromOpenAQ(
-    lat: number,
-    lng: number,
-  ): Promise<AirQualityData | null> {
+  private async fetchFromOpenAQ(lat: number, lng: number): Promise<AirQualityData | null> {
     try {
       const apiKey = Config.OPENAQ_API_KEY;
       const headers: Record<string, string> = {
@@ -288,12 +274,8 @@ class AirQualityService {
       }));
 
       // Calculate AQI from PM2.5 if available
-      const pm25 = measurements.find(
-        (m: AirQualityMeasurement) => m.parameter === 'pm25',
-      );
-      const aqi = pm25
-        ? this.calculateAQI(pm25.value, 'pm25')
-        : this.estimateAQI(measurements);
+      const pm25 = measurements.find((m: AirQualityMeasurement) => m.parameter === 'pm25');
+      const aqi = pm25 ? this.calculateAQI(pm25.value, 'pm25') : this.estimateAQI(measurements);
 
       return {
         location: {
@@ -323,10 +305,7 @@ class AirQualityService {
   /**
    * Fetch from IQAir API
    */
-  private async fetchFromIQAir(
-    lat: number,
-    lng: number,
-  ): Promise<AirQualityData | null> {
+  private async fetchFromIQAir(lat: number, lng: number): Promise<AirQualityData | null> {
     const apiKey = Config.IQAIR_API_KEY;
     if (!apiKey) return null;
 
@@ -493,8 +472,7 @@ class AirQualityService {
     for (const bp of PM25_BREAKPOINTS) {
       if (concentration >= bp.concLow && concentration <= bp.concHigh) {
         const aqi =
-          ((bp.aqiHigh - bp.aqiLow) / (bp.concHigh - bp.concLow)) *
-            (concentration - bp.concLow) +
+          ((bp.aqiHigh - bp.aqiLow) / (bp.concHigh - bp.concLow)) * (concentration - bp.concLow) +
           bp.aqiLow;
         return {
           value: Math.round(aqi),
@@ -515,14 +493,7 @@ class AirQualityService {
     category: AQICategory;
   } {
     // Priority: PM2.5 > PM10 > O3 > NO2 > others
-    const priority: PollutantType[] = [
-      'pm25',
-      'pm10',
-      'o3',
-      'no2',
-      'so2',
-      'co',
-    ];
+    const priority: PollutantType[] = ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co'];
 
     for (const pollutant of priority) {
       const measurement = measurements.find(m => m.parameter === pollutant);
@@ -686,12 +657,7 @@ class AirQualityService {
   /**
    * Calculate distance between two coordinates (Haversine)
    */
-  private calculateDistance(
-    lat1: number,
-    lng1: number,
-    lat2: number,
-    lng2: number,
-  ): number {
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
     const R = 6371; // Earth's radius in km
     const dLat = this.toRad(lat2 - lat1);
     const dLng = this.toRad(lng2 - lng1);
@@ -730,11 +696,7 @@ class AirQualityService {
     }
   }
 
-  private async setCache<T>(
-    key: string,
-    data: T,
-    durationMs: number,
-  ): Promise<void> {
+  private async setCache<T>(key: string, data: T, durationMs: number): Promise<void> {
     try {
       await AsyncStorage.setItem(
         key,

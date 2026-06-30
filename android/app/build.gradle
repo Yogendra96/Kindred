@@ -2,6 +2,7 @@ plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
     id "com.facebook.react"
+    id "expo-autolinking"
 }
 
 /**
@@ -120,4 +121,9 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation project(':expo-modules-core')
+    implementation project(':expo')
 }
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"

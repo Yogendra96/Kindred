@@ -5,18 +5,8 @@ import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeProvider';
-import React, {
-  useState,
-  useEffect,
-  useRef,
-} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  ScrollView,
-} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -64,7 +54,10 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   }, [isMonitoring, samplingInterval]);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} testID={testID}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      testID={testID}
+    >
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.colors.onBackground }]}>Performance</Text>
         <AnimatedTouchable onPress={() => setIsMonitoring(!isMonitoring)} style={styles.toggle}>
@@ -75,7 +68,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
         <LineChart
           data={{
             labels: metrics.map((_, i) => i.toString()),
-            datasets: [{ data: metrics.map(m => m.fps) }]
+            datasets: [{ data: metrics.map(m => m.fps) }],
           }}
           width={screenWidth - 32}
           height={200}
@@ -94,7 +87,12 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   title: { fontSize: 24, fontWeight: 'bold' },
   toggle: { padding: 8, borderRadius: 8, backgroundColor: '#007AFF' },
   chart: { marginVertical: 8, borderRadius: 16 },

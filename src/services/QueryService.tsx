@@ -13,10 +13,7 @@ interface QueryClientConfig {
     queries?: {
       staleTime?: number;
       gcTime?: number;
-      retry?:
-        | boolean
-        | number
-        | ((failureCount: number, error: any) => boolean);
+      retry?: boolean | number | ((failureCount: number, error: any) => boolean);
       refetchOnWindowFocus?: boolean;
       refetchOnReconnect?: boolean;
     };
@@ -37,9 +34,7 @@ interface QueryClientProviderProps {
   children: ReactNode;
 }
 
-const QueryClientProvider: React.FC<QueryClientProviderProps> = ({
-  children,
-}) => {
+const QueryClientProvider: React.FC<QueryClientProviderProps> = ({ children }) => {
   return <>{children}</>;
 };
 
@@ -70,35 +65,26 @@ interface QueryProviderProps {
 }
 
 export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };
 
 // Query keys factory
 export const queryKeys = {
   all: ['kindred'] as const,
   carbon: () => [...queryKeys.all, 'carbon'] as const,
-  carbonFootprint: (userId: string) =>
-    [...queryKeys.carbon(), 'footprint', userId] as const,
-  carbonHistory: (userId: string) =>
-    [...queryKeys.carbon(), 'history', userId] as const,
-  carbonGoals: (userId: string) =>
-    [...queryKeys.carbon(), 'goals', userId] as const,
+  carbonFootprint: (userId: string) => [...queryKeys.carbon(), 'footprint', userId] as const,
+  carbonHistory: (userId: string) => [...queryKeys.carbon(), 'history', userId] as const,
+  carbonGoals: (userId: string) => [...queryKeys.carbon(), 'goals', userId] as const,
   ecoTips: () => [...queryKeys.all, 'ecoTips'] as const,
-  ecoTipsByCategory: (category: string) =>
-    [...queryKeys.ecoTips(), category] as const,
+  ecoTipsByCategory: (category: string) => [...queryKeys.ecoTips(), category] as const,
   user: () => [...queryKeys.all, 'user'] as const,
-  userProfile: (userId: string) =>
-    [...queryKeys.user(), 'profile', userId] as const,
-  userAchievements: (userId: string) =>
-    [...queryKeys.user(), 'achievements', userId] as const,
+  userProfile: (userId: string) => [...queryKeys.user(), 'profile', userId] as const,
+  userAchievements: (userId: string) => [...queryKeys.user(), 'achievements', userId] as const,
   leaderboard: () => [...queryKeys.all, 'leaderboard'] as const,
   marketplace: () => [...queryKeys.all, 'marketplace'] as const,
   marketplaceProducts: () => [...queryKeys.marketplace(), 'products'] as const,
   analytics: () => [...queryKeys.all, 'analytics'] as const,
-  recommendations: (userId: string) =>
-    [...queryKeys.all, 'recommendations', userId] as const,
+  recommendations: (userId: string) => [...queryKeys.all, 'recommendations', userId] as const,
 };
 
 // Utility functions for cache management
@@ -108,11 +94,9 @@ export const invalidateQueries = {
     queryClient.invalidateQueries({
       queryKey: queryKeys.carbonFootprint(userId),
     }),
-  ecoTips: () =>
-    queryClient.invalidateQueries({ queryKey: queryKeys.ecoTips() }),
+  ecoTips: () => queryClient.invalidateQueries({ queryKey: queryKeys.ecoTips() }),
   user: () => queryClient.invalidateQueries({ queryKey: queryKeys.user() }),
-  leaderboard: () =>
-    queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard() }),
+  leaderboard: () => queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard() }),
   all: () => queryClient.invalidateQueries({ queryKey: queryKeys.all }),
 };
 

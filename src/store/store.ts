@@ -179,11 +179,7 @@ export const useAppStore = create<AppState>()(
 
       toggleTheme: () =>
         set(state => {
-          const themes: Array<'light' | 'dark' | 'auto'> = [
-            'light',
-            'dark',
-            'auto',
-          ];
+          const themes: Array<'light' | 'dark' | 'auto'> = ['light', 'dark', 'auto'];
           const currentIndex = themes.indexOf(state.settings.theme);
           const nextIndex = (currentIndex + 1) % themes.length;
           state.settings.theme = themes[nextIndex];
@@ -222,8 +218,7 @@ export const useAppStore = create<AppState>()(
 
 // Selectors (for optimized re-renders)
 export const useUser = () => useAppStore(state => state.user);
-export const useIsAuthenticated = () =>
-  useAppStore(state => state.isAuthenticated);
+export const useIsAuthenticated = () => useAppStore(state => state.isAuthenticated);
 export const useFootprint = () => useAppStore(state => state.footprint);
 export const useSettings = () => useAppStore(state => state.settings);
 export const useIsLoading = () => useAppStore(state => state.isLoading);

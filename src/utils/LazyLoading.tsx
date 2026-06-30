@@ -1,11 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import React, {
-  Suspense,
-  lazy,
-  type ComponentType,
-  type ReactNode,
-} from 'react';
+import React, { Suspense, lazy, type ComponentType, type ReactNode } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 
 // Mock ErrorBoundary for development
@@ -32,10 +27,7 @@ interface LoadingProps {
   size?: 'small' | 'large';
 }
 
-const LoadingComponent: React.FC<LoadingProps> = ({
-  message = 'Loading...',
-  size = 'large',
-}) => (
+const LoadingComponent: React.FC<LoadingProps> = ({ message = 'Loading...', size = 'large' }) => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size={size} color='#4CAF50' />
     <Text style={styles.loadingText}>{message}</Text>
@@ -48,10 +40,7 @@ interface ErrorFallbackProps {
   resetErrorBoundary: () => void;
 }
 
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({
-  error,
-  resetErrorBoundary,
-}) => (
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => (
   <View style={styles.errorContainer}>
     <Text style={styles.errorTitle}>Something went wrong</Text>
     <Text style={styles.errorMessage}>{error.message}</Text>
@@ -194,9 +183,7 @@ export const createConditionalLazyComponent = <
     } else if (fallbackComponent) {
       return { default: fallbackComponent };
     } else {
-      throw new Error(
-        'Component loading condition not met and no fallback provided',
-      );
+      throw new Error('Component loading condition not met and no fallback provided');
     }
   });
 
@@ -226,10 +213,7 @@ export const BundleSplitter = {
     return {
       load: () => import(`../screens/${category}/index.ts`),
       preload: () =>
-        ComponentPreloader.preload(
-          category,
-          () => import(`../screens/${category}/index.ts`),
-        ),
+        ComponentPreloader.preload(category, () => import(`../screens/${category}/index.ts`)),
     };
   },
 
@@ -238,10 +222,7 @@ export const BundleSplitter = {
     return {
       load: () => import(`../utils/${utilityName}.ts`),
       preload: () =>
-        ComponentPreloader.preload(
-          utilityName,
-          () => import(`../utils/${utilityName}.ts`),
-        ),
+        ComponentPreloader.preload(utilityName, () => import(`../utils/${utilityName}.ts`)),
     };
   },
 };

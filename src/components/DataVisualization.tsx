@@ -102,7 +102,12 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
     if (!loading && data && data.length > 0) {
       Animated.parallel([
         Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-        Animated.spring(scaleAnim, { toValue: 1, tension: 100, friction: 8, useNativeDriver: true }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 100,
+          friction: 8,
+          useNativeDriver: true,
+        }),
       ]).start();
     }
   }, [loading, data]);
@@ -175,9 +180,16 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
         />
         {isScreenReaderEnabled && (
           <View style={styles.accessibleSummary}>
-            <Text style={[styles.accessibleTitle, { color: theme.colors.onSurface }]} accessibilityRole='header'>Chart Summary</Text>
+            <Text
+              style={[styles.accessibleTitle, { color: theme.colors.onSurface }]}
+              accessibilityRole='header'
+            >
+              Chart Summary
+            </Text>
             {pieData.map((item, index) => (
-              <Text key={index} style={{ color: theme.colors.onSurface }}>{item.name}: {formatValueDisplay(item.value)}</Text>
+              <Text key={index} style={{ color: theme.colors.onSurface }}>
+                {item.name}: {formatValueDisplay(item.value)}
+              </Text>
             ))}
           </View>
         )}
@@ -187,10 +199,12 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
 
   const renderChart = () => {
     switch (type) {
-      case 'pie': return renderPieChart();
+      case 'pie':
+        return renderPieChart();
       case 'line':
       case 'bar':
-      default: return renderPieChart(); // Simplification for now
+      default:
+        return renderPieChart(); // Simplification for now
     }
   };
 
@@ -204,11 +218,25 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
   }
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor: theme.colors.surface, opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]} testID={testID}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.surface,
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+      testID={testID}
+    >
       {(title || subtitle) && (
         <View style={styles.header}>
           {title && <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>}
-          {subtitle && <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>{subtitle}</Text>}
+          {subtitle && (
+            <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
+              {subtitle}
+            </Text>
+          )}
         </View>
       )}
       {renderChart()}
@@ -222,7 +250,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '600' },
   subtitle: { fontSize: 14 },
   chartContainer: { alignItems: 'center' },
-  accessibleSummary: { marginTop: 16, padding: 12, backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 8 },
+  accessibleSummary: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 8,
+  },
   accessibleTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
 });
 

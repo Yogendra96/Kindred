@@ -5,13 +5,7 @@ import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeProvider';
 import { BlurView } from 'expo-blur';
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -57,7 +51,12 @@ export const SmartInput: React.FC<SmartInputProps> = ({
   return (
     <View style={styles.container}>
       <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>{label}</Text>
-      <View style={[styles.inputContainer, { borderColor: isFocused ? theme.colors.primary : theme.colors.outline }]}>
+      <View
+        style={[
+          styles.inputContainer,
+          { borderColor: isFocused ? theme.colors.primary : theme.colors.outline },
+        ]}
+      >
         <TextInput
           style={[styles.input, { color: theme.colors.onSurface }]}
           value={value}
@@ -75,7 +74,13 @@ export const SmartInput: React.FC<SmartInputProps> = ({
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
   label: { fontSize: 12, marginBottom: 4, fontWeight: '600' },
-  inputContainer: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, height: 48, justifyContent: 'center' },
+  inputContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 48,
+    justifyContent: 'center',
+  },
   input: { fontSize: 16, height: '100%' },
 });
 

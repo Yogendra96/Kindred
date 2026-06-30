@@ -40,9 +40,7 @@ interface PerformanceHookReturn {
  * Modern APM Hook for React Native components
  * Replaces usePerformanceMonitoring
  */
-export const useModernAPM = (
-  options: UseModernAPMOptions = {},
-): PerformanceHookReturn => {
+export const useModernAPM = (options: UseModernAPMOptions = {}): PerformanceHookReturn => {
   const {
     componentName = 'UnknownComponent',
     enableRenderTracking = true,
@@ -91,12 +89,9 @@ export const useModernAPM = (
         });
 
         if (enableAnalytics) {
-          analyticsService.current.trackPerformance(
-            `${componentName}_${name}`,
-            duration,
-            'ms',
-            { component: componentName },
-          );
+          analyticsService.current.trackPerformance(`${componentName}_${name}`, duration, 'ms', {
+            component: componentName,
+          });
         }
       };
     },
@@ -115,12 +110,9 @@ export const useModernAPM = (
       });
 
       if (enableAnalytics) {
-        analyticsService.current.trackPerformance(
-          `${componentName}_${name}`,
-          value,
-          unit,
-          { component: componentName },
-        );
+        analyticsService.current.trackPerformance(`${componentName}_${name}`, value, unit, {
+          component: componentName,
+        });
       }
     },
     [componentName, enableAnalytics, shouldSample],
@@ -156,7 +148,14 @@ export const useModernAPM = (
       setPerformanceScore(Math.max(0, 100 - (renderTime / slowRenderThreshold) * 50));
     }
     renderStartTime.current = now;
-  }, [componentName, enableRenderTracking, slowRenderThreshold, trackSlowRenders, enableAnalytics, shouldSample]);
+  }, [
+    componentName,
+    enableRenderTracking,
+    slowRenderThreshold,
+    trackSlowRenders,
+    enableAnalytics,
+    shouldSample,
+  ]);
 
   const startTrace = useCallback(async (name: string) => {
     await apmService.current.startTrace(name);
@@ -170,7 +169,7 @@ export const useModernAPM = (
     if (enableAnalytics) {
       analyticsService.current.trackEvent('component_mounted', { component: componentName });
     }
-    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+    const appStateSubscription = AppState.addEventListener('change', nextState => {
       if (enableAnalytics) {
         analyticsService.current.trackEvent('app_state_change', {
           component: componentName,

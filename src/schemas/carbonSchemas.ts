@@ -7,14 +7,8 @@ import { VALIDATION_LIMITS, VALIDATION_MESSAGES } from '../utils/constants';
 
 const descriptionSchema = z
   .string()
-  .min(
-    VALIDATION_LIMITS.DESCRIPTION_MIN_LENGTH,
-    VALIDATION_MESSAGES.DESCRIPTION_REQUIRED,
-  )
-  .max(
-    VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH,
-    VALIDATION_MESSAGES.DESCRIPTION_TOO_LONG,
-  );
+  .min(VALIDATION_LIMITS.DESCRIPTION_MIN_LENGTH, VALIDATION_MESSAGES.DESCRIPTION_REQUIRED)
+  .max(VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH, VALIDATION_MESSAGES.DESCRIPTION_TOO_LONG);
 
 export const transportModeSchema = z.enum(
   ['car', 'bus', 'train', 'plane', 'bike', 'walk', 'scooter', 'motorcycle'],
@@ -38,20 +32,11 @@ export const TransportationSchema = z.object({
       invalid_type_error: 'Must be a number',
     })
     .min(0.1, VALIDATION_MESSAGES.INVALID_DISTANCE)
-    .max(
-      VALIDATION_LIMITS.DISTANCE_MAX_KM,
-      VALIDATION_MESSAGES.DISTANCE_TOO_HIGH,
-    ),
+    .max(VALIDATION_LIMITS.DISTANCE_MAX_KM, VALIDATION_MESSAGES.DISTANCE_TOO_HIGH),
   passengers: z
     .number()
-    .min(
-      VALIDATION_LIMITS.PASSENGERS_MIN,
-      VALIDATION_MESSAGES.INVALID_PASSENGERS,
-    )
-    .max(
-      VALIDATION_LIMITS.PASSENGERS_MAX,
-      VALIDATION_MESSAGES.INVALID_PASSENGERS,
-    )
+    .min(VALIDATION_LIMITS.PASSENGERS_MIN, VALIDATION_MESSAGES.INVALID_PASSENGERS)
+    .max(VALIDATION_LIMITS.PASSENGERS_MAX, VALIDATION_MESSAGES.INVALID_PASSENGERS)
     .optional(),
   description: descriptionSchema,
 });
@@ -73,10 +58,7 @@ export const FoodSchema = z.object({
   amount: z
     .number({ required_error: 'Food amount is required' })
     .positive(VALIDATION_MESSAGES.INVALID_FOOD)
-    .max(
-      VALIDATION_LIMITS.FOOD_MAX_KG,
-      'Food amount seems unusually high. Please verify.',
-    ),
+    .max(VALIDATION_LIMITS.FOOD_MAX_KG, 'Food amount seems unusually high. Please verify.'),
   description: descriptionSchema,
 });
 

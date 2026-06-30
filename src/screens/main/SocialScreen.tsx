@@ -9,42 +9,18 @@ import {
   FlatList,
   TextInput,
 } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { Medal, UserCircle, Handshake, Users, Lightning, Plus } from 'phosphor-react-native';
+import { Medal, Users, Lightning, Plus } from 'phosphor-react-native';
 
-const GlassCard = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        borderRadius: 16,
-        overflow: 'hidden',
-      },
-    ]}
-  >
-    {children}
-  </View>
-);
+interface GlassCardProps {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}
 
-const GlassBadge = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderColor: 'rgba(255,255,255,0.2)',
-        borderWidth: 1,
-        borderRadius: 12,
-        overflow: 'hidden',
-      },
-    ]}
-  >
-    {children}
-  </View>
+const GlassCard = ({ style, children }: GlassCardProps) => (
+  <View style={[styles.glassCard, style]}>{children}</View>
 );
 
 // ─── Mock Data (moved to src/data/socialData.ts) ──────────────────────────────
@@ -292,7 +268,7 @@ const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
         <View style={styles.challengeEmojiWrapper}>
           <Text style={styles.challengeEmoji}>{item.emoji}</Text>
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={styles.flexContainer}>
           <View style={styles.challengeTitleRow}>
             <Text style={styles.challengeTitle} numberOfLines={1}>
               {item.title}
@@ -345,7 +321,7 @@ const GroupCard = ({ item }: { item: (typeof GROUPS)[0] }) => {
         <View style={styles.groupEmojiWrapper}>
           <Text style={styles.groupEmoji}>{item.emoji}</Text>
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={styles.flexContainer}>
           <Text style={styles.groupName}>{item.name}</Text>
           <Text style={styles.groupMembers}>
             👥 {item.members} members · 🔥 {item.streak}-day streak
@@ -443,7 +419,7 @@ const ChallengesTab = () => {
   const filtered = filter === 'All' ? CHALLENGES : CHALLENGES.filter(c => c.type === filter);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.flexContainer}>
       {/* Filter pills */}
       <ScrollView
         horizontal
@@ -497,7 +473,7 @@ const GroupsTab = () => {
       {/* Create group CTA */}
       {!showCreate ? (
         <TouchableOpacity style={styles.createGroupBtn} onPress={() => setShowCreate(true)}>
-          <Plus size={20} color='#fff' weight='bold' style={{ marginRight: 8 }} />
+          <Plus size={20} color='#fff' weight='bold' style={styles.plusIcon} />
           <Text style={styles.createGroupText}>Create Accountability Group</Text>
         </TouchableOpacity>
       ) : (
@@ -586,7 +562,7 @@ const SocialScreen = () => {
             style={[styles.tabItem, activeTab === tab.key && styles.tabItemActive]}
             onPress={() => setActiveTab(tab.key)}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.tabItemContent}>
               {tab.icon}
               <Text style={[styles.tabLabel, activeTab === tab.key && styles.tabLabelActive]}>
                 {tab.label}
@@ -597,7 +573,7 @@ const SocialScreen = () => {
       </View>
 
       {/* Tab content */}
-      <View style={{ flex: 1 }}>
+      <View style={styles.flexContainer}>
         {activeTab === 'Leaderboard' && <LeaderboardTab />}
         {activeTab === 'Challenges' && <ChallengesTab />}
         {activeTab === 'Groups' && <GroupsTab />}
@@ -930,6 +906,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   nudgeBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
+  glassCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  flexContainer: {
+    flex: 1,
+  },
+  plusIcon: {
+    marginRight: 8,
+  },
+  tabItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
 });
 
 export default SocialScreen;

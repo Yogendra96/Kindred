@@ -6,13 +6,7 @@ import { AnimatedTouchable } from './MicroInteractions';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -188,7 +182,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
         <Text style={[styles.title, { color: theme.colors.onSurface }]}>Theming</Text>
         {onClose && (
           <AnimatedTouchable onPress={onClose} style={styles.headerButton}>
-            <Ionicons name="close" size={24} color={theme.colors.onSurface} />
+            <Ionicons name='close' size={24} color={theme.colors.onSurface} />
           </AnimatedTouchable>
         )}
       </View>
@@ -199,7 +193,13 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
             <AnimatedTouchable
               key={p.id}
               onPress={() => handlePresetChange(p)}
-              style={[styles.presetCard, { borderColor: state.currentPreset === p.id ? theme.colors.primary : theme.colors.outline }]}
+              style={[
+                styles.presetCard,
+                {
+                  borderColor:
+                    state.currentPreset === p.id ? theme.colors.primary : theme.colors.outline,
+                },
+              ]}
             >
               <Text style={{ color: theme.colors.onSurface }}>{p.name}</Text>
             </AnimatedTouchable>
@@ -212,7 +212,12 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
   title: { fontSize: 24, fontWeight: 'bold' },
   headerButton: { padding: 8 },
   content: { padding: 16 },

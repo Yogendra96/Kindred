@@ -50,13 +50,7 @@ export type Subsector =
   | 'solid-waste'
   | 'wastewater';
 
-export type GasType =
-  | 'co2'
-  | 'ch4'
-  | 'n2o'
-  | 'co2e'
-  | 'co2e_20yr'
-  | 'co2e_100yr';
+export type GasType = 'co2' | 'ch4' | 'n2o' | 'co2e' | 'co2e_20yr' | 'co2e_100yr';
 
 export type Continent =
   | 'Asia'
@@ -268,10 +262,7 @@ class ClimateTraceService {
         data,
         expiry: Date.now() + (ttl || this.config.cacheTTL),
       };
-      await AsyncStorage.setItem(
-        this.CACHE_PREFIX + key,
-        JSON.stringify(cacheData),
-      );
+      await AsyncStorage.setItem(this.CACHE_PREFIX + key, JSON.stringify(cacheData));
     } catch (error) {
       loggingService.warn('[ClimateTrace] Cache write error', {
         error: String(error),
@@ -350,9 +341,7 @@ class ClimateTraceService {
     if (this.countriesCache) return this.countriesCache;
 
     const cacheKey = 'definitions_countries';
-    const cached = await this.getCached<{ code: string; name: string }[]>(
-      cacheKey,
-    );
+    const cached = await this.getCached<{ code: string; name: string }[]>(cacheKey);
     if (cached) {
       this.countriesCache = cached;
       return cached;
@@ -398,9 +387,7 @@ class ClimateTraceService {
   /**
    * Search emission sources with various filters
    */
-  async searchAssets(
-    params: AssetSearchParams = {},
-  ): Promise<EmissionSource[]> {
+  async searchAssets(params: AssetSearchParams = {}): Promise<EmissionSource[]> {
     const queryParams: Record<string, string | number> = {
       limit: params.limit || this.config.defaultLimit,
       year: params.year || this.config.defaultYear,
@@ -451,9 +438,7 @@ class ClimateTraceService {
 
     try {
       const response = await this.client.get(`/assets/${sourceId}`);
-      const asset = Array.isArray(response.data)
-        ? response.data[0]
-        : response.data;
+      const asset = Array.isArray(response.data) ? response.data[0] : response.data;
       await this.setCache(cacheKey, asset);
       return asset;
     } catch (error) {
@@ -523,10 +508,7 @@ class ClimateTraceService {
   /**
    * Get emissions data for a specific country
    */
-  async getCountryEmissions(
-    countryCode: string,
-    year?: number,
-  ): Promise<CountryEmissions | null> {
+  async getCountryEmissions(countryCode: string, year?: number): Promise<CountryEmissions | null> {
     const targetYear = year || this.config.defaultYear;
     const cacheKey = `country_emissions_${countryCode}_${targetYear}`;
     const cached = await this.getCached<CountryEmissions>(cacheKey);
@@ -558,15 +540,11 @@ class ClimateTraceService {
         years: [targetYear],
       });
 
-      const totalEmissions = sectorData.reduce(
-        (sum, s) => sum + s.Emissions,
-        0,
-      );
+      const totalEmissions = sectorData.reduce((sum, s) => sum + s.Emissions, 0);
       const sectors = sectorData.map(s => ({
         sector: s.Sector || 'power',
         emissions: s.Emissions,
-        percentage:
-          totalEmissions > 0 ? (s.Emissions / totalEmissions) * 100 : 0,
+        percentage: totalEmissions > 0 ? (s.Emissions / totalEmissions) * 100 : 0,
       }));
 
       const changePercent =
@@ -585,11 +563,7 @@ class ClimateTraceService {
           previousYear: previousEmissions,
           changePercent,
           direction:
-            changePercent > 1
-              ? 'increasing'
-              : changePercent < -1
-              ? 'decreasing'
-              : 'stable',
+            changePercent > 1 ? 'increasing' : changePercent < -1 ? 'decreasing' : 'stable',
         },
       };
 
@@ -642,17 +616,11 @@ class ClimateTraceService {
         .filter(asset => asset.geometry?.coordinates)
         .map(asset => {
           const [lng, lat] = asset.geometry.coordinates;
-          const distance = this.calculateDistance(
-            latitude,
-            longitude,
-            lat,
-            lng,
-          );
+          const distance = this.calculateDistance(latitude, longitude, lat, lng);
 
           return {
             id: asset.id,
-            name:
-              asset.properties.name || `${asset.properties.sector} facility`,
+            name: asset.properties.name || `${asset.properties.sector} facility`,
             sector: asset.properties.sector || 'power',
             subsector: asset.properties.subsector,
             emissions: asset.properties.emissions || 0,
@@ -684,12 +652,7 @@ class ClimateTraceService {
   /**
    * Calculate distance between two points using Haversine formula
    */
-  private calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number {
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371; // Earth's radius in km
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
@@ -735,9 +698,7 @@ class ClimateTraceService {
     }
 
     const assets = await this.searchAssets(params);
-    return assets.sort(
-      (a, b) => (b.properties.emissions || 0) - (a.properties.emissions || 0),
-    );
+    return assets.sort((a, b) => (b.properties.emissions || 0) - (a.properties.emissions || 0));
   }
 
   /**
@@ -778,17 +739,10 @@ class ClimateTraceService {
   ): Promise<{ year: number; emissions: number }[]> {
     const startYear = options.startYear || 2020;
     const endYear = options.endYear || 2023;
-    const years = Array.from(
-      { length: endYear - startYear + 1 },
-      (_, i) => startYear + i,
-    );
+    const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 
-    const cacheKey = `trend_${
-      options.countryCode || options.continent
-    }_${startYear}_${endYear}`;
-    const cached = await this.getCached<{ year: number; emissions: number }[]>(
-      cacheKey,
-    );
+    const cacheKey = `trend_${options.countryCode || options.continent}_${startYear}_${endYear}`;
+    const cached = await this.getCached<{ year: number; emissions: number }[]>(cacheKey);
     if (cached) return cached;
 
     try {
@@ -829,10 +783,7 @@ class ClimateTraceService {
   /**
    * Track when user explores an emission source (for achievements)
    */
-  async trackSourceExploration(
-    userId: string,
-    sourceId: number,
-  ): Promise<void> {
+  async trackSourceExploration(userId: string, sourceId: number): Promise<void> {
     try {
       const key = `explored_sources_${userId}`;
       const stored = await AsyncStorage.getItem(key);
@@ -921,9 +872,7 @@ class ClimateTraceService {
   async clearCache(): Promise<void> {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      const climateTraceKeys = keys.filter(k =>
-        k.startsWith(this.CACHE_PREFIX),
-      );
+      const climateTraceKeys = keys.filter(k => k.startsWith(this.CACHE_PREFIX));
       await AsyncStorage.multiRemove(climateTraceKeys);
       this.sectorsCache = null;
       this.countriesCache = null;

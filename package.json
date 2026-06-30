@@ -103,7 +103,6 @@
     "date-fns": "^4.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
-    "expo-barcode-scanner": "^13.0.1",
     "expo-battery": "^55.0.13",
     "expo-blur": "^55.0.8",
     "expo-camera": "^55.0.9",
@@ -227,7 +226,7 @@
       "emulator": {
         "type": "android.emulator",
         "device": {
-          "avdName": "Pixel_9_Pro_XL_API_35"
+          "avdName": "Pixel_10_Pro_XL_API_36_1"
         }
       }
     },

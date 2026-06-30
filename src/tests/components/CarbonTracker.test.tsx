@@ -32,9 +32,7 @@ const MockCarbonTracker = ({ onActivityAdd, activities = [] }: any) => {
 
   return (
     <View>
-      <Text testID='carbon-saved-display'>
-        {carbonSaved.toFixed(1)} kg CO₂ saved
-      </Text>
+      <Text testID='carbon-saved-display'>{carbonSaved.toFixed(1)} kg CO₂ saved</Text>
       <Text testID='activity-count'>{activities.length} activities logged</Text>
 
       <Text testID='activity-type-label'>Activity Type</Text>
@@ -61,12 +59,8 @@ const MockCarbonTracker = ({ onActivityAdd, activities = [] }: any) => {
       {activities.map((activity: any, index: number) => (
         <View key={activity.id} testID={`activity-item-${index}`}>
           <Text testID={`activity-type-${index}`}>{activity.type}</Text>
-          <Text testID={`activity-distance-${index}`}>
-            {activity.distance} km
-          </Text>
-          <Text testID={`activity-carbon-${index}`}>
-            {activity.carbonSaved} kg CO₂
-          </Text>
+          <Text testID={`activity-distance-${index}`}>{activity.distance} km</Text>
+          <Text testID={`activity-carbon-${index}`}>{activity.carbonSaved} kg CO₂</Text>
         </View>
       ))}
     </View>
@@ -90,12 +84,8 @@ describe('CarbonTracker Component', () => {
     it('should render carbon tracker with initial state', () => {
       const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      expect(getByTestId('carbon-saved-display')).toHaveTextContent(
-        '0.0 kg CO₂ saved',
-      );
-      expect(getByTestId('activity-count')).toHaveTextContent(
-        '0 activities logged',
-      );
+      expect(getByTestId('carbon-saved-display')).toHaveTextContent('0.0 kg CO₂ saved');
+      expect(getByTestId('activity-count')).toHaveTextContent('0 activities logged');
       expect(getByTestId('activity-type-input')).toBeTruthy();
       expect(getByTestId('distance-input')).toBeTruthy();
       expect(getByTestId('add-activity-button')).toBeTruthy();
@@ -121,9 +111,7 @@ describe('CarbonTracker Component', () => {
         <MockCarbonTracker {...defaultProps} activities={activities} />,
       );
 
-      expect(getByTestId('activity-count')).toHaveTextContent(
-        '2 activities logged',
-      );
+      expect(getByTestId('activity-count')).toHaveTextContent('2 activities logged');
       expect(getByTestId('activity-item-0')).toBeTruthy();
       expect(getByTestId('activity-item-1')).toBeTruthy();
       expect(getByTestId('activity-type-0')).toHaveTextContent('walking');
@@ -184,9 +172,7 @@ describe('CarbonTracker Component', () => {
         );
       });
 
-      expect(getByTestId('carbon-saved-display')).toHaveTextContent(
-        '2.5 kg CO₂ saved',
-      );
+      expect(getByTestId('carbon-saved-display')).toHaveTextContent('2.5 kg CO₂ saved');
       expect(activityTypeInput.props.value).toBe('');
       expect(distanceInput.props.value).toBe('');
     });
@@ -201,10 +187,7 @@ describe('CarbonTracker Component', () => {
       fireEvent.press(addButton);
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Error',
-          'Please fill all fields',
-        );
+        expect(Alert.alert).toHaveBeenCalledWith('Error', 'Please fill all fields');
       });
 
       expect(mockOnActivityAdd).not.toHaveBeenCalled();
@@ -220,10 +203,7 @@ describe('CarbonTracker Component', () => {
       fireEvent.press(addButton);
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Error',
-          'Please fill all fields',
-        );
+        expect(Alert.alert).toHaveBeenCalledWith('Error', 'Please fill all fields');
       });
 
       expect(mockOnActivityAdd).not.toHaveBeenCalled();
@@ -244,11 +224,8 @@ describe('CarbonTracker Component', () => {
       fireEvent.press(addButton);
 
       await waitFor(() => {
-        expect(getByTestId('carbon-saved-display')).toHaveTextContent(
-          '2.5 kg CO₂ saved',
-        );
+        expect(getByTestId('carbon-saved-display')).toHaveTextContent('2.5 kg CO₂ saved');
       });
-
 
       // Add second activity
       fireEvent.changeText(activityTypeInput, 'cycling');
@@ -256,9 +233,7 @@ describe('CarbonTracker Component', () => {
       fireEvent.press(addButton);
 
       await waitFor(() => {
-        expect(getByTestId('carbon-saved-display')).toHaveTextContent(
-          '7.5 kg CO₂ saved',
-        );
+        expect(getByTestId('carbon-saved-display')).toHaveTextContent('7.5 kg CO₂ saved');
       });
     });
 
@@ -268,7 +243,6 @@ describe('CarbonTracker Component', () => {
       const activityTypeInput = getByTestId('activity-type-input');
       const distanceInput = getByTestId('distance-input');
       const addButton = getByTestId('add-activity-button');
-
 
       fireEvent.changeText(activityTypeInput, 'walking');
       fireEvent.changeText(distanceInput, '2.5');
@@ -297,9 +271,7 @@ describe('CarbonTracker Component', () => {
       );
 
       const renderTime = await TestHelpers.measureRenderTime(() => {
-        render(
-          <MockCarbonTracker {...defaultProps} activities={manyActivities} />,
-        );
+        render(<MockCarbonTracker {...defaultProps} activities={manyActivities} />);
       });
 
       expect(renderTime).toBeLessThan(100); // Should render in less than 100ms
@@ -315,9 +287,7 @@ describe('CarbonTracker Component', () => {
         const activities = Array.from({ length: i }, (_, j) =>
           TestDataFactory.createCarbonActivity({ id: j.toString() }),
         );
-        rerender(
-          <MockCarbonTracker {...defaultProps} activities={activities} />,
-        );
+        rerender(<MockCarbonTracker {...defaultProps} activities={activities} />);
       }
 
       const finalMemory = TestHelpers.measureMemoryUsage();
@@ -410,12 +380,8 @@ describe('CarbonTracker Component', () => {
     it('should have proper labels for form fields', () => {
       const { getByTestId } = render(<MockCarbonTracker {...defaultProps} />);
 
-      expect(getByTestId('activity-type-label')).toHaveTextContent(
-        'Activity Type',
-      );
-      expect(getByTestId('distance-label')).toHaveTextContent(
-        'Distance (km)',
-      );
+      expect(getByTestId('activity-type-label')).toHaveTextContent('Activity Type');
+      expect(getByTestId('distance-label')).toHaveTextContent('Distance (km)');
     });
   });
 

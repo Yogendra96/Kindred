@@ -10,11 +10,7 @@
  */
 
 import { VALIDATION_LIMITS, VALIDATION_MESSAGES } from './constants';
-import {
-  TransportationSchema,
-  EnergySchema,
-  FoodSchema,
-} from '../schemas/carbonSchemas';
+import { TransportationSchema, EnergySchema, FoodSchema } from '../schemas/carbonSchemas';
 
 // ===================================================================
 // TYPES
@@ -202,14 +198,7 @@ export const carbonValidators = {
   ),
 
   fuelType: validators.oneOf(
-    [
-      'gasoline',
-      'diesel',
-      'electric',
-      'hybrid',
-      'plugin-hybrid',
-      'natural-gas',
-    ],
+    ['gasoline', 'diesel', 'electric', 'hybrid', 'plugin-hybrid', 'natural-gas'],
     'Please select a valid fuel type',
   ),
 };
@@ -335,9 +324,7 @@ export const foodSchema = {
 /**
  * Create a validator function from a schema
  */
-export const createValidator = <T extends Record<string, any>>(
-  schema: ValidationSchema<T>,
-) => {
+export const createValidator = <T extends Record<string, any>>(schema: ValidationSchema<T>) => {
   return {
     validate: (data: T): ValidationResult<T> => {
       const errors: Partial<Record<keyof T, string>> = {};
@@ -371,11 +358,7 @@ export const createValidator = <T extends Record<string, any>>(
       };
     },
 
-    validateField: (
-      field: keyof T,
-      value: any,
-      formData?: T,
-    ): string | null => {
+    validateField: (field: keyof T, value: any, formData?: T): string | null => {
       const fieldRules = schema.rules.filter(rule => rule.field === field);
 
       for (const rule of fieldRules) {
@@ -500,8 +483,7 @@ export const combineValidationResults = <T>(
   }
 
   const errorCount = Object.keys(combinedErrors).length;
-  const firstError =
-    errorCount > 0 ? Object.values(combinedErrors)[0] : undefined;
+  const firstError = errorCount > 0 ? Object.values(combinedErrors)[0] : undefined;
 
   return {
     isValid,

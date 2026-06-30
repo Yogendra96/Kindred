@@ -1,18 +1,12 @@
 // @ts-nocheck
 /* eslint-disable */
-import type {
-  RootStackParamList,
-  AuthStackParamList,
-  MainStackParamList,
-} from '@navigation/types';
+import type { RootStackParamList, AuthStackParamList, MainStackParamList } from '@navigation/types';
 import analytics from '@react-native-firebase/analytics';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { modernAPMService } from '@services/ModernAPMService';
 
-type NavigationParams = RootStackParamList &
-  AuthStackParamList &
-  MainStackParamList;
+type NavigationParams = RootStackParamList & AuthStackParamList & MainStackParamList;
 
 export function useAppNavigation() {
   const navigation = useNavigation<NavigationProp<NavigationParams>>();

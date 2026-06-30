@@ -103,8 +103,7 @@ class CardGestureManager {
   constructor(private onGesture?: (gesture: string, data: any) => void) {}
 
   handlePanGesture = (event: any) => {
-    const { translationX, translationY, velocityX, velocityY } =
-      event.nativeEvent;
+    const { translationX, translationY, velocityX, velocityY } = event.nativeEvent;
 
     // Update pan values
     this.panX.setValue(translationX);
@@ -114,10 +113,7 @@ class CardGestureManager {
     const swipeThreshold = 100;
     const velocityThreshold = 500;
 
-    if (
-      Math.abs(translationX) > swipeThreshold ||
-      Math.abs(velocityX) > velocityThreshold
-    ) {
+    if (Math.abs(translationX) > swipeThreshold || Math.abs(velocityX) > velocityThreshold) {
       const direction = translationX > 0 ? 'right' : 'left';
       this.onGesture?.('swipe', {
         direction,
@@ -126,10 +122,7 @@ class CardGestureManager {
       });
     }
 
-    if (
-      Math.abs(translationY) > swipeThreshold ||
-      Math.abs(velocityY) > velocityThreshold
-    ) {
+    if (Math.abs(translationY) > swipeThreshold || Math.abs(velocityY) > velocityThreshold) {
       const direction = translationY > 0 ? 'down' : 'up';
       this.onGesture?.('swipe', {
         direction,
@@ -190,9 +183,7 @@ class CardGestureManager {
     ]).start();
   };
 
-  animateEntrance = (
-    type: NonNullable<ModernCardProps['entranceAnimation']>,
-  ) => {
+  animateEntrance = (type: NonNullable<ModernCardProps['entranceAnimation']>) => {
     const animations: Record<string, Animated.CompositeAnimation> = {
       fadeIn: Animated.timing(this.opacity, {
         toValue: 1,
@@ -514,14 +505,10 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       case 'glass':
         return {
           ...baseStyles,
-          backgroundColor: theme.isDark
-            ? 'rgba(255, 255, 255, 0.1)'
-            : 'rgba(0, 0, 0, 0.05)',
+          backgroundColor: theme.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
           backdropFilter: 'blur(10px)',
           borderWidth: 1,
-          borderColor: theme.isDark
-            ? 'rgba(255, 255, 255, 0.2)'
-            : 'rgba(0, 0, 0, 0.1)',
+          borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
         };
       default:
         return baseStyles;
@@ -681,12 +668,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
 
   if (!isVisible && lazyLoad) {
     return (
-      <View
-        style={[
-          cardStyle,
-          { backgroundColor: theme.colors.backgroundSecondary },
-        ]}
-      >
+      <View style={[cardStyle, { backgroundColor: theme.colors.backgroundSecondary }]}>
         <Text>Loading...</Text>
       </View>
     );

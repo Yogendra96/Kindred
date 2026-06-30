@@ -18,22 +18,19 @@ module.exports = {
     },
     'ios.release': {
       type: 'ios.app',
-      binaryPath:
-        'ios/build/Build/Products/Release-iphonesimulator/Kindred.app',
+      binaryPath: 'ios/build/Build/Products/Release-iphonesimulator/Kindred.app',
       build:
         'xcodebuild -workspace ios/Kindred.xcworkspace -scheme Kindred -configuration Release -sdk iphonesimulator -derivedDataPath ios/build',
     },
     'android.debug': {
       type: 'android.apk',
       binaryPath: 'android/app/build/outputs/apk/debug/app-debug.apk',
-      build:
-        'cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
+      build: 'cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
     },
     'android.release': {
       type: 'android.apk',
       binaryPath: 'android/app/build/outputs/apk/release/app-release.apk',
-      build:
-        'cd android && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release',
+      build: 'cd android && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release',
     },
   },
   devices: {
@@ -52,7 +49,7 @@ module.exports = {
     emulator: {
       type: 'android.emulator',
       device: {
-        avdName: 'Pixel_9_Pro_XL_API_35',
+        avdName: 'Pixel_10_Pro_XL_API_36_1',
       },
     },
     genymotion: {
