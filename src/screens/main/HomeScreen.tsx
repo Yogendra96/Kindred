@@ -137,43 +137,54 @@ const HomeScreen = ({ navigation }: any) => {
         <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
       </Svg>
 
-      {/* Animated Ambient Glow Blobs */}
+      {/* Animated Cartoon Earth Background */}
       <MotiView
-        from={{ translateX: -60, translateY: 100, scale: 0.9, opacity: 0.05 }}
-        animate={{
-          translateX: -30,
-          translateY: 130,
-          scale: 1.1,
-          opacity: 0.08,
-        }}
+        from={{ rotate: '0deg' }}
+        animate={{ rotate: '360deg' }}
         transition={
           {
             loop: true,
             type: 'timing',
-            duration: 8000,
-            repeatReverse: true,
+            duration: 45000,
+            repeatReverse: false,
           } as any
         }
-        style={[styles.ambientBlob, { top: '10%', left: -50, backgroundColor: '#11998E' }]}
-      />
-      <MotiView
-        from={{ translateX: 80, translateY: -50, scale: 1.1, opacity: 0.03 }}
-        animate={{
-          translateX: 40,
-          translateY: -20,
-          scale: 0.95,
-          opacity: 0.06,
-        }}
-        transition={
-          {
-            loop: true,
-            type: 'timing',
-            duration: 10000,
-            repeatReverse: true,
-          } as any
-        }
-        style={[styles.ambientBlob, { top: '35%', right: -80, backgroundColor: statusColors[0] }]}
-      />
+        style={styles.earthBackground}
+      >
+        <Svg width={260} height={260} viewBox='0 0 200 200'>
+          <Defs>
+            <SvgLinearGradient id='oceanGrad' x1='0' y1='0' x2='1' y2='1'>
+              <Stop offset='0' stopColor='#3a7bd5' />
+              <Stop offset='1' stopColor='#00d2ff' />
+            </SvgLinearGradient>
+            <SvgLinearGradient id='landGrad' x1='0' y1='0' x2='1' y2='1'>
+              <Stop offset='0' stopColor='#11998e' />
+              <Stop offset='1' stopColor='#38ef7d' />
+            </SvgLinearGradient>
+          </Defs>
+          {/* Atmosphere Glow */}
+          <Circle cx='100' cy='100' r='98' fill='rgba(0, 210, 255, 0.12)' />
+          <Circle cx='100' cy='100' r='90' fill='rgba(56, 239, 125, 0.06)' />
+          {/* Ocean */}
+          <Circle cx='100' cy='100' r='80' fill='url(#oceanGrad)' />
+          {/* Landmass 1 */}
+          <Path
+            d='M 60,50 Q 85,35 110,55 T 135,90 T 115,130 T 75,145 T 50,110 Z'
+            fill='url(#landGrad)'
+          />
+          {/* Landmass 2 */}
+          <Path
+            d='M 125,45 Q 145,35 165,55 T 155,95 T 135,125 T 145,155 T 115,135 Z'
+            fill='url(#landGrad)'
+          />
+          {/* Landmass Australia */}
+          <Path d='M 150,135 Q 170,145 160,165 T 140,155 Z' fill='url(#landGrad)' />
+          {/* Cloud 1 */}
+          <Path d='M 50,85 Q 65,75 80,85 T 95,95 T 65,105 Z' fill='rgba(255,255,255,0.3)' />
+          {/* Cloud 2 */}
+          <Path d='M 115,105 Q 135,95 150,105 T 165,115 T 130,125 Z' fill='rgba(255,255,255,0.3)' />
+        </Svg>
+      </MotiView>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Header Section */}
@@ -537,12 +548,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0A0E12',
   },
-  ambientBlob: {
+  earthBackground: {
+    position: 'absolute',
+    top: 70,
+    right: -80,
     width: 260,
     height: 260,
-    borderRadius: 130,
-    position: 'absolute',
-    filter: 'blur(80px)', // Will fallback to border/shadow glow natively on older OS
+    opacity: 0.22,
   },
   scrollContent: {
     padding: 20,
