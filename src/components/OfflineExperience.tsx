@@ -8,6 +8,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeProvider';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, Alert } from 'react-native';
+import logger from '../services/LoggerService';
+
+const log = logger.withTag('OfflineExperience');
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -67,7 +70,7 @@ export const OfflineProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const syncOfflineData = async () => {
     if (!isOnline || offlineQueue.length === 0) return;
     // Sync logic omitted for brevity
-    console.log('Syncing offline data...');
+    log.info('Syncing offline data...');
     setOfflineQueue([]);
     HapticFeedbackService.triggerSuccess();
   };

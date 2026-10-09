@@ -11,6 +11,9 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { backgroundSyncService } from '../services/BackgroundSyncService';
+import logger from '../services/LoggerService';
+
+const log = logger.withTag('useNetworkStatus');
 
 export interface NetworkStatus {
   isConnected: boolean;
@@ -50,8 +53,8 @@ export function useNetworkStatus() {
 
     // Detect reconnection event → trigger queue drain
     if (isReallyOnline && wasOfflineRef.current) {
-      console.log('[useNetworkStatus] Back online — triggering queue drain');
-      backgroundSyncService.syncNow().catch(console.warn);
+      log.info('Back online — triggering queue drain');
+      backgroundSyncService.syncNow().catch(err => log.warn('Queue drain failed', err));
     }
 
     wasOfflineRef.current = !isReallyOnline;

@@ -14,6 +14,9 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import logger from './LoggerService';
+
+const log = logger.withTag('OfflineQueue');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -76,7 +79,7 @@ class OfflineQueueService {
       }
       this.isLoaded = true;
     } catch (e) {
-      console.warn('[OfflineQueue] Failed to load queue from disk:', e);
+      log.warn('Failed to load queue from disk', e);
       this.queue = [];
       this.isLoaded = true;
     }
@@ -86,7 +89,7 @@ class OfflineQueueService {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(this.queue));
     } catch (e) {
-      console.warn('[OfflineQueue] Failed to persist queue:', e);
+      log.warn('Failed to persist queue', e);
     }
   }
 
@@ -124,7 +127,7 @@ class OfflineQueueService {
     );
 
     if (isDuplicate) {
-      console.log('[OfflineQueue] Duplicate action dropped:', type);
+      log.debug('Duplicate action dropped', type);
       return id;
     }
 
@@ -133,11 +136,11 @@ class OfflineQueueService {
     // Enforce max depth — evict oldest
     if (this.queue.length > MAX_QUEUE_DEPTH) {
       const evicted = this.queue.splice(0, this.queue.length - MAX_QUEUE_DEPTH);
-      console.warn(`[OfflineQueue] Queue cap exceeded. Evicted ${evicted.length} old actions.`);
+      log.warn(`Queue cap exceeded. Evicted ${evicted.length} old actions.`);
     }
 
     await this.persist();
-    console.log(`[OfflineQueue] Enqueued: ${type} (id=${id})`);
+    log.info(`Enqueued: ${type} (id=${id})`);
     return id;
   }
 
@@ -176,20 +179,18 @@ class OfflineQueueService {
           await handler(action);
           handled = true;
           success++;
-          console.log(`[OfflineQueue] Synced: ${action.type} (id=${action.id})`);
+          log.info(`Synced: ${action.type} (id=${action.id})`);
           break;
         } catch (e) {
-          console.warn(`[OfflineQueue] Handler failed for ${action.type}:`, e);
+          log.warn(`Handler failed for ${action.type}`, e);
         }
       }
 
       if (!handled) {
         const updated = { ...action, retryCount: action.retryCount + 1 };
         if (updated.retryCount >= MAX_RETRIES) {
-          console.error(
-            `[OfflineQueue] Action dropped after ${MAX_RETRIES} retries:`,
-            action.type,
-            action.id,
+          log.error(
+            `Action dropped after ${MAX_RETRIES} retries: ${action.type} (id=${action.id})`,
           );
           dropped++;
         } else {
@@ -202,8 +203,8 @@ class OfflineQueueService {
     this.queue = remaining;
     await this.persist();
 
-    console.log(
-      `[OfflineQueue] Drain complete — success: ${success}, failed: ${failed}, dropped: ${dropped}`,
+    log.info(
+      `Drain complete — success: ${success}, failed: ${failed}, dropped: ${dropped}`,
     );
     return { success, failed, dropped };
   }

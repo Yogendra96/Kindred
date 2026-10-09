@@ -1,6 +1,10 @@
+import logger from './LoggerService';
+
+const log = logger.withTag('NotificationService');
+
 class NotificationService {
   static init() {
-    console.log('Notification Service Initialized.');
+    log.info('Notification Service Initialized.');
     if (process.env.NODE_ENV !== 'test') {
       this.scheduleSimulatedPush();
     }
@@ -9,7 +13,7 @@ class NotificationService {
   static scheduleSimulatedPush() {
     // Simulate a push notification arriving shortly after app start
     setTimeout(() => {
-      console.log(
+      log.info(
         '📱 PUSH NOTIFICATION: Did you know a plant-based diet cuts your carbon footprint by 73%? Check out the new Vegan Journey!',
       );
     }, 5000);

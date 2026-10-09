@@ -1,6 +1,8 @@
-/* eslint-disable */
 import analytics from '@react-native-firebase/analytics';
 import crashlytics from '@react-native-firebase/crashlytics';
+import logger from './LoggerService';
+
+const log = logger.withTag('CrashReportingService');
 
 interface ErrorContext {
   userId?: string;
@@ -18,9 +20,9 @@ export class CrashReportingService {
     try {
       await crashlytics().setCrashlyticsCollectionEnabled(true);
       this.isInitialized = true;
-      console.log('Crash reporting initialized successfully');
+      log.info('Crash reporting initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize crash reporting:', error);
+      log.error('Failed to initialize crash reporting', error as Error);
     }
   }
 
@@ -28,7 +30,7 @@ export class CrashReportingService {
     try {
       await Promise.all([crashlytics().setUserId(userId), analytics().setUserId(userId)]);
     } catch (error) {
-      console.error('Failed to set user for crash reporting:', error);
+      log.error('Failed to set user for crash reporting', error as Error);
     }
   }
 

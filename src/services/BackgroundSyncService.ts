@@ -12,6 +12,9 @@
 import NetInfo from '@react-native-community/netinfo';
 import * as TaskManager from 'expo-task-manager';
 import { offlineQueueService } from './OfflineQueueService';
+import logger from './LoggerService';
+
+const log = logger.withTag('BackgroundSync');
 
 const BACKGROUND_SYNC_TASK = 'KINDRED_BACKGROUND_SYNC';
 
@@ -29,11 +32,11 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
 
     await offlineQueueService.load();
     const result = await offlineQueueService.drain();
-    console.log('[BackgroundSync] Background drain result:', result);
+    log.info('Background drain result', result);
 
     return { data: result };
   } catch (e) {
-    console.error('[BackgroundSync] Background task error:', e);
+    log.error('Background task error', e as Error);
     return { error: e };
   }
 });
@@ -63,36 +66,36 @@ class BackgroundSyncService {
         case 'UPDATE_FOOTPRINT':
           // TODO: Replace with real Firestore write
           // await firestoreService.updateFootprint(action.payload);
-          console.log('[BackgroundSync] Would sync to Firestore:', action.type, action.payload);
+          log.debug('Would sync to Firestore', { type: action.type, payload: action.payload });
           break;
 
         case 'UPDATE_GOAL':
           // await firestoreService.updateGoal(action.payload);
-          console.log('[BackgroundSync] Would sync goal:', action.payload);
+          log.debug('Would sync goal', action.payload);
           break;
 
         case 'UPDATE_PROFILE':
           // await firestoreService.updateProfile(action.payload);
-          console.log('[BackgroundSync] Would sync profile:', action.payload);
+          log.debug('Would sync profile', action.payload);
           break;
 
         case 'LOG_OFFSET_PURCHASE':
           // await firestoreService.logOffsetPurchase(action.payload);
-          console.log('[BackgroundSync] Would sync offset purchase:', action.payload);
+          log.debug('Would sync offset purchase', action.payload);
           break;
 
         case 'UPDATE_SETTINGS':
           // await firestoreService.updateSettings(action.payload);
-          console.log('[BackgroundSync] Would sync settings:', action.payload);
+          log.debug('Would sync settings', action.payload);
           break;
 
         default:
-          console.warn('[BackgroundSync] Unknown action type:', action.type);
+          log.warn('Unknown action type', action.type);
       }
     });
 
     this.isRegistered = true;
-    console.log('[BackgroundSync] Initialized');
+    log.info('Initialized');
   }
 
   /**
@@ -103,7 +106,7 @@ class BackgroundSyncService {
     try {
       const netState = await NetInfo.fetch();
       if (!netState.isConnected || !netState.isInternetReachable) {
-        console.log('[BackgroundSync] syncNow skipped — offline');
+        log.debug('syncNow skipped — offline');
         return { success: 0, failed: 0, dropped: 0 };
       }
 
@@ -118,7 +121,7 @@ class BackgroundSyncService {
       return result;
     } catch (e) {
       this.failureStreak++;
-      console.error('[BackgroundSync] syncNow error:', e);
+      log.error('syncNow error', e as Error);
       return { success: 0, failed: 0, dropped: 0 };
     }
   }
