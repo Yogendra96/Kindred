@@ -7,12 +7,24 @@
  * In development the ad unit defaults to the GMA test ad ID (TestIds.REWARDED).
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  RewardedAd,
-  RewardedAdEventType,
-  AdEventType,
-  TestIds,
-} from 'react-native-google-mobile-ads';
+import { NativeModules } from 'react-native';
+
+let RewardedAd: any = null;
+let RewardedAdEventType: any = null;
+let AdEventType: any = null;
+let TestIds: any = null;
+
+try {
+  if (NativeModules.RNGoogleMobileAdsModule) {
+    const gma = require('react-native-google-mobile-ads');
+    RewardedAd = gma.RewardedAd;
+    RewardedAdEventType = gma.RewardedAdEventType;
+    AdEventType = gma.AdEventType;
+    TestIds = gma.TestIds;
+  }
+} catch {
+  // Gracefully fallback when native module is missing from the binary
+}
 
 interface UseRewardedAdReturn {
   /** True when the ad has loaded and is ready to show */
@@ -25,7 +37,7 @@ interface UseRewardedAdReturn {
   adError: string | null;
 }
 
-const AD_UNIT_ID = TestIds.REWARDED;
+const AD_UNIT_ID = TestIds?.REWARDED ?? 'ca-app-pub-3940256099942544/5224354917';
 
 export const useRewardedAd = (): UseRewardedAdReturn => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -33,44 +45,63 @@ export const useRewardedAd = (): UseRewardedAdReturn => {
   const [adError, setAdError] = useState<string | null>(null);
 
   // Use a ref to keep the instance across renders without re-creating on state changes
-  const adRef = useRef<RewardedAd | null>(null);
+  const adRef = useRef<any>(null);
 
   useEffect(() => {
-    const ad = RewardedAd.createForAdRequest(AD_UNIT_ID);
-    adRef.current = ad;
-
-    const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
+    if (!RewardedAd) {
       setIsLoaded(true);
-      setAdError(null);
-    });
+      return undefined;
+    }
 
-    const unsubEarned = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
-      setIsWatched(true);
-    });
+    try {
+      const ad = RewardedAd.createForAdRequest(AD_UNIT_ID);
+      adRef.current = ad;
 
-    const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
-      setIsLoaded(false);
-    });
+      const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
+        setIsLoaded(true);
+        setAdError(null);
+      });
 
-    const unsubError = ad.addAdEventListener(AdEventType.ERROR, (error: any) => {
-      setAdError(error?.message ?? 'Ad failed to load');
-      setIsLoaded(false);
-    });
+      const unsubEarned = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+        setIsWatched(true);
+      });
 
-    ad.load();
+      const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
+        setIsLoaded(false);
+      });
 
-    return () => {
-      unsubLoaded();
-      unsubEarned();
-      unsubClosed();
-      unsubError();
-      adRef.current = null;
-    };
+      const unsubError = ad.addAdEventListener(AdEventType.ERROR, (error: any) => {
+        setAdError(error?.message ?? 'Ad failed to load');
+        setIsLoaded(false);
+      });
+
+      ad.load();
+
+      return () => {
+        unsubLoaded?.();
+        unsubEarned?.();
+        unsubClosed?.();
+        unsubError?.();
+        adRef.current = null;
+      };
+    } catch (e: any) {
+      setAdError(e?.message ?? 'Failed to initialize ad');
+      return undefined;
+    }
   }, []);
 
   const show = useCallback(() => {
+    if (!RewardedAd) {
+      setIsWatched(true);
+      setIsLoaded(false);
+      return;
+    }
     if (adRef.current && isLoaded) {
-      adRef.current.show();
+      try {
+        adRef.current.show();
+      } catch (error: any) {
+        setAdError(error?.message ?? 'Failed to show ad');
+      }
     }
   }, [isLoaded]);
 

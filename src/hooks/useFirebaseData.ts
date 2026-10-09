@@ -41,22 +41,26 @@ export function useWallet() {
   const [wallet, setWallet] = useState<WalletState>({ balanceCents: 0, totalEarnedCents: 0 });
 
   useEffect(() => {
-    const user = auth().currentUser;
-    if (!user) return;
+    try {
+      const user = auth().currentUser;
+      if (!user) return undefined;
 
-    const subscriber = firestore()
-      .collection('users')
-      .doc(user.uid)
-      .onSnapshot(documentSnapshot => {
-        if (documentSnapshot.exists()) {
-          const data = documentSnapshot.data();
-          if (data?.wallet) {
-            setWallet(data.wallet);
+      const subscriber = firestore()
+        .collection('users')
+        .doc(user.uid)
+        .onSnapshot(documentSnapshot => {
+          if (documentSnapshot.exists()) {
+            const data = documentSnapshot.data();
+            if (data?.wallet) {
+              setWallet(data.wallet);
+            }
           }
-        }
-      });
+        });
 
-    return () => subscriber();
+      return () => subscriber();
+    } catch {
+      return undefined;
+    }
   }, []);
 
   return wallet;
@@ -72,22 +76,26 @@ export function useCorporate() {
   });
 
   useEffect(() => {
-    const user = auth().currentUser;
-    if (!user) return;
+    try {
+      const user = auth().currentUser;
+      if (!user) return undefined;
 
-    const subscriber = firestore()
-      .collection('users')
-      .doc(user.uid)
-      .onSnapshot(documentSnapshot => {
-        if (documentSnapshot.exists()) {
-          const data = documentSnapshot.data();
-          if (data?.corporate) {
-            setCorporate(data.corporate);
+      const subscriber = firestore()
+        .collection('users')
+        .doc(user.uid)
+        .onSnapshot(documentSnapshot => {
+          if (documentSnapshot.exists()) {
+            const data = documentSnapshot.data();
+            if (data?.corporate) {
+              setCorporate(data.corporate);
+            }
           }
-        }
-      });
+        });
 
-    return () => subscriber();
+      return () => subscriber();
+    } catch {
+      return undefined;
+    }
   }, []);
 
   return corporate;
@@ -97,22 +105,26 @@ export function useSDG() {
   const [sdg, setSdg] = useState<SDGState>({ esg: { total: 0 } });
 
   useEffect(() => {
-    const user = auth().currentUser;
-    if (!user) return;
+    try {
+      const user = auth().currentUser;
+      if (!user) return undefined;
 
-    const subscriber = firestore()
-      .collection('users')
-      .doc(user.uid)
-      .onSnapshot(documentSnapshot => {
-        if (documentSnapshot.exists()) {
-          const data = documentSnapshot.data();
-          if (data?.sdg) {
-            setSdg(data.sdg);
+      const subscriber = firestore()
+        .collection('users')
+        .doc(user.uid)
+        .onSnapshot(documentSnapshot => {
+          if (documentSnapshot.exists()) {
+            const data = documentSnapshot.data();
+            if (data?.sdg) {
+              setSdg(data.sdg);
+            }
           }
-        }
-      });
+        });
 
-    return () => subscriber();
+      return () => subscriber();
+    } catch {
+      return undefined;
+    }
   }, []);
 
   return sdg;
@@ -129,22 +141,26 @@ export function useCarbon() {
   });
 
   useEffect(() => {
-    const user = auth().currentUser;
-    if (!user) return;
+    try {
+      const user = auth().currentUser;
+      if (!user) return undefined;
 
-    const subscriber = firestore()
-      .collection('users')
-      .doc(user.uid)
-      .onSnapshot(documentSnapshot => {
-        if (documentSnapshot.exists()) {
-          const data = documentSnapshot.data();
-          if (data?.carbon) {
-            setCarbon(data.carbon);
+      const subscriber = firestore()
+        .collection('users')
+        .doc(user.uid)
+        .onSnapshot(documentSnapshot => {
+          if (documentSnapshot.exists()) {
+            const data = documentSnapshot.data();
+            if (data?.carbon) {
+              setCarbon(data.carbon);
+            }
           }
-        }
-      });
+        });
 
-    return () => subscriber();
+      return () => subscriber();
+    } catch {
+      return undefined;
+    }
   }, []);
 
   return carbon;

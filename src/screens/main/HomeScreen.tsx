@@ -118,7 +118,12 @@ const HomeScreen = ({ navigation }: any) => {
   const currentLevel = Math.floor(totalCarbon / 100) + 1;
   const currentXP = totalCarbon % 100;
 
-  const user = auth().currentUser;
+  let user: any = null;
+  try {
+    user = auth().currentUser;
+  } catch {
+    // Firebase not initialized in local dev without credentials
+  }
   const profileName = user?.displayName || 'Eco Explorer';
   const esg = (sdg as any)?.esg ?? {
     total: 0,
@@ -368,19 +373,19 @@ const HomeScreen = ({ navigation }: any) => {
                 {
                   key: 'E',
                   label: 'Environmental',
-                  value: (esg as any)?.breakdown.environmental,
+                  value: (esg as any)?.breakdown?.environmental ?? 0,
                   color: '#38EF7D',
                 },
                 {
                   key: 'S',
                   label: 'Social',
-                  value: (esg as any)?.breakdown.social,
+                  value: (esg as any)?.breakdown?.social ?? 0,
                   color: '#2B86FA',
                 },
                 {
                   key: 'G',
                   label: 'Governance',
-                  value: (esg as any)?.breakdown.governance,
+                  value: (esg as any)?.breakdown?.governance ?? 0,
                   color: '#F2C94C',
                 },
               ] as const

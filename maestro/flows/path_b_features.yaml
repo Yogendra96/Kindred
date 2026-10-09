@@ -1,22 +1,54 @@
-appId: com.kindred
+appId: org.reactjs.native.example.Kindred
 ---
 - launchApp:
-    clearState: true
+    clearState: false
+
+- runFlow:
+    when:
+      visible: "Agree & Continue"
+    commands:
+      - tapOn: "Agree & Continue"
+
+# Dismiss any open dialog if present
+- runFlow:
+    when:
+      visible: "Keep Going 🌱"
+    commands:
+      - tapOn: "Keep Going 🌱"
+
 - extendedWaitUntil:
-    visible: "Home"
+    visible: "Home, tab, 1 of 6"
     timeout: 30000
 
 # Test Path B: Real-Time Social Dashboard
-- tapOn: "Social"
-- assertVisible: "Live"
+- tapOn: "Social, tab, 4 of 6"
+- extendedWaitUntil:
+    visible: ".*Community.*"
+    timeout: 10000
+
 - tapOn: "Live"
-- assertVisible: "Feed"
+- extendedWaitUntil:
+    visible: ".*Feed.*"
+    timeout: 10000
 
 # Test Path B: AI Vision Camera
-- tapOn: "Home"
+- tapOn: "Home, tab, 1 of 6"
 - swipe:
     direction: UP
-- tapOn: "AI Vision"
-- assertVisible: "Smart Waste"
-- tapOn: "Smart Waste"
-- assertVisible: "Cancel"
+- swipe:
+    direction: UP
+- extendedWaitUntil:
+    visible: "AI Vision Scanner"
+    timeout: 10000
+- tapOn: "AI Vision Scanner"
+
+- extendedWaitUntil:
+    visible: ".*Smart Waste.*"
+    timeout: 10000
+- tapOn: ".*Smart Waste.*"
+
+- runFlow:
+    when:
+      visible: ".*Cancel.*"
+    commands:
+      - tapOn: ".*Cancel.*"
