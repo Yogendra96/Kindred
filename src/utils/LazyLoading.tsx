@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import React, { Suspense, lazy, type ComponentType, type ReactNode } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
@@ -13,11 +12,8 @@ interface ErrorBoundaryProps {
   children: ReactNode;
 }
 
-const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({
-  children,
-  _FallbackComponent,
-  _onError,
-}) => {
+const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children }) => {
+  // Mock error boundary for development — renders children directly
   return <>{children}</>;
 };
 
@@ -88,7 +84,7 @@ export const createLazyComponent = <T extends ComponentType<any>>(
     preload?: boolean;
   } = {},
 ) => {
-  const LazyComponent = lazy(importFn);
+  const LazyComponent = lazy(importFn) as unknown as React.ComponentType<Record<string, any>>;
 
   // Preload the component if requested
   if (options.preload) {
@@ -233,6 +229,8 @@ export const withLazyLoadingMetrics = <T extends ComponentType<any>>(
   LazyComponent: T,
   componentName: string,
 ) => {
+  const Component = LazyComponent as React.ComponentType<Record<string, any>>;
+
   return (props: Record<string, any>) => {
     const startTime = performance.now();
 
@@ -250,7 +248,7 @@ export const withLazyLoadingMetrics = <T extends ComponentType<any>>(
       // });
     }, [startTime]);
 
-    return <LazyComponent {...props} />;
+    return <Component {...props} />;
   };
 };
 

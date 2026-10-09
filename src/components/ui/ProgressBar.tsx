@@ -33,10 +33,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <View style={styles.wrapper}>
       <View
-        style={[
-          styles.track,
-          { height, backgroundColor: trackColor, borderRadius: height / 2 },
-        ]}
+        style={[styles.track, { height, backgroundColor: trackColor, borderRadius: height / 2 }]}
       >
         <View
           style={[
@@ -50,9 +47,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           ]}
         />
       </View>
-      {showLabel && (
-        <Text style={styles.label}>{Math.round(clampedProgress * 100)}%</Text>
-      )}
+      {showLabel && <Text style={styles.label}>{Math.round(clampedProgress * 100)}%</Text>}
     </View>
   );
 };

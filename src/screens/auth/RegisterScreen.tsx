@@ -1,7 +1,8 @@
-// @ts-nocheck
 /* eslint-disable */
 import auth from '@react-native-firebase/auth';
+import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import type { AuthStackParamList } from '../../navigation/types';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -22,7 +23,7 @@ const RegisterScreen = () => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const handleRegister = async () => {
     const errors: string[] = [];
@@ -71,7 +72,7 @@ const RegisterScreen = () => {
           accessibilityLabel='Kindred app logo'
           accessibilityRole='image'
         />
-        <Text style={styles.title} accessibilityRole='header' accessibilityLevel={1}>
+        <Text style={styles.title} accessibilityRole='header'>
           Create Account
         </Text>
       </View>
@@ -94,8 +95,6 @@ const RegisterScreen = () => {
           onChangeText={setName}
           accessibilityLabel='Full name'
           accessibilityHint='Enter your full name for account registration'
-          accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e => e.includes('name'))}
         />
         <TextInput
           style={[styles.input, formErrors.some(e => e.includes('Email')) && styles.inputError]}
@@ -106,8 +105,6 @@ const RegisterScreen = () => {
           keyboardType='email-address'
           accessibilityLabel='Email address'
           accessibilityHint='Enter your email address for account registration'
-          accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
           style={[styles.input, formErrors.some(e => e.includes('Password')) && styles.inputError]}
@@ -117,8 +114,6 @@ const RegisterScreen = () => {
           secureTextEntry
           accessibilityLabel='Password'
           accessibilityHint='Enter a secure password for your account'
-          accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e => e.includes('Password'))}
         />
         <TextInput
           style={[
@@ -131,8 +126,6 @@ const RegisterScreen = () => {
           secureTextEntry
           accessibilityLabel='Confirm password'
           accessibilityHint='Re-enter your password to confirm'
-          accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e => e.includes('confirmation'))}
         />
 
         <TouchableOpacity

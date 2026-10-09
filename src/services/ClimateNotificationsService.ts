@@ -84,15 +84,11 @@ class ClimateNotificationsService {
   /**
    * Generate grid carbon alerts based on current intensity
    */
-  async checkGridCarbon(
-    lat: number,
-    lng: number,
-  ): Promise<ClimateAlert | null> {
+  async checkGridCarbon(lat: number, lng: number): Promise<ClimateAlert | null> {
     if (!this.config.gridCarbonAlerts || this.isQuietHours()) return null;
 
     try {
-      const zone =
-        (await gridCarbonService.findZoneByLocation(lat, lng)) || 'US';
+      const zone = (await gridCarbonService.findZoneByLocation(lat, lng)) || 'US';
       const intensity = await gridCarbonService.getCurrentIntensity(zone);
 
       // Check for significant change from last check
@@ -149,15 +145,11 @@ class ClimateNotificationsService {
   /**
    * Check for optimal charging window and send reminder
    */
-  async checkOptimalWindow(
-    lat: number,
-    lng: number,
-  ): Promise<ClimateAlert | null> {
+  async checkOptimalWindow(lat: number, lng: number): Promise<ClimateAlert | null> {
     if (!this.config.optimalWindowReminders || this.isQuietHours()) return null;
 
     try {
-      const zone =
-        (await gridCarbonService.findZoneByLocation(lat, lng)) || 'US';
+      const zone = (await gridCarbonService.findZoneByLocation(lat, lng)) || 'US';
       const window = await gridCarbonService.getOptimalWindow(zone);
       if (!window) return null;
 
@@ -183,9 +175,7 @@ class ClimateNotificationsService {
           id: `optimal-${Date.now()}`,
           type: 'optimal-window',
           title: '🔌 Optimal Charging Window',
-          body: `${
-            window.recommendation
-          } Starting at ${windowStart.toLocaleTimeString('en-US', {
+          body: `${window.recommendation} Starting at ${windowStart.toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
           })}`,
@@ -209,10 +199,7 @@ class ClimateNotificationsService {
   /**
    * Check air quality and send alerts
    */
-  async checkAirQuality(
-    lat: number,
-    lng: number,
-  ): Promise<ClimateAlert | null> {
+  async checkAirQuality(lat: number, lng: number): Promise<ClimateAlert | null> {
     if (!this.config.airQualityAlerts || this.isQuietHours()) return null;
 
     try {

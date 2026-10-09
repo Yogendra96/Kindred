@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import { AnimatedTouchable, AnimatedProgress } from './MicroInteractions';
@@ -189,6 +188,92 @@ export const GamificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     });
   };
 
+  // The functions below complete the GamificationContextType contract. They were
+  // previously omitted; consumers of useGamification() may rely on them.
+  const updateAchievementProgress = (achievementId: string, progress: number) => {
+    setAchievements(prev =>
+      prev.map(a =>
+        a.id === achievementId
+          ? {
+              ...a,
+              current: Math.min(progress, a.target),
+              unlocked: progress >= a.target,
+              unlockedAt: progress >= a.target && !a.unlocked ? a.unlockedAt ?? Date.now() : a.unlockedAt,
+            }
+          : a,
+      ),
+    );
+  };
+
+  const unlockAchievement = (achievementId: string) => {
+    setAchievements(prev =>
+      prev.map(a =>
+        a.id === achievementId && !a.unlocked
+          ? { ...a, unlocked: true, unlockedAt: Date.now() }
+          : a,
+      ),
+    );
+  };
+
+  const updateStreak = (type: string, increment = true) => {
+    setStreaks(prev => {
+      const previous = prev[type] ?? {
+        type,
+        current: 0,
+        longest: 0,
+        lastUpdate: 0,
+        active: false,
+      };
+      const current = increment ? previous.current + 1 : 0;
+      return {
+        ...prev,
+        [type]: {
+          ...previous,
+          current,
+          longest: Math.max(previous.longest, current),
+          lastUpdate: Date.now(),
+          active: current > 0,
+        },
+      };
+    });
+  };
+
+  const completeChallenge = (challengeId: string) => {
+    setChallenges(prev =>
+      prev.map(c =>
+        c.id === challengeId ? { ...c, completed: true, current: c.target } : c,
+      ),
+    );
+  };
+
+  const purchaseReward = (rewardId: string): boolean => {
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward || reward.unlocked || totalPoints < reward.cost) return false;
+    setRewards(prev =>
+      prev.map(r => (r.id === rewardId ? { ...r, unlocked: true } : r)),
+    );
+    setTotalPoints(prev => prev - reward.cost);
+    return true;
+  };
+
+  const equipReward = (rewardId: string) => {
+    setRewards(prev =>
+      prev.map(r => ({ ...r, equipped: r.id === rewardId && r.unlocked })),
+    );
+  };
+
+  const getAchievementsByCategory = (category: string): Achievement[] =>
+    achievements.filter(a => a.category === category);
+
+  const getActiveStreaks = (): Streak[] => Object.values(streaks).filter(s => s.active);
+
+  const getCompletionPercentage = (): number => {
+    if (achievements.length === 0) return 0;
+    return Math.round(
+      (achievements.filter(a => a.unlocked).length / achievements.length) * 100,
+    );
+  };
+
   // Other context functions omitted for brevity in this refactor,
   // keeping the core structure and types.
 
@@ -203,6 +288,15 @@ export const GamificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         totalPoints,
         unlockedAchievements: achievements.filter(a => a.unlocked),
         addXP,
+        updateAchievementProgress,
+        unlockAchievement,
+        updateStreak,
+        completeChallenge,
+        purchaseReward,
+        equipReward,
+        getAchievementsByCategory,
+        getActiveStreaks,
+        getCompletionPercentage,
       }}
     >
       {children}

@@ -86,7 +86,7 @@ application with **93,281 lines of TypeScript code**.
 ├── Source Files: 157 TypeScript/TSX files
 ├── Services: 53 comprehensive implementations
 ├── Components: 43 modern UI components
-├── Redux Slices: 6 state management slices
+├── State Management: Zustand + Firebase hooks
 ├── Test Files: 10 test suites
 ├── Source Size: 2.8 MB
 └── Development: 6-12 months of intensive work
@@ -158,7 +158,7 @@ application with **93,281 lines of TypeScript code**.
 
 - **React Native 0.82.0** - Latest with New Architecture
 - **TypeScript 5.0.4** - Strict mode enabled
-- **Redux Toolkit 2.9.0** - State management
+- **Zustand 5 + Firebase hooks** - State management
 - **React Navigation 7.x** - Type-safe navigation
 - **Hermes V1** - JavaScript engine
 
@@ -202,13 +202,13 @@ Kindred implements a sophisticated multi-layered architecture with 53 services:
 ```
 ┌─────────────────────────────────────────┐
 │         PRESENTATION LAYER              │
-│  React Native • TypeScript • Redux      │
+│  React Native • TypeScript • Zustand    │
 │  43 Components • 3 Main Screens         │
 └─────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────┐
 │         STATE MANAGEMENT                │
-│  Redux Toolkit • 6 Slices               │
+│  Zustand • Firebase hooks               │
 │  Persist • Middleware • Listeners       │
 └─────────────────────────────────────────┘
                     ↕
@@ -242,13 +242,13 @@ KindredFixed/
 │   │   ├── EnhancedGamification.tsx (1,378 lines)
 │   │   ├── AnalyticsDashboard.tsx (669 lines)
 │   │   └── ... 41 more components
-│   ├── store/             # Redux state management
-│   │   ├── index.ts       # Store configuration
-│   │   └── slices/        # 6 Redux slices
+│   ├── store/             # Zustand state management
+│   │   └── useAppStore.ts # Local preferences store
+│   ├── hooks/             # Firebase + TanStack Query hooks
+│   │   ├── useFirebaseData.ts # onSnapshot hooks
 │   ├── screens/           # Main app screens
 │   │   └── main/          # Home, Map, Profile
 │   ├── navigation/        # React Navigation setup
-│   ├── hooks/             # Custom React hooks
 │   ├── utils/             # Utility functions
 │   ├── types/             # TypeScript definitions
 │   └── config/            # App configuration
@@ -264,7 +264,7 @@ KindredFixed/
 2. **Domain-Driven Design (DDD)** - Clear domain boundaries
 3. **CQRS** - Command Query Responsibility Segregation
 4. **Event Sourcing** - Audit trail for carbon activities
-5. **Redux Pattern** - Unidirectional data flow
+5. **Zustand + Firebase Pattern** - Unidirectional data flow with hooks
 6. **Repository Pattern** - Data access abstraction
 
 ---
@@ -379,7 +379,7 @@ bun android:release
 After running the app, verify:
 
 - [ ] App launches without crashes
-- [ ] Redux store initializes (6 slices)
+- [ ] Zustand stores + Firebase hooks initialize properly
 - [ ] Navigation works (Home, Map, Profile screens)
 - [ ] New Architecture logs appear (see below)
 - [ ] No error messages in Metro
@@ -661,16 +661,21 @@ TurboModules: loaded
 4. **AnalyticsDashboard.tsx** (669 lines) - Comprehensive analytics
 5. **ActivityTracker.tsx** - Carbon activity tracking
 
-### Redux Slices
+### State Management (Zustand + Firebase hooks)
 
-**6 Production-Ready Slices:**
+> **Note:** Redux was fully removed. The app now uses Zustand + Firebase hooks.
 
-1. **authSlice** - Authentication state (login, logout, tokens)
-2. **userSlice** - User profile and preferences
-3. **carbonSlice** - Carbon footprint data and history
-4. **settingsSlice** - App settings (notifications, privacy)
-5. **analyticsSlice** - Analytics events and metrics
-6. **locationSlice** - Location tracking and history
+**Local State (`src/store/useAppStore.ts`):**
+- Theme, notifications, consent preferences via Zustand 5
+
+**Server State (`src/hooks/useFirebaseData.ts`):**
+- `useWallet()` - Wallet balance and transactions
+- `useCarbon()` - Carbon footprint data and history
+- `useSDG()` - SDG/ESG scoring
+- `useCorporate()` - Corporate matching info
+
+**API Cache (`src/hooks/useQueries.ts`):**
+- TanStack Query for external API caching
 
 ---
 
@@ -684,7 +689,7 @@ TurboModules: loaded
 
 - Unit tests (Jest)
 - Component tests (React Testing Library)
-- Integration tests (Redux, navigation)
+- Integration tests (state management, navigation)
 - E2E tests (Detox, Maestro)
 - Performance tests
 - Accessibility tests
@@ -1025,7 +1030,7 @@ bun run build:production
 ├── TypeScript Files: 157
 ├── Services: 53
 ├── Components: 43
-├── Redux Slices: 6
+├── State Mgmt: Zustand + Firebase hooks
 ├── Test Files: 10
 ├── Test Coverage: ~40% (target 75%)
 └── Bundle Size: ~20MB (optimized)
@@ -1120,7 +1125,7 @@ chore: build/tooling changes
 - [React Native Documentation](https://reactnative.dev/)
 - [React Native New Architecture](https://reactnative.dev/docs/new-architecture-intro)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
+- [Zustand Documentation](https://zustand.docs.pmnd.rs/)
 - [React Navigation Documentation](https://reactnavigation.org/)
 
 ### Community

@@ -4,13 +4,7 @@
  */
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import {
-  colors,
-  spacing,
-  radii,
-  typography,
-  shadows,
-} from '../../constants/theme';
+import { colors, spacing, radii, typography, shadows } from '../../constants/theme';
 
 interface FeatureButtonProps {
   emoji: string;
@@ -19,18 +13,8 @@ interface FeatureButtonProps {
   testID?: string;
 }
 
-const FeatureButton: React.FC<FeatureButtonProps> = ({
-  emoji,
-  label,
-  onPress,
-  testID,
-}) => (
-  <TouchableOpacity
-    style={styles.btn}
-    onPress={onPress}
-    activeOpacity={0.8}
-    testID={testID}
-  >
+const FeatureButton: React.FC<FeatureButtonProps> = ({ emoji, label, onPress, testID }) => (
+  <TouchableOpacity style={styles.btn} onPress={onPress} activeOpacity={0.8} testID={testID}>
     <Text style={styles.emoji}>{emoji}</Text>
     <Text style={styles.label}>{label}</Text>
   </TouchableOpacity>

@@ -3,14 +3,7 @@
  * Extracted from LearningCenterScreen.tsx (SRP: data ≠ UI).
  */
 
-export const TOPICS = [
-  'All',
-  'Diet',
-  'Energy',
-  'Transport',
-  'Waste',
-  'Nature',
-] as const;
+export const TOPICS = ['All', 'Diet', 'Energy', 'Transport', 'Waste', 'Nature'] as const;
 export type Topic = (typeof TOPICS)[number];
 
 export type ContentType = 'article' | 'video' | 'quiz';
@@ -129,8 +122,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     q: 'Which food has the highest carbon footprint per kg?',
     options: ['Chicken', 'Beef', 'Tofu', 'Rice'],
     correct: 1,
-    explanation:
-      'Beef produces ~60 kg CO₂ per kg of food — roughly 10× chicken and 100× tofu.',
+    explanation: 'Beef produces ~60 kg CO₂ per kg of food — roughly 10× chicken and 100× tofu.',
   },
   {
     q: 'What percentage of global emissions comes from animal agriculture?',

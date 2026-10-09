@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * @fileoverview Core Carbon Calculation Engine
@@ -81,7 +80,7 @@ export interface CarbonEmissionCalculation {
  * Focused, lightweight, and testable implementation
  */
 export class CarbonCalculatorCore {
-  private logger = createLogger({ prefix: 'CARBON_API' });
+  private logger = createLogger('CARBON_API');
 
   /**
    * Calculate carbon emissions using offline emission factors
@@ -99,26 +98,21 @@ export class CarbonCalculatorCore {
       const result = this.calculateOffline(request);
 
       const duration = performance.now() - startTime;
-      logCarbonCalculation(
-        this.logger,
-        request.activityType,
-        request.amount,
-        result.emissions,
-        'offline',
+      logCarbonCalculation('CARBON_API', {
+        activityType: request.activityType,
+        amount: request.amount,
+        emissions: result.emissions,
+        source: 'offline',
         duration,
-      );
+      });
 
       return result;
     } catch (error) {
-      this.logger.error(
-        'Carbon calculation failed',
-        {
-          activityType: request.activityType,
-          amount: request.amount,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        },
-        error as Error,
-      );
+      this.logger.error('Carbon calculation failed', {
+        activityType: request.activityType,
+        amount: request.amount,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     }
   }
@@ -137,7 +131,7 @@ export class CarbonCalculatorCore {
       const results = await Promise.all(requests.map(request => this.calculateOffline(request)));
 
       const duration = performance.now() - startTime;
-      this.logger.success('Batch calculation completed', {
+      this.logger.info('Batch calculation completed', {
         batchSize: requests.length,
         duration: `${duration.toFixed(2)}ms`,
         averagePerCalculation: `${(duration / requests.length).toFixed(2)}ms`,
@@ -145,14 +139,10 @@ export class CarbonCalculatorCore {
 
       return results;
     } catch (error) {
-      this.logger.error(
-        'Batch calculation failed',
-        {
-          batchSize: requests.length,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        },
-        error as Error,
-      );
+      this.logger.error('Batch calculation failed', {
+        batchSize: requests.length,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     }
   }

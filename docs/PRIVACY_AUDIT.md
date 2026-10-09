@@ -26,9 +26,9 @@ missing account deletion flows) have been **fully resolved and verified**.
 | Data Type                           | Collected                   | Local Storage                                                               | Transmission                          | Security Level                                                      |
 | ----------------------------------- | --------------------------- | --------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------- |
 | **Passwords / Credentials**         | Yes (Log in/Register)       | 🔐 **Keychain / Keystore** (handled natively by Firebase Auth)              | Encrypted HTTPS directly to Firebase  | **Very High** (Never stored in plain text or standard AsyncStorage) |
-| **User Profile Info** (Name, Email) | Yes (Profile screen)        | `AsyncStorage` (cached via redux-persist)                                   | HTTPS to Firestore                    | **Medium** (Cached for offline support; requires user permission)   |
+| **User Profile Info** (Name, Email) | Yes (Profile screen)        | `AsyncStorage` (cached locally)                                   | HTTPS to Firestore                    | **Medium** (Cached for offline support; requires user permission)   |
 | **Location Coordinates**            | Yes (Background/Foreground) | 🔐 **AES-256-GCM Encrypted** in AsyncStorage via `ZeroTrustSecurityService` | Local only (unless shared explicitly) | **High** (Encrypted at rest)                                        |
-| **Carbon Footprint History**        | Yes (Activity logs)         | `AsyncStorage` (compressed via redux-persist historyCompress)               | HTTPS to Firestore / Carbon API       | **High** (Encrypted in transit)                                     |
+| **Carbon Footprint History**        | Yes (Activity logs)         | `AsyncStorage` (compressed locally)               | HTTPS to Firestore / Carbon API       | **High** (Encrypted in transit)                                     |
 | **Session Tokens**                  | Yes (OAuth / Session)       | 🔐 **AES-256-GCM Encrypted** in `zt_session`                                | None (Local validation only)          | **High** (Bound to device keys)                                     |
 
 ---
@@ -61,7 +61,7 @@ missing account deletion flows) have been **fully resolved and verified**.
 7. **Self-Service Data Deletion Flow (`ProfileScreen.tsx`)**:
    - Permanent account deletion action in Profile screen.
    - Wipes Firebase Auth credentials, clears all local AsyncStorage caches, destroys Zero-Trust
-     session, and resets all Redux stores.
+     session, and resets all local stores.
 
 ---
 
@@ -88,3 +88,11 @@ missing account deletion flows) have been **fully resolved and verified**.
 - [x] Implement GDPR consent modal overlay on first launch.
 - [x] Implement user opt-out toggle for telemetry in Settings.
 - [x] Implement self-service account deletion and cache purge action.
+
+---
+
+## 🔒 Enterprise Privacy-by-Design Principles (SDG/ESG)
+When integrating SDGs or ESG score telemetry for corporate/employer programs:
+1. **Anonymized Aggregation Only:** No individual activity logs, locations, or user identifiers (like names or emails) may ever be exposed to the employer/organization dashboard. The organization dashboard must only query the sum total aggregate metrics of the linked user group.
+2. **Strict Consent Opt-in:** Linking to an organization must require explicit, double-opt-in consent from the user, clearly stating what is shared (aggregate carbon metrics) and what remains private (all personal names and details).
+3. **Local Sovereignty:** Users retain the ability to instantly opt-out or decouple their accounts, which immediately halts any contribution stream.

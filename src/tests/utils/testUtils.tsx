@@ -5,30 +5,9 @@ import React from 'react';
 import type { RenderOptions } from '@testing-library/react-native';
 import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { configureStore } from '@reduxjs/toolkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Provider } from 'react-redux';
-
-// Mock store configuration
-const createMockStore = (initialState = {}) => {
-  return configureStore({
-    reducer: {
-      // Add your reducers here
-      auth: (state = { user: null, isAuthenticated: false }, action) => state,
-      carbon: (state = { activities: [], totalSaved: 0 }, action) => state,
-      social: (state = { friends: [], activities: [] }, action) => state,
-      achievements: (state = { badges: [], userStats: null }, action) => state,
-      ui: (state = { theme: 'light', notifications: [] }, action) => state,
-    },
-    preloadedState: initialState,
-    middleware: getDefaultMiddleware =>
-      getDefaultMiddleware({
-        serializableCheck: false,
-      }),
-  });
-};
 
 // Mock query client
 const createMockQueryClient = () => {
@@ -36,7 +15,7 @@ const createMockQueryClient = () => {
     defaultOptions: {
       queries: {
         retry: false,
-        cacheTime: 0,
+        gcTime: 0,
       },
       mutations: {
         retry: false,
@@ -48,25 +27,19 @@ const createMockQueryClient = () => {
 // All providers wrapper
 interface AllProvidersProps {
   children: React.ReactNode;
-  initialState?: any;
   queryClient?: QueryClient;
 }
 
 const AllProviders: React.FC<AllProvidersProps> = ({
   children,
-  initialState = {},
   queryClient = createMockQueryClient(),
 }) => {
-  const store = createMockStore(initialState);
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <Provider store={store}>
-          <QueryClientProvider client={queryClient}>
-            <NavigationContainer>{children}</NavigationContainer>
-          </QueryClientProvider>
-        </Provider>
+        <QueryClientProvider client={queryClient}>
+          <NavigationContainer>{children}</NavigationContainer>
+        </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -74,15 +47,14 @@ const AllProviders: React.FC<AllProvidersProps> = ({
 
 // Custom render function
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  initialState?: any;
   queryClient?: QueryClient;
 }
 
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
-  const { initialState, queryClient, ...renderOptions } = options;
+  const { queryClient, ...renderOptions } = options;
 
   const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <AllProviders initialState={initialState} queryClient={queryClient}>
+    <AllProviders queryClient={queryClient}>
       {children}
     </AllProviders>
   );
@@ -325,6 +297,13 @@ export const MockApiResponses = {
   },
 };
 
+const createMockStore = (initialState = {}) => ({
+  getState: () => initialState,
+  setState: () => {},
+  subscribe: () => () => {},
+  destroy: () => {},
+});
+
 // Test helpers
 export const TestHelpers = {
   // Mock store and query client
@@ -560,4 +539,4 @@ expect.extend({
 // Export everything
 export * from '@testing-library/react-native';
 export { customRender as render };
-export { AllProviders, createMockStore, createMockQueryClient };
+export { AllProviders, createMockQueryClient };

@@ -65,6 +65,9 @@ export type AppStackParamList = {
   Analytics: undefined;
   LearningCenter: undefined;
   SmartDevices: undefined;
+  DataConnections: undefined;
+  Offset: undefined;
+  ChargingAd: undefined;
 };
 
 declare global {

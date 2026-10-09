@@ -3,35 +3,20 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { MotiView } from 'moti';
-import { CaretLeft, EnvelopeSimple, LockKey, CheckCircle } from 'phosphor-react-native';
+import { EnvelopeSimple, LockKey, CheckCircle } from 'phosphor-react-native';
 import { useToast } from '../../contexts/ToastContext';
 import { spatialColors, typography, animations } from '../../theme/theme';
 import { EmailParserService } from '../../services/EmailParserService';
-
-const GlassCard = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        overflow: 'hidden',
-      },
-    ]}
-  >
-    {children}
-  </View>
-);
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 const DataConnectionsScreen = () => {
-  const navigation = useNavigation();
   const { showToast } = useToast();
 
   const [isConnected, setIsConnected] = useState(EmailParserService.isConnected());
@@ -61,21 +46,11 @@ const DataConnectionsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <MotiView
-        style={styles.header}
-        from={{ opacity: 0, translateY: -20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={animations.spring.gentle}
-      >
-        <View style={styles.titleRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <CaretLeft size={24} color={spatialColors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.title}>Data Connections</Text>
-        </View>
-        <Text style={styles.subtitle}>Automate your footprint tracking safely.</Text>
-      </MotiView>
+    <SpaceBackground earthPosition='bottom-left' enableComets={true}>
+      <SubScreenHeader
+        title='Data Connections'
+        subtitle='Automate your footprint tracking safely.'
+      />
 
       <ScrollView contentContainerStyle={styles.content}>
         <MotiView
@@ -129,40 +104,11 @@ const DataConnectionsScreen = () => {
           </GlassCard>
         </MotiView>
       </ScrollView>
-    </View>
+    </SpaceBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: spatialColors.background },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: spatialColors.glassBorderDark,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { ...typography.title1, color: spatialColors.textPrimary },
-  subtitle: {
-    ...typography.body,
-    color: spatialColors.textSecondary,
-    marginTop: 4,
-    marginLeft: 52,
-  },
-
   content: {
     padding: 20,
   },

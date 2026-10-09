@@ -1,17 +1,22 @@
-// @ts-nocheck
 /* eslint-disable */
 import { analyticsService } from '../services/AnalyticsService';
 
 // Custom error types for better error handling
 export class CarbonCalculationError extends Error {
-  constructor(message: string, public readonly details?: Record<string, any>) {
+  constructor(
+    message: string,
+    public readonly details?: Record<string, any>,
+  ) {
     super(message);
     this.name = 'CarbonCalculationError';
   }
 }
 
 export class InputValidationError extends Error {
-  constructor(message: string, public readonly field: string) {
+  constructor(
+    message: string,
+    public readonly field: string,
+  ) {
     super(message);
     this.name = 'InputValidationError';
   }

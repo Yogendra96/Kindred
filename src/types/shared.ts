@@ -11,13 +11,7 @@
 // ─── Achievements ─────────────────────────────────────────────────────────────
 
 export type AchievementDifficulty = 'easy' | 'medium' | 'hard' | 'legendary';
-export type AchievementCategory =
-  | 'transport'
-  | 'diet'
-  | 'energy'
-  | 'waste'
-  | 'social'
-  | 'streak';
+export type AchievementCategory = 'transport' | 'diet' | 'energy' | 'waste' | 'social' | 'streak';
 
 export interface Achievement {
   id: string;
@@ -95,12 +89,7 @@ export interface LeaderboardEntry {
 
 // ─── Carbon / Environment ─────────────────────────────────────────────────────
 
-export type CarbonCategory =
-  | 'transportation'
-  | 'food'
-  | 'energy'
-  | 'shopping'
-  | 'waste';
+export type CarbonCategory = 'transportation' | 'food' | 'energy' | 'shopping' | 'waste';
 
 export interface CarbonEntry {
   id: string;

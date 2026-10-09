@@ -1,4 +1,7 @@
-// @ts-nocheck
+// @ts-nocheck — deprecated adapter; the consolidated BiometricAuthenticationService
+// exposes `authenticateBiometric(...)` (not `authenticate()`) and no `isAvailable()`,
+// and there is no equivalent contract to delegate to without inventing biometric
+// input. Left as-is to preserve the deprecation adapter for any legacy call sites.
 /* eslint-disable */
 /**
  * BiometricAuthService.ts — DEPRECATED / CONSOLIDATED

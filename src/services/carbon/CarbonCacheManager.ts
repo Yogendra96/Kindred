@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * @fileoverview Carbon Cache Manager Service
@@ -12,7 +11,7 @@
  */
 
 import { API_CONFIG, STORAGE_KEYS } from '../../utils/constants';
-import { createLogger, logCacheOperation } from '../../utils/loggingUtils';
+import { createLogger } from '../../utils/loggingUtils';
 
 import type { CarbonCalculationRequest, CarbonCalculationResponse } from './CarbonCalculatorCore';
 
@@ -57,7 +56,7 @@ export interface CacheConfig {
  * Provides LRU eviction, TTL expiration, and persistence
  */
 export class CarbonCacheManager {
-  private logger = createLogger({ prefix: 'CACHE' });
+  private logger = createLogger('CACHE');
   private cache = new Map<string, CacheItem<any>>();
   private metrics: CacheMetrics;
   private config: CacheConfig;
@@ -141,7 +140,7 @@ export class CarbonCacheManager {
     if (!item) {
       this.metrics.totalMisses++;
       this.updateMetrics();
-      logCacheOperation(this.logger, 'get', key, false);
+      this.logger.info('cache:get', { key, hit: false });
       return null;
     }
 
@@ -151,7 +150,7 @@ export class CarbonCacheManager {
       this.cache.delete(key);
       this.metrics.totalMisses++;
       this.updateMetrics();
-      logCacheOperation(this.logger, 'get', key, false, item.ttl);
+      this.logger.info('cache:get', { key, hit: false, ttl: item.ttl });
       return null;
     }
 
@@ -162,7 +161,10 @@ export class CarbonCacheManager {
     this.metrics.totalHits++;
     this.updateMetrics();
 
-    logCacheOperation(this.logger, 'get', key, true, item.ttl, {
+    this.logger.info('cache:get', {
+      key,
+      hit: true,
+      ttl: item.ttl,
       accessCount: item.accessCount,
       age: now - item.timestamp,
     });
@@ -199,7 +201,10 @@ export class CarbonCacheManager {
 
     this.cache.set(key, item);
 
-    logCacheOperation(this.logger, 'set', key, true, ttl, {
+    this.logger.info('cache:set', {
+      key,
+      hit: true,
+      ttl,
       size: `${(size / 1024).toFixed(1)}KB`,
       totalItems: this.cache.size,
       cacheSize: `${(this.getCurrentSize() / 1024 / 1024).toFixed(1)}MB`,
@@ -215,7 +220,7 @@ export class CarbonCacheManager {
     const existed = this.cache.delete(key);
 
     if (existed) {
-      logCacheOperation(this.logger, 'delete', key, true);
+      this.logger.info('cache:delete', { key, hit: true });
       this.updateMetrics();
     }
 
@@ -232,7 +237,9 @@ export class CarbonCacheManager {
     this.cache.clear();
     this.updateMetrics();
 
-    logCacheOperation(this.logger, 'clear', 'all_items', true, undefined, {
+    this.logger.info('cache:clear', {
+      key: 'all_items',
+      hit: true,
       clearedItems: itemCount,
       freedBytes: size,
     });
@@ -454,7 +461,7 @@ export class CarbonCacheManager {
         size: JSON.stringify(persistentData).length,
       });
     } catch (error) {
-      this.logger.error('Failed to save cache to persistence', {}, error as Error);
+      this.logger.error('Failed to save cache to persistence', error as Error);
     }
   }
 
@@ -467,7 +474,7 @@ export class CarbonCacheManager {
       // For now, we'll just log the operation
       this.logger.debug('Cache loaded from persistence');
     } catch (error) {
-      this.logger.error('Failed to load cache from persistence', {}, error as Error);
+      this.logger.error('Failed to load cache from persistence', error as Error);
     }
   }
 }

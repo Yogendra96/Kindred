@@ -55,7 +55,7 @@ export const CarbonHeatmap: React.FC<CarbonHeatmapProps> = ({ history }) => {
         const formattedDate = format(currentDate, 'yyyy-MM-dd');
         const isFuture = isAfter(currentDate, now);
 
-        const value = isFuture ? -1 : historyMap.get(formattedDate) ?? 0;
+        const value = isFuture ? -1 : (historyMap.get(formattedDate) ?? 0);
         weekDays.push({
           date: formattedDate,
           displayDate: format(currentDate, 'MMM dd, yyyy'),

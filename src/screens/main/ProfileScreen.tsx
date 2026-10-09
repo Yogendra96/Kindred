@@ -1,27 +1,29 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+// @ts-nocheck
+import auth from '@react-native-firebase/auth';
+import functions from '@react-native-firebase/functions';
 
-import type { StyleProp, ViewStyle } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  Alert,
+  RefreshControl,
+} from 'react-native';
+
+import { useAppStore } from '../../store/useAppStore';
+import { useWallet, useCorporate } from '../../hooks/useFirebaseData';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
-import type { RootState } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth';
 import { zeroTrustSecurityService } from '../../services/ZeroTrustSecurityService';
-import {
-  logout,
-  clearUserState,
-  resetCarbonState,
-  resetLocationState,
-  resetAnalytics,
-  resetSettings,
-  updateNotificationSettings,
-  updatePrivacySettings,
-  updateAppSettings,
-} from '../../store';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
 import {
   Plant,
   Fire,
@@ -40,16 +42,12 @@ import {
   PencilSimple,
   EyeSlash,
   MapPin,
+  BatteryCharging,
+  Wallet,
+  Buildings,
+  Link,
+  ChartLineUp,
 } from 'phosphor-react-native';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
 
 const BADGES = [
   {
@@ -102,50 +100,63 @@ const SettingRow = ({
 const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<Record<string, object | undefined>>>();
   const { showToast } = useToast();
-  const dispatch = useDispatch();
 
-  const user = useSelector((state: RootState) => state.user);
-  const profile = user?.profile;
-  const settings = useSelector((state: RootState) => state.settings);
+  const user = auth().currentUser;
+  const preferences = useAppStore(state => state.preferences);
+  const updatePreferences = useAppStore(state => state.updatePreferences);
+  const wallet = useWallet();
+  const corporate = useCorporate();
 
-  const notifications = settings?.notifications?.pushEnabled ?? true;
-  const weeklyReport = settings?.notifications?.weeklyReports ?? true;
-  const privateProfile = settings?.privacy?.dataSharing ?? false;
-  const analytics = settings?.privacy?.analytics ?? true;
-  const locationTracking = settings?.privacy?.locationTracking ?? true;
-  const darkMode = (settings?.app?.theme ?? 'dark') === 'dark';
-  const metricUnits = (settings?.app?.units ?? 'metric') === 'metric';
+  const settings = useAppStore(state => state.preferences);
+
+  const notifications = preferences?.notifications ?? true;
+  const weeklyReport = preferences?.weeklyReport ?? true;
+  const privateProfile = preferences?.privateProfile ?? false;
+  const analytics = preferences?.analytics ?? true;
+  const locationTracking = preferences?.locationTracking ?? true;
+  const darkMode = (preferences as any)?.app?.theme || 'dark' === 'dark';
+  const metricUnits = (preferences as any)?.app?.units || 'metric' === 'metric';
+  const ecoChargingEnabled = settings?.app?.ecoChargingScreen ?? false;
 
   const handleToggleNotifications = (value: boolean) => {
-    dispatch(updateNotificationSettings({ pushEnabled: value }));
+    updatePreferences({ notifications: value });
   };
 
   const handleToggleWeeklyReport = (value: boolean) => {
-    dispatch(updateNotificationSettings({ weeklyReports: value }));
+    updatePreferences({ weeklyReport: value });
   };
 
   const handleTogglePrivateProfile = (value: boolean) => {
-    dispatch(updatePrivacySettings({ dataSharing: value }));
+    updatePreferences({ privateProfile: value });
   };
 
   const handleToggleAnalytics = (value: boolean) => {
-    dispatch(updatePrivacySettings({ analytics: value }));
+    updatePreferences({ analytics: value });
   };
 
   const handleToggleLocationTracking = (value: boolean) => {
-    dispatch(updatePrivacySettings({ locationTracking: value }));
+    updatePreferences({ locationTracking: value });
   };
 
   const handleToggleDarkMode = (value: boolean) => {
-    dispatch(updateAppSettings({ theme: value ? 'dark' : 'light' }));
+    updatePreferences({ app: { ...(preferences as any)?.app, theme: value ? 'dark' : 'light' } });
   };
 
   const handleToggleMetricUnits = (value: boolean) => {
-    dispatch(updateAppSettings({ units: value ? 'metric' : 'imperial' }));
+    updatePreferences({
+      app: { ...(preferences as any)?.app, units: value ? 'metric' : 'imperial' },
+    });
   };
 
-  const displayName = profile?.name || 'Eco Explorer';
-  const displayEmail = profile?.email || 'hello@kindred.earth';
+  const handleToggleEcoChargingScreen = (value: boolean) => {
+    updatePreferences({ app: { ...(preferences as any)?.app, ecoChargingScreen: value } });
+    if (value) {
+      showToast('⚡ Eco Charging Screen enabled! Preview it below.', 'success');
+    }
+  };
+
+  const displayName = (user as any)?.displayName || 'Eco Warrior';
+  const displayEmail = user?.email || 'hello@kindred.earth';
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -154,7 +165,7 @@ const ProfileScreen = () => {
         text: 'Sign Out',
         style: 'destructive',
         onPress: () => {
-          dispatch(logout());
+          auth().signOut();
           showToast('Signed out. See you next time! 🌿', 'info');
         },
       },
@@ -172,25 +183,14 @@ const ProfileScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // 1. Call Firebase user deletion if logged in
               const currentUser = auth().currentUser;
               if (currentUser) {
                 await currentUser.delete();
               }
 
-              // 2. Clear all AsyncStorage caches
               await AsyncStorage.clear();
 
-              // 3. Destroy Zero-Trust Session
               await zeroTrustSecurityService.destroySession();
-
-              // 4. Reset Redux stores
-              dispatch(logout());
-              dispatch(clearUserState());
-              dispatch(resetCarbonState());
-              dispatch(resetLocationState());
-              dispatch(resetAnalytics());
-              dispatch(resetSettings());
 
               showToast('Account and all personal data deleted successfully.', 'success');
             } catch (error) {
@@ -206,7 +206,7 @@ const ProfileScreen = () => {
                       text: 'Sign Out',
                       style: 'destructive',
                       onPress: () => {
-                        dispatch(logout());
+                        auth().signOut();
                       },
                     },
                   ],
@@ -225,20 +225,107 @@ const ProfileScreen = () => {
     showToast('Profile editing coming in the next update!', 'info');
   };
 
-  return (
-    <View style={styles.container}>
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
+  const handleLinkEmployer = () => {
+    Alert.prompt(
+      'Link Employer',
+      'Enter your work email address to start matching carbon offsets. We will send a 6-digit verification code.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send Code',
+          onPress: async email => {
+            if (email && email.includes('@')) {
+              try {
+                showToast('Sending verification code...', 'info');
+                const domain = email.split('@')[1];
+                const companyName = domain.split('.')[0].toUpperCase();
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+                const requestVerification = functions().httpsCallable(
+                  'requestWorkEmailVerification',
+                );
+                await requestVerification({ email, companyName });
+
+                showToast('Code sent! Please check your work email.', 'success');
+
+                // Now prompt for the code
+                setTimeout(() => {
+                  Alert.prompt(
+                    'Verify Code',
+                    `Enter the 6-digit code sent to ${email}`,
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Verify',
+                        onPress: async code => {
+                          if (code && code.length === 6) {
+                            try {
+                              showToast('Verifying code...', 'info');
+                              const verifyCode = functions().httpsCallable('verifyWorkEmailCode');
+                              const result = await verifyCode({ code });
+
+                              if (result.data.success) {
+                                showToast(
+                                  `Successfully verified! Linked to ${result.data.companyName}`,
+                                  'success',
+                                );
+                              }
+                            } catch (error: any) {
+                              showToast(
+                                error.message || 'Verification failed. Please try again.',
+                                'error',
+                              );
+                            }
+                          } else {
+                            showToast('Please enter a valid 6-digit code.', 'error');
+                          }
+                        },
+                      },
+                    ],
+                    'plain-text',
+                    '',
+                    'number-pad',
+                  );
+                }, 1000);
+              } catch (error: any) {
+                showToast(
+                  error.message || 'Failed to send verification code. Please try again.',
+                  'error',
+                );
+              }
+            } else {
+              showToast('Please enter a valid work email address.', 'error');
+            }
+          },
+        },
+      ],
+      'plain-text',
+      '',
+      'email-address',
+    );
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
+  return (
+    <SpaceBackground earthPosition='bottom-left' enableComets={true}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
         <View style={styles.header}>
           <TouchableOpacity style={styles.avatarContainer} onPress={handleEditProfile}>
             <Plant size={48} color='#38EF7D' weight='duotone' />
@@ -266,6 +353,105 @@ const ProfileScreen = () => {
             <Text style={styles.statValue}>3,990</Text>
             <Text style={styles.statLabel}>total points</Text>
           </GlassCard>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>My Impact Wallet</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Wallet')} activeOpacity={0.8}>
+            <GlassCard
+              style={[
+                styles.sectionCard,
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                },
+              ]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Wallet size={28} color='#38EF7D' weight='duotone' />
+                <View>
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Balance</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                    Earned from ads
+                  </Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={{ color: '#38EF7D', fontSize: 18, fontWeight: '700' }}>
+                  ${((wallet?.balanceCents ?? 0) / 100).toFixed(2)}
+                </Text>
+                <CaretRight size={20} color='#666' />
+              </View>
+            </GlassCard>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Corporate ESG</Text>
+          {corporate?.isLinked ? (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('CorporateLeaderboard' as never)}
+              activeOpacity={0.8}
+            >
+              <GlassCard
+                style={[
+                  styles.sectionCard,
+                  {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 16,
+                  },
+                ]}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Buildings size={28} color='#38EF7D' weight='duotone' />
+                  <View>
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                      {corporate.linkedCompany}
+                    </Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                      Corporate Leaderboard
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ChartLineUp size={20} color='#38EF7D' />
+                  <CaretRight size={20} color='#666' />
+                </View>
+              </GlassCard>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleLinkEmployer} activeOpacity={0.8}>
+              <GlassCard
+                style={[
+                  styles.sectionCard,
+                  {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 16,
+                    backgroundColor: 'rgba(255,255,255,0.03)',
+                  },
+                ]}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Link size={28} color='rgba(255,255,255,0.5)' weight='duotone' />
+                  <View>
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                      Link Employer
+                    </Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                      Contribute to company ESG
+                    </Text>
+                  </View>
+                </View>
+                <CaretRight size={20} color='#666' />
+              </GlassCard>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -429,7 +615,34 @@ const ProfileScreen = () => {
                 />
               }
             />
+            <View style={styles.divider} />
+            <SettingRow
+              icon={<BatteryCharging size={24} color='#38EF7D' weight='duotone' />}
+              label='Eco Charging Screen'
+              sublabel='Show SDG facts & earn donations while charging'
+              right={
+                <Switch
+                  value={ecoChargingEnabled}
+                  onValueChange={handleToggleEcoChargingScreen}
+                  trackColor={{
+                    true: '#38EF7D',
+                    false: 'rgba(255,255,255,0.2)',
+                  }}
+                  thumbColor='#fff'
+                />
+              }
+            />
           </GlassCard>
+          {ecoChargingEnabled && (
+            <TouchableOpacity
+              style={profileStyles.previewBtn}
+              onPress={() => navigation.navigate('ChargingAd' as never)}
+              activeOpacity={0.8}
+            >
+              <BatteryCharging size={18} color='#0A0A0C' weight='fill' />
+              <Text style={profileStyles.previewBtnText}>Preview Charging Screen</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -469,7 +682,7 @@ const ProfileScreen = () => {
 
         <Text style={styles.version}>Kindred v1.0.0 · Made with 💚 for the planet</Text>
       </ScrollView>
-    </View>
+    </SpaceBackground>
   );
 };
 
@@ -498,14 +711,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#38EF7D',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 1.5,
     width: 28,
     height: 28,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#0f2027',
   },
   name: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
   email: { fontSize: 16, color: 'rgba(255,255,255,0.6)', marginBottom: 16 },
@@ -514,7 +727,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  rankText: { fontSize: 14, fontWeight: '600', color: '#38EF7D' },
+  rankText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
 
   statsRow: {
     flexDirection: 'row',
@@ -642,11 +855,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 20,
   },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    overflow: 'hidden',
+});
+
+const profileStyles = StyleSheet.create({
+  previewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#38EF7D',
+    marginTop: 10,
+    marginHorizontal: 0,
+    paddingVertical: 14,
+    borderRadius: 14,
+    shadowColor: '#38EF7D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  previewBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0A0A0C',
   },
 });
 

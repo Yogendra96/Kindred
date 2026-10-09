@@ -84,11 +84,7 @@ class Logger {
       switch (entry.level) {
         case 'ERROR':
           // eslint-disable-next-line no-console
-          console.error(
-            `${prefix} ${ts} ${entry.message}`,
-            entry.data ?? '',
-            entry.error ?? '',
-          );
+          console.error(`${prefix} ${ts} ${entry.message}`, entry.data ?? '', entry.error ?? '');
           break;
         case 'WARN':
           // eslint-disable-next-line no-console
@@ -96,9 +92,7 @@ class Logger {
           break;
         case 'PERF':
           // eslint-disable-next-line no-console
-          console.log(
-            `${prefix} ${ts} ${entry.message} — ${entry.elapsedMs}ms`,
-          );
+          console.log(`${prefix} ${ts} ${entry.message} — ${entry.elapsedMs}ms`);
           break;
         default:
           // eslint-disable-next-line no-console
@@ -107,10 +101,7 @@ class Logger {
     }
 
     // Always send ERROR + WARN to remote handler (e.g. Sentry)
-    if (
-      this.remoteHandler &&
-      (entry.level === 'ERROR' || entry.level === 'WARN')
-    ) {
+    if (this.remoteHandler && (entry.level === 'ERROR' || entry.level === 'WARN')) {
       try {
         this.remoteHandler(entry);
       } catch {

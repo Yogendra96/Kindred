@@ -1,5 +1,6 @@
 /* global window, navigator */
 import React, { Component } from 'react';
+declare var window: any;
 import type { ErrorInfo, ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -131,11 +132,7 @@ class ErrorBoundary extends Component<Props, State> {
     return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  private logError = async (
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorId: string,
-  ) => {
+  private logError = async (error: Error, errorInfo: ErrorInfo, errorId: string) => {
     const errorLog = {
       id: errorId,
       timestamp: new Date().toISOString(),
@@ -143,10 +140,7 @@ class ErrorBoundary extends Component<Props, State> {
       stack: error.stack,
       componentStack: errorInfo.componentStack,
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'any',
-      url:
-        typeof window !== 'undefined'
-          ? window.location?.href
-          : 'react-native-app',
+      url: typeof window !== 'undefined' ? window.location?.href : 'react-native-app',
     };
 
     try {
@@ -160,29 +154,17 @@ class ErrorBoundary extends Component<Props, State> {
 
       await AsyncStorage.setItem('error_logs', JSON.stringify(logs));
     } catch (storageError) {
-      this.logger.error(
-        'ErrorBoundary',
-        'Failed to store error log:',
-        storageError,
-      );
+      this.logger.error('ErrorBoundary', 'Failed to store error log:', storageError);
     }
 
-    this.logger.error(
-      'ErrorBoundary',
-      `Error Boundary Caught Error [${errorId}]`,
-      {
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-      },
-    );
+    this.logger.error('ErrorBoundary', `Error Boundary Caught Error [${errorId}]`, {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
   };
 
-  private reportError = async (
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorId: string,
-  ) => {
+  private reportError = async (error: Error, errorInfo: ErrorInfo, errorId: string) => {
     try {
       // Report to Sentry
       captureException(error, {
@@ -198,11 +180,7 @@ class ErrorBoundary extends Component<Props, State> {
         timestamp: new Date().toISOString(),
       });
     } catch (reportingError) {
-      this.logger.error(
-        'ErrorBoundary',
-        'Failed to report error:',
-        reportingError,
-      );
+      this.logger.error('ErrorBoundary', 'Failed to report error:', reportingError);
     }
   };
 
@@ -242,19 +220,15 @@ class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo?.componentStack,
     };
 
-    Alert.alert(
-      'Report Issue',
-      'Would you like to report this issue to help us improve the app?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Report',
-          onPress: () => {
-            Alert.alert('Thank you', 'Your report has been submitted.');
-          },
+    Alert.alert('Report Issue', 'Would you like to report this issue to help us improve the app?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Report',
+        onPress: () => {
+          Alert.alert('Thank you', 'Your report has been submitted.');
         },
-      ],
-    );
+      },
+    ]);
   };
 
   private renderErrorDetails = () => {
@@ -270,10 +244,7 @@ class ErrorBoundary extends Component<Props, State> {
           <Text style={styles.detailsHeaderText}>Error Details</Text>
         </View>
 
-        <ScrollView
-          style={styles.detailsContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={styles.detailsContent} showsVerticalScrollIndicator={false}>
           <View style={styles.detailSection}>
             <Text style={styles.detailLabel}>Error ID:</Text>
             <Text style={styles.detailValue}>{errorId}</Text>
@@ -325,8 +296,8 @@ class ErrorBoundary extends Component<Props, State> {
               <Text style={styles.title}>Oops! Something went wrong</Text>
 
               <Text style={styles.message}>
-                We're sorry, but something unexpected happened. The error has
-                been logged and reported.
+                We're sorry, but something unexpected happened. The error has been logged and
+                reported.
               </Text>
 
               <View style={styles.buttonContainer}>
@@ -489,18 +460,14 @@ export const withErrorBoundary = <P extends object>(
     </ErrorBoundary>
   );
 
-  WrappedComponent.displayName = `withErrorBoundary(${
-    Component.displayName || Component.name
-  })`;
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
 
   return WrappedComponent;
 };
 
 export const useErrorHandler = () => {
   const reportError = React.useCallback((error: Error, errorInfo?: any) => {
-    const errorId = `manual_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     loggingService.error('ErrorBoundary', 'Manual error report:', {
       error,

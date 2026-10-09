@@ -172,11 +172,7 @@ interface ValidationOpinion {
 interface Evidence {
   readonly evidenceId: string;
   readonly type:
-    | 'research_paper'
-    | 'dataset'
-    | 'calculation'
-    | 'industry_standard'
-    | 'personal_experience';
+    'research_paper' | 'dataset' | 'calculation' | 'industry_standard' | 'personal_experience';
   readonly source: string;
   readonly reliability: number;
   readonly relevance: number;
@@ -186,10 +182,7 @@ interface Evidence {
 interface ConflictResolution {
   readonly resolutionId: string;
   readonly method:
-    | 'expert_panel'
-    | 'weighted_voting'
-    | 'scientific_review'
-    | 'community_discussion';
+    'expert_panel' | 'weighted_voting' | 'scientific_review' | 'community_discussion';
   readonly participants: string[];
   readonly timeline: number; // days
   readonly outcome: string;
@@ -678,10 +671,7 @@ interface BlockchainRecord {
 
 interface VerificationData {
   readonly dataType:
-    | 'carbon_footprint'
-    | 'validation_result'
-    | 'expert_review'
-    | 'user_contribution';
+    'carbon_footprint' | 'validation_result' | 'expert_review' | 'user_contribution';
   readonly content: any;
   readonly metadata: DataMetadata;
   readonly provenance: DataProvenance;
@@ -954,11 +944,7 @@ interface UserTrustMetric {
 
 interface TrustComponent {
   readonly component:
-    | 'accuracy'
-    | 'consistency'
-    | 'timeliness'
-    | 'expertise'
-    | 'community_standing';
+    'accuracy' | 'consistency' | 'timeliness' | 'expertise' | 'community_standing';
   readonly score: number;
   readonly weight: number;
   readonly trend: 'improving' | 'stable' | 'declining';
@@ -1555,10 +1541,7 @@ interface ProgramSupport {
 interface MentorshipOutcome {
   readonly outcomeId: string;
   readonly category:
-    | 'skill_development'
-    | 'network_expansion'
-    | 'career_advancement'
-    | 'contribution_quality';
+    'skill_development' | 'network_expansion' | 'career_advancement' | 'contribution_quality';
   readonly measurement: string;
   readonly baseline: number;
   readonly target: number;
@@ -1829,8 +1812,8 @@ export class CommunityVerificationNetworkEngine {
               update > 0
                 ? ('improving' as const)
                 : update < 0
-                ? ('declining' as const)
-                : component.trend,
+                  ? ('declining' as const)
+                  : component.trend,
           };
         }
         return component;

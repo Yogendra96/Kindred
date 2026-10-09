@@ -32,10 +32,7 @@ export {
 } from './CarbonService';
 
 // Focused sub-services (for advanced usage)
-export {
-  CarbonCalculatorCore,
-  carbonCalculatorCore,
-} from './CarbonCalculatorCore';
+export { CarbonCalculatorCore, carbonCalculatorCore } from './CarbonCalculatorCore';
 
 export { CarbonAPIAdapter, carbonAPIAdapter } from './CarbonAPIAdapter';
 
@@ -55,11 +52,7 @@ export type {
 
 export type { APIError, APIProvider } from './CarbonAPIAdapter';
 
-export type {
-  CacheItem,
-  CacheMetrics,
-  CacheConfig,
-} from './CarbonCacheManager';
+export type { CacheItem, CacheMetrics, CacheConfig } from './CarbonCacheManager';
 
 // ===================================================================
 // CONVENIENCE EXPORTS
@@ -70,8 +63,7 @@ export type {
  * Usage: import { calculateEmissions } from '@services/carbon';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const calculateEmissions = (request: any) =>
-  _carbonServiceLocal.calculateEmissions(request);
+export const calculateEmissions = (request: any) => _carbonServiceLocal.calculateEmissions(request);
 
 /**
  * Quick access to batch calculation

@@ -310,7 +310,7 @@ cd ios && rm -rf Pods Podfile.lock && bundle exec pod install && cd .. && bun io
 
 - React Native 0.82.0 (New Architecture Enabled)
 - TypeScript (Strict Mode)
-- Redux Toolkit (State Management)
+- Zustand + Firebase hooks (State Management)
 - React Navigation 7.x
 
 ### **UI Components**

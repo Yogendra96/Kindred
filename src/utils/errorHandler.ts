@@ -47,11 +47,7 @@ export class KindredError extends Error {
 /** HTTP/network level failures */
 export class NetworkError extends KindredError {
   readonly statusCode?: number;
-  constructor(
-    message: string,
-    statusCode?: number,
-    context?: Record<string, any>,
-  ) {
+  constructor(message: string, statusCode?: number, context?: Record<string, any>) {
     super(message, 'NETWORK_ERROR', { context, recoverable: true });
     this.statusCode = statusCode;
   }
@@ -60,11 +56,7 @@ export class NetworkError extends KindredError {
 /** API returned a well-formed error response */
 export class ApiError extends KindredError {
   readonly statusCode: number;
-  constructor(
-    message: string,
-    statusCode: number,
-    context?: Record<string, any>,
-  ) {
+  constructor(message: string, statusCode: number, context?: Record<string, any>) {
     super(message, `API_${statusCode}`, {
       context,
       recoverable: statusCode < 500,
@@ -164,18 +156,14 @@ class ErrorHandlerClass {
     const globalAny = global as any;
     const previousHandler = globalAny.ErrorUtils?.getGlobalHandler?.();
 
-    globalAny.ErrorUtils?.setGlobalHandler?.(
-      (error: Error, isFatal?: boolean) => {
-        logger.error(
-          'Global',
-          isFatal ? 'FATAL JS ERROR' : 'Uncaught JS Error',
-          error instanceof Error
-            ? { message: error.message, stack: error.stack }
-            : error,
-        );
-        if (previousHandler) previousHandler(error, isFatal);
-      },
-    );
+    globalAny.ErrorUtils?.setGlobalHandler?.((error: Error, isFatal?: boolean) => {
+      logger.error(
+        'Global',
+        isFatal ? 'FATAL JS ERROR' : 'Uncaught JS Error',
+        error instanceof Error ? { message: error.message, stack: error.stack } : error,
+      );
+      if (previousHandler) previousHandler(error, isFatal);
+    });
 
     // Unhandled promise rejections (works in hermes/JSC)
     const HermesInternal = (global as any).HermesInternal;

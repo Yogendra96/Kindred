@@ -47,10 +47,7 @@ interface ClimateDataState {
 }
 
 interface ClimateDataActions {
-  refreshGlobalContext: (
-    userFootprint: number,
-    country: string,
-  ) => Promise<void>;
+  refreshGlobalContext: (userFootprint: number, country: string) => Promise<void>;
   refreshNearbyEmitters: (
     lat: number,
     lng: number,
@@ -59,12 +56,7 @@ interface ClimateDataActions {
   ) => Promise<void>;
   refreshGridCarbon: (lat: number, lng: number) => Promise<void>;
   refreshAirQuality: (lat: number, lng: number) => Promise<void>;
-  refreshAll: (
-    lat: number,
-    lng: number,
-    userFootprint: number,
-    country: string,
-  ) => Promise<void>;
+  refreshAll: (lat: number, lng: number, userFootprint: number, country: string) => Promise<void>;
 }
 
 interface UseClimateDataOptions {
@@ -120,42 +112,33 @@ export function useClimateData(
   } | null>(null);
 
   // Refresh global context
-  const refreshGlobalContext = useCallback(
-    async (userFootprint: number, country: string) => {
-      const log = logger.withTag('useClimateData:globalContext');
-      const stopPerf = log.perf('fetchGlobalContext');
+  const refreshGlobalContext = useCallback(async (userFootprint: number, country: string) => {
+    const log = logger.withTag('useClimateData:globalContext');
+    const stopPerf = log.perf('fetchGlobalContext');
+    setState(prev => ({
+      ...prev,
+      globalContextLoading: true,
+      globalContextError: null,
+    }));
+    try {
+      const context = await globalContextService.getUserGlobalContext(userFootprint, country);
       setState(prev => ({
         ...prev,
-        globalContextLoading: true,
-        globalContextError: null,
+        globalContext: context,
+        globalContextLoading: false,
       }));
-      try {
-        const context = await globalContextService.getUserGlobalContext(
-          userFootprint,
-          country,
-        );
-        setState(prev => ({
-          ...prev,
-          globalContext: context,
-          globalContextLoading: false,
-        }));
-        log.info('Global context fetched successfully');
-      } catch (err) {
-        const handledError = ErrorHandler.handle(
-          err,
-          'useClimateData:globalContext',
-        );
-        setState(prev => ({
-          ...prev,
-          globalContextLoading: false,
-          globalContextError: handledError.message,
-        }));
-      } finally {
-        stopPerf();
-      }
-    },
-    [],
-  );
+      log.info('Global context fetched successfully');
+    } catch (err) {
+      const handledError = ErrorHandler.handle(err, 'useClimateData:globalContext');
+      setState(prev => ({
+        ...prev,
+        globalContextLoading: false,
+        globalContextError: handledError.message,
+      }));
+    } finally {
+      stopPerf();
+    }
+  }, []);
 
   // Refresh nearby emitters
   const refreshNearbyEmitters = useCallback(
@@ -168,28 +151,18 @@ export function useClimateData(
         nearbyEmittersError: null,
       }));
       try {
-        const sources = await climateTraceService.getNearbyEmitters(
-          lat,
-          lng,
-          radiusKm,
-          country,
-        );
+        const sources = await climateTraceService.getNearbyEmitters(lat, lng, radiusKm, country);
         const displaySources = sources.map(s => toDisplayFormat(s));
         setState(prev => ({
           ...prev,
-          nearbyEmitters: displaySources.sort(
-            (a, b) => a.distance - b.distance,
-          ),
+          nearbyEmitters: displaySources.sort((a, b) => a.distance - b.distance),
           nearbyEmittersLoading: false,
         }));
         log.info('Nearby emitters fetched successfully', {
           count: displaySources.length,
         });
       } catch (err) {
-        const handledError = ErrorHandler.handle(
-          err,
-          'useClimateData:nearbyEmitters',
-        );
+        const handledError = ErrorHandler.handle(err, 'useClimateData:nearbyEmitters');
         setState(prev => ({
           ...prev,
           nearbyEmittersLoading: false,
@@ -224,10 +197,7 @@ export function useClimateData(
       }));
       log.info('Grid carbon data fetched successfully');
     } catch (err) {
-      const handledError = ErrorHandler.handle(
-        err,
-        'useClimateData:gridCarbon',
-      );
+      const handledError = ErrorHandler.handle(err, 'useClimateData:gridCarbon');
       setState(prev => ({
         ...prev,
         gridLoading: false,
@@ -256,10 +226,7 @@ export function useClimateData(
       }));
       log.info('Air quality fetched successfully');
     } catch (err) {
-      const handledError = ErrorHandler.handle(
-        err,
-        'useClimateData:airQuality',
-      );
+      const handledError = ErrorHandler.handle(err, 'useClimateData:airQuality');
       setState(prev => ({
         ...prev,
         airQualityLoading: false,
@@ -272,12 +239,7 @@ export function useClimateData(
 
   // Refresh all data
   const refreshAll = useCallback(
-    async (
-      lat: number,
-      lng: number,
-      userFootprint: number,
-      country: string,
-    ) => {
+    async (lat: number, lng: number, userFootprint: number, country: string) => {
       setLastLocation({ lat, lng, country });
       await Promise.all([
         refreshGlobalContext(userFootprint, country),
@@ -286,12 +248,7 @@ export function useClimateData(
         refreshAirQuality(lat, lng),
       ]);
     },
-    [
-      refreshGlobalContext,
-      refreshNearbyEmitters,
-      refreshGridCarbon,
-      refreshAirQuality,
-    ],
+    [refreshGlobalContext, refreshNearbyEmitters, refreshGridCarbon, refreshAirQuality],
   );
 
   // Auto-refresh interval
@@ -306,12 +263,7 @@ export function useClimateData(
     }, opts.autoRefreshInterval);
 
     return () => clearInterval(interval);
-  }, [
-    opts.autoRefreshInterval,
-    lastLocation,
-    refreshGridCarbon,
-    refreshAirQuality,
-  ]);
+  }, [opts.autoRefreshInterval, lastLocation, refreshGridCarbon, refreshAirQuality]);
 
   return {
     ...state,
@@ -329,9 +281,7 @@ export function useClimateData(
  */
 export function useGridCarbon(lat: number, lng: number, autoRefresh = false) {
   const [intensity, setIntensity] = useState<GridCarbonIntensity | null>(null);
-  const [optimalWindow, setOptimalWindow] = useState<OptimalWindow | null>(
-    null,
-  );
+  const [optimalWindow, setOptimalWindow] = useState<OptimalWindow | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -433,13 +383,8 @@ export function useClimateIntelligence(
       const stopPerf = log.perf('fetchIntelligence');
       setLoading(true);
       try {
-        const summary = await unifiedClimateService.getQuickSummary(
-          lat,
-          lng,
-          countryCode,
-        );
-        const zone =
-          (await gridCarbonService.findZoneByLocation(lat, lng)) || countryCode;
+        const summary = await unifiedClimateService.getQuickSummary(lat, lng, countryCode);
+        const zone = (await gridCarbonService.findZoneByLocation(lat, lng)) || countryCode;
         const optimalWindow = await gridCarbonService.getOptimalWindow(zone);
 
         const carbonIntensityGood = summary.gridStatus === 'clean';

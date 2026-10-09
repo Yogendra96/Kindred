@@ -214,23 +214,23 @@ Animated.timing(opacity, {
 
 ## State Management
 
-### Optimize Redux
+### Optimize State Management
 
-- **Use Redux Toolkit for efficient Redux setup**
-- **Implement proper selectors with reselect**
+- **Use Zustand selectors for efficient local state access**
+- **Use Firebase onSnapshot for real-time server state**
 
 ```jsx
-import { createSelector } from '@reduxjs/toolkit';
+import { useAppStore } from '@store/useAppStore';
 
-const selectItems = state => state.items;
-const selectFilter = state => state.filter;
+const selectFilteredItems = (state) => state.items.filter(item => item.type === state.filter);
 
-const selectFilteredItems = createSelector([selectItems, selectFilter], (items, filter) =>
-  items.filter(item => item.type === filter),
-);
+function MyComponent() {
+  const items = useAppStore(selectFilteredItems);
+  // ...
+}
 ```
 
-- **Use Redux Persist with proper configuration**
+- **Use proper caching strategies with TanStack Query for API data**
 
 ### Context API Optimization
 

@@ -1,7 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  RefreshControl,
+} from 'react-native';
+import { useCarbon } from '../../hooks/useFirebaseData';
 import { MotiView } from 'moti';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 import {
@@ -15,11 +22,9 @@ import {
   Leaf,
   ArrowUpRight,
   ArrowDownRight,
-  CaretLeft,
   CheckCircle,
 } from 'phosphor-react-native';
 import { spatialColors, typography, animations } from '../../theme/theme';
-import type { RootState } from '../../store';
 import { CarbonHeatmap } from '../../components/insights/CarbonHeatmap';
 import {
   projectEndOfPeriod,
@@ -28,25 +33,11 @@ import {
   getCategoryTrend,
   filterHistoryByDays,
 } from '../../utils/insightsEngine';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 const { width: SW } = Dimensions.get('window');
-
-const GlassCard = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        borderWidth: 1,
-        overflow: 'hidden',
-        borderRadius: 16,
-      },
-    ]}
-  >
-    {children}
-  </View>
-);
 
 // ─── Mini sparkline chart ─────────────────────────────────────────────────────
 const Sparkline = ({ history, periodDays }: { history: any[]; periodDays: number }) => {
@@ -105,8 +96,8 @@ const Sparkline = ({ history, periodDays }: { history: any[]; periodDays: number
                   backgroundColor: isMin
                     ? '#38EF7D' // Green for min
                     : isMax
-                    ? '#FF3B30' // Red for max
-                    : 'rgba(255, 255, 255, 0.2)', // Default glass
+                      ? '#FF3B30' // Red for max
+                      : 'rgba(255, 255, 255, 0.2)', // Default glass
                 },
               ]}
             />
@@ -288,19 +279,25 @@ const PERIODS = ['Week', 'Month', 'Year'];
 
 const AnalyticsDashboardScreen = () => {
   const [period, setPeriod] = useState<'Week' | 'Month' | 'Year'>('Week');
-  const navigation = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
   // Get data from Redux Store
-  const carbonData = useSelector((state: RootState) => state.carbon);
+  const carbonData = useCarbon();
   const history = carbonData?.history || [];
-  const footprint = carbonData?.footprint || {
+  const footprint = (carbonData as any)?.footprint || {
     total: 0,
     transportation: 0,
     food: 0,
     energy: 0,
     waste: 0,
   };
-  const goals = carbonData?.goals || { target: 0, deadline: '' };
+  const goals = (carbonData as any)?.goals || { target: 0, deadline: '' };
 
   const periodDays = useMemo(() => {
     if (period === 'Week') return 7;
@@ -382,24 +379,20 @@ const AnalyticsDashboardScreen = () => {
   }, [aggregates]);
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <MotiView
-          style={styles.header}
-          from={{ opacity: 0, translateY: -20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={animations.spring.gentle}
-        >
-          <View style={styles.titleRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <CaretLeft size={24} color={spatialColors.textPrimary} />
-            </TouchableOpacity>
-            <Text style={styles.title}>Carbon Analytics</Text>
-          </View>
-          <Text style={styles.subtitle}>Track. Understand. Reduce.</Text>
-        </MotiView>
-
+    <SpaceBackground earthPosition='bottom-left' enableComets={true}>
+      <SubScreenHeader title='Carbon Analytics' subtitle='Track. Understand. Reduce.' />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
         {/* Period toggle */}
         <MotiView
           style={styles.periodToggle}
@@ -646,14 +639,14 @@ const AnalyticsDashboardScreen = () => {
                 item.icon === 'Car'
                   ? Car
                   : item.icon === 'ForkKnife'
-                  ? ForkKnife
-                  : item.icon === 'Lightning'
-                  ? Lightning
-                  : item.icon === 'Leaf'
-                  ? Leaf
-                  : item.icon === 'Trash'
-                  ? Trash
-                  : Target;
+                    ? ForkKnife
+                    : item.icon === 'Lightning'
+                      ? Lightning
+                      : item.icon === 'Leaf'
+                        ? Leaf
+                        : item.icon === 'Trash'
+                          ? Trash
+                          : Target;
 
               return (
                 <View key={item.id} style={styles.patternCard}>
@@ -781,45 +774,15 @@ const AnalyticsDashboardScreen = () => {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </View>
+    </SpaceBackground>
   );
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: spatialColors.background,
-  },
   content: {
     paddingBottom: 40,
     paddingTop: 16,
-  },
-  header: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    ...typography.title1,
-    color: spatialColors.textPrimary,
-  },
-  subtitle: {
-    ...typography.body,
-    color: spatialColors.textSecondary,
-    marginTop: 4,
   },
 
   periodToggle: {

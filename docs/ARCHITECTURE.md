@@ -2,9 +2,7 @@
 
 ## System Architecture Overview
 
-Kindred follows a **Service-Oriented Architecture (SOA)** with **Redux-based state management** and
-**Firebase-powered backend services**. The application is built using modern React Native patterns
-with TypeScript for type safety and comprehensive testing coverage.
+Kindred follows a **Service-Oriented Architecture (SOA)** with **Zustand + Firebase onSnapshot hooks for state management** and **Firebase-powered backend services**. The application is built using modern React Native patterns with TypeScript for type safety and comprehensive testing coverage.
 
 ## High-Level Architecture Diagram
 
@@ -13,7 +11,9 @@ graph TB
   subgraph "Mobile App Layer"
     UI[React Native UI Components]
     NAV[React Navigation]
-    REDUX[Redux Store + Slices]
+    ZUSTAND[Zustand Stores<br/>Local UI State Only]
+    FIREBASE_HOOKS[Firebase onSnapshot Hooks<br/>Real-Time Server State]
+    TANSTACK[TanStack Query<br/>API Data Fetching & Caching]
     ERROR[Error Boundaries]
   end
 
@@ -43,6 +43,11 @@ graph TB
     ML_MODELS[TensorFlow.js Models]
   end
 
+  subgraph "Server Logic"
+    CLOUD_FUNCTIONS[Firebase Cloud Functions<br/>Wallet, Activity Scoring,<br/>Gift Cards, Ad Rewards]
+    APPCHECK[Firebase AppCheck<br/>Fraud Prevention]
+  end
+
   subgraph "Monitoring & Recovery"
     HEALTH[Service Health Monitor]
     BACKUP[Backup & Recovery]
@@ -51,16 +56,22 @@ graph TB
 
   UI --> ERROR
   ERROR --> NAV
-  UI --> REDUX
-  NAV --> REDUX
-  REDUX --> CARBON
-  REDUX --> ML
-  REDUX --> SECURITY
-  REDUX --> ANALYTICS
-  REDUX --> PERF
-  REDUX --> LOCATION
-  REDUX --> ACHIEVE
-  REDUX --> RECOMMEND
+  UI --> ZUSTAND
+  UI --> FIREBASE_HOOKS
+  UI --> TANSTACK
+  NAV --> ZUSTAND
+
+  ZUSTAND --> CARBON
+  ZUSTAND --> ML
+  ZUSTAND --> SECURITY
+  ZUSTAND --> ANALYTICS
+  ZUSTAND --> PERF
+  ZUSTAND --> LOCATION
+  ZUSTAND --> ACHIEVE
+  ZUSTAND --> RECOMMEND
+
+  FIREBASE_HOOKS --> FIREBASE
+  TANSTACK --> FIREBASE
 
   CARBON --> FIREBASE
   CARBON --> CARBON_API
@@ -75,6 +86,9 @@ graph TB
   FIREBASE --> SYNC
   SECURITY --> SQLITE
   ANALYTICS --> CACHE
+
+  CLOUD_FUNCTIONS --> FIREBASE
+  APPCHECK --> FIREBASE
 
   HEALTH --> CARBON
   HEALTH --> ML
@@ -114,24 +128,52 @@ graph LR
   end
 ```
 
-### 2. **Redux Slice Pattern**
+### 2. **Zustand + Firebase State Pattern**
 
-State management follows the Redux Toolkit slice pattern with clear separation:
+State management is split into three distinct layers, each handling a specific domain:
 
 ```mermaid
 graph TD
-  STORE[Redux Store] --> AUTH[authSlice]
-  STORE --> USER[userSlice]
-  STORE --> CARBON[carbonSlice]
+  subgraph "Local UI State (Zustand)"
+    APP_STORE[useAppStore] --> THEME["theme, notifications, consent"]
+    APP_STORE --> PERSIST[Persisted to AsyncStorage]
+    APP_STORE --> COMPONENTS[React Components<br/>via direct hook call]
+  end
 
-  AUTH --> AUTH_STATE["{ isAuthenticated, user, loading }"]
-  USER --> USER_STATE["{ profile, preferences, settings }"]
-  CARBON --> CARBON_STATE["{ footprint, history, goals, loading }"]
+  subgraph "Real-Time Server State (Firebase onSnapshot)"
+    USE_WALLET[useWallet] --> WALLET_STATE["{ balanceCents, totalEarnedCents }"]
+    USE_CARBON[useCarbon] --> CARBON_STATE["{ footprint, transport, energy, food }"]
+    USE_SDG[useSDG] --> SDG_STATE["{ esg: { total } }"]
+    USE_CORPORATE[useCorporate] --> CORP_STATE["{ linkedCompany, isVerified, points }"]
 
-  AUTH_STATE --> COMPONENTS[React Components]
-  USER_STATE --> COMPONENTS
-  CARBON_STATE --> COMPONENTS
+    WALLET_STATE --> FIRESTORE_USERS[(Firestore<br/>users/{uid})]
+    CARBON_STATE --> FIRESTORE_USERS
+    SDG_STATE --> FIRESTORE_USERS
+    CORP_STATE --> FIRESTORE_USERS
+  end
+
+  subgraph "API Data (TanStack Query)"
+    TANSTACK[useCarbonData, useUserProfile, etc.] --> QUERY_CACHE[Query Cache<br/>staleTime / gcTime]
+    TANSTACK --> COMPONENTS_2[React Components]
+    QUERY_CACHE --> AUTO_REFRESH[Auto-refetch & Cache Invalidation]
+  end
+
+  subgraph "Server-Authoritative Logic (Cloud Functions)"
+    FUNCTIONS[Firebase Cloud Functions] --> WALLET_AGG[Wallet Aggregation]
+    FUNCTIONS --> ACTIVITY_SCORE[Activity Scoring]
+    FUNCTIONS --> GIFT_CARD[Gift Card Redemption]
+    FUNCTIONS --> AD_REWARD[Ad Reward Verification]
+    FUNCTIONS --> EMAIL_VERIFY[Email Verification]
+  end
 ```
+
+**Key design decisions:**
+
+- **Zustand (`useAppStore`)** handles local-only UI concerns: theme preferences, notification settings, consent flags. These have no server equivalent and are persisted to `AsyncStorage` via `zustand/middleware/persist`.
+- **Firebase onSnapshot hooks** (`useWallet`, `useCarbon`, `useSDG`, `useCorporate`) subscribe to Firestore documents in real time. They return plain React state -- no global store needed. The components that call them get live updates automatically.
+- **TanStack Query** manages API calls with built-in caching, background refetching, and optimistic updates. Stale times vary by data type: carbon data refreshes every 5 minutes, leaderboard every 2 minutes.
+- **Firebase Cloud Functions** own the authoritative business logic -- wallet aggregation, activity scoring, email verification, gift card redemption, and ad reward verification. The client never writes directly to business-critical collections.
+- **No Provider wrapper needed.** Zustand stores and Firebase hooks are accessed directly from any component via hook calls, eliminating the need for a wrapping Provider.
 
 ### 3. **Component Architecture**
 
@@ -140,8 +182,7 @@ Components follow a hierarchical structure with clear data flow:
 ```mermaid
 graph TD
   APP[App.tsx] --> ERROR_BOUNDARY[ErrorBoundary]
-  ERROR_BOUNDARY --> PROVIDER[Redux Provider]
-  PROVIDER --> SAFE_AREA[SafeAreaProvider]
+  ERROR_BOUNDARY --> SAFE_AREA[SafeAreaProvider]
   SAFE_AREA --> NAV_CONTAINER[NavigationContainer]
 
   NAV_CONTAINER --> AUTH_NAV[AuthNavigator]
@@ -158,6 +199,17 @@ graph TD
   HOME --> ECO_TIPS[EcoTips]
 ```
 
+**State access pattern:**
+
+```mermaid
+graph LR
+  COMPONENT[Screen Component] --> ZUSTAND["useAppStore()<br/>Direct hook call"]
+  COMPONENT --> ON_SNAPSHOT["useCarbon() / useWallet()<br/>Firebase onSnapshot hooks"]
+  COMPONENT --> TANSTACK["useCarbonData()<br/>TanStack Query hook"]
+```
+
+Zustand stores and Firebase hooks are consumed via direct hook calls inside components. There is no central Provider element -- any component can call `useAppStore()` or `useCarbon()` directly.
+
 ## Data Flow Architecture
 
 ### 1. **Carbon Tracking Data Flow**
@@ -166,18 +218,20 @@ graph TD
 sequenceDiagram
   participant User
   participant UI
-  participant Redux
+  participant Zustand
+  participant FirebaseHooks
   participant CarbonAPI
   participant Firebase
   participant ML
 
   User->>UI: Add Activity
-  UI->>Redux: Dispatch Action
-  Redux->>CarbonAPI: Calculate Footprint
+  UI->>Zustand: Update local state (optimistic)
+  UI->>CarbonAPI: Calculate Footprint
   CarbonAPI->>Firebase: Store Activity
   CarbonAPI->>ML: Update Prediction Model
-  ML->>Redux: Update Predictions
-  Redux->>UI: Update UI State
+  ML->>Firebase: Store Predictions
+  FirebaseHooks->>FirebaseHooks: onSnapshot triggers
+  FirebaseHooks->>UI: Real-time update with server data
   UI->>User: Show Updated Footprint
 ```
 
@@ -187,19 +241,17 @@ sequenceDiagram
 sequenceDiagram
   participant User
   participant UI
-  participant Redux
+  participant Zustand
   participant Security
   participant Firebase
   participant Storage
 
   User->>UI: Login Request
-  UI->>Redux: Login Action
-  Redux->>Security: Authenticate
+  UI->>Security: Authenticate
   Security->>Firebase: Verify Credentials
   Firebase->>Security: User Data
   Security->>Storage: Store Encrypted Token
-  Security->>Redux: Login Success
-  Redux->>UI: Update Auth State
+  Security->>Zustand: Update auth flags in local state
   UI->>User: Navigate to App
 ```
 
@@ -280,7 +332,7 @@ graph TD
 **Neural Network Architecture:**
 
 - **Input Layer**: 25+ features (user behavior, context, temporal)
-- **Hidden Layers**: 64 → 32 → 16 neurons with dropout regularization
+- **Hidden Layers**: 64 -> 32 -> 16 neurons with dropout regularization
 - **Output Layer**: 4 categories (transport, energy, food, waste)
 - **Optimization**: Adam optimizer with learning rate scheduling
 - **Training**: Continuous learning from user interactions
@@ -360,7 +412,8 @@ graph TD
   E2E[End-to-End Tests] --> DETOX[Detox Tests]
   E2E --> MAESTRO[Maestro Tests]
 
-  INTEGRATION[Integration Tests] --> REDUX_TESTS[Redux Integration]
+  INTEGRATION[Integration Tests] --> STORE_TESTS[Store Integration]
+  INTEGRATION --> HOOK_TESTS[Hook Integration]
   INTEGRATION --> NAV_TESTS[Navigation Tests]
   INTEGRATION --> SERVICE_TESTS[Service Integration]
 
@@ -679,7 +732,4 @@ graph TD
 
 ---
 
-This enhanced architecture provides a robust, fault-tolerant foundation for the Kindred
-sustainability tracking application, with comprehensive error handling, disaster recovery, and
-monitoring capabilities that ensure high availability and excellent user experience even under
-adverse conditions.
+This enhanced architecture provides a robust, fault-tolerant foundation for the Kindred sustainability tracking application, with comprehensive error handling, disaster recovery, and monitoring capabilities that ensure high availability and excellent user experience even under adverse conditions.

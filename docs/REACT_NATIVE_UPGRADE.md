@@ -96,9 +96,9 @@ bun add react-native-screens@^4.10.1
 bun add react-native-gesture-handler@^2.25.0
 bun add react-native-reanimated@^3.18.0
 
-# Update Redux
-bun add @reduxjs/toolkit@^2.7.0
-bun add react-redux@^9.2.0
+# Update State Management (Zustand + Firebase hooks)
+# Note: Redux was fully removed. Zustand and Firebase handle all state.
+bun add zustand@^5.0.0
 ```
 
 #### 1.3 Update Development Dependencies
@@ -701,7 +701,7 @@ cat android/gradle.properties | grep "newArchEnabled"
 - [ ] App builds successfully on iOS
 - [ ] App builds successfully on Android
 - [ ] All 53 services initialize correctly
-- [ ] Redux store working with 6 slices
+- [ ] Zustand stores + Firebase hooks working properly
 - [ ] Navigation transitions smooth
 - [ ] Performance monitoring shows improvements
 - [ ] No crashes on startup

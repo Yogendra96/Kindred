@@ -1,8 +1,3 @@
-/**
- * SmartDevicesScreen.tsx
- * UI layer for IoTIntegrationService — connects/manages smart home devices
- * and shows real-time carbon impact from each connected device.
- */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -13,9 +8,13 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-
 import { useToast } from '../../contexts/ToastContext';
+import { spatialColors, typography, animations } from '../../theme/theme';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 // ─── Mock connected state (backed by IoTIntegrationService) ──────────────────
 
@@ -109,10 +108,8 @@ const DeviceCard = ({
   onDisconnect: () => void;
   loading: boolean;
 }) => (
-  <View style={[styles.deviceCard, connected && styles.deviceCardConnected]}>
-    <View
-      style={[styles.deviceIcon, { backgroundColor: catalog.color + '18' }]}
-    >
+  <GlassCard style={[styles.deviceCard, connected && styles.deviceCardConnected]}>
+    <View style={[styles.deviceIcon, { backgroundColor: catalog.color + '18' }]}>
       <Text style={styles.deviceEmoji}>{catalog.emoji}</Text>
     </View>
     <View style={styles.deviceBody}>
@@ -142,7 +139,7 @@ const DeviceCard = ({
         </TouchableOpacity>
       )}
     </View>
-  </View>
+  </GlassCard>
 );
 
 const AutomationRow = ({
@@ -159,9 +156,7 @@ const AutomationRow = ({
     <View style={styles.automationInfo}>
       <Text style={styles.automationLabel}>{preset.label}</Text>
       <Text style={styles.automationDesc}>{preset.description}</Text>
-      <Text style={styles.automationSaving}>
-        ↓ {preset.saving} kg CO₂/day when active
-      </Text>
+      <Text style={styles.automationSaving}>↓ {preset.saving} kg CO₂/day when active</Text>
     </View>
     <Switch
       value={enabled}
@@ -189,18 +184,15 @@ const SmartDevicesScreen = () => {
 
   // Recalculate total savings
   useEffect(() => {
-    const connectedSavings = DEVICE_CATALOG.filter(d =>
-      connectedTypes.has(d.type),
-    ).reduce(
+    const connectedSavings = DEVICE_CATALOG.filter(d => connectedTypes.has(d.type)).reduce(
       (s, d) => s + parseFloat(d.savingsLabel.match(/[\d.]+/)?.[0] ?? '0'),
       0,
     );
-    const automationSavings = AUTOMATION_PRESETS.filter(
-      p => automations[p.label],
-    ).reduce((s, p) => s + p.saving, 0);
-    setTotalSavingKg(
-      parseFloat((connectedSavings + automationSavings).toFixed(1)),
+    const automationSavings = AUTOMATION_PRESETS.filter(p => automations[p.label]).reduce(
+      (s, p) => s + p.saving,
+      0,
     );
+    setTotalSavingKg(parseFloat((connectedSavings + automationSavings).toFixed(1)));
   }, [connectedTypes, automations]);
 
   const handleConnect = useCallback(
@@ -217,8 +209,7 @@ const SmartDevicesScreen = () => {
             return next;
           });
           showToast(
-            '✅ Connected! ' +
-              `${brand} ${catalog.name} is now syncing with Kindred.`,
+            '✅ Connected! ' + `${brand} ${catalog.name} is now syncing with Kindred.`,
             'success',
           );
         },
@@ -234,29 +225,26 @@ const SmartDevicesScreen = () => {
     [showToast],
   );
 
-  const handleDisconnect = useCallback(
-    (catalog: (typeof DEVICE_CATALOG)[0]) => {
-      Alert.alert(
-        'Remove Device',
-        `Remove ${catalog.name}? Kindred will stop syncing this device's data.`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Remove',
-            style: 'destructive',
-            onPress: () => {
-              setConnectedTypes(prev => {
-                const next = new Set(prev);
-                next.delete(catalog.type);
-                return next;
-              });
-            },
+  const handleDisconnect = useCallback((catalog: (typeof DEVICE_CATALOG)[0]) => {
+    Alert.alert(
+      'Remove Device',
+      `Remove ${catalog.name}? Kindred will stop syncing this device's data.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            setConnectedTypes(prev => {
+              const next = new Set(prev);
+              next.delete(catalog.type);
+              return next;
+            });
           },
-        ],
-      );
-    },
-    [],
-  );
+        },
+      ],
+    );
+  }, []);
 
   const handleAutomationToggle = useCallback(
     (label: string, val: boolean) => {
@@ -272,108 +260,106 @@ const SmartDevicesScreen = () => {
     [showToast],
   );
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>🔌 Smart Devices</Text>
-        <Text style={styles.subtitle}>Connect · Automate · Save Carbon</Text>
+    <SpaceBackground earthPosition='top-right' enableComets={true}>
+      <SubScreenHeader title='Smart Devices' subtitle='Connect · Automate · Save Carbon' />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
         {connectedTypes.size > 0 && (
-          <View style={styles.headerStats}>
+          <View
+            style={[styles.headerStats, { marginHorizontal: 16, marginTop: 10, marginBottom: 6 }]}
+          >
             <Text style={styles.headerStat}>
-              {connectedTypes.size} device{connectedTypes.size > 1 ? 's' : ''}{' '}
-              connected
+              {connectedTypes.size} device{connectedTypes.size > 1 ? 's' : ''} connected
             </Text>
             <Text style={styles.headerDot}>·</Text>
-            <Text style={styles.headerStat}>
-              ↓ {totalSavingKg} kg CO₂/day potential
-            </Text>
+            <Text style={styles.headerStat}>↓ {totalSavingKg} kg CO₂/day potential</Text>
           </View>
         )}
-      </View>
 
-      {/* Auto-sync toggle */}
-      <View style={styles.globalToggleRow}>
-        <View>
-          <Text style={styles.globalToggleLabel}>Auto-Sync</Text>
-          <Text style={styles.globalToggleSubLabel}>
-            Sync all devices every 15 minutes
-          </Text>
-        </View>
-        <Switch
-          value={autoSyncEnabled}
-          onValueChange={setAutoSyncEnabled}
-          trackColor={{ true: '#2e7d32' }}
-        />
-      </View>
+        {/* Auto-sync toggle */}
+        <GlassCard style={styles.globalToggleRow}>
+          <View>
+            <Text style={styles.globalToggleLabel}>Auto-Sync</Text>
+            <Text style={styles.globalToggleSubLabel}>Sync all devices every 15 minutes</Text>
+          </View>
+          <Switch
+            value={autoSyncEnabled}
+            onValueChange={setAutoSyncEnabled}
+            trackColor={{ true: '#38EF7D' }}
+          />
+        </GlassCard>
 
-      {/* Device catalog */}
-      <Text style={styles.sectionTitle}>📡 Your Devices</Text>
-      {DEVICE_CATALOG.map(catalog => (
-        <DeviceCard
-          key={catalog.type}
-          catalog={catalog}
-          connected={connectedTypes.has(catalog.type)}
-          loading={loadingTypes.has(catalog.type)}
-          onConnect={() => handleConnect(catalog)}
-          onDisconnect={() => handleDisconnect(catalog)}
-        />
-      ))}
-
-      {/* Automation rules */}
-      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
-        🤖 Automation Rules
-      </Text>
-      <Text style={styles.sectionSubTitle}>
-        Let Kindred automatically schedule your devices around clean-grid
-        windows
-      </Text>
-      <View style={styles.automationCard}>
-        {AUTOMATION_PRESETS.map((preset, i) => (
-          <React.Fragment key={preset.label}>
-            <AutomationRow
-              preset={preset}
-              enabled={automations[preset.label]}
-              onToggle={val => handleAutomationToggle(preset.label, val)}
-            />
-            {i < AUTOMATION_PRESETS.length - 1 && (
-              <View style={styles.divider} />
-            )}
-          </React.Fragment>
+        {/* Device catalog */}
+        <Text style={styles.sectionTitle}>📡 Your Devices</Text>
+        {DEVICE_CATALOG.map(catalog => (
+          <DeviceCard
+            key={catalog.type}
+            catalog={catalog}
+            connected={connectedTypes.has(catalog.type)}
+            loading={loadingTypes.has(catalog.type)}
+            onConnect={() => handleConnect(catalog)}
+            onDisconnect={() => handleDisconnect(catalog)}
+          />
         ))}
-      </View>
 
-      {/* Total impact */}
-      {totalSavingKg > 0 && (
-        <View style={styles.totalCard}>
-          <Text style={styles.totalLabel}>
-            🌍 Your estimated smart device savings
-          </Text>
-          <Text style={styles.totalValue}>{totalSavingKg} kg CO₂/day</Text>
-          <Text style={styles.totalSub}>
-            {(totalSavingKg * 365).toFixed(0)} kg/year ·{' '}
-            {(((totalSavingKg * 365) / 1000) * 2.47).toFixed(2)} acres of forest
-            equivalent
-          </Text>
-        </View>
-      )}
-    </ScrollView>
+        {/* Automation rules */}
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>🤖 Automation Rules</Text>
+        <Text style={styles.sectionSubTitle}>
+          Let Kindred automatically schedule your devices around clean-grid windows
+        </Text>
+        <GlassCard style={styles.automationCard}>
+          {AUTOMATION_PRESETS.map((preset, i) => (
+            <React.Fragment key={preset.label}>
+              <AutomationRow
+                preset={preset}
+                enabled={automations[preset.label]}
+                onToggle={val => handleAutomationToggle(preset.label, val)}
+              />
+              {i < AUTOMATION_PRESETS.length - 1 && <View style={styles.divider} />}
+            </React.Fragment>
+          ))}
+        </GlassCard>
+
+        {/* Total impact */}
+        {totalSavingKg > 0 && (
+          <GlassCard style={styles.totalCard}>
+            <Text style={styles.totalLabel}>🌍 Your estimated smart device savings</Text>
+            <Text style={styles.totalValue}>{totalSavingKg} kg CO₂/day</Text>
+            <Text style={styles.totalSub}>
+              {(totalSavingKg * 365).toFixed(0)} kg/year ·{' '}
+              {(((totalSavingKg * 365) / 1000) * 2.47).toFixed(2)} acres of forest equivalent
+            </Text>
+          </GlassCard>
+        )}
+      </ScrollView>
+    </SpaceBackground>
   );
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
   content: { paddingBottom: 48 },
-  header: {
-    paddingTop: 48,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    backgroundColor: '#1a237e',
-  },
-  title: { fontSize: 26, fontWeight: 'bold', color: 'white' },
-  subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
   headerStats: {
     flexDirection: 'row',
     alignItems: 'center',

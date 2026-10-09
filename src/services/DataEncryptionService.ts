@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * DataEncryptionService.ts — DEPRECATED / CONSOLIDATED
@@ -8,6 +7,6 @@
  * This barrel re-export ensures all existing imports continue to work.
  */
 export {
-  AdvancedEncryptionService,
-  AdvancedEncryptionService as DataEncryptionService,
+  advancedEncryptionService as AdvancedEncryptionService,
+  advancedEncryptionService as DataEncryptionService,
 } from './AdvancedEncryptionService';

@@ -726,21 +726,30 @@ export class AnalyticsService {
     const totalDuration = completedSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
 
     // Calculate event metrics
-    const eventsByCategory = filteredEvents.reduce((acc, event) => {
-      acc[event.category] = (acc[event.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const eventsByCategory = filteredEvents.reduce(
+      (acc, event) => {
+        acc[event.category] = (acc[event.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const eventsByPriority = filteredEvents.reduce((acc, event) => {
-      acc[event.priority] = (acc[event.priority] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const eventsByPriority = filteredEvents.reduce(
+      (acc, event) => {
+        acc[event.priority] = (acc[event.priority] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     // Calculate screen metrics
-    const screenCounts = filteredScreenViews.reduce((acc, view) => {
-      acc[view.screenName] = (acc[view.screenName] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const screenCounts = filteredScreenViews.reduce(
+      (acc, view) => {
+        acc[view.screenName] = (acc[view.screenName] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const mostViewed = Object.entries(screenCounts)
       .sort(([, a], [, b]) => b - a)

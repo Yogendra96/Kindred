@@ -1,15 +1,15 @@
-// @ts-nocheck
 /* eslint-disable */
 import type { RootStackParamList, AuthStackParamList, MainStackParamList } from '@navigation/types';
 import analytics from '@react-native-firebase/analytics';
-import type { NavigationProp, RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import { CommonActions, StackActions, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { modernAPMService } from '@services/ModernAPMService';
 
 type NavigationParams = RootStackParamList & AuthStackParamList & MainStackParamList;
 
 export function useAppNavigation() {
-  const navigation = useNavigation<NavigationProp<NavigationParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<NavigationParams>>();
   const route = useRoute<RouteProp<NavigationParams>>();
 
   const navigate = async <T extends keyof NavigationParams>(
@@ -27,7 +27,9 @@ export function useAppNavigation() {
       });
 
       // Perform navigation
-      navigation.navigate(screen, params);
+      navigation.dispatch(
+        CommonActions.navigate({ name: screen, params: params as object | undefined }),
+      );
 
       // Stop performance tracking
       await modernAPMService.stopTraceSimple(`navigation_${screen as string}`);
@@ -84,7 +86,9 @@ export function useAppNavigation() {
         to_screen: screen,
       });
 
-      navigation.replace(screen, params);
+      navigation.dispatch(
+        StackActions.replace(screen as string, params as object | undefined),
+      );
     } catch (error) {
       console.error('Navigation replace error:', error);
     }

@@ -19,13 +19,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import logger from '../../services/LoggerService';
 import ErrorHandler from '../../utils/errorHandler';
-import {
-  colors,
-  spacing,
-  radii,
-  typography,
-  shadows,
-} from '../../constants/theme';
+import { colors, spacing, radii, typography, shadows } from '../../constants/theme';
 
 interface Props {
   tag?: string;

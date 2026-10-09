@@ -4,18 +4,9 @@
  */
 
 import React, { useMemo, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
-import type {
-  GridCarbonIntensity,
-  OptimalWindow,
-} from '../../services/climate';
+import type { GridCarbonIntensity, OptimalWindow } from '../../services/climate';
 
 interface Props {
   intensity: GridCarbonIntensity | null;
@@ -43,8 +34,7 @@ export const GridCarbonWidget: React.FC<Props> = ({
           emoji: '🌿',
         };
       if (value < 200) return { level: 'Clean', color: '#84CC16', emoji: '🌱' };
-      if (value < 350)
-        return { level: 'Moderate', color: theme.colors.warning, emoji: '🌤️' };
+      if (value < 350) return { level: 'Moderate', color: theme.colors.warning, emoji: '🌤️' };
       if (value < 500) return { level: 'Dirty', color: '#F97316', emoji: '🏭' };
       return { level: 'Very Dirty', color: theme.colors.error, emoji: '💨' };
     },
@@ -67,14 +57,10 @@ export const GridCarbonWidget: React.FC<Props> = ({
 
   if (isLoading) {
     return (
-      <View
-        style={[styles.container, { backgroundColor: theme.colors.surface }]}
-      >
+      <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size='small' color={theme.colors.primary} />
-          <Text
-            style={[styles.loadingText, { color: theme.colors.text.secondary }]}
-          >
+          <Text style={[styles.loadingText, { color: theme.colors.text.secondary }]}>
             Checking grid carbon...
           </Text>
         </View>
@@ -91,9 +77,7 @@ export const GridCarbonWidget: React.FC<Props> = ({
       >
         <View style={styles.errorContainer}>
           <Text style={styles.errorEmoji}>⚡</Text>
-          <Text
-            style={[styles.errorText, { color: theme.colors.text.secondary }]}
-          >
+          <Text style={[styles.errorText, { color: theme.colors.text.secondary }]}>
             Tap to check grid carbon intensity
           </Text>
         </View>
@@ -117,26 +101,14 @@ export const GridCarbonWidget: React.FC<Props> = ({
       <View style={styles.mainDisplay}>
         <Text style={styles.emoji}>{intensityInfo?.emoji}</Text>
         <View style={styles.valueContainer}>
-          <Text
-            style={[
-              styles.intensityValue,
-              { color: theme.colors.text.primary },
-            ]}
-          >
+          <Text style={[styles.intensityValue, { color: theme.colors.text.primary }]}>
             {intensity.carbonIntensity}
           </Text>
-          <Text
-            style={[
-              styles.intensityUnit,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.intensityUnit, { color: theme.colors.text.secondary }]}>
             gCO₂/kWh
           </Text>
         </View>
-        <View
-          style={[styles.levelBadge, { backgroundColor: intensityInfo?.color }]}
-        >
+        <View style={[styles.levelBadge, { backgroundColor: intensityInfo?.color }]}>
           <Text style={styles.levelText}>{intensityInfo?.level}</Text>
         </View>
       </View>
@@ -144,23 +116,14 @@ export const GridCarbonWidget: React.FC<Props> = ({
       {/* Power Mix Bar */}
       <View style={styles.powerMix}>
         <View style={styles.powerMixHeader}>
-          <Text
-            style={[
-              styles.powerMixLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.powerMixLabel, { color: theme.colors.text.secondary }]}>
             Power Mix
           </Text>
-          <Text
-            style={[styles.powerMixPercent, { color: theme.colors.success }]}
-          >
+          <Text style={[styles.powerMixPercent, { color: theme.colors.success }]}>
             {intensity.renewablePercentage.toFixed(0)}% Renewable
           </Text>
         </View>
-        <View
-          style={[styles.powerMixBar, { backgroundColor: theme.colors.border }]}
-        >
+        <View style={[styles.powerMixBar, { backgroundColor: theme.colors.border }]}>
           <View
             style={[
               styles.renewableBar,
@@ -182,75 +145,36 @@ export const GridCarbonWidget: React.FC<Props> = ({
         </View>
         <View style={styles.powerMixLegend}>
           <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendDot,
-                { backgroundColor: theme.colors.success },
-              ]}
-            />
-            <Text
-              style={[
-                styles.legendText,
-                { color: theme.colors.text.secondary },
-              ]}
-            >
+            <View style={[styles.legendDot, { backgroundColor: theme.colors.success }]} />
+            <Text style={[styles.legendText, { color: theme.colors.text.secondary }]}>
               Renewable
             </Text>
           </View>
           <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendDot,
-                { backgroundColor: theme.colors.error },
-              ]}
-            />
-            <Text
-              style={[
-                styles.legendText,
-                { color: theme.colors.text.secondary },
-              ]}
-            >
-              Fossil
-            </Text>
+            <View style={[styles.legendDot, { backgroundColor: theme.colors.error }]} />
+            <Text style={[styles.legendText, { color: theme.colors.text.secondary }]}>Fossil</Text>
           </View>
         </View>
       </View>
 
       {/* Optimal Window Recommendation */}
       {optimalWindow && (
-        <View
-          style={[
-            styles.optimalWindow,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
+        <View style={[styles.optimalWindow, { backgroundColor: theme.colors.background }]}>
           <View style={styles.optimalHeader}>
             <Text style={styles.optimalEmoji}>🕐</Text>
-            <Text
-              style={[
-                styles.optimalTitle,
-                { color: theme.colors.text.primary },
-              ]}
-            >
+            <Text style={[styles.optimalTitle, { color: theme.colors.text.primary }]}>
               Optimal Charging Window
             </Text>
           </View>
           <Text style={[styles.optimalTime, { color: theme.colors.primary }]}>
             {formatTime(optimalWindow.start)} - {formatTime(optimalWindow.end)}
           </Text>
-          <Text
-            style={[styles.optimalSavings, { color: theme.colors.success }]}
-          >
+          <Text style={[styles.optimalSavings, { color: theme.colors.success }]}>
             {optimalWindow.savings.vsNow > 0
               ? `⬇️ ${optimalWindow.savings.vsNow}% less carbon vs now`
               : '✓ Now is a good time!'}
           </Text>
-          <Text
-            style={[
-              styles.optimalRecommendation,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.optimalRecommendation, { color: theme.colors.text.secondary }]}>
             {optimalWindow.recommendation}
           </Text>
         </View>
@@ -263,12 +187,7 @@ export const GridCarbonWidget: React.FC<Props> = ({
             style={[styles.actionButton, { borderColor: theme.colors.border }]}
             onPress={onRefresh}
           >
-            <Text
-              style={[
-                styles.actionText,
-                { color: theme.colors.text.secondary },
-              ]}
-            >
+            <Text style={[styles.actionText, { color: theme.colors.text.secondary }]}>
               🔄 Refresh
             </Text>
           </TouchableOpacity>
@@ -287,10 +206,8 @@ export const GridCarbonWidget: React.FC<Props> = ({
 
       {/* Source & Timestamp */}
       <Text style={[styles.timestamp, { color: theme.colors.text.tertiary }]}>
-        {intensity.source === 'fallback'
-          ? 'Estimated data'
-          : `Via ${intensity.source}`}{' '}
-        • {new Date(intensity.timestamp).toLocaleTimeString()}
+        {intensity.source === 'fallback' ? 'Estimated data' : `Via ${intensity.source}`} •{' '}
+        {new Date(intensity.timestamp).toLocaleTimeString()}
       </Text>
     </View>
   );

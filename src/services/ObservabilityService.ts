@@ -409,10 +409,13 @@ class ObservabilityService {
 
     const errors = this.businessMetricsBuffer.filter(e => e.eventName === 'error_occurred');
 
-    const eventCounts = this.businessMetricsBuffer.reduce((acc, event) => {
-      acc[event.eventName] = (acc[event.eventName] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const eventCounts = this.businessMetricsBuffer.reduce(
+      (acc, event) => {
+        acc[event.eventName] = (acc[event.eventName] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const topEvents = Object.entries(eventCounts)
       .sort((a, b) => b[1] - a[1])

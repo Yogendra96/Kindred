@@ -18,7 +18,7 @@ features implemented in the Kindred React Native application.
 
 - Conditional Flipper support (disabled via `NO_FLIPPER` environment variable)
 - Enhanced network inspection
-- Redux DevTools integration
+- Zustand DevTools integration
 - Performance monitoring
 - AsyncStorage inspection
 

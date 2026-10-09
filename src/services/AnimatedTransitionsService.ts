@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import HapticFeedbackService from './HapticFeedbackService';
 import { createSingleton } from '../utils/Singleton';
@@ -95,7 +94,7 @@ export interface LoopTransition {
 
 export interface InterpolationConfig {
   inputRange: number[];
-  outputRange: (number | string)[];
+  outputRange: number[] | string[];
   extrapolate?: 'extend' | 'identity' | 'clamp';
   extrapolateLeft?: 'extend' | 'identity' | 'clamp';
   extrapolateRight?: 'extend' | 'identity' | 'clamp';
@@ -774,7 +773,7 @@ class AnimatedTransitionsService {
   createInterpolation(
     animatedValue: Animated.Value,
     config: InterpolationConfig,
-  ): Animated.AnimatedInterpolation {
+  ): Animated.AnimatedInterpolation<number | string> {
     return animatedValue.interpolate({
       inputRange: config.inputRange,
       outputRange: config.outputRange,

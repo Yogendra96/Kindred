@@ -1,10 +1,8 @@
-import { store } from '../store';
+import React from 'react';
 import { ThemeProvider } from '../theme/ThemeProvider';
 import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, RenderOptions } from '@testing-library/react-native';
-import React from 'react';
-import { Provider } from 'react-redux';
 
 // Global type declarations
 declare global {
@@ -26,8 +24,6 @@ declare namespace JSX {
 // Enhanced test utilities for comprehensive testing
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  preloadedState?: any;
-  store?: any;
   theme?: 'light' | 'dark';
   navigation?: boolean;
   queryClient?: QueryClient;
@@ -35,19 +31,18 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 
 /**
  * Custom render function with all providers
+ * Zustand stores don't need Providers — access them directly via hooks in tests.
  */
 export function renderWithProviders(
   ui: React.ReactElement,
   {
-    preloadedState = {},
-    store: testStore = store,
     theme = 'light',
     navigation = true,
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
           retry: false,
-          cacheTime: 0,
+          gcTime: 0,
         },
       },
     }),
@@ -56,11 +51,9 @@ export function renderWithProviders(
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     let wrappedChildren = (
-      <Provider store={testStore}>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
-        </QueryClientProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
+      </QueryClientProvider>
     );
 
     if (navigation) {
@@ -71,7 +64,6 @@ export function renderWithProviders(
   }
 
   return {
-    store: testStore,
     queryClient,
     ...render(ui, { wrapper: Wrapper, ...renderOptions }),
   };

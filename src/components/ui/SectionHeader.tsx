@@ -12,11 +12,7 @@ interface SectionHeaderProps {
   style?: import('react-native').ViewStyle;
 }
 
-const SectionHeader: React.FC<SectionHeaderProps> = ({
-  title,
-  subtitle,
-  style,
-}) => (
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle, style }) => (
   <View style={[styles.container, style]}>
     <Text style={styles.title}>{title}</Text>
     {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}

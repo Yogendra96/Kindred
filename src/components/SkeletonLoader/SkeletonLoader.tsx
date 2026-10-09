@@ -1,8 +1,7 @@
-// @ts-nocheck
 /* eslint-disable */
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
-import type { ViewStyle, ColorValue } from 'react-native';
+import type { ViewStyle, ColorValue, DimensionValue } from 'react-native';
 import { View, Animated, StyleSheet, Dimensions } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -83,6 +82,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       animation.start();
       return () => animation.stop();
     }
+    return undefined;
   }, [isLoading, shimmerAnimation, shimmerSpeed]);
 
   if (!isLoading && children) {
@@ -129,7 +129,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     <View
       style={[
         {
-          width,
+          width: width as DimensionValue,
           height,
           borderRadius,
           backgroundColor: shimmerColors[0],

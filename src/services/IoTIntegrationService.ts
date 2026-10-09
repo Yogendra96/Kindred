@@ -753,9 +753,12 @@ class IoTIntegrationService {
       clearInterval(this.syncTimers.get(deviceId)!);
     }
 
-    const timer = setInterval(async () => {
-      await this.syncDeviceData(deviceId);
-    }, this.config.syncInterval * 60 * 1000);
+    const timer = setInterval(
+      async () => {
+        await this.syncDeviceData(deviceId);
+      },
+      this.config.syncInterval * 60 * 1000,
+    );
 
     this.syncTimers.set(deviceId, timer);
   }

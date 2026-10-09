@@ -30,14 +30,10 @@ httpClient.interceptors.request.use(
     // In a real app we'd retrieve this from SecureStore
     // config.headers.Authorization = `Bearer ${token}`;
 
-    logger.debug(
-      'HttpService',
-      `⬇️ Request: ${config.method?.toUpperCase()} ${config.url}`,
-      {
-        params: config.params,
-        headers: config.headers,
-      },
-    );
+    logger.debug('HttpService', `⬇️ Request: ${config.method?.toUpperCase()} ${config.url}`, {
+      params: config.params,
+      headers: config.headers,
+    });
 
     // Add performance marker
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,13 +54,9 @@ httpClient.interceptors.response.use(
     const startTime = (response.config as any)?.metadata?.startTime;
     const latency = startTime ? Date.now() - startTime : undefined;
 
-    logger.info(
-      'HttpService',
-      `⬆️ Response: ${response.status} ${response.config.url}`,
-      {
-        latencyMs: latency,
-      },
-    );
+    logger.info('HttpService', `⬆️ Response: ${response.status} ${response.config.url}`, {
+      latencyMs: latency,
+    });
 
     return response;
   },
@@ -74,9 +66,7 @@ httpClient.interceptors.response.use(
 
     // Map axios error to domain error types
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      throw new TimeoutError(
-        `Request to ${url} timed out after ${TIMEOUT_MS}ms`,
-      );
+      throw new TimeoutError(`Request to ${url} timed out after ${TIMEOUT_MS}ms`);
     }
 
     if (error.response) {

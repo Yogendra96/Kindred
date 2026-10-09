@@ -148,14 +148,7 @@ export interface AutomaticMobilityTracking {
 interface TransportationMode {
   readonly modeId: string;
   readonly type:
-    | 'walking'
-    | 'cycling'
-    | 'car'
-    | 'bus'
-    | 'train'
-    | 'plane'
-    | 'motorcycle'
-    | 'scooter';
+    'walking' | 'cycling' | 'car' | 'bus' | 'train' | 'plane' | 'motorcycle' | 'scooter';
   readonly confidence: number;
   readonly duration: number; // minutes
   readonly distance: number; // km
@@ -637,13 +630,7 @@ interface ActivityRecognition {
 interface RecognizedActivity {
   readonly activityId: string;
   readonly type:
-    | 'sitting'
-    | 'standing'
-    | 'walking'
-    | 'running'
-    | 'cycling'
-    | 'exercising'
-    | 'sleeping';
+    'sitting' | 'standing' | 'walking' | 'running' | 'cycling' | 'exercising' | 'sleeping';
   readonly duration: number;
   readonly intensity: 'low' | 'medium' | 'high';
   readonly location: string;

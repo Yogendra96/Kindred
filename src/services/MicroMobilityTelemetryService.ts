@@ -31,8 +31,7 @@ export class MicroMobilityTelemetryService {
 
   public static getInstance(): MicroMobilityTelemetryService {
     if (!MicroMobilityTelemetryService.instance) {
-      MicroMobilityTelemetryService.instance =
-        new MicroMobilityTelemetryService();
+      MicroMobilityTelemetryService.instance = new MicroMobilityTelemetryService();
     }
     return MicroMobilityTelemetryService.instance;
   }
@@ -134,10 +133,7 @@ export class MicroMobilityTelemetryService {
         existing = existing.slice(existing.length - 5000);
       }
 
-      await AsyncStorage.setItem(
-        TELEMETRY_STORAGE_KEY,
-        JSON.stringify(existing),
-      );
+      await AsyncStorage.setItem(TELEMETRY_STORAGE_KEY, JSON.stringify(existing));
     } catch (e) {
       log.error('Failed to write telemetry payload to Edge buffer', e);
     }
@@ -164,5 +160,4 @@ export class MicroMobilityTelemetryService {
   }
 }
 
-export const microMobilityTelemetryService =
-  MicroMobilityTelemetryService.getInstance();
+export const microMobilityTelemetryService = MicroMobilityTelemetryService.getInstance();

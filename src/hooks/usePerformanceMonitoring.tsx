@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { analyticsService } from '../services/AnalyticsService';
 import { modernAPMService } from '../services/ModernAPMService';
@@ -9,15 +8,9 @@ import { AppState } from 'react-native';
 
 // Global type declarations
 declare global {
-  var __DEV__: boolean;
   namespace NodeJS {
     interface Timeout {}
   }
-}
-
-// React Native module declaration
-declare module 'react-native' {
-  export * from 'react-native';
 }
 
 interface PerformanceMetrics {
@@ -177,7 +170,10 @@ export const usePerformanceMonitoring = (
 
       // Track slow renders
       if (trackSlowRenders && isSlow) {
-        logger.current.warn(`Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`);
+        logger.current.warn(
+          'usePerformanceMonitoring',
+          `Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`,
+        );
 
         if (enableAnalytics) {
           analyticsServiceRef.current.trackEvent(

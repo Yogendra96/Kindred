@@ -1,5 +1,3 @@
-import type { OffsetTransaction } from '../store/slices/carbonSlice';
-
 export interface VerifiedProject {
   id: string;
   name: string;
@@ -145,7 +143,7 @@ export class OffsetProviderService {
     return VERIFIED_PROJECTS;
   }
 
-  public purchaseOffset(projectId: string, tons: number): OffsetTransaction {
+  public purchaseOffset(projectId: string, tons: number): any {
     const project = VERIFIED_PROJECTS.find(p => p.id === projectId);
     if (!project) {
       throw new Error(`Project with ID ${projectId} not found.`);

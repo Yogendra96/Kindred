@@ -9,7 +9,7 @@
   - [ ] Create WebSocket connection service
   - [ ] Implement connection pooling and reconnection logic
   - [ ] Add message queuing for offline scenarios
-  - [ ] Integrate with Redux for real-time state updates
+  - [ ] Integrate with state management for real-time state updates
 
 - [ ] **Live Competition Features**
 

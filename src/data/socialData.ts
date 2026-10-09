@@ -181,13 +181,7 @@ export const GROUPS = [
 
 export type Group = (typeof GROUPS)[number];
 
-export const CHALLENGE_FILTER_TABS = [
-  'All',
-  'Daily',
-  'Weekly',
-  'Monthly',
-  'Global',
-] as const;
+export const CHALLENGE_FILTER_TABS = ['All', 'Daily', 'Weekly', 'Monthly', 'Global'] as const;
 export type ChallengeFilter = (typeof CHALLENGE_FILTER_TABS)[number];
 
 export const LEADERBOARD_SCOPES = ['Friends', 'City', 'Global'] as const;

@@ -4,25 +4,10 @@
  */
 import hapticFeedbackService from '../../services/HapticFeedbackService';
 import { useTheme } from '../../theme/ThemeProvider';
-import {
-  accessibilityService,
-  AccessibilityUtils,
-} from '../../utils/accessibility';
+import { accessibilityService, AccessibilityUtils } from '../../utils/accessibility';
 import React, { useCallback, useRef, useState } from 'react';
-import type {
-  AccessibilityState,
-  AccessibilityRole,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
-import {
-  TouchableOpacity,
-  Text,
-  View,
-  StyleSheet,
-  Platform,
-  Animated,
-} from 'react-native';
+import type { AccessibilityState, AccessibilityRole, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet, Platform, Animated } from 'react-native';
 
 export interface AccessibleButtonProps {
   // Content
@@ -96,10 +81,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
   // Use legacy props if new props not provided
   const finalAccessibilityLabel =
-    accessibilityLabel ||
-    label ||
-    title ||
-    (typeof children === 'string' ? children : 'Button');
+    accessibilityLabel || label || title || (typeof children === 'string' ? children : 'Button');
   const finalAccessibilityHint = accessibilityHint || hint;
 
   // Handle press with accessibility features
@@ -113,9 +95,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
 
     // Announce button press for screen readers
     if (announcePress && finalAccessibilityLabel) {
-      accessibilityService.announceForAccessibility(
-        `${finalAccessibilityLabel} pressed`,
-      );
+      accessibilityService.announceForAccessibility(`${finalAccessibilityLabel} pressed`);
     }
 
     // Scale animation for visual feedback
@@ -368,12 +348,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   };
 
   return (
-    <Animated.View
-      style={[
-        { transform: [{ scale: scaleAnim }] },
-        fullWidth && styles.fullWidth,
-      ]}
-    >
+    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && styles.fullWidth]}>
       <TouchableOpacity
         {...accessibilityProps}
         style={[
@@ -400,11 +375,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
         onPressOut={handlePressOut}
         disabled={disabled || loading}
         activeOpacity={0.8}
-        hitSlop={
-          minimumTouchTarget
-            ? { top: 10, bottom: 10, left: 10, right: 10 }
-            : undefined
-        }
+        hitSlop={minimumTouchTarget ? { top: 10, bottom: 10, left: 10, right: 10 } : undefined}
       >
         {loading ? (
           <View style={styles.loadingContainer}>

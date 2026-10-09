@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { jest } from '@jest/globals';
 import '@testing-library/jest-native/extend-expect';
@@ -354,7 +353,7 @@ jest.mock('@react-native-community/geolocation', () => ({
 }));
 
 // Global test utilities
-global.fetch = jest.fn();
+global.fetch = jest.fn() as unknown as typeof fetch;
 
 // Silence the warning: Animated: `useNativeDriver` is not supported
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');

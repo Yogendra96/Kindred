@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
 import { MotiView } from 'moti';
-import { PlayCircle, Article, Question, CaretLeft, CheckCircle } from 'phosphor-react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
+import { PlayCircle, Article, Question, CheckCircle } from 'phosphor-react-native';
 import { useToast } from '../../contexts/ToastContext';
 import { spatialColors, typography, animations } from '../../theme/theme';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 // ─── Data imported from ../../data/learningData ───────────────────────────────
 
@@ -200,7 +200,14 @@ const LearningCenterScreen = () => {
   const [selectedTopic, setSelectedTopic] = useState('All');
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set(['a1', 'a4']));
   const { showToast } = useToast();
-  const navigation = useNavigation();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
   const filtered =
     selectedTopic === 'All' ? ARTICLES : ARTICLES.filter(a => a.topic === selectedTopic);
@@ -222,21 +229,9 @@ const LearningCenterScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <MotiView
-        style={styles.header}
-        from={{ opacity: 0, translateY: -20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={animations.spring.gentle}
-      >
-        <View style={styles.titleRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <CaretLeft size={24} color={spatialColors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.title}>Learning Center</Text>
-        </View>
-        <Text style={styles.subtitle}>Articles · Videos · Quizzes</Text>
+    <SpaceBackground earthPosition='top-right' enableComets={true}>
+      <SubScreenHeader title='Learning Center' subtitle='Articles · Videos · Quizzes' />
+      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
         <View style={styles.progressRow}>
           <View style={styles.progressTrack}>
             <MotiView
@@ -250,7 +245,7 @@ const LearningCenterScreen = () => {
             {completedIds.size}/{ARTICLES.length} completed
           </Text>
         </View>
-      </MotiView>
+      </View>
 
       {/* Topic filter */}
       <MotiView
@@ -297,43 +292,22 @@ const LearningCenterScreen = () => {
             <Text style={styles.emptyText}>No content yet for this topic.</Text>
           </View>
         }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
       />
-    </View>
+    </SpaceBackground>
   );
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: spatialColors.background },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: spatialColors.glassBorderDark,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { ...typography.title1, color: spatialColors.textPrimary },
-  subtitle: {
-    ...typography.body,
-    color: spatialColors.textSecondary,
-    marginTop: 4,
-    marginLeft: 52,
-  },
-
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',

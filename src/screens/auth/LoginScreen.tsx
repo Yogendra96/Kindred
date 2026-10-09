@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import type { AuthStackParamList } from '../../navigation/types';
 import auth from '@react-native-firebase/auth';
@@ -57,7 +56,14 @@ const LoginScreen = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const { idToken } = await GoogleSignin.signIn();
+      const signInResponse = await GoogleSignin.signIn();
+      if (signInResponse.type !== 'success') {
+        throw new Error('Google sign in was cancelled');
+      }
+      const { idToken } = signInResponse.data;
+      if (!idToken) {
+        throw new Error('Google sign in failed: no id token returned');
+      }
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(googleCredential);
     } catch (error) {
@@ -82,7 +88,7 @@ const LoginScreen = () => {
           accessibilityLabel='Kindred app logo'
           accessibilityRole='image'
         />
-        <Text style={styles.title} accessibilityRole='header' accessibilityLevel={1}>
+        <Text style={styles.title} accessibilityRole='header'>
           Welcome to Kindred
         </Text>
       </View>
@@ -107,8 +113,6 @@ const LoginScreen = () => {
           keyboardType='email-address'
           accessibilityLabel='Email address'
           accessibilityHint='Enter your email address to log in'
-          accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e => e.includes('Email'))}
         />
         <TextInput
           style={[styles.input, formErrors.some(e => e.includes('Password')) && styles.inputError]}
@@ -118,8 +122,6 @@ const LoginScreen = () => {
           secureTextEntry
           accessibilityLabel='Password'
           accessibilityHint='Enter your password to log in'
-          accessibilityRequired={true}
-          accessibilityInvalid={formErrors.some(e => e.includes('Password'))}
         />
 
         <TouchableOpacity

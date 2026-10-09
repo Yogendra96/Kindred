@@ -393,20 +393,11 @@ export type StorageKey = keyof typeof STORAGE_KEYS;
 export const getEmissionFactor = (category: string, type: string): number => {
   switch (category) {
     case 'transport':
-      return (
-        EMISSION_FACTORS.TRANSPORT[
-          type as keyof typeof EMISSION_FACTORS.TRANSPORT
-        ] ?? 0
-      );
+      return EMISSION_FACTORS.TRANSPORT[type as keyof typeof EMISSION_FACTORS.TRANSPORT] ?? 0;
     case 'energy':
-      return (
-        EMISSION_FACTORS.ENERGY[type as keyof typeof EMISSION_FACTORS.ENERGY] ??
-        0
-      );
+      return EMISSION_FACTORS.ENERGY[type as keyof typeof EMISSION_FACTORS.ENERGY] ?? 0;
     case 'food':
-      return (
-        EMISSION_FACTORS.FOOD[type as keyof typeof EMISSION_FACTORS.FOOD] ?? 0
-      );
+      return EMISSION_FACTORS.FOOD[type as keyof typeof EMISSION_FACTORS.FOOD] ?? 0;
     default:
       return 0;
   }
@@ -415,8 +406,7 @@ export const getEmissionFactor = (category: string, type: string): number => {
 export const getTransportModeConfig = (modeId: string) =>
   TRANSPORT_MODES.find(mode => mode.id === modeId);
 
-export const getFuelTypeConfig = (fuelId: string) =>
-  FUEL_TYPES.find(fuel => fuel.id === fuelId);
+export const getFuelTypeConfig = (fuelId: string) => FUEL_TYPES.find(fuel => fuel.id === fuelId);
 
 export const calculateTreesEquivalent = (carbonKg: number): number =>
   Math.ceil(carbonKg / CARBON_CONVERSION.TREES_PER_TON_CO2);

@@ -1,9 +1,8 @@
 import { getTheme, type ThemeMode, type Theme } from './theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { RootState } from '@store/index';
+import { useAppStore } from '../store/useAppStore';
 import React, { createContext, useContext, useEffect } from 'react';
 import { Appearance } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
 
 type ThemeContextType = {
   theme: ReturnType<typeof getTheme>;
@@ -30,13 +29,9 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const dispatch = useDispatch();
-  const themePreference = useSelector(
-    (state: RootState) => state.user?.preferences?.theme ?? 'light',
-  );
-  const highContrastPreference = useSelector(
-    (state: RootState) => state.user?.preferences?.highContrast ?? false,
-  );
+  const themePreference = useAppStore(state => state.preferences.theme);
+  const updatePreferences = useAppStore(state => state.updatePreferences);
+  const highContrastPreference = themePreference === 'highContrast';
   const [highContrast, setHighContrast] = React.useState(highContrastPreference);
   const [systemScheme, setSystemScheme] = React.useState<'light' | 'dark'>('light');
 
@@ -50,10 +45,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ['light', 'dark', 'system', 'highContrast'].includes(savedTheme) &&
           savedTheme !== themePreference
         ) {
-          dispatch({
-            type: 'user/updatePreferences',
-            payload: { theme: savedTheme as ThemeMode },
-          });
+          updatePreferences({ theme: savedTheme as any });
         }
       } catch (error) {
         console.error('Error loading theme preference:', error);
@@ -61,7 +53,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     loadThemePreference();
-  }, [dispatch]); // Only run on mount
+  }, []); // Only run on mount
 
   React.useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
@@ -82,10 +74,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               setHighContrast(parsedValue);
               // Update Redux if the stored value is different
               if (parsedValue !== highContrastPreference) {
-                dispatch({
-                  type: 'user/updatePreferences',
-                  payload: { highContrast: parsedValue },
-                });
+                // dispatch({
+                //                  type: 'user/updatePreferences',
+                //                  payload: { highContrast: parsedValue },
+                //                });
               }
             }
           } catch (parseError) {
@@ -98,7 +90,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     loadHighContrastPreference();
-  }, [dispatch]); // Only run on mount
+  }, []); // Only run on mount
 
   // Keep local state in sync with Redux
   React.useEffect(() => {
@@ -126,10 +118,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newTheme = isDark ? 'light' : 'dark';
     try {
       await AsyncStorage.setItem('@theme_preference', newTheme);
-      dispatch({
-        type: 'user/updatePreferences',
-        payload: { theme: newTheme },
-      });
+      updatePreferences({ theme: newTheme });
     } catch (error) {
       console.error('Error toggling theme:', error);
     }
@@ -142,7 +131,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     try {
       await AsyncStorage.setItem('@theme_preference', mode);
-      dispatch({ type: 'user/updatePreferences', payload: { theme: mode } });
+      updatePreferences({ theme: mode });
     } catch (error) {
       console.error('Error setting theme:', error);
     }
@@ -153,10 +142,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       setHighContrast(newHighContrast);
       await AsyncStorage.setItem('@high_contrast_preference', JSON.stringify(newHighContrast));
-      dispatch({
-        type: 'user/updatePreferences',
-        payload: { highContrast: newHighContrast },
-      });
+      updatePreferences({ theme: newHighContrast ? 'highContrast' : 'light' });
     } catch (error) {
       console.error('Error toggling high contrast mode:', error);
     }

@@ -12,11 +12,7 @@ interface EmptyStateProps {
   sub?: string;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({
-  emoji = '🔍',
-  message,
-  sub,
-}) => (
+const EmptyState: React.FC<EmptyStateProps> = ({ emoji = '🔍', message, sub }) => (
   <View style={styles.container}>
     <Text style={styles.emoji}>{emoji}</Text>
     <Text style={styles.message}>{message}</Text>

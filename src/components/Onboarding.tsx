@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import { AnimatedTouchable, AnimatedProgress } from './MicroInteractions';

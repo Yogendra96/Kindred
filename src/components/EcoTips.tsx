@@ -97,9 +97,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       }
 
       setTips(currentTips =>
-        currentTips.map(t =>
-          t.id === tip.id ? { ...t, completed: !t.completed } : t,
-        ),
+        currentTips.map(t => (t.id === tip.id ? { ...t, completed: !t.completed } : t)),
       );
     } catch (error) {
       console.error('Error updating tip completion:', error);
@@ -179,8 +177,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'f2',
         title: 'Buy Local Produce',
-        description:
-          'Local food requires less transportation and often uses fewer preservatives.',
+        description: 'Local food requires less transportation and often uses fewer preservatives.',
         impact: 'medium',
         category: 'food',
         icon: require('@assets/icons/local-market.png'),
@@ -190,8 +187,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w1',
         title: 'Start Composting',
-        description:
-          'Composting organic waste reduces methane emissions from landfills.',
+        description: 'Composting organic waste reduces methane emissions from landfills.',
         impact: 'medium',
         category: 'waste',
         icon: require('@assets/icons/compost.png'),
@@ -200,8 +196,7 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
       {
         id: 'w2',
         title: 'Improve Recycling',
-        description:
-          'Proper recycling can reduce waste-related emissions by up to 30%.',
+        description: 'Proper recycling can reduce waste-related emissions by up to 30%.',
         impact: 'medium',
         category: 'waste',
         icon: require('@assets/icons/recycle.png'),
@@ -257,43 +252,25 @@ const EcoTips: React.FC<Props> = ({ carbonData, onTipPress }) => {
         {personalizedTips.map(tip => (
           <TouchableOpacity
             key={tip.id}
-            style={[
-              styles.tipCard,
-              { backgroundColor: theme.colors.background },
-            ]}
+            style={[styles.tipCard, { backgroundColor: theme.colors.background }]}
             onPress={() => onTipPress?.(tip)}
           >
             <Image source={tip.icon} style={styles.icon} />
             <View style={styles.tipContent}>
-              <Text
-                style={[styles.tipTitle, { color: theme.colors.text.primary }]}
-              >
+              <Text style={[styles.tipTitle, { color: theme.colors.text.primary }]}>
                 {tip.title}
               </Text>
               <Text
-                style={[
-                  styles.tipDescription,
-                  { color: theme.colors.text.secondary },
-                ]}
+                style={[styles.tipDescription, { color: theme.colors.text.secondary }]}
                 numberOfLines={2}
               >
                 {tip.description}
               </Text>
               <View style={styles.impactContainer}>
-                <Text
-                  style={[
-                    styles.impactLabel,
-                    { color: theme.colors.text.secondary },
-                  ]}
-                >
+                <Text style={[styles.impactLabel, { color: theme.colors.text.secondary }]}>
                   Impact:
                 </Text>
-                <Text
-                  style={[
-                    styles.impactValue,
-                    { color: getImpactColor(tip.impact) },
-                  ]}
-                >
+                <Text style={[styles.impactValue, { color: getImpactColor(tip.impact) }]}>
                   {tip.impact.toUpperCase()}
                 </Text>
               </View>

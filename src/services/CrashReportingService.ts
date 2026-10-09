@@ -1,7 +1,5 @@
-// @ts-nocheck
 /* eslint-disable */
 import analytics from '@react-native-firebase/analytics';
-import { firebase } from '@react-native-firebase/app';
 import crashlytics from '@react-native-firebase/crashlytics';
 
 interface ErrorContext {
@@ -18,7 +16,7 @@ export class CrashReportingService {
     if (this.isInitialized) return;
 
     try {
-      await firebase.crashlytics().setCrashlyticsCollectionEnabled(true);
+      await crashlytics().setCrashlyticsCollectionEnabled(true);
       this.isInitialized = true;
       console.log('Crash reporting initialized successfully');
     } catch (error) {
@@ -37,10 +35,10 @@ export class CrashReportingService {
   static async logError(error: Error, context?: ErrorContext): Promise<void> {
     try {
       // Log to crashlytics
-      await crashlytics().recordError(error, {
-        ...context,
-        timestamp: Date.now(),
-      });
+      await crashlytics().recordError(
+        error,
+        JSON.stringify({ ...context, timestamp: Date.now() }),
+      );
 
       // Log to analytics
       await analytics().logEvent('app_error', {
@@ -105,12 +103,12 @@ export class CrashReportingService {
     }
   }
 
-  static enableCollection(): Promise<void> {
-    return crashlytics().setCrashlyticsCollectionEnabled(true);
+  static async enableCollection(): Promise<void> {
+    await crashlytics().setCrashlyticsCollectionEnabled(true);
   }
 
-  static disableCollection(): Promise<void> {
-    return crashlytics().setCrashlyticsCollectionEnabled(false);
+  static async disableCollection(): Promise<void> {
+    await crashlytics().setCrashlyticsCollectionEnabled(false);
   }
 
   static async handleUnhandledRejection(promise: Promise<any>): Promise<void> {

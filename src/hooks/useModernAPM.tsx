@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { AnalyticsService } from '../services/AnalyticsService';
 import { ModernAPMService } from '../services/ModernAPMService';
@@ -137,7 +136,7 @@ export const useModernAPM = (options: UseModernAPMOptions = {}): PerformanceHook
       apmService.current.recordRenderMetric(componentName, renderTime);
 
       if (trackSlowRenders && isSlow) {
-        logger.current.warn(`Slow render in ${componentName}: ${renderTime.toFixed(2)}ms`);
+        logger.current.warn('useModernAPM', `Slow render in ${componentName}: ${renderTime.toFixed(2)}ms`);
         if (enableAnalytics) {
           analyticsService.current.trackError(`Slow render in ${componentName}`, {
             render_time: renderTime,

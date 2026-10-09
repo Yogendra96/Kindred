@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * @fileoverview Form Validation Utilities
@@ -18,7 +17,7 @@ import { TransportationSchema, EnergySchema, FoodSchema } from '../schemas/carbo
 
 export interface ValidationRule<T> {
   field: keyof T;
-  validator: (value: any, formData: T) => string | null;
+  validator: (value: any, formData?: T) => string | null;
   required?: boolean;
 }
 
@@ -30,7 +29,7 @@ export interface ValidationResult<T> {
 }
 
 export interface ValidationSchema<T> {
-  rules: ValidationRule<T>[];
+  rules: ReadonlyArray<ValidationRule<T>>;
   customValidators?: Array<(data: T) => Partial<Record<keyof T, string>>>;
 }
 
@@ -483,7 +482,9 @@ export const combineValidationResults = <T>(
   }
 
   const errorCount = Object.keys(combinedErrors).length;
-  const firstError = errorCount > 0 ? Object.values(combinedErrors)[0] : undefined;
+  const firstError = errorCount > 0
+    ? (Object.values(combinedErrors)[0] as string | undefined)
+    : undefined;
 
   return {
     isValid,

@@ -1,4 +1,5 @@
 /* global window, navigator */
+declare var window: any;
 import _analytics from '@react-native-firebase/analytics';
 import type { ErrorInfo, ReactNode } from 'react';
 import React, { Component } from 'react';
@@ -56,9 +57,7 @@ class ErrorBoundary extends Component<Props, State> {
               <Text style={styles.buttonText}>Restart App</Text>
             </TouchableOpacity>
           </View>
-          {__DEV__ && (
-            <Text style={styles.stackTrace}>{this.state.error?.stack}</Text>
-          )}
+          {__DEV__ && <Text style={styles.stackTrace}>{this.state.error?.stack}</Text>}
         </View>
       );
     }

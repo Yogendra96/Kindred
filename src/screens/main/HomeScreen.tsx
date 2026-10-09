@@ -1,6 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Dimensions,
+  RefreshControl,
+} from 'react-native';
+import auth from '@react-native-firebase/auth';
+import functions from '@react-native-firebase/functions';
+import { useCarbon, useSDG } from '../../hooks/useFirebaseData';
+import { useRewardedAd } from '../../hooks/useRewardedAd';
+import { useAppStore } from '../../store/useAppStore';
+import { useToast } from '../../contexts/ToastContext';
 import Svg, {
   LinearGradient as SvgLinearGradient,
   Defs,
@@ -24,58 +37,153 @@ import {
   Tree,
   ArrowUpRight,
   Sparkle,
+  Trophy,
+  Lightning,
+  Drop,
+  Wind,
+  Buildings,
 } from 'phosphor-react-native';
+import { TouchableOpacity, Alert } from 'react-native';
 
-import type { RootState } from '../../store';
-import { updateFootprint } from '../../store/slices/carbonSlice';
 import { useClimateNotifications } from '../../hooks/useClimateNotifications';
 import { spatialColors, animations } from '../../theme/theme';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+
+// ─── SDG Badge definitions ────────────────────────────────────────────────────
+const SDG_BADGES = [
+  {
+    key: 'sdg7',
+    number: '07',
+    label: 'Clean Energy',
+    emoji: '⚡',
+    color: '#FF9500',
+    detail:
+      'SDG 7: Ensure access to affordable, reliable, sustainable and modern energy for all. Every kWh you save or generate from clean sources counts.',
+  },
+  {
+    key: 'sdg11',
+    number: '11',
+    label: 'Sustainable Cities',
+    emoji: '🏙️',
+    color: '#FF6B35',
+    detail:
+      'SDG 11: Make cities inclusive, safe, resilient and sustainable. Choosing public transit, cycling, or walking directly contributes to this goal.',
+  },
+  {
+    key: 'sdg12',
+    number: '12',
+    label: 'Responsible Consumption',
+    emoji: '♻️',
+    color: '#F2C94C',
+    detail:
+      'SDG 12: Ensure sustainable consumption and production patterns. Thrift shopping, recycling, and reducing food waste all move the needle here.',
+  },
+  {
+    key: 'sdg13',
+    number: '13',
+    label: 'Climate Action',
+    emoji: '🌡️',
+    color: '#2B86FA',
+    detail:
+      'SDG 13: Take urgent action to combat climate change and its impacts. Every kg CO₂ you avoid logging directly contributes to this goal.',
+  },
+  {
+    key: 'sdg15',
+    number: '15',
+    label: 'Life on Land',
+    emoji: '🌱',
+    color: '#38EF7D',
+    detail:
+      'SDG 15: Protect, restore and promote sustainable use of terrestrial ecosystems. Vegan meals and plant-based choices protect biodiversity.',
+  },
+];
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const GlassCard = ({ style, children }: any) => (
-  <View
-    style={[
-      style,
-      {
-        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-        borderColor: 'rgba(255, 255, 255, 0.08)',
-        borderWidth: 1,
-        overflow: 'hidden',
-      },
-    ]}
-  >
-    {children}
-  </View>
-);
-
 const HomeScreen = ({ navigation }: any) => {
-  const dispatch = useDispatch();
-  const carbon = useSelector((state: RootState) => state.carbon);
-  const footprint = carbon?.footprint || {
+  const carbon = useCarbon();
+  const sdg = useSDG();
+
+  // ── Rewarded ad hook & consent ──────────────────────────────────────
+  const { isLoaded, isWatched, show, adError } = useRewardedAd();
+  const { preferences } = useAppStore();
+  const { showToast } = useToast();
+  const [adRequested, setAdRequested] = useState(false);
+
+  // Extract needed data from hooks
+  const totalCarbon = carbon.currentFootprint?.total ?? 0;
+  const currentTotalScore = sdg.esg?.total ?? 0;
+
+  const currentLevel = Math.floor(totalCarbon / 100) + 1;
+  const currentXP = totalCarbon % 100;
+
+  const user = auth().currentUser;
+  const profileName = user?.displayName || 'Eco Explorer';
+  const esg = (sdg as any)?.esg ?? {
+    total: 0,
+    grade: 'C',
+    breakdown: { environmental: 0, social: 0, governance: 0 },
+  };
+  const sdgProgress = (sdg as any)?.progress ?? {};
+  const footprint = (carbon as any)?.footprint || {
     total: 0,
     transportation: 0,
     food: 0,
     energy: 0,
     waste: 0,
   };
-  const error = carbon?.error || null;
-  const user = useSelector((state: RootState) => state.user);
-  const profile = user?.profile || {
-    id: '',
-    name: '',
-    email: '',
-    avatar: null,
-    bio: null,
-  };
+  const error = (carbon as any)?.error || null;
 
   const handleAddActivity = (type: string, amount: number) => {
-    dispatch(
-      updateFootprint({
-        [type]: footprint[type as keyof typeof footprint] + amount,
-      }),
+    if (!preferences.consentAccepted) {
+      return;
+    }
+
+    Alert.alert(
+      'Activity Logged! 🌱',
+      'Want to multiply your impact? Watch a short ad to donate $0.50!',
+      [
+        { text: 'Maybe Later', style: 'cancel' },
+        {
+          text: 'Watch & Donate',
+          style: 'default',
+          onPress: () => {
+            if (isLoaded) {
+              setAdRequested(true);
+              show();
+            } else {
+              showToast('Ad not ready yet — try again in a moment.', 'warning');
+            }
+          },
+        },
+      ],
     );
   };
+
+  // ── Ad completion → claim reward via Cloud Function ────────────────
+  useEffect(() => {
+    if (!isWatched || !adRequested) return;
+
+    setAdRequested(false);
+
+    const claimReward = async () => {
+      try {
+        const callable = functions().httpsCallable('onAdRewardVerified');
+        const result = await callable();
+        const data = result.data as { success: boolean; amountCents: number };
+        if (data.success) {
+          const dollars = (data.amountCents / 100).toFixed(2);
+          showToast(`Ad complete! $${dollars} donated to climate action! 🌍`, 'success');
+        }
+      } catch (err: any) {
+        const msg = err?.message || 'Failed to claim ad reward.';
+        showToast(msg, 'error');
+      }
+    };
+
+    claimReward();
+  }, [isWatched, adRequested, showToast]);
 
   useClimateNotifications({ lat: 40.7128, lng: -74.006 });
 
@@ -123,70 +231,28 @@ const HomeScreen = ({ navigation }: any) => {
     return Math.round(totalVal / increment);
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Background Gradient */}
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0A0E12' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#12181F' stopOpacity='1' />
-            <Stop offset='1' stopColor='#0A0E12' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
-
-      {/* Animated Cartoon Earth Background */}
-      <MotiView
-        from={{ rotate: '0deg' }}
-        animate={{ rotate: '360deg' }}
-        transition={
-          {
-            loop: true,
-            type: 'timing',
-            duration: 45000,
-            repeatReverse: false,
-          } as any
+    <SpaceBackground earthPosition='top-right' enableComets={true} cometStyle='tapered'>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
         }
-        style={styles.earthBackground}
       >
-        <Svg width={260} height={260} viewBox='0 0 200 200'>
-          <Defs>
-            <SvgLinearGradient id='oceanGrad' x1='0' y1='0' x2='1' y2='1'>
-              <Stop offset='0' stopColor='#3a7bd5' />
-              <Stop offset='1' stopColor='#00d2ff' />
-            </SvgLinearGradient>
-            <SvgLinearGradient id='landGrad' x1='0' y1='0' x2='1' y2='1'>
-              <Stop offset='0' stopColor='#11998e' />
-              <Stop offset='1' stopColor='#38ef7d' />
-            </SvgLinearGradient>
-          </Defs>
-          {/* Atmosphere Glow */}
-          <Circle cx='100' cy='100' r='98' fill='rgba(0, 210, 255, 0.12)' />
-          <Circle cx='100' cy='100' r='90' fill='rgba(56, 239, 125, 0.06)' />
-          {/* Ocean */}
-          <Circle cx='100' cy='100' r='80' fill='url(#oceanGrad)' />
-          {/* Landmass 1 */}
-          <Path
-            d='M 60,50 Q 85,35 110,55 T 135,90 T 115,130 T 75,145 T 50,110 Z'
-            fill='url(#landGrad)'
-          />
-          {/* Landmass 2 */}
-          <Path
-            d='M 125,45 Q 145,35 165,55 T 155,95 T 135,125 T 145,155 T 115,135 Z'
-            fill='url(#landGrad)'
-          />
-          {/* Landmass Australia */}
-          <Path d='M 150,135 Q 170,145 160,165 T 140,155 Z' fill='url(#landGrad)' />
-          {/* Cloud 1 */}
-          <Path d='M 50,85 Q 65,75 80,85 T 95,95 T 65,105 Z' fill='rgba(255,255,255,0.3)' />
-          {/* Cloud 2 */}
-          <Path d='M 115,105 Q 135,95 150,105 T 165,115 T 130,125 Z' fill='rgba(255,255,255,0.3)' />
-        </Svg>
-      </MotiView>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Header Section */}
         <MotiView
           from={{ opacity: 0, translateY: -15 }}
@@ -198,12 +264,12 @@ const HomeScreen = ({ navigation }: any) => {
             <View>
               <Text style={styles.title}>Dashboard</Text>
               <Text style={styles.subtitle}>
-                Welcome back{profile.name ? `, ${profile.name}` : ''}
+                Welcome back{profileName ? `, ${profileName}` : ''}
               </Text>
             </View>
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.avatarText}>
-                {profile.name ? profile.name.substring(0, 1).toUpperCase() : 'K'}
+                {profileName ? profileName.substring(0, 1).toUpperCase() : 'K'}
               </Text>
             </View>
           </View>
@@ -270,8 +336,8 @@ const HomeScreen = ({ navigation }: any) => {
                     {footprint.total < 10
                       ? 'On Track'
                       : footprint.total < 20
-                      ? 'Moderate'
-                      : 'High Alert'}
+                        ? 'Moderate'
+                        : 'High Alert'}
                   </Text>
                 </View>
               </View>
@@ -279,7 +345,114 @@ const HomeScreen = ({ navigation }: any) => {
           </GlassCard>
         </MotiView>
 
-        {/* Gamified Eco-Milestones */}
+        {/* ── ESG Rating Card ───────────────────────────────────────── */}
+        <MotiView
+          from={{ opacity: 0, translateY: 15 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ ...animations.spring.gentle, delay: 130 }}
+        >
+          <GlassCard style={homeStyles.esgCard}>
+            <View style={homeStyles.esgHeader}>
+              <View>
+                <Text style={homeStyles.esgLabel}>Your ESG Rating</Text>
+                <Text style={homeStyles.esgSub}>Environmental · Social · Governance</Text>
+              </View>
+              <View style={homeStyles.esgGradeBubble}>
+                <Text style={homeStyles.esgGradeText}>{(esg as any)?.grade}</Text>
+              </View>
+            </View>
+
+            {/* E / S / G bars */}
+            {(
+              [
+                {
+                  key: 'E',
+                  label: 'Environmental',
+                  value: (esg as any)?.breakdown.environmental,
+                  color: '#38EF7D',
+                },
+                {
+                  key: 'S',
+                  label: 'Social',
+                  value: (esg as any)?.breakdown.social,
+                  color: '#2B86FA',
+                },
+                {
+                  key: 'G',
+                  label: 'Governance',
+                  value: (esg as any)?.breakdown.governance,
+                  color: '#F2C94C',
+                },
+              ] as const
+            ).map(bar => (
+              <View key={bar.key} style={homeStyles.esgBarRow}>
+                <Text style={homeStyles.esgBarKey}>{bar.key}</Text>
+                <View style={homeStyles.esgBarTrack}>
+                  <View
+                    style={[
+                      homeStyles.esgBarFill,
+                      { width: `${bar.value}%`, backgroundColor: bar.color },
+                    ]}
+                  />
+                </View>
+                <Text style={homeStyles.esgBarPct}>{bar.value}</Text>
+              </View>
+            ))}
+
+            <Text style={homeStyles.esgHint}>Log eco-actions to raise your score 🌍</Text>
+          </GlassCard>
+        </MotiView>
+
+        {/* ── SDG Impact Badges ─────────────────────────────────────── */}
+        <MotiView
+          from={{ opacity: 0, translateY: 15 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ ...animations.spring.gentle, delay: 160 }}
+        >
+          <View style={homeStyles.sdgSection}>
+            <Text style={homeStyles.sdgSectionTitle}>🌐 Your SDG Impact</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={homeStyles.sdgScroll}
+            >
+              {SDG_BADGES.map(badge => {
+                const contrib = sdgProgress[badge.key as keyof typeof sdgProgress];
+                const actions = contrib?.actionsCount ?? 0;
+                const kg = contrib?.co2SavedKg ?? 0;
+                return (
+                  <TouchableOpacity
+                    key={badge.key}
+                    style={[homeStyles.sdgBadge, { borderColor: badge.color }]}
+                    activeOpacity={0.75}
+                    onPress={() =>
+                      Alert.alert(
+                        `SDG ${badge.number} — ${badge.label}`,
+                        `${badge.detail}\n\nYour contribution:\n• ${actions} action${actions !== 1 ? 's' : ''} logged\n• ${kg.toFixed(2)} kg CO₂ saved`,
+                        [{ text: 'Keep Going 🌱', style: 'default' }],
+                      )
+                    }
+                  >
+                    <Text style={homeStyles.sdgBadgeEmoji}>{badge.emoji}</Text>
+                    <View style={[homeStyles.sdgBadgeNumBubble, { backgroundColor: badge.color }]}>
+                      <Text style={homeStyles.sdgBadgeNum}>{badge.number}</Text>
+                    </View>
+                    <Text
+                      style={[homeStyles.sdgBadgeLabel, { color: badge.color }]}
+                      numberOfLines={2}
+                    >
+                      {badge.label}
+                    </Text>
+                    <Text style={homeStyles.sdgBadgeCount}>
+                      {actions} action{actions !== 1 ? 's' : ''}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </MotiView>
+
         <MotiView
           from={{ opacity: 0, translateY: 15 }}
           animate={{ opacity: 1, translateY: 0 }}
@@ -539,7 +712,7 @@ const HomeScreen = ({ navigation }: any) => {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </View>
+    </SpaceBackground>
   );
 };
 
@@ -836,6 +1009,88 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
   },
+});
+
+const homeStyles = StyleSheet.create({
+  // ESG Card
+  esgCard: { padding: 20, marginBottom: 16 },
+  esgHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  esgLabel: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 2 },
+  esgSub: { fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 0.5 },
+  esgGradeBubble: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(56,239,125,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(56,239,125,0.3)',
+  },
+  esgGradeText: { fontSize: 18, fontWeight: '800', color: '#38EF7D' },
+  esgBarRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  esgBarKey: { width: 14, fontSize: 14, fontWeight: '800', color: '#fff' },
+  esgBarTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  esgBarFill: { height: '100%', borderRadius: 4 },
+  esgBarPct: { width: 30, fontSize: 13, color: 'rgba(255,255,255,0.6)', textAlign: 'right' },
+  esgHint: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.4)',
+    textAlign: 'center',
+    marginTop: 12,
+    fontStyle: 'italic',
+  },
+
+  // SDG Badges
+  sdgSection: { marginBottom: 24, marginTop: 8 },
+  sdgSectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#fff',
+    marginLeft: 16,
+    marginBottom: 16,
+  },
+  sdgScroll: { paddingHorizontal: 16, gap: 12 },
+  sdgBadge: {
+    width: 120,
+    height: 140,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sdgBadgeEmoji: { fontSize: 32, marginBottom: 4 },
+  sdgBadgeNumBubble: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  sdgBadgeNum: { fontSize: 11, fontWeight: '800', color: '#0A0A0C' },
+  sdgBadgeLabel: { fontSize: 12, fontWeight: '700', textAlign: 'center', lineHeight: 16 },
+  sdgBadgeCount: { fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
 });
 
 export default HomeScreen;

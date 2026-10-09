@@ -1,11 +1,5 @@
 import 'reflect-metadata';
 import { offsetProviderService } from '../../services/OffsetProviderService';
-import carbonReducer, {
-  addOffsetTransaction,
-  updateOffsetSubscription,
-  addSubscriptionBillingRecord,
-  OffsetTransaction,
-} from '../../store/slices/carbonSlice';
 
 describe('OffsetProviderService', () => {
   const service = offsetProviderService;
@@ -69,89 +63,5 @@ describe('OffsetProviderService', () => {
     const positiveTier = service.calculateSubscriptionCost('positive', averageEmissions);
     expect(positiveTier.tonsOffset).toBe(2.16); // 1.44 * 1.5
     expect(positiveTier.monthlyCost).toBe(33.83); // 2.16 * 15.66
-  });
-});
-
-describe('carbonSlice Offset Reducers', () => {
-  const initialEcosystem = {
-    health: 0.5,
-    treeCount: 0,
-    biodiversity: 0.3,
-    waterClarity: 0.5,
-    airQuality: 0.5,
-    lastUpdated: '',
-  };
-
-  const initialState = {
-    footprint: { total: 0, transportation: 0, food: 0, energy: 0, waste: 0 },
-    history: [],
-    goals: { target: 0, deadline: '' },
-    ecosystem: initialEcosystem,
-    offsets: {
-      transactions: [],
-      subscription: {
-        active: false,
-        tier: 'none' as const,
-        monthlyCost: 0,
-        offsetTonsPerMonth: 0,
-        nextBillingDate: '',
-        billingHistory: [],
-      },
-    },
-    loading: { footprint: false, history: false, goals: false },
-    error: null,
-  };
-
-  it('should handle addOffsetTransaction action and update ecosystem health', () => {
-    const tx: OffsetTransaction = {
-      id: 'retire-TEST1234',
-      projectId: 'proj-001',
-      projectName: 'Amazon Rainforest',
-      cost: 12.0,
-      tons: 1.0,
-      date: new Date().toISOString(),
-      certificateUrl: 'http://test.com/cert.pdf',
-      registryLink: 'http://test.com/reg',
-      registryProvider: 'Verra',
-      registryId: 'VCS-1622',
-    };
-
-    const state = carbonReducer(initialState, addOffsetTransaction(tx));
-
-    expect(state.offsets.transactions.length).toBe(1);
-    expect(state.offsets.transactions[0].id).toBe('retire-TEST1234');
-    expect(state.ecosystem.health).toBe(0.55); // 0.5 + 0.05
-  });
-
-  it('should handle updateOffsetSubscription action', () => {
-    const subUpdate = {
-      active: true,
-      tier: 'neutral' as const,
-      monthlyCost: 15.66,
-      offsetTonsPerMonth: 1.0,
-      nextBillingDate: '2026-07-28',
-    };
-
-    const state = carbonReducer(initialState, updateOffsetSubscription(subUpdate));
-
-    expect(state.offsets.subscription.active).toBe(true);
-    expect(state.offsets.subscription.tier).toBe('neutral');
-    expect(state.offsets.subscription.monthlyCost).toBe(15.66);
-    expect(state.offsets.subscription.nextBillingDate).toBe('2026-07-28');
-  });
-
-  it('should handle addSubscriptionBillingRecord action and update ecosystem health', () => {
-    const record = {
-      id: 'bill-RENEW123',
-      date: new Date().toISOString(),
-      amount: 15.66,
-      tons: 1.0,
-    };
-
-    const state = carbonReducer(initialState, addSubscriptionBillingRecord(record));
-
-    expect(state.offsets.subscription.billingHistory.length).toBe(1);
-    expect(state.offsets.subscription.billingHistory[0].id).toBe('bill-RENEW123');
-    expect(state.ecosystem.health).toBe(0.6); // 0.5 + 0.1
   });
 });

@@ -11,9 +11,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toast, setToast] = useState<{
     message: string;
     type: ToastType;
@@ -28,13 +26,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ToastContext.Provider value={{ showToast, hideToast }}>
       {children}
-      {toast && (
-        <ErrorToast
-          message={toast.message}
-          type={toast.type}
-          onDismiss={hideToast}
-        />
-      )}
+      {toast && <ErrorToast message={toast.message} type={toast.type} onDismiss={hideToast} />}
     </ToastContext.Provider>
   );
 };

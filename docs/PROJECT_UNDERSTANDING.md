@@ -44,7 +44,7 @@ behavioral psychology to create the world's most sophisticated personal carbon t
 ├── Total Files: 157 TypeScript/TSX files
 ├── Services: 53 comprehensive implementations
 ├── Components: 43 UI components
-├── Redux Slices: 6 state management slices
+├── State Management: Zustand + Firebase hooks
 ├── Test Files: 10 test suites
 ├── Source Size: 2.8 MB
 └── Development Time: ~6-12 months of intensive work
@@ -112,15 +112,18 @@ Kindred implements a sophisticated multi-layered architecture:
 ┌─────────────────────────────────────────────────────────────┐
 │                    STATE MANAGEMENT LAYER                    │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │              Redux Toolkit Store                        │ │
-│  │  ┌──────┐ ┌──────┐ ┌───────┐ ┌─────────┐ ┌─────────┐ │ │
-│  │  │ Auth │ │ User │ │Carbon │ │Settings │ │Analytics│ │ │
-│  │  │Slice │ │Slice │ │ Slice │ │  Slice  │ │  Slice  │ │ │
-│  │  └──────┘ └──────┘ └───────┘ └─────────┘ └─────────┘ │ │
-│  │  ┌──────────┐  ┌───────────────┐  ┌────────────────┐ │ │
-│  │  │ Persist  │  │  Middleware   │  │  Listener      │ │ │
-│  │  │  Engine  │  │  (Analytics)  │  │  Middleware    │ │ │
-│  │  └──────────┘  └───────────────┘  └────────────────┘ │ │
+│  │              Zustand + Firebase Hooks                   │ │
+│  │  ┌──────────────────┐  ┌────────────────────────────┐  │ │
+│  │  │   useAppStore    │  │  Firebase onSnapshot hooks  │  │ │
+│  │  │  (Local/UI State)│  │  (Server State)            │  │ │
+│  │  │  • theme         │  │  • useWallet               │  │ │
+│  │  │  • notifications │  │  • useCarbon               │  │ │
+│  │  │  • consent       │  │  • useSDG                  │  │ │
+│  │  └──────────────────┘  │  • useCorporate            │  │ │
+│  │                        └────────────────────────────┘  │ │
+│  │  ┌──────────────────────────────────────────────────┐  │ │
+│  │  │  TanStack Query (API caching for external APIs)  │  │ │
+│  │  └──────────────────────────────────────────────────┘  │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                           ↕
@@ -210,11 +213,11 @@ Kindred implements a sophisticated multi-layered architecture:
    - Event store for carbon activities
    - Replay capabilities for analytics
 
-5. **Redux Pattern (Flux Architecture)**
+5. **Unidirectional Data Flow (Flux Architecture)**
 
-   - Unidirectional data flow
-   - Immutable state updates
-   - Time-travel debugging support
+   - Unidirectional data flow with Zustand stores
+   - Immutable state updates via Zustand actions
+   - Firebase onSnapshot for real-time server state
 
 6. **Repository Pattern**
    - Data access abstraction
@@ -494,7 +497,7 @@ src/components/
 
 1. **Container/Presenter Pattern**
 
-   - Smart containers connect to Redux
+   - Smart containers use Zustand/Firebase hooks
    - Dumb presenters are pure UI
    - Clear separation of concerns
 
@@ -527,7 +530,7 @@ Features:
   - Time range selection
   - Export functionality
   - Responsive design
-Dependencies: react-native-chart-kit, Redux
+Dependencies: react-native-chart-kit
 Performance: React.memo, useCallback optimization
 ```
 
@@ -563,96 +566,49 @@ UX: <3 taps to log activity (industry leading)
 
 ## 🗄️ State Management
 
-### Redux Store Architecture
+### Current State Management Architecture
 
+> **Note:** Redux was fully removed. The app now uses Zustand + Firebase hooks.
+
+**Zustand Store** (`src/store/useAppStore.ts`) — handles local/UI state:
 ```typescript
-// Store Structure
-{
-  auth: {
-    isAuthenticated: boolean,
-    user: User | null,
-    token: string | null,
-    loading: boolean,
-    error: string | null
-  },
-
-  user: {
-    profile: UserProfile,
-    preferences: UserPreferences,
-    statistics: UserStatistics,
-    loading: boolean,
-    error: string | null
-  },
-
-  carbon: {
-    footprint: CarbonFootprint,
-    history: Activity[],
-    goals: Goal[],
-    loading: boolean,
-    error: string | null
-  },
-
-  settings: {
-    notifications: NotificationSettings,
-    privacy: PrivacySettings,
-    app: AppSettings,
-    theme: ThemeSettings
-  },
-
-  analytics: {
-    events: AnalyticsEvent[],
-    metrics: Metric[],
-    session: SessionData
-  },
-
-  location: {
-    current: Location | null,
-    history: Location[],
-    tracking: boolean,
-    accuracy: LocationAccuracy
-  }
+interface AppState {
+  theme: 'light' | 'dark' | 'system';
+  notifications: NotificationSettings;
+  consent: ConsentPreferences;
+  // Actions
+  setTheme: (theme: string) => void;
+  setNotifications: (settings: NotificationSettings) => void;
+  setConsent: (consent: ConsentPreferences) => void;
 }
 ```
 
-### Middleware Stack
+**Firebase onSnapshot hooks** (`src/hooks/useFirebaseData.ts`) — handle real-time server state:
+- `useWallet()` — wallet balance and transaction history
+- `useCarbon()` — carbon footprint data and activity history
+- `useSDG()` — SDG/ESG scoring data
+- `useCorporate()` — corporate matching info
 
-1. **Listener Middleware**
-
-   - Auth state changes → Analytics sync
-   - Carbon updates → Achievement checks
-   - Location changes → Carbon calculations
-
-2. **Redux Persist**
-
-   - AsyncStorage backend
-   - Whitelist: auth, user, settings, carbon
-   - Blacklist: analytics, location (volatile)
-
-3. **Logger Middleware** (dev only)
-   - Action logging
-   - State diff
-   - Performance timing
+**TanStack Query** (`src/hooks/useQueries.ts`) — API caching for external services.
 
 ### State Flow Example
 
 ```
 User logs carbon activity:
 
-1. Component dispatches action
+1. Component calls Firebase hook or service
    ↓
-2. Reducer updates carbon slice
+2. CarbonAPIService calculates emissions
    ↓
-3. Listener middleware triggers
+3. Firebase Firestore document updated
    ↓
-4. CarbonAPIService calculates emissions
+4. onSnapshot listener triggers re-render
    ↓
 5. AchievementSystem checks for new achievements
    ↓
 6. AnalyticsService tracks event
    ↓
-7. Components re-render with new state
-   ↓
-8. Redux Persist saves to AsyncStorage
+7. Components re-render with new server state
 ```
 
 ---
@@ -858,9 +814,9 @@ interface CarbonTwin {
 
 **State Management:**
 
-- Redux Toolkit 2.7.0
-- Redux Persist 6.0.0
-- React Redux 9.2.0
+- Zustand 5.0.14 (local/preferences state)
+- Firebase onSnapshot hooks (real-time server state)
+- TanStack Query 5.x (API caching)
 
 ### Backend & Services
 

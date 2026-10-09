@@ -14,6 +14,9 @@ import LearningCenterScreen from '../screens/main/LearningCenterScreen';
 import SmartDevicesScreen from '../screens/main/SmartDevicesScreen';
 import DataConnectionsScreen from '../screens/main/DataConnectionsScreen';
 import OffsetScreen from '../screens/main/OffsetScreen';
+import ChargingAdScreen from '../screens/main/ChargingAdScreen';
+import WalletScreen from '../screens/main/WalletScreen';
+import CorporateLeaderboardScreen from '../screens/main/CorporateLeaderboardScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
@@ -88,6 +91,17 @@ const AppNavigator = () => {
         <Stack.Screen name='SmartDevices' component={SmartDevicesScreen} />
         <Stack.Screen name='DataConnections' component={DataConnectionsScreen} />
         <Stack.Screen name='Offset' component={OffsetScreen} />
+        <Stack.Screen
+          name='ChargingAd'
+          component={ChargingAdScreen}
+          options={{
+            headerShown: false,
+            animation: 'fade',
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen name='Wallet' component={WalletScreen} />
+        <Stack.Screen name='CorporateLeaderboard' component={CorporateLeaderboardScreen} />
       </Stack.Navigator>
     </AppErrorBoundary>
   );

@@ -13,7 +13,7 @@
 - **Metro Bundler:** Running successfully on http://localhost:8081
 - **Dependencies:** All packages installed via Bun / npm
 - **Core Services:** All services initialized and functional
-- **Redux Store:** Slices working with persistence (including carbon, analytics, settings)
+- **State Management:** Zustand + Firebase hooks working (including carbon, analytics, settings)
 - **Navigation:** React Navigation functional across all main/detail screens
 - **Build System:** iOS and Android builds functional
 - **TypeScript:** 100% clean typecheck (`tsc --noEmit` passes with 0 errors)

@@ -713,8 +713,8 @@ class CarbonImpactVisualizationService {
           goalType === 'total-emissions'
             ? 'kg CO₂'
             : goalType === 'reduction'
-            ? 'kg CO₂ saved'
-            : 'credits',
+              ? 'kg CO₂ saved'
+              : 'credits',
         period: 'goal',
         totalValue: goalData.target,
         averageValue: goalData.current,

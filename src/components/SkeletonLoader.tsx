@@ -1,8 +1,7 @@
-// @ts-nocheck
 /* eslint-disable */
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { ViewStyle, DimensionValue } from 'react-native';
 import { View, StyleSheet, Dimensions, AccessibilityInfo } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -28,6 +27,7 @@ export interface SkeletonLoaderProps {
   direction?: 'horizontal' | 'vertical';
   intensity?: 'low' | 'medium' | 'high';
   variant?:
+    | 'base'
     | 'rect'
     | 'rectangular'
     | 'circle'
@@ -154,7 +154,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     <View
       style={[
         {
-          width,
+          width: width as DimensionValue,
           height,
           borderRadius: getBorderRadius(),
           backgroundColor: isDark ? theme.colors.surface : '#f0f0f0',
@@ -170,7 +170,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       {(animation === 'shimmer' || animation === 'wave') && !isScreenReaderEnabled && (
         <Animated.View style={[StyleSheet.absoluteFillObject, animatedStyle]}>
           <LinearGradient
-            colors={getColors()}
+            colors={getColors() as [string, string, string]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFillObject}

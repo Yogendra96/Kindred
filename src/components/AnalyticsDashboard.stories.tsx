@@ -1,7 +1,6 @@
-// @ts-nocheck
 /* eslint-disable */
 import { ThemeProvider } from '../theme/ThemeProvider';
-import { lightTheme, darkTheme } from '../theme/themes';
+import { lightTheme, darkTheme } from '../theme/theme';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import type { MetricCard, ChartData, PieChartData, TimeSeriesData } from './AnalyticsDashboard';
 import type { Meta, StoryObj } from '@storybook/react';
@@ -44,7 +43,7 @@ A comprehensive analytics dashboard component that displays various metrics, cha
     (Story, context) => {
       const theme = context.globals.theme === 'dark' ? darkTheme : lightTheme;
       return (
-        <ThemeProvider initialTheme={theme}>
+        <ThemeProvider>
           <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
             <Story />
           </View>

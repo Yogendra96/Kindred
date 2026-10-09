@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import { createSingleton } from '../utils/Singleton';
@@ -114,9 +113,12 @@ class HapticFeedbackService {
     this.startQueueProcessing();
 
     // Clean up old events periodically
-    setInterval(() => {
-      this.cleanupEventHistory();
-    }, 60 * 60 * 1000); // Every hour
+    setInterval(
+      () => {
+        this.cleanupEventHistory();
+      },
+      60 * 60 * 1000,
+    ); // Every hour
   }
 
   private async initializeHaptics(): Promise<void> {
@@ -452,7 +454,7 @@ class HapticFeedbackService {
       return;
     }
 
-    const trace = this.performanceMonitor.startTrace('custom-haptic');
+    const trace = await this.performanceMonitor.startTrace('custom-haptic');
     const startTime = Date.now();
     let success = false;
 
@@ -488,9 +490,9 @@ class HapticFeedbackService {
         duration,
       });
 
-      trace.putAttribute('success', success);
-      trace.putAttribute('duration', duration);
-      trace.stop();
+      trace?.putAttribute('success', String(success));
+      trace?.putAttribute('duration', String(duration));
+      await trace?.stop();
     }
   }
 
@@ -500,7 +502,7 @@ class HapticFeedbackService {
     patternName: string,
     context?: Record<string, any>,
   ): Promise<void> {
-    const trace = this.performanceMonitor.startTrace('haptic-feedback');
+    const trace = await this.performanceMonitor.startTrace('haptic-feedback');
     const startTime = Date.now();
     let success = false;
 
@@ -530,10 +532,10 @@ class HapticFeedbackService {
         duration,
       });
 
-      trace.putAttribute('pattern_name', patternName);
-      trace.putAttribute('success', success);
-      trace.putAttribute('duration', duration);
-      trace.stop();
+      trace?.putAttribute('pattern_name', patternName);
+      trace?.putAttribute('success', String(success));
+      trace?.putAttribute('duration', String(duration));
+      await trace?.stop();
     }
   }
 

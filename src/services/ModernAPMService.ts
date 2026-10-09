@@ -1017,8 +1017,8 @@ export class ModernAPMService {
         metric.duration > this.config.thresholds.network.verySlowRequest
           ? 'high'
           : metric.duration > this.config.thresholds.network.slowRequest
-          ? 'medium'
-          : 'low',
+            ? 'medium'
+            : 'low',
       context: {
         url: metric.url,
         method: metric.method,
@@ -1608,10 +1608,10 @@ export class ModernAPMService {
       ? latestMemory.memoryPressure === 'low'
         ? 100
         : latestMemory.memoryPressure === 'medium'
-        ? 75
-        : latestMemory.memoryPressure === 'high'
-        ? 50
-        : 25
+          ? 75
+          : latestMemory.memoryPressure === 'high'
+            ? 50
+            : 25
       : 100;
 
     // Factor in network performance (20% weight)
@@ -1625,12 +1625,12 @@ export class ModernAPMService {
       avgNetworkTime === 0
         ? 100
         : avgNetworkTime < 500
-        ? 100
-        : avgNetworkTime < 1000
-        ? 80
-        : avgNetworkTime < 2000
-        ? 60
-        : 40;
+          ? 100
+          : avgNetworkTime < 1000
+            ? 80
+            : avgNetworkTime < 2000
+              ? 60
+              : 40;
 
     // Calculate weighted score
     const finalScore = Math.round(coreVitalScore * 0.6 + memoryScore * 0.2 + networkScore * 0.2);

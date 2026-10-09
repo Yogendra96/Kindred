@@ -12,10 +12,9 @@ jest.mock('../../../services/HapticFeedbackService', () => ({
   },
 }));
 
-const mockHapticFeedback =
-  HapticFeedbackService.triggerSuccess as jest.MockedFunction<
-    typeof HapticFeedbackService.triggerSuccess
-  >;
+const mockHapticFeedback = HapticFeedbackService.triggerSuccess as jest.MockedFunction<
+  typeof HapticFeedbackService.triggerSuccess
+>;
 
 describe('Button Component', () => {
   const mockOnPress = jest.fn();
@@ -26,17 +25,13 @@ describe('Button Component', () => {
 
   describe('Rendering', () => {
     it('renders correctly with default props', () => {
-      const { getByText } = render(
-        <Button title='Test Button' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Test Button' onPress={mockOnPress} />);
 
       expect(getByText('Test Button')).toBeTruthy();
     });
 
     it('renders with custom title', () => {
-      const { getByText } = render(
-        <Button title='Custom Title' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Custom Title' onPress={mockOnPress} />);
 
       expect(getByText('Custom Title')).toBeTruthy();
     });
@@ -53,12 +48,7 @@ describe('Button Component', () => {
   describe('Variants', () => {
     it('renders primary variant correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Primary'
-          onPress={mockOnPress}
-          variant='primary'
-          testID='primary-button'
-        />,
+        <Button title='Primary' onPress={mockOnPress} variant='primary' testID='primary-button' />,
       );
 
       const button = getByTestId('primary-button');
@@ -81,12 +71,7 @@ describe('Button Component', () => {
 
     it('renders danger variant correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Danger'
-          onPress={mockOnPress}
-          variant='danger'
-          testID='danger-button'
-        />,
+        <Button title='Danger' onPress={mockOnPress} variant='danger' testID='danger-button' />,
       );
 
       const button = getByTestId('danger-button');
@@ -95,12 +80,7 @@ describe('Button Component', () => {
 
     it('renders ghost variant correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Ghost'
-          onPress={mockOnPress}
-          variant='ghost'
-          testID='ghost-button'
-        />,
+        <Button title='Ghost' onPress={mockOnPress} variant='ghost' testID='ghost-button' />,
       );
 
       const button = getByTestId('ghost-button');
@@ -113,12 +93,7 @@ describe('Button Component', () => {
 
     it('renders outline variant correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Outline'
-          onPress={mockOnPress}
-          variant='outline'
-          testID='outline-button'
-        />,
+        <Button title='Outline' onPress={mockOnPress} variant='outline' testID='outline-button' />,
       );
 
       const button = getByTestId('outline-button');
@@ -133,12 +108,7 @@ describe('Button Component', () => {
   describe('Sizes', () => {
     it('renders small size correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Small'
-          onPress={mockOnPress}
-          size='small'
-          testID='small-button'
-        />,
+        <Button title='Small' onPress={mockOnPress} size='small' testID='small-button' />,
       );
 
       const button = getByTestId('small-button');
@@ -151,12 +121,7 @@ describe('Button Component', () => {
 
     it('renders medium size correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Medium'
-          onPress={mockOnPress}
-          size='medium'
-          testID='medium-button'
-        />,
+        <Button title='Medium' onPress={mockOnPress} size='medium' testID='medium-button' />,
       );
 
       const button = getByTestId('medium-button');
@@ -169,12 +134,7 @@ describe('Button Component', () => {
 
     it('renders large size correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Large'
-          onPress={mockOnPress}
-          size='large'
-          testID='large-button'
-        />,
+        <Button title='Large' onPress={mockOnPress} size='large' testID='large-button' />,
       );
 
       const button = getByTestId('large-button');
@@ -189,12 +149,7 @@ describe('Button Component', () => {
   describe('States', () => {
     it('renders disabled state correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Disabled'
-          onPress={mockOnPress}
-          disabled
-          testID='disabled-button'
-        />,
+        <Button title='Disabled' onPress={mockOnPress} disabled testID='disabled-button' />,
       );
 
       const button = getByTestId('disabled-button');
@@ -202,9 +157,7 @@ describe('Button Component', () => {
     });
 
     it('renders loading state correctly', () => {
-      const { getByText } = render(
-        <Button title='Loading' onPress={mockOnPress} loading />,
-      );
+      const { getByText } = render(<Button title='Loading' onPress={mockOnPress} loading />);
 
       expect(getByText('Loading...')).toBeTruthy();
       // ActivityIndicator should be present
@@ -214,12 +167,7 @@ describe('Button Component', () => {
 
     it('renders full width correctly', () => {
       const { getByTestId } = render(
-        <Button
-          title='Full Width'
-          onPress={mockOnPress}
-          fullWidth
-          testID='fullwidth-button'
-        />,
+        <Button title='Full Width' onPress={mockOnPress} fullWidth testID='fullwidth-button' />,
       );
 
       const button = getByTestId('fullwidth-button');
@@ -229,9 +177,7 @@ describe('Button Component', () => {
 
   describe('Interactions', () => {
     it('calls onPress when pressed', async () => {
-      const { getByText } = render(
-        <Button title='Press Me' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Press Me' onPress={mockOnPress} />);
 
       fireEvent.press(getByText('Press Me'));
       await waitFor(() => {
@@ -240,9 +186,7 @@ describe('Button Component', () => {
     });
 
     it('triggers haptic feedback when pressed', async () => {
-      const { getByText } = render(
-        <Button title='Haptic' onPress={mockOnPress} hapticFeedback />,
-      );
+      const { getByText } = render(<Button title='Haptic' onPress={mockOnPress} hapticFeedback />);
 
       fireEvent.press(getByText('Haptic'));
 
@@ -253,11 +197,7 @@ describe('Button Component', () => {
 
     it('does not trigger haptic feedback when disabled', async () => {
       const { getByText } = render(
-        <Button
-          title='Disabled'
-          onPress={mockOnPress}
-          hapticFeedback={false}
-        />,
+        <Button title='Disabled' onPress={mockOnPress} hapticFeedback={false} />,
       );
 
       fireEvent.press(getByText('Disabled'));
@@ -266,9 +206,7 @@ describe('Button Component', () => {
     });
 
     it('does not call onPress when disabled', async () => {
-      const { getByText } = render(
-        <Button title='Disabled' onPress={mockOnPress} disabled />,
-      );
+      const { getByText } = render(<Button title='Disabled' onPress={mockOnPress} disabled />);
 
       fireEvent.press(getByText('Disabled'));
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -276,9 +214,7 @@ describe('Button Component', () => {
     });
 
     it('does not call onPress when loading', async () => {
-      const { getByText } = render(
-        <Button title='Loading' onPress={mockOnPress} loading />,
-      );
+      const { getByText } = render(<Button title='Loading' onPress={mockOnPress} loading />);
 
       fireEvent.press(getByText('Loading...'));
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -303,12 +239,7 @@ describe('Button Component', () => {
 
     it('renders icon on the right when specified', () => {
       const { getByTestId } = render(
-        <Button
-          title='With Icon'
-          onPress={mockOnPress}
-          icon={<MockIcon />}
-          iconPosition='right'
-        />,
+        <Button title='With Icon' onPress={mockOnPress} icon={<MockIcon />} iconPosition='right' />,
       );
 
       expect(getByTestId('mock-icon')).toBeTruthy();
@@ -334,11 +265,7 @@ describe('Button Component', () => {
     it('applies custom text style', () => {
       const customTextStyle = { fontSize: 20 };
       const { getByText } = render(
-        <Button
-          title='Custom Text'
-          onPress={mockOnPress}
-          textStyle={customTextStyle}
-        />,
+        <Button title='Custom Text' onPress={mockOnPress} textStyle={customTextStyle} />,
       );
 
       const text = getByText('Custom Text');
@@ -348,9 +275,7 @@ describe('Button Component', () => {
 
   describe('Accessibility', () => {
     it('is accessible by default', () => {
-      const { getByText } = render(
-        <Button title='Accessible' onPress={mockOnPress} />,
-      );
+      const { getByText } = render(<Button title='Accessible' onPress={mockOnPress} />);
 
       const button = getByText('Accessible').parent;
       expect(button).toBeTruthy();
@@ -358,12 +283,7 @@ describe('Button Component', () => {
 
     it('has correct accessibility state when disabled', () => {
       const { getByTestId } = render(
-        <Button
-          title='Disabled'
-          onPress={mockOnPress}
-          disabled
-          testID='acc-disabled-button'
-        />,
+        <Button title='Disabled' onPress={mockOnPress} disabled testID='acc-disabled-button' />,
       );
 
       const button = getByTestId('acc-disabled-button');

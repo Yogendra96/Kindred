@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { webSocketService } from '../services/WebSocketService';
 import { useTheme } from '../theme/ThemeProvider';
@@ -15,7 +14,6 @@ import {
   Dimensions,
   RefreshControl,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
 
 interface Friend {
   id: string;
@@ -66,8 +64,6 @@ const { width } = Dimensions.get('window');
 
 export const RealTimeSocialDashboard: React.FC = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
-
   const [friends, setFriends] = useState<Friend[]>([]);
   const [liveChallenges, setLiveChallenges] = useState<LiveChallenge[]>([]);
   const [activityFeed, setActivityFeed] = useState<ActivityFeedItem[]>([]);
@@ -214,10 +210,11 @@ export const RealTimeSocialDashboard: React.FC = () => {
     (message: any) => {
       // Handle real-time leaderboard position updates
       const { leaderboard } = message.payload;
-      // Update global leaderboard state
-      dispatch({ type: 'social/updateLeaderboard', payload: leaderboard });
+      // Redux dispatch of 'social/updateLeaderboard' removed: this component has
+      // no access to a dispatch function. Wire up once the store supports it.
+      void leaderboard;
     },
-    [dispatch],
+    [],
   );
 
   const handleConnectionLost = useCallback(() => {
@@ -320,26 +317,45 @@ export const RealTimeSocialDashboard: React.FC = () => {
   };
 
   const renderTabBar = () => (
-    <View style={[styles.tabBar, { backgroundColor: theme.colors.surface }]}>
+    <View
+      style={[
+        styles.tabBar,
+        {
+          backgroundColor: 'rgba(255, 255, 255, 0.02)',
+          borderBottomWidth: 1,
+          borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+        },
+      ]}
+    >
       {(['feed', 'friends', 'challenges'] as const).map(tab => (
         <TouchableOpacity
           key={tab}
           style={[
             styles.tabButton,
-            selectedTab === tab && { backgroundColor: theme.colors.primary },
+            selectedTab === tab
+              ? {
+                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                }
+              : {
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.05)',
+                },
           ]}
           onPress={() => setSelectedTab(tab)}
         >
           <Ionicons
             name={tab === 'feed' ? 'pulse' : tab === 'friends' ? 'people' : 'trophy'}
-            size={20}
-            color={selectedTab === tab ? theme.colors.onPrimary : theme.colors.onSurface}
+            size={18}
+            color={selectedTab === tab ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)'}
           />
           <Text
             style={[
               styles.tabText,
               {
-                color: selectedTab === tab ? theme.colors.onPrimary : theme.colors.onSurface,
+                color: selectedTab === tab ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
               },
             ]}
           >
@@ -369,7 +385,11 @@ export const RealTimeSocialDashboard: React.FC = () => {
         <Animated.View
           style={[
             styles.activityItem,
-            { backgroundColor: theme.colors.surface },
+            {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+            },
             item.isLive &&
               index === 0 && {
                 transform: [{ translateX: slideAnim }],
@@ -378,14 +398,12 @@ export const RealTimeSocialDashboard: React.FC = () => {
         >
           <View style={styles.activityHeader}>
             <View style={styles.userInfo}>
-              <View style={[styles.avatar, { backgroundColor: theme.colors.primary }]}>
+              <View style={[styles.avatar, { backgroundColor: '#38EF7D' }]}>
                 <Text style={styles.avatarText}>{item.userName.charAt(0)}</Text>
               </View>
               <View>
-                <Text style={[styles.userName, { color: theme.colors.onSurface }]}>
-                  {item.userName}
-                </Text>
-                <Text style={[styles.timestamp, { color: theme.colors.outline }]}>
+                <Text style={[styles.userName, { color: '#FFFFFF' }]}>{item.userName}</Text>
+                <Text style={[styles.timestamp, { color: 'rgba(255, 255, 255, 0.5)' }]}>
                   {formatTimestamp(item.timestamp)} {item.isLive && '• LIVE'}
                 </Text>
               </View>
@@ -397,7 +415,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
             )}
           </View>
 
-          <Text style={[styles.activityMessage, { color: theme.colors.onSurface }]}>
+          <Text style={[styles.activityMessage, { color: 'rgba(255, 255, 255, 0.9)' }]}>
             {item.message}
           </Text>
 
@@ -432,17 +450,24 @@ export const RealTimeSocialDashboard: React.FC = () => {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       renderItem={({ item }) => (
-        <View style={[styles.friendItem, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[
+            styles.friendItem,
+            {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+            },
+          ]}
+        >
           <View style={styles.friendInfo}>
-            <View style={[styles.friendAvatar, { backgroundColor: theme.colors.primary }]}>
+            <View style={[styles.friendAvatar, { backgroundColor: '#38EF7D' }]}>
               <Text style={styles.avatarText}>{item.name.charAt(0)}</Text>
               {item.isOnline && <View style={styles.onlineIndicator} />}
             </View>
             <View style={styles.friendDetails}>
-              <Text style={[styles.friendName, { color: theme.colors.onSurface }]}>
-                {item.name}
-              </Text>
-              <Text style={[styles.friendStats, { color: theme.colors.outline }]}>
+              <Text style={[styles.friendName, { color: '#FFFFFF' }]}>{item.name}</Text>
+              <Text style={[styles.friendStats, { color: 'rgba(255, 255, 255, 0.5)' }]}>
                 {item.carbonSaved.toFixed(1)} kg saved • {item.currentStreak} day streak
               </Text>
             </View>
@@ -469,44 +494,61 @@ export const RealTimeSocialDashboard: React.FC = () => {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       renderItem={({ item }) => (
-        <View style={[styles.challengeItem, { backgroundColor: theme.colors.surface }]}>
+        <View
+          style={[
+            styles.challengeItem,
+            {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+            },
+          ]}
+        >
           <View style={styles.challengeHeader}>
-            <Text style={[styles.challengeTitle, { color: theme.colors.onSurface }]}>
-              {item.title}
-            </Text>
-            <View style={[styles.challengeType, { backgroundColor: theme.colors.primary }]}>
-              <Text style={[styles.challengeTypeText, { color: theme.colors.onPrimary }]}>
-                {item.type}
-              </Text>
+            <Text style={[styles.challengeTitle, { color: '#FFFFFF' }]}>{item.title}</Text>
+            <View
+              style={[
+                styles.challengeType,
+                {
+                  backgroundColor: 'rgba(56, 239, 125, 0.15)',
+                  borderWidth: 1,
+                  borderColor: '#38EF7D',
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                },
+              ]}
+            >
+              <Text style={[styles.challengeTypeText, { color: '#38EF7D' }]}>{item.type}</Text>
             </View>
           </View>
 
-          <Text style={[styles.challengeDescription, { color: theme.colors.outline }]}>
+          <Text style={[styles.challengeDescription, { color: 'rgba(255, 255, 255, 0.6)' }]}>
             {item.description}
           </Text>
 
           <View style={styles.challengeStats}>
-            <Text style={[styles.challengeStat, { color: theme.colors.onSurface }]}>
+            <Text style={[styles.challengeStat, { color: 'rgba(255, 255, 255, 0.5)' }]}>
               {item.participants} participants
             </Text>
-            <Text style={[styles.challengeStat, { color: theme.colors.onSurface }]}>
+            <Text style={[styles.challengeStat, { color: 'rgba(255, 255, 255, 0.5)' }]}>
               {formatTimeRemaining(item.timeRemaining)} left
             </Text>
           </View>
 
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
+            <View style={[styles.progressBar, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
               <View
                 style={[
                   styles.progressFill,
                   {
-                    backgroundColor: theme.colors.primary,
+                    backgroundColor: '#38EF7D',
                     width: `${item.progress}%`,
                   },
                 ]}
               />
             </View>
-            <Text style={[styles.progressText, { color: theme.colors.onSurface }]}>
+            <Text style={[styles.progressText, { color: '#FFFFFF' }]}>
               {item.progress.toFixed(0)}%
             </Text>
           </View>
@@ -515,13 +557,24 @@ export const RealTimeSocialDashboard: React.FC = () => {
             style={[
               styles.challengeButton,
               {
-                backgroundColor: item.isParticipating ? theme.colors.outline : theme.colors.primary,
+                backgroundColor: item.isParticipating
+                  ? 'rgba(255, 255, 255, 0.05)'
+                  : 'rgba(255, 255, 255, 0.08)',
+                borderColor: item.isParticipating
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(255, 255, 255, 0.18)',
+                borderWidth: 1,
               },
             ]}
             onPress={() => !item.isParticipating && joinChallenge(item.id)}
             disabled={item.isParticipating}
           >
-            <Text style={[styles.challengeButtonText, { color: theme.colors.onPrimary }]}>
+            <Text
+              style={[
+                styles.challengeButtonText,
+                { color: item.isParticipating ? 'rgba(255, 255, 255, 0.4)' : '#FFFFFF' },
+              ]}
+            >
               {item.isParticipating ? 'Participating' : 'Join Challenge'}
             </Text>
           </TouchableOpacity>
@@ -550,7 +603,7 @@ export const RealTimeSocialDashboard: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: 'transparent' }]}>
       {renderConnectionStatus()}
       {renderTabBar()}
 
@@ -690,7 +743,7 @@ const styles = StyleSheet.create({
   reactionCount: {
     fontSize: 12,
     marginLeft: 4,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   friendItem: {
     flexDirection: 'row',

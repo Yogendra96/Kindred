@@ -153,12 +153,7 @@ interface QuantumImplementation {
 }
 
 type QuantumBackend =
-  | 'simulator'
-  | 'ibm_quantum'
-  | 'google_quantum'
-  | 'rigetti'
-  | 'ionq'
-  | 'hybrid';
+  'simulator' | 'ibm_quantum' | 'google_quantum' | 'rigetti' | 'ionq' | 'hybrid';
 
 // Quantum Simulation Engine
 export interface QuantumSimulationEngine {

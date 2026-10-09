@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -175,7 +174,9 @@ class FeatureFlagsService {
         value: defaultValue,
         userId: this.userContext.userId,
         timestamp: Date.now(),
-        metadata: { error: error.message },
+        metadata: {
+          error: error instanceof Error ? error.message : String(error),
+        },
       });
       return defaultValue;
     }

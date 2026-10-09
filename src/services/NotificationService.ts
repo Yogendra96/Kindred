@@ -1,7 +1,9 @@
 class NotificationService {
   static init() {
     console.log('Notification Service Initialized.');
-    this.scheduleSimulatedPush();
+    if (process.env.NODE_ENV !== 'test') {
+      this.scheduleSimulatedPush();
+    }
   }
 
   static scheduleSimulatedPush() {

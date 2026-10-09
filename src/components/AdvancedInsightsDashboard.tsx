@@ -16,7 +16,7 @@ import {
   Alert,
 } from 'react-native';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
-import { useSelector } from 'react-redux';
+import { useCarbon } from '../hooks/useFirebaseData';
 
 interface InsightData {
   predictedCarbon: number[];
@@ -61,13 +61,11 @@ const chartWidth = width - 32;
 
 export const AdvancedInsightsDashboard: React.FC = () => {
   const { theme } = useTheme();
-  const carbonData = useSelector((state: any) => state.carbon);
+  const carbonData = useCarbon();
 
   const [insights, setInsights] = useState<InsightData | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<
-    'week' | 'month' | 'year'
-  >('month');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'year'>('month');
   const [selectedMetric, _setSelectedMetric] = useState<
     'carbon' | 'energy' | 'transport' | 'waste'
   >('carbon');
@@ -131,17 +129,11 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
       if (inputData.length === 0) {
         // Generate mock predictions if no historical data
-        return Array.from(
-          { length: 30 },
-          (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2,
-        );
+        return Array.from({ length: 30 }, (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2);
       }
 
       // MLCarbonPredictionService doesn't have predictFutureFootprint in this version. Use mock data for now.
-      return Array.from(
-        { length: 30 },
-        (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2,
-      );
+      return Array.from({ length: 30 }, (_, i) => Math.random() * 5 + 15 + Math.sin(i / 7) * 2);
     } catch (error) {
       console.error('Prediction generation failed:', error);
       return Array.from({ length: 30 }, () => Math.random() * 5 + 15);
@@ -161,25 +153,16 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     }
 
     const recentAvg =
-      recentData.reduce(
-        (sum: number, entry: any) => sum + (entry.total || 0),
-        0,
-      ) / recentData.length;
+      recentData.reduce((sum: number, entry: any) => sum + (entry.total || 0), 0) /
+      recentData.length;
     const olderAvg =
-      olderData.reduce(
-        (sum: number, entry: any) => sum + (entry.total || 0),
-        0,
-      ) / olderData.length;
+      olderData.reduce((sum: number, entry: any) => sum + (entry.total || 0), 0) / olderData.length;
 
     const percentageChange = ((recentAvg - olderAvg) / olderAvg) * 100;
 
     return {
       direction:
-        percentageChange > 5
-          ? 'increasing'
-          : percentageChange < -5
-          ? 'decreasing'
-          : 'stable',
+        percentageChange > 5 ? 'increasing' : percentageChange < -5 ? 'decreasing' : 'stable',
       percentage: Math.abs(percentageChange),
       timeframe: '2 weeks',
     };
@@ -257,16 +240,12 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       { title: 'Planet Protector', target: 8, icon: '🌍' },
     ];
 
-    const nextMilestone =
-      nextMilestones.find(m => currentTotal > m.target) || nextMilestones[0];
+    const nextMilestone = nextMilestones.find(m => currentTotal > m.target) || nextMilestones[0];
 
     return {
       nextMilestone: {
         ...nextMilestone,
-        progress: Math.max(
-          0,
-          (nextMilestone.target - currentTotal) / nextMilestone.target,
-        ),
+        progress: Math.max(0, (nextMilestone.target - currentTotal) / nextMilestone.target),
       },
       recentUnlocks: [], // Would come from achievement system
     };
@@ -294,12 +273,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   }, [selectedTimeframe, selectedMetric]);
 
   const renderTimeframeSelector = () => (
-    <View
-      style={[
-        styles.selectorContainer,
-        { backgroundColor: theme.colors.surface },
-      ]}
-    >
+    <View style={[styles.selectorContainer, { backgroundColor: theme.colors.surface }]}>
       {(['week', 'month', 'year'] as const).map(timeframe => (
         <TouchableOpacity
           key={timeframe}
@@ -316,9 +290,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
               styles.selectorText,
               {
                 color:
-                  selectedTimeframe === timeframe
-                    ? theme.colors.onPrimary
-                    : theme.colors.onSurface,
+                  selectedTimeframe === timeframe ? theme.colors.onPrimary : theme.colors.onSurface,
               },
             ]}
           >
@@ -333,9 +305,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     const chartData = {
-      labels: insights.predictedCarbon.map((_, i) =>
-        i % 5 === 0 ? `Day ${i + 1}` : '',
-      ),
+      labels: insights.predictedCarbon.map((_, i) => (i % 5 === 0 ? `Day ${i + 1}` : '')),
       datasets: [
         {
           data: insights.predictedCarbon,
@@ -346,12 +316,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View
-        style={[
-          styles.chartContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           30-Day Carbon Prediction
         </Text>
@@ -384,35 +349,25 @@ export const AdvancedInsightsDashboard: React.FC = () => {
       trendAnalysis.direction === 'increasing'
         ? 'trending-up'
         : trendAnalysis.direction === 'decreasing'
-        ? 'trending-down'
-        : 'remove';
+          ? 'trending-down'
+          : 'remove';
     const trendColor =
       trendAnalysis.direction === 'increasing'
         ? '#FF5722'
         : trendAnalysis.direction === 'decreasing'
-        ? '#4CAF50'
-        : '#FF9800';
+          ? '#4CAF50'
+          : '#FF9800';
 
     return (
-      <View
-        style={[
-          styles.trendContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.trendContainer, { backgroundColor: theme.colors.surface }]}>
         <View style={styles.trendHeader}>
           <Ionicons name={trendIcon} size={24} color={trendColor} />
-          <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>
-            Trend Analysis
-          </Text>
+          <Text style={[styles.trendTitle, { color: theme.colors.onSurface }]}>Trend Analysis</Text>
         </View>
         <Text style={[styles.trendText, { color: theme.colors.onSurface }]}>
           Your carbon footprint is{' '}
-          <Text style={{ color: trendColor, fontWeight: 'bold' }}>
-            {trendAnalysis.direction}
-          </Text>{' '}
-          by {trendAnalysis.percentage.toFixed(1)}% over the last{' '}
-          {trendAnalysis.timeframe}
+          <Text style={{ color: trendColor, fontWeight: 'bold' }}>{trendAnalysis.direction}</Text>{' '}
+          by {trendAnalysis.percentage.toFixed(1)}% over the last {trendAnalysis.timeframe}
         </Text>
       </View>
     );
@@ -439,12 +394,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     };
 
     return (
-      <View
-        style={[
-          styles.chartContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
           Comparative Analysis
         </Text>
@@ -469,9 +419,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   };
 
   const renderCarbonHeatmap = () => (
-    <View
-      style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}
-    >
+    <View style={[styles.chartContainer, { backgroundColor: theme.colors.surface }]}>
       <Text style={[styles.chartTitle, { color: theme.colors.onSurface }]}>
         Carbon Intensity Heatmap
       </Text>
@@ -480,12 +428,8 @@ export const AdvancedInsightsDashboard: React.FC = () => {
           {Array.from({ length: 52 }, (_, week) => (
             <View key={week} style={styles.heatmapWeek}>
               {Array.from({ length: 7 }, (_, day) => {
-                const dataPoint = heatmapData.find(
-                  d => d.week === week && d.day === day,
-                );
-                const intensity = dataPoint
-                  ? Math.min(1, dataPoint.value / 30)
-                  : 0;
+                const dataPoint = heatmapData.find(d => d.week === week && d.day === day);
+                const intensity = dataPoint ? Math.min(1, dataPoint.value / 30) : 0;
 
                 return (
                   <View
@@ -504,9 +448,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
         </View>
       </ScrollView>
       <View style={styles.heatmapLegend}>
-        <Text style={[styles.legendText, { color: theme.colors.outline }]}>
-          Less
-        </Text>
+        <Text style={[styles.legendText, { color: theme.colors.outline }]}>Less</Text>
         <View style={styles.legendScale}>
           {Array.from({ length: 5 }, (_, i) => (
             <View
@@ -518,9 +460,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
             />
           ))}
         </View>
-        <Text style={[styles.legendText, { color: theme.colors.outline }]}>
-          More
-        </Text>
+        <Text style={[styles.legendText, { color: theme.colors.outline }]}>More</Text>
       </View>
     </View>
   );
@@ -529,24 +469,14 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     if (!insights) return null;
 
     return (
-      <View
-        style={[
-          styles.recommendationsContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+      <View style={[styles.recommendationsContainer, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
           Smart Recommendations
         </Text>
         {insights.recommendations.map(rec => (
           <View key={rec.id} style={styles.recommendationCard}>
             <View style={styles.recommendationHeader}>
-              <Text
-                style={[
-                  styles.recommendationTitle,
-                  { color: theme.colors.onSurface },
-                ]}
-              >
+              <Text style={[styles.recommendationTitle, { color: theme.colors.onSurface }]}>
                 {rec.title}
               </Text>
               <View
@@ -557,36 +487,25 @@ export const AdvancedInsightsDashboard: React.FC = () => {
                       rec.difficulty === 'easy'
                         ? '#4CAF50'
                         : rec.difficulty === 'medium'
-                        ? '#FF9800'
-                        : '#F44336',
+                          ? '#FF9800'
+                          : '#F44336',
                   },
                 ]}
               >
-                <Text style={styles.difficultyText}>
-                  {rec.difficulty.toUpperCase()}
-                </Text>
+                <Text style={styles.difficultyText}>{rec.difficulty.toUpperCase()}</Text>
               </View>
             </View>
-            <Text
-              style={[
-                styles.recommendationDescription,
-                { color: theme.colors.outline },
-              ]}
-            >
+            <Text style={[styles.recommendationDescription, { color: theme.colors.outline }]}>
               {rec.description}
             </Text>
             <View style={styles.recommendationFooter}>
               <View style={styles.savingInfo}>
                 <Ionicons name='leaf' size={16} color='#4CAF50' />
-                <Text
-                  style={[styles.savingText, { color: theme.colors.onSurface }]}
-                >
+                <Text style={[styles.savingText, { color: theme.colors.onSurface }]}>
                   Save {rec.potentialSaving} kg CO₂
                 </Text>
               </View>
-              <Text
-                style={[styles.categoryText, { color: theme.colors.primary }]}
-              >
+              <Text style={[styles.categoryText, { color: theme.colors.primary }]}>
                 {rec.category}
               </Text>
             </View>
@@ -602,45 +521,23 @@ export const AdvancedInsightsDashboard: React.FC = () => {
     const { nextMilestone } = insights.achievements;
 
     return (
-      <View
-        style={[
-          styles.achievementContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-          Next Milestone
-        </Text>
+      <View style={[styles.achievementContainer, { backgroundColor: theme.colors.surface }]}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Next Milestone</Text>
         <View style={styles.milestoneCard}>
           <View style={styles.milestoneHeader}>
             <Text style={styles.milestoneIcon}>🏆</Text>
             <View style={styles.milestoneInfo}>
-              <Text
-                style={[
-                  styles.milestoneTitle,
-                  { color: theme.colors.onSurface },
-                ]}
-              >
+              <Text style={[styles.milestoneTitle, { color: theme.colors.onSurface }]}>
                 {nextMilestone.title}
               </Text>
-              <Text
-                style={[
-                  styles.milestoneTarget,
-                  { color: theme.colors.outline },
-                ]}
-              >
+              <Text style={[styles.milestoneTarget, { color: theme.colors.outline }]}>
                 Target: {nextMilestone.target} kg CO₂/month
               </Text>
             </View>
           </View>
 
           <View style={styles.progressContainer}>
-            <View
-              style={[
-                styles.progressBar,
-                { backgroundColor: theme.colors.outline },
-              ]}
-            >
+            <View style={[styles.progressBar, { backgroundColor: theme.colors.outline }]}>
               <View
                 style={[
                   styles.progressFill,
@@ -651,9 +548,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
                 ]}
               />
             </View>
-            <Text
-              style={[styles.progressText, { color: theme.colors.onSurface }]}
-            >
+            <Text style={[styles.progressText, { color: theme.colors.onSurface }]}>
               {(nextMilestone.progress * 100).toFixed(0)}%
             </Text>
           </View>
@@ -664,12 +559,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
           Generating AI Insights...
         </Text>
@@ -680,9 +570,7 @@ export const AdvancedInsightsDashboard: React.FC = () => {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {renderTimeframeSelector()}
       {renderTrendAnalysis()}

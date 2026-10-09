@@ -8,9 +8,13 @@ import {
   Animated,
   Alert,
   Easing,
+  RefreshControl,
 } from 'react-native';
-import {} from '../../data/veganData';
 import { useToast } from '../../contexts/ToastContext';
+import { spatialColors, typography, animations } from '../../theme/theme';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 // Global averages: ~80 billion land animals killed per year for food
@@ -108,8 +112,8 @@ const LiveCounter = ({
         {value >= 1_000_000
           ? (value / 1_000_000).toFixed(4) + 'M'
           : value >= 1000
-          ? value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-          : value.toFixed(large ? 0 : 3)}
+            ? value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            : value.toFixed(large ? 0 : 3)}
       </Text>
       <Text style={styles.counterUnit}>{unit}</Text>
       <Text style={styles.counterLabel}>{label}</Text>
@@ -240,140 +244,154 @@ const VeganCalculatorScreen = () => {
     );
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.liveRow}>
+    <SpaceBackground earthPosition='bottom-left' enableComets={true}>
+      <SubScreenHeader
+        title='Vegan Calculator'
+        subtitle={
+          isGlobal
+            ? 'Real-time global animal agriculture impact'
+            : 'Your estimated annual impact as a vegan'
+        }
+      />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
+        <View style={[styles.liveRow, { marginHorizontal: 20, marginTop: 10, marginBottom: 12 }]}>
           <PulsingDot />
-          <Text style={styles.liveText}>LIVE</Text>
+          <Text style={styles.liveText}>LIVE STREAMING</Text>
         </View>
-        <Text style={styles.title}>🌱 Vegan Calculator</Text>
-        <Text style={styles.subtitle}>
-          {isGlobal
-            ? 'Real-time global animal agriculture impact since you opened this screen'
-            : 'Your estimated annual impact as a vegan — accruing in real time'}
-        </Text>
-      </View>
 
-      {/* Mode toggle */}
-      <View style={styles.modeToggle}>
-        <TouchableOpacity
-          style={[styles.modeBtn, mode === 'global' && styles.modeBtnActive]}
-          onPress={() => setMode('global')}
-        >
-          <Text style={[styles.modeBtnText, mode === 'global' && styles.modeBtnTextActive]}>
-            🌍 Global Now
+        {/* Mode toggle */}
+        <GlassCard style={styles.modeToggle}>
+          <TouchableOpacity
+            style={[styles.modeBtn, mode === 'global' && styles.modeBtnActive]}
+            onPress={() => setMode('global')}
+          >
+            <Text style={[styles.modeBtnText, mode === 'global' && styles.modeBtnTextActive]}>
+              🌍 Global Now
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modeBtn, mode === 'personal' && styles.modeBtnActive]}
+            onPress={() => setMode('personal')}
+          >
+            <Text style={[styles.modeBtnText, mode === 'personal' && styles.modeBtnTextActive]}>
+              🧍 If You Go Vegan
+            </Text>
+          </TouchableOpacity>
+        </GlassCard>
+
+        {/* Main animal counter */}
+        <GlassCard style={styles.mainCounter}>
+          <Text style={styles.mainLabel}>
+            {isGlobal ? 'Animals Killed Since You Opened This' : "Animals You'd Save Per Year"}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.modeBtn, mode === 'personal' && styles.modeBtnActive]}
-          onPress={() => setMode('personal')}
-        >
-          <Text style={[styles.modeBtnText, mode === 'personal' && styles.modeBtnTextActive]}>
-            🧍 If You Go Vegan
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Main animal counter */}
-      <View style={styles.mainCounter}>
-        <Text style={styles.mainLabel}>
-          {isGlobal ? 'Animals Killed Since You Opened This' : "Animals You'd Save Per Year"}
-        </Text>
-        <View style={styles.mainValueRow}>
-          <Text style={styles.mainEmoji}>{ANIMAL_EMOJIS[emojiIndex]}</Text>
-          <Text style={styles.mainValue}>
-            {isGlobal
-              ? Math.floor(animals).toLocaleString()
-              : (PERSONAL_ANIMALS_PER_SECOND * 365 * 24 * 3600).toFixed(0)}
-          </Text>
-        </View>
-        {isGlobal && (
-          <Text style={styles.mainRate}>+{ANIMALS_PER_SECOND.toLocaleString()} per second</Text>
-        )}
-      </View>
-
-      {/* Secondary counters */}
-      <View style={styles.countersGrid}>
-        <LiveCounter
-          value={co2}
-          label={isGlobal ? 'CO₂ emitted (kg)' : 'CO₂ saved / year (kg)'}
-          unit='kg CO₂'
-          color='#e53935'
-          emoji='🌫️'
-        />
-        <LiveCounter
-          value={water}
-          label={isGlobal ? 'Water used (L)' : 'Water saved / year (L)'}
-          unit='litres'
-          color='#1565c0'
-          emoji='💧'
-        />
-      </View>
-
-      {/* Context facts */}
-      <View style={styles.factsCard}>
-        <Text style={styles.factsTitle}>📖 Context</Text>
-        {[
-          {
-            icon: '🐄',
-            text: 'Animal agriculture uses 80% of global farmland but provides just 20% of global calories.',
-          },
-          {
-            icon: '💨',
-            text: 'Livestock farming is responsible for 14.5% of all human greenhouse gas emissions.',
-          },
-          {
-            icon: '💧',
-            text: 'One beef burger requires ~2,400 litres of water to produce.',
-          },
-          {
-            icon: '🌱',
-            text: 'A vegan diet uses 18× less land and produces 10× fewer emissions than a meat-heavy diet.',
-          },
-        ].map((f, i) => (
-          <View key={i} style={styles.fact}>
-            <Text style={styles.factIcon}>{f.icon}</Text>
-            <Text style={styles.factText}>{f.text}</Text>
+          <View style={styles.mainValueRow}>
+            <Text style={styles.mainEmoji}>{ANIMAL_EMOJIS[emojiIndex]}</Text>
+            <Text style={styles.mainValue}>
+              {isGlobal
+                ? Math.floor(animals).toLocaleString()
+                : (PERSONAL_ANIMALS_PER_SECOND * 365 * 24 * 3600).toFixed(0)}
+            </Text>
           </View>
-        ))}
-      </View>
+          {isGlobal && (
+            <Text style={styles.mainRate}>+{ANIMALS_PER_SECOND.toLocaleString()} per second</Text>
+          )}
+        </GlassCard>
 
-      {/* Ad reward */}
-      <AdRewardBanner credits={credits} onWatch={handleAdComplete} />
+        {/* Secondary counters */}
+        <View style={styles.countersGrid}>
+          <LiveCounter
+            value={co2}
+            label={isGlobal ? 'CO₂ emitted (kg)' : 'CO₂ saved / year (kg)'}
+            unit='kg CO₂'
+            color='#e53935'
+            emoji='🌫️'
+          />
+          <LiveCounter
+            value={water}
+            label={isGlobal ? 'Water used (L)' : 'Water saved / year (L)'}
+            unit='litres'
+            color='#1565c0'
+            emoji='💧'
+          />
+        </View>
 
-      {/* Redeem */}
-      <TouchableOpacity style={styles.redeemBtn} onPress={handleRedeem}>
-        <Text style={styles.redeemBtnText}>🌳 Redeem 50 Credits → Plant a Tree</Text>
-      </TouchableOpacity>
+        {/* Context facts */}
+        <GlassCard style={styles.factsCard}>
+          <Text style={styles.factsTitle}>📖 Context</Text>
+          {[
+            {
+              icon: '🐄',
+              text: 'Animal agriculture uses 80% of global farmland but provides just 20% of global calories.',
+            },
+            {
+              icon: '💨',
+              text: 'Livestock farming is responsible for 14.5% of all human greenhouse gas emissions.',
+            },
+            {
+              icon: '💧',
+              text: 'One beef burger requires ~2,400 litres of water to produce.',
+            },
+            {
+              icon: '🌱',
+              text: 'A vegan diet uses 18× less land and produces 10× fewer emissions than a meat-heavy diet.',
+            },
+          ].map((f, i) => (
+            <View key={i} style={styles.fact}>
+              <Text style={styles.factIcon}>{f.icon}</Text>
+              <Text style={styles.factText}>{f.text}</Text>
+            </View>
+          ))}
+        </GlassCard>
 
-      {/* Share */}
-      <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-        <Text style={styles.shareBtnText}>📤 Share My Impact</Text>
-      </TouchableOpacity>
+        {/* Ad reward */}
+        <AdRewardBanner credits={credits} onWatch={handleAdComplete} />
 
-      <Text style={styles.disclaimer}>
-        Global figures based on FAO data. Personal figures are annual estimates for a person
-        transitioning to a vegan diet.
-      </Text>
-    </ScrollView>
+        {/* Redeem */}
+        <TouchableOpacity style={styles.redeemBtn} onPress={handleRedeem}>
+          <Text style={styles.redeemBtnText}>🌳 Redeem 50 Credits → Plant a Tree</Text>
+        </TouchableOpacity>
+
+        {/* Share */}
+        <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
+          <Text style={styles.shareBtnText}>📤 Share My Impact</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.disclaimer}>
+          Global figures based on FAO data. Personal figures are annual estimates for a person
+          transitioning to a vegan diet.
+        </Text>
+      </ScrollView>
+    </SpaceBackground>
   );
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0d1f12' },
   content: { paddingBottom: 48 },
 
   // Header
-  header: {
-    paddingTop: 52,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    alignItems: 'center',
-  },
   liveRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -386,19 +404,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#ef5350',
     letterSpacing: 3,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.55)',
-    textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 19,
   },
 
   // Mode toggle

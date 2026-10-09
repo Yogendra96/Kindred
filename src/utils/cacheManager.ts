@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * cacheManager.ts — DEPRECATED / CONSOLIDATED
@@ -11,11 +10,7 @@ import { CacheService } from '../services/CacheService';
 
 /** @deprecated Use CacheService from services/CacheService */
 export class CacheManager {
-  private service: CacheService;
-
-  constructor() {
-    this.service = new CacheService();
-  }
+  private readonly service = CacheService;
 
   async get<T>(key: string): Promise<T | null> {
     return this.service.get<T>(key);

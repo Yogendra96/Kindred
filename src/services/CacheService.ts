@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * CacheService (v2)
@@ -64,7 +63,9 @@ class LRUCache<T> {
     // Evict oldest if over capacity
     if (this.map.size > this.maxSize) {
       const firstKey = this.map.keys().next().value;
-      this.map.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.map.delete(firstKey);
+      }
     }
   }
 

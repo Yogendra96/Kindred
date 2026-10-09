@@ -396,9 +396,7 @@ class GlobalContextService {
    * Get countries by region
    */
   getCountriesByRegion(region: string): CountryData[] {
-    return Object.values(COUNTRY_DATA).filter(
-      c => c.region.toLowerCase() === region.toLowerCase(),
-    );
+    return Object.values(COUNTRY_DATA).filter(c => c.region.toLowerCase() === region.toLowerCase());
   }
 
   // ===========================================================================
@@ -438,8 +436,7 @@ class GlobalContextService {
     countryCode: string,
   ): Promise<UserGlobalContext> {
     const country = this.getCountryData(countryCode);
-    const countryAverage =
-      country?.emissionsPerCapita || GLOBAL_AVERAGES.worldPerCapita;
+    const countryAverage = country?.emissionsPerCapita || GLOBAL_AVERAGES.worldPerCapita;
     const worldAverage = GLOBAL_AVERAGES.worldPerCapita;
 
     // Calculate comparisons
@@ -448,23 +445,14 @@ class GlobalContextService {
 
     // Calculate percentiles
     const globalPercentile = this.calculateGlobalPercentile(userFootprint);
-    const countryPercentile = this.calculateCountryPercentile(
-      userFootprint,
-      countryCode,
-    );
+    const countryPercentile = this.calculateCountryPercentile(userFootprint, countryCode);
 
     // Find historical equivalent
     const historicalEquivalent = this.findHistoricalEquivalent(userFootprint);
 
     // Calculate gaps to targets
-    const parisGap = Math.max(
-      0,
-      userFootprint - GLOBAL_AVERAGES.parisAlignedTarget,
-    );
-    const netZeroGap = Math.max(
-      0,
-      userFootprint - GLOBAL_AVERAGES.netZeroTarget,
-    );
+    const parisGap = Math.max(0, userFootprint - GLOBAL_AVERAGES.parisAlignedTarget);
+    const netZeroGap = Math.max(0, userFootprint - GLOBAL_AVERAGES.netZeroTarget);
 
     // Generate insights
     const insights = this.generateInsights(
@@ -521,10 +509,7 @@ class GlobalContextService {
   /**
    * Calculate where user falls in their country's distribution
    */
-  private calculateCountryPercentile(
-    userFootprint: number,
-    countryCode: string,
-  ): number {
+  private calculateCountryPercentile(userFootprint: number, countryCode: string): number {
     const country = this.getCountryData(countryCode);
     if (!country) return 50;
 
@@ -589,11 +574,7 @@ class GlobalContextService {
         )}% below the global average! 🌍`,
       );
     } else {
-      insights.push(
-        `You emit ${(userFootprint / worldAverage).toFixed(
-          1,
-        )}x the global average`,
-      );
+      insights.push(`You emit ${(userFootprint / worldAverage).toFixed(1)}x the global average`);
     }
 
     // Country comparison
@@ -607,14 +588,10 @@ class GlobalContextService {
 
     // Percentile insight
     if (globalPercentile <= 20) {
-      insights.push(
-        `You're in the top ${100 - globalPercentile}% of global emitters`,
-      );
+      insights.push(`You're in the top ${100 - globalPercentile}% of global emitters`);
     } else if (globalPercentile >= 80) {
       insights.push(
-        `You're in the bottom ${
-          100 - globalPercentile
-        }% of global emitters - great job!`,
+        `You're in the bottom ${100 - globalPercentile}% of global emitters - great job!`,
       );
     }
 
@@ -623,16 +600,12 @@ class GlobalContextService {
       insights.push("🎉 You're already Paris-aligned for 2030!");
     } else {
       const reduction = userFootprint - GLOBAL_AVERAGES.parisAlignedTarget;
-      insights.push(
-        `Reduce ${reduction.toFixed(1)}t more to be Paris-aligned for 2030`,
-      );
+      insights.push(`Reduce ${reduction.toFixed(1)}t more to be Paris-aligned for 2030`);
     }
 
     // World citizen badge hint
     if (userFootprint <= worldAverage && userFootprint > worldAverage * 0.9) {
-      insights.push(
-        "Almost there! A bit more effort and you'll unlock the World Citizen badge",
-      );
+      insights.push("Almost there! A bit more effort and you'll unlock the World Citizen badge");
     }
 
     return insights;
@@ -728,13 +701,9 @@ class GlobalContextService {
   /**
    * Format footprint with context
    */
-  formatFootprintWithContext(
-    userFootprint: number,
-    countryCode: string,
-  ): string {
+  formatFootprintWithContext(userFootprint: number, countryCode: string): string {
     const country = this.getCountryData(countryCode);
-    const countryAvg =
-      country?.emissionsPerCapita || GLOBAL_AVERAGES.worldPerCapita;
+    const countryAvg = country?.emissionsPerCapita || GLOBAL_AVERAGES.worldPerCapita;
 
     if (userFootprint < countryAvg) {
       const percent = ((1 - userFootprint / countryAvg) * 100).toFixed(0);

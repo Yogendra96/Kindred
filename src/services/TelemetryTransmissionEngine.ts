@@ -23,12 +23,9 @@ export class TelemetryTransmissionEngine {
    * Evaluates system constraints and syncs all buffered ground-truth
    * robotics mapping data passively to external API endpoints.
    */
-  public async performOffPeakSync(
-    forceOverride: boolean = false,
-  ): Promise<boolean> {
+  public async performOffPeakSync(forceOverride: boolean = false): Promise<boolean> {
     try {
-      const payloads =
-        await microMobilityTelemetryService.getBufferedPayloads();
+      const payloads = await microMobilityTelemetryService.getBufferedPayloads();
       if (payloads.length === 0) {
         return true; // Nothing to sync
       }
@@ -36,9 +33,7 @@ export class TelemetryTransmissionEngine {
       if (!forceOverride) {
         const canSync = await this.evaluateTransmissionConstraints();
         if (!canSync) {
-          log.info(
-            'System constraints not met for bulk telemetry sync. Deferring.',
-          );
+          log.info('System constraints not met for bulk telemetry sync. Deferring.');
           return false;
         }
       }
@@ -76,9 +71,7 @@ export class TelemetryTransmissionEngine {
     }
   }
 
-  private async executeBulkUpload(
-    payloads: MicroMobilityTelemetry[],
-  ): Promise<boolean> {
+  private async executeBulkUpload(payloads: MicroMobilityTelemetry[]): Promise<boolean> {
     await modernAPMService.startTraceSimple('telemetry_bulk_upload_job');
 
     try {
@@ -89,9 +82,7 @@ export class TelemetryTransmissionEngine {
       // On successful receipt by the server, aggressively clear the user's Edge buffer
       await microMobilityTelemetryService.clearBuffer();
 
-      log.info(
-        `Successfully synced ${payloads.length} packets to remote server.`,
-      );
+      log.info(`Successfully synced ${payloads.length} packets to remote server.`);
       await modernAPMService.stopTraceSimple('telemetry_bulk_upload_job', {
         success: 'true',
         count: String(payloads.length),
@@ -109,5 +100,4 @@ export class TelemetryTransmissionEngine {
   }
 }
 
-export const telemetryTransmissionEngine =
-  TelemetryTransmissionEngine.getInstance();
+export const telemetryTransmissionEngine = TelemetryTransmissionEngine.getInstance();

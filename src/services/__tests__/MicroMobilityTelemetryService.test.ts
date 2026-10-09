@@ -46,9 +46,7 @@ describe('MicroMobilityTelemetryService', () => {
 
   it('starts tracking correctly', async () => {
     const addListenerMock = jest.fn(() => ({ remove: jest.fn() }));
-    (Accelerometer.addListener as jest.Mock).mockImplementationOnce(
-      addListenerMock,
-    );
+    (Accelerometer.addListener as jest.Mock).mockImplementationOnce(addListenerMock);
 
     await microMobilityTelemetryService.startTracking('walking');
 
@@ -63,9 +61,7 @@ describe('MicroMobilityTelemetryService', () => {
       mockCallback = callback;
       return { remove: jest.fn() };
     });
-    (Accelerometer.addListener as jest.Mock).mockImplementation(
-      addListenerMock,
-    );
+    (Accelerometer.addListener as jest.Mock).mockImplementation(addListenerMock);
 
     await microMobilityTelemetryService.startTracking('walking');
 
@@ -127,18 +123,14 @@ describe('MicroMobilityTelemetryService', () => {
 
   it('caps buffer at 5000 items', async () => {
     const existing = new Array(5005).fill({ lat: 0, lon: 0 });
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(
-      JSON.stringify(existing),
-    );
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(existing));
 
     // Trigger dump to write to disk
     let mockCallback = (data: any) => {};
-    (Accelerometer.addListener as jest.Mock).mockImplementationOnce(
-      callback => {
-        mockCallback = callback;
-        return { remove: jest.fn() };
-      },
-    );
+    (Accelerometer.addListener as jest.Mock).mockImplementationOnce(callback => {
+      mockCallback = callback;
+      return { remove: jest.fn() };
+    });
 
     await microMobilityTelemetryService.startTracking('walking');
     for (let i = 0; i < 50; i++) {
@@ -153,9 +145,7 @@ describe('MicroMobilityTelemetryService', () => {
   });
 
   it('handles clear buffer errors', async () => {
-    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(
-      new Error('AsyncStorage error'),
-    );
+    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('AsyncStorage error'));
     await microMobilityTelemetryService.clearBuffer(); // Should catch error
   });
 });

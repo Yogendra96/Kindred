@@ -199,11 +199,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         opacity: interpolate(animationProgress.value, [0, 1], [0, 1]),
         transform: [
           {
-            translateY: interpolate(
-              animationProgress.value,
-              [0, 1],
-              [30 + index * 10, 0],
-            ),
+            translateY: interpolate(animationProgress.value, [0, 1], [30 + index * 10, 0]),
           },
         ],
       };
@@ -257,27 +253,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.metricHeader}>
-              <Text style={[styles.metricTitle, { color: theme.colors.text }]}>
-                {metric.title}
-              </Text>
-              {metric.icon && (
-                <Text style={styles.metricIcon}>{metric.icon}</Text>
-              )}
+              <Text style={[styles.metricTitle, { color: theme.colors.text }]}>{metric.title}</Text>
+              {metric.icon && <Text style={styles.metricIcon}>{metric.icon}</Text>}
             </View>
 
             <View style={styles.metricContent}>
               <Text style={[styles.metricValue, { color: theme.colors.text }]}>
                 {metric.value}
-                {metric.unit && (
-                  <Text style={styles.metricUnit}> {metric.unit}</Text>
-                )}
+                {metric.unit && <Text style={styles.metricUnit}> {metric.unit}</Text>}
               </Text>
 
               {metric.change !== undefined && (
                 <View style={styles.metricChange}>
-                  <Text
-                    style={[styles.changeText, { color: getChangeColor() }]}
-                  >
+                  <Text style={[styles.changeText, { color: getChangeColor() }]}>
                     {getChangeIcon()} {Math.abs(metric.change)}%
                   </Text>
                 </View>
@@ -291,21 +279,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     style={[
                       styles.progressFill,
                       {
-                        width: `${Math.min(
-                          (Number(metric.value) / metric.target) * 100,
-                          100,
-                        )}%`,
+                        width: `${Math.min((Number(metric.value) / metric.target) * 100, 100)}%`,
                         backgroundColor: metric.color || theme.colors.primary,
                       },
                     ]}
                   />
                 </View>
-                <Text
-                  style={[
-                    styles.targetText,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
+                <Text style={[styles.targetText, { color: theme.colors.textSecondary }]}>
                   Target: {metric.target}
                 </Text>
               </View>
@@ -333,24 +313,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               styles.periodButton,
               {
                 backgroundColor:
-                  selectedPeriod === period.key
-                    ? theme.colors.primary
-                    : theme.colors.surface,
+                  selectedPeriod === period.key ? theme.colors.primary : theme.colors.surface,
                 borderColor: theme.colors.border,
               },
             ]}
-            onPress={() =>
-              setSelectedPeriod(period.key as typeof comparisonPeriod)
-            }
+            onPress={() => setSelectedPeriod(period.key as typeof comparisonPeriod)}
           >
             <Text
               style={[
                 styles.periodButtonText,
                 {
-                  color:
-                    selectedPeriod === period.key
-                      ? theme.colors.surface
-                      : theme.colors.text,
+                  color: selectedPeriod === period.key ? theme.colors.surface : theme.colors.text,
                 },
               ]}
             >
@@ -383,9 +356,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         onPress={() => onChartPress?.(chartType, data)}
         activeOpacity={0.9}
       >
-        <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-          {title}
-        </Text>
+        <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{title}</Text>
 
         {chartType === 'line' && !!data && (
           <LineChart
@@ -453,16 +424,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          onRefresh ? (
-            <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
-          ) : undefined
+          onRefresh ? <RefreshControl refreshing={isLoading} onRefresh={onRefresh} /> : undefined
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            {title}
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
           {showComparison && renderPeriodSelector()}
         </View>
 
@@ -480,26 +447,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   styles.filterButton,
                   {
                     backgroundColor:
-                      selectedFilter === filter.id
-                        ? theme.colors.primary
-                        : theme.colors.surface,
+                      selectedFilter === filter.id ? theme.colors.primary : theme.colors.surface,
                     borderColor: theme.colors.border,
                   },
                 ]}
-                onPress={() =>
-                  setSelectedFilter(
-                    selectedFilter === filter.id ? null : filter.id,
-                  )
-                }
+                onPress={() => setSelectedFilter(selectedFilter === filter.id ? null : filter.id)}
               >
                 <Text
                   style={[
                     styles.filterButtonText,
                     {
                       color:
-                        selectedFilter === filter.id
-                          ? theme.colors.surface
-                          : theme.colors.text,
+                        selectedFilter === filter.id ? theme.colors.surface : theme.colors.text,
                     },
                   ]}
                 >
@@ -533,8 +492,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
           {barChartData && renderChart('bar', barChartData, 'Comparison Chart')}
 
-          {pieChartData.length > 0 &&
-            renderChart('pie', pieChartData, 'Distribution')}
+          {pieChartData.length > 0 && renderChart('pie', pieChartData, 'Distribution')}
         </View>
       </ScrollView>
     </Animated.View>

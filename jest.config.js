@@ -36,7 +36,7 @@ module.exports = {
 
   // Transform ignore patterns
   transformIgnorePatterns: [
-    'node_modules/(?!(jest-)?react-native|@react-native(-community)?|react-native-.*|@react-navigation|@react-native-firebase|@notifee|immer|@reduxjs|victory|lucide-react-native|react-native-chart-kit)/',
+    'node_modules/(?!(jest-)?react-native|@react-native(-community)?|react-native-.*|@react-navigation|@react-native-firebase|@notifee|immer|victory|lucide-react-native|react-native-chart-kit|react-native-google-mobile-ads)/',
   ],
 
   // Coverage

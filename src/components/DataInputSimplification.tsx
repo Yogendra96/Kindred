@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import { useTheme } from '../theme/ThemeProvider';
@@ -663,7 +662,7 @@ export const DataInputSimplification: React.FC<DataInputSimplificationProps> = (
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {renderProgressBar()}
-      <ScrollView stretch style={styles.formContainer}>
+      <ScrollView style={styles.formContainer}>
         {selectedTemplate.fields.map(renderField)}
         {renderFormActions()}
       </ScrollView>

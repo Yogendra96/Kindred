@@ -47,12 +47,7 @@ describe('SkeletonLoader', () => {
 
     it('renders base skeleton with custom dimensions', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          width={200}
-          height={50}
-          testID='custom-skeleton'
-        />,
+        <SkeletonLoader variant='base' width={200} height={50} testID='custom-skeleton' />,
       );
 
       const skeleton = getByTestId('custom-skeleton');
@@ -61,11 +56,7 @@ describe('SkeletonLoader', () => {
 
     it('applies custom border radius', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          borderRadius={10}
-          testID='rounded-skeleton'
-        />,
+        <SkeletonLoader variant='base' borderRadius={10} testID='rounded-skeleton' />,
       );
 
       const skeleton = getByTestId('rounded-skeleton');
@@ -83,11 +74,7 @@ describe('SkeletonLoader', () => {
 
     it('renders text skeleton with custom number of lines', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='text'
-          lines={5}
-          testID='multi-line-skeleton'
-        />,
+        <SkeletonLoader variant='text' lines={5} testID='multi-line-skeleton' />,
       );
 
       const skeleton = getByTestId('multi-line-skeleton');
@@ -96,11 +83,7 @@ describe('SkeletonLoader', () => {
 
     it('renders text skeleton with custom width', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='text'
-          width={300}
-          testID='wide-text-skeleton'
-        />,
+        <SkeletonLoader variant='text' width={300} testID='wide-text-skeleton' />,
       );
 
       const skeleton = getByTestId('wide-text-skeleton');
@@ -118,12 +101,7 @@ describe('SkeletonLoader', () => {
 
     it('renders circle skeleton with custom size', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='circle'
-          width={80}
-          height={80}
-          testID='large-circle-skeleton'
-        />,
+        <SkeletonLoader variant='circle' width={80} height={80} testID='large-circle-skeleton' />,
       );
 
       const skeleton = getByTestId('large-circle-skeleton');
@@ -141,12 +119,7 @@ describe('SkeletonLoader', () => {
 
     it('renders image skeleton with custom dimensions', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='image'
-          width={300}
-          height={200}
-          testID='custom-image-skeleton'
-        />,
+        <SkeletonLoader variant='image' width={300} height={200} testID='custom-image-skeleton' />,
       );
 
       const skeleton = getByTestId('custom-image-skeleton');
@@ -164,11 +137,7 @@ describe('SkeletonLoader', () => {
 
     it('renders card skeleton with custom width', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='card'
-          width={350}
-          testID='wide-card-skeleton'
-        />,
+        <SkeletonLoader variant='card' width={350} testID='wide-card-skeleton' />,
       );
 
       const skeleton = getByTestId('wide-card-skeleton');
@@ -195,11 +164,7 @@ describe('SkeletonLoader', () => {
 
     it('renders list skeleton with custom spacing', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='list'
-          spacing={20}
-          testID='spaced-list-skeleton'
-        />,
+        <SkeletonLoader variant='list' spacing={20} testID='spaced-list-skeleton' />,
       );
 
       const skeleton = getByTestId('spaced-list-skeleton');
@@ -217,12 +182,7 @@ describe('SkeletonLoader', () => {
 
     it('renders grid skeleton with custom columns and items', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='grid'
-          columns={3}
-          items={9}
-          testID='custom-grid-skeleton'
-        />,
+        <SkeletonLoader variant='grid' columns={3} items={9} testID='custom-grid-skeleton' />,
       );
 
       const skeleton = getByTestId('custom-grid-skeleton');
@@ -231,11 +191,7 @@ describe('SkeletonLoader', () => {
 
     it('renders grid skeleton with custom spacing', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='grid'
-          spacing={15}
-          testID='spaced-grid-skeleton'
-        />,
+        <SkeletonLoader variant='grid' spacing={15} testID='spaced-grid-skeleton' />,
       );
 
       const skeleton = getByTestId('spaced-grid-skeleton');
@@ -253,12 +209,7 @@ describe('SkeletonLoader', () => {
 
     it('renders chart skeleton with custom dimensions', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='chart'
-          width={400}
-          height={250}
-          testID='large-chart-skeleton'
-        />,
+        <SkeletonLoader variant='chart' width={400} height={250} testID='large-chart-skeleton' />,
       );
 
       const skeleton = getByTestId('large-chart-skeleton');
@@ -269,11 +220,7 @@ describe('SkeletonLoader', () => {
   describe('Animation Properties', () => {
     it('accepts custom animation speed', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          animationSpeed={2000}
-          testID='slow-skeleton'
-        />,
+        <SkeletonLoader variant='base' animationSpeed={2000} testID='slow-skeleton' />,
       );
 
       const skeleton = getByTestId('slow-skeleton');
@@ -330,9 +277,7 @@ describe('SkeletonLoader', () => {
 
       const skeleton = getByTestId('hinted-skeleton');
       expect(skeleton).toBeTruthy();
-      expect(skeleton.props.accessibilityHint).toBe(
-        'Please wait while content loads',
-      );
+      expect(skeleton.props.accessibilityHint).toBe('Please wait while content loads');
     });
   });
 
@@ -341,11 +286,7 @@ describe('SkeletonLoader', () => {
       const customStyle = { margin: 10, padding: 5 };
 
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          style={customStyle}
-          testID='styled-skeleton'
-        />,
+        <SkeletonLoader variant='base' style={customStyle} testID='styled-skeleton' />,
       );
 
       const skeleton = getByTestId('styled-skeleton');
@@ -354,11 +295,7 @@ describe('SkeletonLoader', () => {
 
     it('merges custom styles with default styles', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          style={{ backgroundColor: 'red' }}
-          testID='red-skeleton'
-        />,
+        <SkeletonLoader variant='base' style={{ backgroundColor: 'red' }} testID='red-skeleton' />,
       );
 
       const skeleton = getByTestId('red-skeleton');
@@ -387,11 +324,7 @@ describe('SkeletonLoader', () => {
 
     it('handles zero columns for grid variant', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='grid'
-          columns={0}
-          testID='no-columns-skeleton'
-        />,
+        <SkeletonLoader variant='grid' columns={0} testID='no-columns-skeleton' />,
       );
 
       const skeleton = getByTestId('no-columns-skeleton');
@@ -400,12 +333,7 @@ describe('SkeletonLoader', () => {
 
     it('handles very large dimensions', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          width={1000}
-          height={500}
-          testID='large-skeleton'
-        />,
+        <SkeletonLoader variant='base' width={1000} height={500} testID='large-skeleton' />,
       );
 
       const skeleton = getByTestId('large-skeleton');
@@ -414,12 +342,7 @@ describe('SkeletonLoader', () => {
 
     it('handles very small dimensions', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          width={1}
-          height={1}
-          testID='tiny-skeleton'
-        />,
+        <SkeletonLoader variant='base' width={1} height={1} testID='tiny-skeleton' />,
       );
 
       const skeleton = getByTestId('tiny-skeleton');
@@ -464,11 +387,7 @@ describe('SkeletonLoader', () => {
       const startTime = Date.now();
 
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='list'
-          items={100}
-          testID='performance-skeleton'
-        />,
+        <SkeletonLoader variant='list' items={100} testID='performance-skeleton' />,
       );
 
       const endTime = Date.now();
@@ -483,22 +402,12 @@ describe('SkeletonLoader', () => {
 
     it('handles rapid re-renders', () => {
       const { rerender, getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          width={100}
-          testID='rerender-skeleton'
-        />,
+        <SkeletonLoader variant='base' width={100} testID='rerender-skeleton' />,
       );
 
       // Rapidly change props
       for (let i = 0; i < 10; i++) {
-        rerender(
-          <SkeletonLoader
-            variant='base'
-            width={100 + i * 10}
-            testID='rerender-skeleton'
-          />,
-        );
+        rerender(<SkeletonLoader variant='base' width={100 + i * 10} testID='rerender-skeleton' />);
       }
 
       const skeleton = getByTestId('rerender-skeleton');
@@ -519,12 +428,7 @@ describe('SkeletonLoader', () => {
 
     it('handles negative dimensions', () => {
       const { getByTestId } = render(
-        <SkeletonLoader
-          variant='base'
-          width={-100}
-          height={-50}
-          testID='negative-skeleton'
-        />,
+        <SkeletonLoader variant='base' width={-100} height={-50} testID='negative-skeleton' />,
       );
 
       const skeleton = getByTestId('negative-skeleton');

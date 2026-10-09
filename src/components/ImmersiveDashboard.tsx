@@ -1,17 +1,16 @@
-// @ts-nocheck
 /* eslint-disable */
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Text, Animated, Platform } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useCarbon } from '../hooks/useFirebaseData';
 import { useTheme } from '../theme/ThemeProvider';
 import { ImmersiveCarbonVisualizationEngineService } from '../services/ImmersiveCarbonVisualizationEngine';
-import type { RootState } from '../store';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export const ImmersiveDashboard: React.FC = () => {
   const { theme } = useTheme();
   // Select ecosystem state from Redux
-  const ecosystem = useSelector((state: RootState) => state.carbon.ecosystem);
+  const carbonData = useCarbon();
+  const ecosystem = (carbonData as any).ecosystem || { health: 100, activeEffects: [] };
 
   // Animation values for visual feedback
   const treeScale = useRef(new Animated.Value(1)).current;
@@ -79,7 +78,7 @@ export const ImmersiveDashboard: React.FC = () => {
 
   // Derived styling based on state
   // Sky color shifts from Grey (polluted) to Blue (clean) based on airQuality
-  const getSkyColors = () => {
+  const getSkyColors = (): [string, string] => {
     const quality = ecosystem.airQuality || 0.5;
     if (quality > 0.8) return ['#4facfe', '#00f2fe']; // Clear Blue
     if (quality > 0.4) return ['#89f7fe', '#66a6ff']; // Hazy Blue

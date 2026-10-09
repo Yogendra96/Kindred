@@ -266,10 +266,10 @@ export class ZeroTrustSecurityService {
       const riskLevel = threats.some(t => t.severity === 'critical')
         ? 'critical'
         : threats.some(t => t.severity === 'high')
-        ? 'high'
-        : threats.some(t => t.severity === 'medium')
-        ? 'medium'
-        : 'low';
+          ? 'high'
+          : threats.some(t => t.severity === 'medium')
+            ? 'medium'
+            : 'low';
 
       const assessment: SecurityAssessment = {
         isSecure: threats.length === 0,

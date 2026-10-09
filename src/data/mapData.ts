@@ -37,8 +37,7 @@ export const LOCATIONS: EcoLocation[] = [
     name: 'TerraCycle Drop-Off',
     category: 'Recycling',
     categoryIcon: '♻️',
-    description:
-      'Hard-to-recycle items: electronics, batteries, packaging, clothing.',
+    description: 'Hard-to-recycle items: electronics, batteries, packaging, clothing.',
     distance: '0.6 km',
     rating: 4.5,
     open: true,
@@ -51,8 +50,7 @@ export const LOCATIONS: EcoLocation[] = [
     name: 'EVgo Charging Hub',
     category: 'EV Charging',
     categoryIcon: '⚡',
-    description:
-      '8 fast chargers (150 kW). Solar canopy, 100% renewable electricity.',
+    description: '8 fast chargers (150 kW). Solar canopy, 100% renewable electricity.',
     distance: '0.9 km',
     rating: 4.3,
     open: true,
@@ -79,8 +77,7 @@ export const LOCATIONS: EcoLocation[] = [
     name: 'Prospect Park Trails',
     category: 'Green Space',
     categoryIcon: '🌳',
-    description:
-      'Urban forest with 39 km of trails. 10,000 trees absorbing 50 tonnes CO₂/year.',
+    description: 'Urban forest with 39 km of trails. 10,000 trees absorbing 50 tonnes CO₂/year.',
     distance: '2.2 km',
     rating: 4.9,
     open: true,
@@ -93,8 +90,7 @@ export const LOCATIONS: EcoLocation[] = [
     name: 'Repair Café Brooklyn',
     category: 'Repair',
     categoryIcon: '🔧',
-    description:
-      'Free volunteer-run repairs: electronics, clothing, furniture, bikes. No waste.',
+    description: 'Free volunteer-run repairs: electronics, clothing, furniture, bikes. No waste.',
     distance: '2.8 km',
     rating: 4.6,
     open: false,
@@ -107,8 +103,7 @@ export const LOCATIONS: EcoLocation[] = [
     name: 'Solar Community Garden',
     category: 'Solar',
     categoryIcon: '☀️',
-    description:
-      'Community solar plot — join the waiting list to offset your home electricity.',
+    description: 'Community solar plot — join the waiting list to offset your home electricity.',
     distance: '3.1 km',
     rating: 4.4,
     open: true,

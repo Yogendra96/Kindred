@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import { useTheme } from '../theme/ThemeProvider';
@@ -15,7 +14,6 @@ import {
   Dimensions,
   ScrollView,
   Switch,
-  Slider,
   Alert,
   Platform,
   StatusBar,
@@ -140,7 +138,7 @@ export const DynamicTheming: React.FC<DynamicThemingProps> = ({
   onClose,
   testID,
 }) => {
-  const { theme, isDarkMode } = useTheme();
+  const { theme } = useTheme();
   const [state, setState] = useState({
     currentPreset: 'default',
     customization: DEFAULT_CUSTOMIZATION,

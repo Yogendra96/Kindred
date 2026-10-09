@@ -15,11 +15,7 @@ interface Props {
   compact?: boolean;
 }
 
-export const GlobalContextCard: React.FC<Props> = ({
-  context,
-  onLearnMore,
-  compact = false,
-}) => {
+export const GlobalContextCard: React.FC<Props> = ({ context, onLearnMore, compact = false }) => {
   const { theme } = useTheme();
 
   const progressBarWidth = useMemo(() => {
@@ -30,8 +26,7 @@ export const GlobalContextCard: React.FC<Props> = ({
 
   const getStatusColor = () => {
     if (context.vsWorldAverage.isBelowAverage) return theme.colors.success;
-    if (context.userFootprint <= context.countryAverage * 1.2)
-      return theme.colors.warning;
+    if (context.userFootprint <= context.countryAverage * 1.2) return theme.colors.warning;
     return theme.colors.error;
   };
 
@@ -46,22 +41,14 @@ export const GlobalContextCard: React.FC<Props> = ({
   if (compact) {
     return (
       <TouchableOpacity
-        style={[
-          styles.compactContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
+        style={[styles.compactContainer, { backgroundColor: theme.colors.surface }]}
         onPress={onLearnMore}
         activeOpacity={0.7}
       >
         <View style={styles.compactHeader}>
           <Text style={styles.emoji}>{getFootprintEmoji()}</Text>
           <View style={styles.compactInfo}>
-            <Text
-              style={[
-                styles.compactTitle,
-                { color: theme.colors.text.primary },
-              ]}
-            >
+            <Text style={[styles.compactTitle, { color: theme.colors.text.primary }]}>
               {context.userFootprint.toFixed(1)}t CO₂/yr
             </Text>
             <Text style={[styles.compactSubtitle, { color: getStatusColor() }]}>
@@ -69,9 +56,7 @@ export const GlobalContextCard: React.FC<Props> = ({
                 ? `${Math.abs(context.vsWorldAverage.percentDifference).toFixed(
                     0,
                   )}% below world avg`
-                : `${context.vsWorldAverage.percentDifference.toFixed(
-                    0,
-                  )}% above world avg`}
+                : `${context.vsWorldAverage.percentDifference.toFixed(0)}% above world avg`}
             </Text>
           </View>
           <Text style={styles.chevron}>›</Text>
@@ -89,9 +74,7 @@ export const GlobalContextCard: React.FC<Props> = ({
         </Text>
         {onLearnMore && (
           <TouchableOpacity onPress={onLearnMore}>
-            <Text style={[styles.learnMore, { color: theme.colors.primary }]}>
-              Learn More
-            </Text>
+            <Text style={[styles.learnMore, { color: theme.colors.primary }]}>Learn More</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -100,20 +83,10 @@ export const GlobalContextCard: React.FC<Props> = ({
       <View style={styles.mainDisplay}>
         <Text style={styles.emoji}>{getFootprintEmoji()}</Text>
         <View style={styles.footprintInfo}>
-          <Text
-            style={[
-              styles.footprintValue,
-              { color: theme.colors.text.primary },
-            ]}
-          >
+          <Text style={[styles.footprintValue, { color: theme.colors.text.primary }]}>
             {context.userFootprint.toFixed(1)}
           </Text>
-          <Text
-            style={[
-              styles.footprintUnit,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.footprintUnit, { color: theme.colors.text.secondary }]}>
             tonnes CO₂/year
           </Text>
         </View>
@@ -121,12 +94,7 @@ export const GlobalContextCard: React.FC<Props> = ({
 
       {/* Progress Bar */}
       <View style={styles.progressSection}>
-        <View
-          style={[
-            styles.progressTrack,
-            { backgroundColor: theme.colors.border },
-          ]}
-        >
+        <View style={[styles.progressTrack, { backgroundColor: theme.colors.border }]}>
           {/* Paris Target Marker */}
           <View
             style={[
@@ -157,20 +125,10 @@ export const GlobalContextCard: React.FC<Props> = ({
           />
         </View>
         <View style={styles.progressLabels}>
-          <Text
-            style={[
-              styles.progressLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.progressLabel, { color: theme.colors.text.secondary }]}>
             Paris 2.5t
           </Text>
-          <Text
-            style={[
-              styles.progressLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.progressLabel, { color: theme.colors.text.secondary }]}>
             World Avg {context.worldAverage.toFixed(1)}t
           </Text>
         </View>
@@ -180,12 +138,7 @@ export const GlobalContextCard: React.FC<Props> = ({
       <View style={styles.comparisons}>
         {/* vs Country */}
         <View style={styles.comparisonItem}>
-          <Text
-            style={[
-              styles.comparisonLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.comparisonLabel, { color: theme.colors.text.secondary }]}>
             vs {context.countryName}
           </Text>
           <Text
@@ -205,12 +158,7 @@ export const GlobalContextCard: React.FC<Props> = ({
 
         {/* vs World */}
         <View style={styles.comparisonItem}>
-          <Text
-            style={[
-              styles.comparisonLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.comparisonLabel, { color: theme.colors.text.secondary }]}>
             vs World
           </Text>
           <Text
@@ -230,38 +178,18 @@ export const GlobalContextCard: React.FC<Props> = ({
 
         {/* Percentile */}
         <View style={styles.comparisonItem}>
-          <Text
-            style={[
-              styles.comparisonLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.comparisonLabel, { color: theme.colors.text.secondary }]}>
             Global Rank
           </Text>
-          <Text
-            style={[
-              styles.comparisonValue,
-              { color: theme.colors.text.primary },
-            ]}
-          >
+          <Text style={[styles.comparisonValue, { color: theme.colors.text.primary }]}>
             Top {100 - context.globalPercentile}%
           </Text>
         </View>
       </View>
 
       {/* Historical Context */}
-      <View
-        style={[
-          styles.historicalContext,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <Text
-          style={[
-            styles.historicalText,
-            { color: theme.colors.text.secondary },
-          ]}
-        >
+      <View style={[styles.historicalContext, { backgroundColor: theme.colors.background }]}>
+        <Text style={[styles.historicalText, { color: theme.colors.text.secondary }]}>
           📜 {context.historicalEquivalent.description}
         </Text>
       </View>
@@ -270,13 +198,7 @@ export const GlobalContextCard: React.FC<Props> = ({
       {context.insights.length > 0 && (
         <View style={styles.insights}>
           {context.insights.slice(0, 2).map((insight, index) => (
-            <Text
-              key={index}
-              style={[
-                styles.insightText,
-                { color: theme.colors.text.secondary },
-              ]}
-            >
+            <Text key={index} style={[styles.insightText, { color: theme.colors.text.secondary }]}>
               💡 {insight}
             </Text>
           ))}

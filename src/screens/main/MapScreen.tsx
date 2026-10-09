@@ -5,6 +5,9 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import { useToast } from '../../contexts/ToastContext';
 import { useGreenRouteTelemetry } from '../../hooks/useGreenRouteTelemetry';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import CategoryChip from '../../components/ui/CategoryChip';
 import {
   Leaf,
   Recycle,
@@ -15,15 +18,6 @@ import {
   CheckCircle,
   Trophy,
 } from 'phosphor-react-native';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
 
 interface GlassBadgeProps {
   style?: StyleProp<ViewStyle>;
@@ -233,18 +227,7 @@ const MapScreen = () => {
     selectedCategory === 'All' ? LOCATIONS : LOCATIONS.filter(l => l.category === selectedCategory);
 
   return (
-    <View style={styles.container}>
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
-
+    <SpaceBackground earthPosition='top-left' enableComets={true}>
       <View style={styles.header}>
         <Text style={styles.title}>🗺️ Local Impact</Text>
         <Text style={styles.subtitle}>Eco-friendly spots near you</Text>
@@ -284,14 +267,14 @@ const MapScreen = () => {
                     {location.category.includes('♻️')
                       ? '♻️'
                       : location.category.includes('🌱')
-                      ? '🌱'
-                      : location.category.includes('⚡')
-                      ? '⚡'
-                      : location.category.includes('🌳')
-                      ? '🌳'
-                      : location.category.includes('🛍️')
-                      ? '🛍️'
-                      : '📍'}
+                        ? '🌱'
+                        : location.category.includes('⚡')
+                          ? '⚡'
+                          : location.category.includes('🌳')
+                            ? '🌳'
+                            : location.category.includes('🛍️')
+                              ? '🛍️'
+                              : '📍'}
                   </Text>
                 </View>
                 <Callout>
@@ -313,18 +296,16 @@ const MapScreen = () => {
           contentContainerStyle={styles.filterContent}
         >
           {CATEGORIES.map(c => (
-            <TouchableOpacity key={c.id} onPress={() => setSelectedCategory(c.id)}>
-              <View
-                style={[styles.filterPill, selectedCategory === c.id && styles.filterPillActive]}
-              >
-                {c.icon && <View style={styles.categoryIconContainer}>{c.icon}</View>}
-                <Text
-                  style={[styles.filterText, selectedCategory === c.id && styles.filterTextActive]}
-                >
-                  {c.label}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            <CategoryChip
+              key={c.id}
+              label={c.label}
+              active={selectedCategory === c.id}
+              onPress={() => setSelectedCategory(c.id)}
+              icon={c.icon && <View style={styles.categoryIconContainer}>{c.icon}</View>}
+              activeColor='rgba(56, 239, 125, 0.2)'
+              style={[styles.filterPill, selectedCategory === c.id && styles.filterPillActive]}
+              textStyle={[styles.filterText, selectedCategory === c.id && styles.filterTextActive]}
+            />
           ))}
         </ScrollView>
 
@@ -361,7 +342,7 @@ const MapScreen = () => {
           </View>
         </TouchableOpacity>
       </View>
-    </View>
+    </SpaceBackground>
   );
 };
 
@@ -453,8 +434,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  filterScroll: { maxHeight: 50 },
-  filterContent: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  filterScroll: { height: 46, marginTop: 4, marginBottom: 4 },
+  filterContent: { paddingHorizontal: 16, alignItems: 'center', gap: 8 },
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -466,15 +447,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   filterPillActive: {
-    backgroundColor: 'rgba(56,239,125,0.2)',
-    borderColor: '#38EF7D',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   filterText: {
     fontSize: 13,
     color: 'rgba(255,255,255,0.7)',
     fontWeight: '500',
   },
-  filterTextActive: { color: '#38EF7D', fontWeight: 'bold' },
+  filterTextActive: { color: '#FFFFFF', fontWeight: '700' },
 
   listContainer: { padding: 16, paddingBottom: 32 },
   listTitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 12 },
@@ -569,13 +550,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     marginTop: 2,
-  },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
   },
   glassBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',

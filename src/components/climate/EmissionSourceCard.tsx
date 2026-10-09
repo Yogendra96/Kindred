@@ -30,11 +30,7 @@ interface Props {
   compact?: boolean;
 }
 
-export const EmissionSourceCard: React.FC<Props> = ({
-  source,
-  onPress,
-  compact = false,
-}) => {
+export const EmissionSourceCard: React.FC<Props> = ({ source, onPress, compact = false }) => {
   const { theme } = useTheme();
 
   const getSectorInfo = useCallback((sector: string) => {
@@ -61,10 +57,7 @@ export const EmissionSourceCard: React.FC<Props> = ({
     return sectorMap[lowerSector] || { emoji: '🏭', color: '#6B7280' };
   }, []);
 
-  const sectorInfo = useMemo(
-    () => getSectorInfo(source.sector),
-    [getSectorInfo, source.sector],
-  );
+  const sectorInfo = useMemo(() => getSectorInfo(source.sector), [getSectorInfo, source.sector]);
 
   const formatEmissions = (value: number) => {
     if (value >= 1000000) {
@@ -85,11 +78,9 @@ export const EmissionSourceCard: React.FC<Props> = ({
 
   const getImpactLevel = useCallback(
     (emissions: number) => {
-      if (emissions >= 10000000)
-        return { level: 'Major', color: theme.colors.error };
+      if (emissions >= 10000000) return { level: 'Major', color: theme.colors.error };
       if (emissions >= 1000000) return { level: 'Large', color: '#F97316' };
-      if (emissions >= 100000)
-        return { level: 'Medium', color: theme.colors.warning };
+      if (emissions >= 100000) return { level: 'Medium', color: theme.colors.warning };
       return { level: 'Small', color: theme.colors.success };
     },
     [theme.colors.error, theme.colors.warning, theme.colors.success],
@@ -103,10 +94,7 @@ export const EmissionSourceCard: React.FC<Props> = ({
   if (compact) {
     return (
       <TouchableOpacity
-        style={[
-          styles.compactContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
+        style={[styles.compactContainer, { backgroundColor: theme.colors.surface }]}
         onPress={() => onPress?.(source)}
         activeOpacity={0.7}
         disabled={!onPress}
@@ -119,12 +107,7 @@ export const EmissionSourceCard: React.FC<Props> = ({
           >
             {source.name}
           </Text>
-          <Text
-            style={[
-              styles.compactDistance,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.compactDistance, { color: theme.colors.text.secondary }]}>
             {formatDistance(source.distance)}
           </Text>
         </View>
@@ -132,11 +115,7 @@ export const EmissionSourceCard: React.FC<Props> = ({
           <Text style={[styles.compactValue, { color: impactLevel.color }]}>
             {formatEmissions(source.emissions)}
           </Text>
-          <Text
-            style={[styles.compactUnit, { color: theme.colors.text.tertiary }]}
-          >
-            tCO₂/yr
-          </Text>
+          <Text style={[styles.compactUnit, { color: theme.colors.text.tertiary }]}>tCO₂/yr</Text>
         </View>
       </TouchableOpacity>
     );
@@ -151,32 +130,19 @@ export const EmissionSourceCard: React.FC<Props> = ({
     >
       {/* Header */}
       <View style={styles.header}>
-        <View
-          style={[styles.sectorBadge, { backgroundColor: sectorInfo.color }]}
-        >
+        <View style={[styles.sectorBadge, { backgroundColor: sectorInfo.color }]}>
           <Text style={styles.sectorEmoji}>{sectorInfo.emoji}</Text>
-          <Text style={styles.sectorText}>
-            {source.sector.replace(/-/g, ' ')}
-          </Text>
+          <Text style={styles.sectorText}>{source.sector.replace(/-/g, ' ')}</Text>
         </View>
-        <View
-          style={[styles.distanceBadge, { borderColor: theme.colors.border }]}
-        >
-          <Text
-            style={[
-              styles.distanceText,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+        <View style={[styles.distanceBadge, { borderColor: theme.colors.border }]}>
+          <Text style={[styles.distanceText, { color: theme.colors.text.secondary }]}>
             📍 {formatDistance(source.distance)}
           </Text>
         </View>
       </View>
 
       {/* Name */}
-      <Text style={[styles.name, { color: theme.colors.text.primary }]}>
-        {source.name}
-      </Text>
+      <Text style={[styles.name, { color: theme.colors.text.primary }]}>{source.name}</Text>
 
       {/* Location */}
       <Text style={[styles.location, { color: theme.colors.text.secondary }]}>
@@ -184,33 +150,16 @@ export const EmissionSourceCard: React.FC<Props> = ({
       </Text>
 
       {/* Emissions Display */}
-      <View
-        style={[
-          styles.emissionsContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
+      <View style={[styles.emissionsContainer, { backgroundColor: theme.colors.background }]}>
         <View style={styles.emissionsMain}>
-          <Text
-            style={[
-              styles.emissionsValue,
-              { color: theme.colors.text.primary },
-            ]}
-          >
+          <Text style={[styles.emissionsValue, { color: theme.colors.text.primary }]}>
             {formatEmissions(source.emissions)}
           </Text>
-          <Text
-            style={[
-              styles.emissionsUnit,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.emissionsUnit, { color: theme.colors.text.secondary }]}>
             tonnes CO₂/year
           </Text>
         </View>
-        <View
-          style={[styles.impactBadge, { backgroundColor: impactLevel.color }]}
-        >
+        <View style={[styles.impactBadge, { backgroundColor: impactLevel.color }]}>
           <Text style={styles.impactText}>{impactLevel.level} Source</Text>
         </View>
       </View>
@@ -218,29 +167,16 @@ export const EmissionSourceCard: React.FC<Props> = ({
       {/* Subsectors if available */}
       {source.subsectors && source.subsectors.length > 0 && (
         <View style={styles.subsectors}>
-          <Text
-            style={[
-              styles.subsectorsLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.subsectorsLabel, { color: theme.colors.text.secondary }]}>
             Activities:
           </Text>
           <View style={styles.subsectorTags}>
             {source.subsectors.slice(0, 3).map((subsector, index) => (
               <View
                 key={index}
-                style={[
-                  styles.subsectorTag,
-                  { backgroundColor: theme.colors.border },
-                ]}
+                style={[styles.subsectorTag, { backgroundColor: theme.colors.border }]}
               >
-                <Text
-                  style={[
-                    styles.subsectorText,
-                    { color: theme.colors.text.secondary },
-                  ]}
-                >
+                <Text style={[styles.subsectorText, { color: theme.colors.text.secondary }]}>
                   {subsector.replace(/-/g, ' ')}
                 </Text>
               </View>
@@ -252,33 +188,19 @@ export const EmissionSourceCard: React.FC<Props> = ({
       {/* Context */}
       <View style={styles.contextRow}>
         <View style={styles.contextItem}>
-          <Text
-            style={[styles.contextLabel, { color: theme.colors.text.tertiary }]}
-          >
+          <Text style={[styles.contextLabel, { color: theme.colors.text.tertiary }]}>
             Sector Global Rank
           </Text>
-          <Text
-            style={[styles.contextValue, { color: theme.colors.text.primary }]}
-          >
+          <Text style={[styles.contextValue, { color: theme.colors.text.primary }]}>
             #{source.rank?.toLocaleString() || 'N/A'}
           </Text>
         </View>
         {source.lastUpdated && (
           <View style={styles.contextItem}>
-            <Text
-              style={[
-                styles.contextLabel,
-                { color: theme.colors.text.tertiary },
-              ]}
-            >
+            <Text style={[styles.contextLabel, { color: theme.colors.text.tertiary }]}>
               Last Updated
             </Text>
-            <Text
-              style={[
-                styles.contextValue,
-                { color: theme.colors.text.primary },
-              ]}
-            >
+            <Text style={[styles.contextValue, { color: theme.colors.text.primary }]}>
               {new Date(source.lastUpdated).getFullYear()}
             </Text>
           </View>
@@ -288,9 +210,7 @@ export const EmissionSourceCard: React.FC<Props> = ({
       {/* Action hint */}
       {onPress && (
         <View style={styles.actionHint}>
-          <Text
-            style={[styles.actionHintText, { color: theme.colors.primary }]}
-          >
+          <Text style={[styles.actionHintText, { color: theme.colors.primary }]}>
             Tap for details →
           </Text>
         </View>

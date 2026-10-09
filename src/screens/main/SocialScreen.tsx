@@ -8,20 +8,15 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
+  RefreshControl,
 } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { Medal, Users, Lightning, Plus } from 'phosphor-react-native';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
+import { Medal, Users, Lightning, Plus, Play, Heart, ShareNetwork } from 'phosphor-react-native';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import ProgressBar from '../../components/ui/ProgressBar';
+import CategoryChip from '../../components/ui/CategoryChip';
 
 // ─── Mock Data (moved to src/data/socialData.ts) ──────────────────────────────
 
@@ -235,17 +230,6 @@ const LeaderboardRow = ({ item, index }: { item: (typeof LEADERBOARD)[0]; index:
   );
 };
 
-const ProgressBar = ({ progress, color = '#38EF7D' }: { progress: number; color?: string }) => (
-  <View style={styles.progressTrack}>
-    <View
-      style={[
-        styles.progressFill,
-        { width: `${Math.min(progress * 100, 100)}%`, backgroundColor: color },
-      ]}
-    />
-  </View>
-);
-
 const ChallengeCard = ({ item }: { item: (typeof CHALLENGES)[0] }) => {
   const { showToast } = useToast();
   const [joined, setJoined] = useState(item.joined);
@@ -377,9 +361,26 @@ const GroupCard = ({ item }: { item: (typeof GROUPS)[0] }) => {
 
 const LeaderboardTab = () => {
   const [scope, setScope] = useState<'friends' | 'global'>('friends');
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.tabContent}>
+    <ScrollView
+      contentContainerStyle={styles.tabContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor='#FFFFFF'
+          colors={['#38EF7D']}
+        />
+      }
+    >
       {/* Scope toggle */}
       <View style={styles.scopeToggle}>
         {(['friends', 'global'] as const).map(s => (
@@ -416,6 +417,14 @@ const ChallengesTab = () => {
   const [filter, setFilter] = useState('All');
   const types = ['All', 'Daily', 'Weekly', 'Monthly', 'Global'];
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
   const filtered = filter === 'All' ? CHALLENGES : CHALLENGES.filter(c => c.type === filter);
 
   return (
@@ -428,13 +437,15 @@ const ChallengesTab = () => {
         contentContainerStyle={styles.pillContent}
       >
         {types.map(t => (
-          <TouchableOpacity
+          <CategoryChip
             key={t}
-            style={[styles.pill, filter === t && styles.pillActive]}
+            label={t}
+            active={filter === t}
             onPress={() => setFilter(t)}
-          >
-            <Text style={[styles.pillText, filter === t && styles.pillTextActive]}>{t}</Text>
-          </TouchableOpacity>
+            activeColor='rgba(56, 239, 125, 0.2)'
+            style={[styles.pill, filter === t && styles.pillActive]}
+            textStyle={[styles.pillText, filter === t && styles.pillTextActive]}
+          />
         ))}
       </ScrollView>
 
@@ -444,6 +455,14 @@ const ChallengesTab = () => {
         renderItem={({ item }) => <ChallengeCard item={item} />}
         contentContainerStyle={styles.tabContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
       />
     </View>
   );
@@ -453,6 +472,14 @@ const GroupsTab = () => {
   const { showToast } = useToast();
   const [showCreate, setShowCreate] = useState(false);
   const [groupName, setGroupName] = useState('');
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
   const handleCreate = () => {
     if (!groupName.trim()) {
@@ -469,7 +496,18 @@ const GroupsTab = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.tabContent} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={styles.tabContent}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor='#FFFFFF'
+          colors={['#38EF7D']}
+        />
+      }
+    >
       {/* Create group CTA */}
       {!showCreate ? (
         <TouchableOpacity style={styles.createGroupBtn} onPress={() => setShowCreate(true)}>
@@ -506,14 +544,784 @@ const GroupsTab = () => {
   );
 };
 
+// ─── EcoClips Tab ─────────────────────────────────────────────────────────────
+import { Dimensions, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  ChatCircle,
+  CheckCircle as PhosphorCheck,
+  PlusCircle,
+  Funnel,
+} from 'phosphor-react-native';
+
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// ── SDG filter definitions ──
+const SDG_FILTERS = [
+  { key: 'all', label: 'All', emoji: '🌍', color: '#fff' },
+  { key: 'climate', label: 'Climate', emoji: '🌡️', color: '#2B86FA' },
+  { key: 'veganism', label: 'Vegan', emoji: '🌱', color: '#38EF7D' },
+  { key: 'energy', label: 'Energy', emoji: '⚡', color: '#FF9500' },
+  { key: 'sustainability', label: 'Eco Living', emoji: '♻️', color: '#F2C94C' },
+  { key: 'minimalism', label: 'Minimalism', emoji: '🎒', color: '#9B59B6' },
+  { key: 'ethics', label: 'Ethics', emoji: '⚖️', color: '#E74C3C' },
+];
+
+const SDG_TAGS: Record<string, { label: string; color: string }> = {
+  veganism: { label: 'SDG 15 · Life on Land', color: '#38EF7D' },
+  sustainability: { label: 'SDG 12 · Responsible Consumption', color: '#F2C94C' },
+  climate: { label: 'SDG 13 · Climate Action', color: '#2B86FA' },
+  minimalism: { label: 'SDG 12 · Responsible Consumption', color: '#9B59B6' },
+  energy: { label: 'SDG 7 · Clean Energy', color: '#FF9500' },
+  ethics: { label: 'SDG 16 · Peace & Justice', color: '#E74C3C' },
+};
+
+// ── Mock comments ──
+const MOCK_COMMENTS: Record<
+  string,
+  { id: string; user: string; text: string; verified: boolean }[]
+> = {
+  c1: [
+    { id: 'cm1', user: '@priya_eco', text: 'This changed my whole week! 🌱', verified: false },
+    { id: 'cm2', user: '@UN_SDG', text: 'Supporting SDG 15 — keep going! 🌍', verified: true },
+  ],
+  c2: [{ id: 'cm3', user: '@luca_m', text: 'One bag challenge accepted 💪', verified: false }],
+  c3: [
+    {
+      id: 'cm4',
+      user: '@solaradvocate',
+      text: 'Solar pays back in 4 years average!',
+      verified: false,
+    },
+    {
+      id: 'cm5',
+      user: '@GreenpeaceOrg',
+      text: 'Solar adoption is SDG 7 in action ⚡',
+      verified: true,
+    },
+  ],
+  c4: [
+    { id: 'cm6', user: '@thriftqueen', text: 'Thrift stores changed my life fr', verified: false },
+  ],
+  c5: [
+    {
+      id: 'cm7',
+      user: '@ClimateTracker',
+      text: '1.5°C = the line we cannot cross 🌊',
+      verified: true,
+    },
+    { id: 'cm8', user: '@emma_r', text: 'Shared this with my whole team at work', verified: false },
+  ],
+};
+
+// ── Impact stats per clip ──
+const IMPACT_STATS: Record<string, { inspired: number; actions: string }> = {
+  c1: { inspired: 847, actions: 'tried plant-based this week' },
+  c2: { inspired: 412, actions: 'decluttered one bag' },
+  c3: { inspired: 1203, actions: 'looked into solar panels' },
+  c4: { inspired: 631, actions: 'bought secondhand' },
+  c5: { inspired: 2910, actions: 'shared this with a friend' },
+};
+
+// ── Verified creators ──
+const VERIFIED_CREATORS = new Set([
+  '@UN_SDG',
+  '@GreenpeaceOrg',
+  '@ClimateTracker',
+  '@solarenergy.daily',
+  '@climateaction.now',
+]);
+
+type ClipItem = {
+  id: string;
+  creator: string | null;
+  caption: string | null;
+  tag: string | null;
+  emoji: string | null;
+  likes: number;
+  isAd: boolean;
+};
+
+const BASE_CLIPS: ClipItem[] = [
+  {
+    id: 'c1',
+    creator: '@earthlingco',
+    caption: 'A week of plant-based meals 🌱 The impact is real.',
+    tag: 'veganism',
+    emoji: '🌱',
+    likes: 14200,
+    isAd: false,
+  },
+  {
+    id: 'c2',
+    creator: '@minimalist.life',
+    caption: "One bag. That's all I needed for a whole year. Minimalism changed everything.",
+    tag: 'minimalism',
+    emoji: '🎒',
+    likes: 9800,
+    isAd: false,
+  },
+  { id: 'adslot1', creator: null, caption: null, tag: null, emoji: null, likes: 0, isAd: true },
+  {
+    id: 'c3',
+    creator: '@solarenergy.daily',
+    caption: 'We installed solar last year. Our bill dropped to zero. ⚡',
+    tag: 'energy',
+    emoji: '☀️',
+    likes: 22000,
+    isAd: false,
+  },
+  {
+    id: 'c4',
+    creator: '@sustainabilist',
+    caption: 'Secondhand first. Always. The fashion industry is the 2nd largest polluter.',
+    tag: 'sustainability',
+    emoji: '👕',
+    likes: 6700,
+    isAd: false,
+  },
+  {
+    id: 'c5',
+    creator: '@climateaction.now',
+    caption: "1.5°C is not just a number. It's the difference between a flood and a home. 🌊",
+    tag: 'climate',
+    emoji: '🌊',
+    likes: 18500,
+    isAd: false,
+  },
+];
+
+const EcoClipsTab = () => {
+  const [likedIds, setLikedIds] = useState<string[]>([]);
+  const [adDonationCents, setAdDonationCents] = useState(0);
+  const [adPlayingId, setAdPlayingId] = useState<string | null>(null);
+
+  // SDG filter
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  // Comments modal
+  const [commentsClipId, setCommentsClipId] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState('');
+  const [extraComments, setExtraComments] = useState<
+    Record<string, { id: string; user: string; text: string; verified: boolean }[]>
+  >({});
+
+  // Upload modal
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadCaption, setUploadCaption] = useState('');
+  const [uploadTag, setUploadTag] = useState('climate');
+  const [userClips, setUserClips] = useState<ClipItem[]>([]);
+
+  // Derived filtered list
+  const allClips = [...userClips, ...BASE_CLIPS];
+  const filteredClips =
+    activeFilter === 'all' ? allClips : allClips.filter(c => c.tag === activeFilter || c.isAd);
+
+  const toggleLike = (id: string) =>
+    setLikedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+  const handlePlayAd = (id: string) => {
+    if (adPlayingId) return;
+    setAdPlayingId(id);
+    setTimeout(() => {
+      setAdDonationCents(c => c + 2);
+      setAdPlayingId(null);
+    }, 5000);
+  };
+
+  const handlePostComment = (clipId: string) => {
+    if (!newComment.trim()) return;
+    const entry = {
+      id: `uc_${Date.now()}`,
+      user: '@you',
+      text: newComment.trim(),
+      verified: false,
+    };
+    setExtraComments(prev => ({ ...prev, [clipId]: [...(prev[clipId] ?? []), entry] }));
+    setNewComment('');
+  };
+
+  const handleUploadClip = () => {
+    if (!uploadCaption.trim()) return;
+    const newClip: ClipItem = {
+      id: `user_${Date.now()}`,
+      creator: '@you',
+      caption: uploadCaption.trim(),
+      tag: uploadTag,
+      emoji: SDG_FILTERS.find(f => f.key === uploadTag)?.emoji ?? '🌍',
+      likes: 0,
+      isAd: false,
+    };
+    setUserClips(prev => [newClip, ...prev]);
+    setUploadCaption('');
+    setShowUpload(false);
+  };
+
+  const commentsForClip = (id: string) => [
+    ...(MOCK_COMMENTS[id] ?? []),
+    ...(extraComments[id] ?? []),
+  ];
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* ── Donation banner ── */}
+      {adDonationCents > 0 && (
+        <View style={ecoClipStyles.donationBanner}>
+          <Text style={ecoClipStyles.donationBannerText}>
+            🌍 ${(adDonationCents / 100).toFixed(2)} donated to SDG causes from your ad views
+          </Text>
+        </View>
+      )}
+
+      {/* ── SDG Filter chips ── */}
+      <View style={ecoClipStyles.filterRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={ecoClipStyles.filterScroll}
+        >
+          {SDG_FILTERS.map(f => (
+            <TouchableOpacity
+              key={f.key}
+              style={[
+                ecoClipStyles.filterChip,
+                activeFilter === f.key && { borderColor: f.color, backgroundColor: `${f.color}18` },
+              ]}
+              onPress={() => setActiveFilter(f.key)}
+              activeOpacity={0.8}
+            >
+              <Text style={ecoClipStyles.filterChipEmoji}>{f.emoji}</Text>
+              <Text
+                style={[
+                  ecoClipStyles.filterChipLabel,
+                  activeFilter === f.key && { color: f.color },
+                ]}
+              >
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Upload button */}
+        <TouchableOpacity
+          style={ecoClipStyles.uploadBtn}
+          onPress={() => setShowUpload(true)}
+          activeOpacity={0.8}
+        >
+          <PlusCircle size={26} color='#38EF7D' weight='fill' />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Clips feed ── */}
+      <FlatList
+        data={filteredClips}
+        keyExtractor={item => item.id}
+        pagingEnabled
+        showsVerticalScrollIndicator={false}
+        snapToAlignment='start'
+        decelerationRate='fast'
+        renderItem={({ item }) => {
+          // Ad slot
+          if (item.isAd) {
+            const playing = adPlayingId === item.id;
+            return (
+              <View style={[ecoClipStyles.clip, ecoClipStyles.adClip]}>
+                <Text style={ecoClipStyles.adLabel}>SPONSORED</Text>
+                <Text style={ecoClipStyles.adEmoji}>📢</Text>
+                <Text style={ecoClipStyles.adTitle}>Watch this ad to donate to SDG Causes</Text>
+                <Text style={ecoClipStyles.adSub}>
+                  100% of ad revenue goes to UN Sustainable Development Goals
+                </Text>
+                <TouchableOpacity
+                  style={[ecoClipStyles.adPlayBtn, playing && ecoClipStyles.adPlayBtnLoading]}
+                  onPress={() => handlePlayAd(item.id)}
+                  disabled={playing}
+                  activeOpacity={0.8}
+                >
+                  <Play
+                    size={18}
+                    color={playing ? 'rgba(255,255,255,0.4)' : '#0A0A0C'}
+                    weight='fill'
+                  />
+                  <Text
+                    style={[
+                      ecoClipStyles.adPlayBtnText,
+                      playing && ecoClipStyles.adPlayBtnTextLoading,
+                    ]}
+                  >
+                    {playing ? 'Ad playing… (+$0.02)' : 'Play Ad to Donate'}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={ecoClipStyles.adVoluntaryNote}>
+                  Optional · You can scroll past anytime
+                </Text>
+              </View>
+            );
+          }
+
+          const tag = item.tag ? SDG_TAGS[item.tag] : null;
+          const liked = likedIds.includes(item.id);
+          const impact = item.id in IMPACT_STATS ? IMPACT_STATS[item.id] : null;
+          const isVerified = item.creator ? VERIFIED_CREATORS.has(item.creator) : false;
+          const commentCount = commentsForClip(item.id).length;
+
+          return (
+            <View style={ecoClipStyles.clip}>
+              {/* Background emoji */}
+              <View style={ecoClipStyles.clipBg}>
+                <Text style={ecoClipStyles.clipBgEmoji}>{item.emoji}</Text>
+              </View>
+
+              {/* SDG Tag pill */}
+              {tag && (
+                <View style={[ecoClipStyles.sdgTag, { borderColor: tag.color }]}>
+                  <Text style={[ecoClipStyles.sdgTagText, { color: tag.color }]}>{tag.label}</Text>
+                </View>
+              )}
+
+              {/* Impact overlay — top right */}
+              {impact && (
+                <View style={ecoClipStyles.impactBadge}>
+                  <Text style={ecoClipStyles.impactNumber}>
+                    +{impact.inspired.toLocaleString()}
+                  </Text>
+                  <Text style={ecoClipStyles.impactLabel}>{impact.actions}</Text>
+                </View>
+              )}
+
+              {/* Bottom overlay: creator + caption */}
+              <View style={ecoClipStyles.clipOverlay}>
+                {/* Creator row with verified badge */}
+                <View style={ecoClipStyles.creatorRow}>
+                  <Text style={ecoClipStyles.clipCreator}>{item.creator}</Text>
+                  {isVerified && (
+                    <View style={ecoClipStyles.verifiedBadge}>
+                      <PhosphorCheck size={10} color='#0A0A0C' weight='bold' />
+                    </View>
+                  )}
+                </View>
+                <Text style={ecoClipStyles.clipCaption}>{item.caption}</Text>
+              </View>
+
+              {/* Action sidebar */}
+              <View style={ecoClipStyles.actions}>
+                {/* Like */}
+                <TouchableOpacity
+                  style={ecoClipStyles.actionBtn}
+                  onPress={() => toggleLike(item.id)}
+                >
+                  <Heart
+                    size={28}
+                    color={liked ? '#FF2D55' : '#fff'}
+                    weight={liked ? 'fill' : 'regular'}
+                  />
+                  <Text style={ecoClipStyles.actionCount}>
+                    {((item.likes + (liked ? 1 : 0)) / 1000).toFixed(1)}k
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Comments */}
+                <TouchableOpacity
+                  style={ecoClipStyles.actionBtn}
+                  onPress={() => setCommentsClipId(item.id)}
+                >
+                  <ChatCircle size={28} color='#fff' />
+                  <Text style={ecoClipStyles.actionCount}>{commentCount}</Text>
+                </TouchableOpacity>
+
+                {/* Share */}
+                <TouchableOpacity style={ecoClipStyles.actionBtn}>
+                  <ShareNetwork size={28} color='#fff' />
+                  <Text style={ecoClipStyles.actionCount}>Share</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        }}
+      />
+
+      {/* ── Comments Modal ── */}
+      <Modal
+        visible={!!commentsClipId}
+        animationType='slide'
+        transparent
+        onRequestClose={() => setCommentsClipId(null)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <TouchableOpacity
+            style={ecoClipStyles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setCommentsClipId(null)}
+          />
+          <View style={ecoClipStyles.commentsSheet}>
+            <View style={ecoClipStyles.sheetHandle} />
+            <Text style={ecoClipStyles.sheetTitle}>💬 Comments</Text>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
+              {commentsClipId &&
+                commentsForClip(commentsClipId).map(c => (
+                  <View key={c.id} style={ecoClipStyles.commentRow}>
+                    <View style={ecoClipStyles.commentAvatar}>
+                      <Text style={ecoClipStyles.commentAvatarText}>{c.user[1].toUpperCase()}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={ecoClipStyles.commentNameRow}>
+                        <Text style={ecoClipStyles.commentUser}>{c.user}</Text>
+                        {c.verified && (
+                          <View style={ecoClipStyles.verifiedBadge}>
+                            <PhosphorCheck size={9} color='#0A0A0C' weight='bold' />
+                          </View>
+                        )}
+                      </View>
+                      <Text style={ecoClipStyles.commentText}>{c.text}</Text>
+                    </View>
+                  </View>
+                ))}
+              {commentsClipId && commentsForClip(commentsClipId).length === 0 && (
+                <Text style={ecoClipStyles.noComments}>Be the first to comment 🌱</Text>
+              )}
+            </ScrollView>
+            {/* Comment input */}
+            <View style={ecoClipStyles.commentInputRow}>
+              <TextInput
+                style={ecoClipStyles.commentInput}
+                placeholder='Add a comment…'
+                placeholderTextColor='rgba(255,255,255,0.3)'
+                value={newComment}
+                onChangeText={setNewComment}
+              />
+              <TouchableOpacity
+                style={ecoClipStyles.commentSendBtn}
+                onPress={() => commentsClipId && handlePostComment(commentsClipId)}
+                activeOpacity={0.8}
+              >
+                <Text style={ecoClipStyles.commentSendText}>Post</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Upload Modal ── */}
+      <Modal
+        visible={showUpload}
+        animationType='slide'
+        transparent
+        onRequestClose={() => setShowUpload(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <TouchableOpacity
+            style={ecoClipStyles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowUpload(false)}
+          />
+          <View style={ecoClipStyles.commentsSheet}>
+            <View style={ecoClipStyles.sheetHandle} />
+            <Text style={ecoClipStyles.sheetTitle}>🎬 Post an EcoClip</Text>
+
+            <Text style={ecoClipStyles.uploadLabel}>Caption</Text>
+            <TextInput
+              style={ecoClipStyles.uploadInput}
+              placeholder='Share your sustainability story…'
+              placeholderTextColor='rgba(255,255,255,0.3)'
+              value={uploadCaption}
+              onChangeText={setUploadCaption}
+              multiline
+              maxLength={200}
+            />
+            <Text style={ecoClipStyles.uploadCharCount}>{uploadCaption.length}/200</Text>
+
+            <Text style={ecoClipStyles.uploadLabel}>SDG Tag</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingBottom: 12 }}
+            >
+              {SDG_FILTERS.filter(f => f.key !== 'all').map(f => (
+                <TouchableOpacity
+                  key={f.key}
+                  style={[
+                    ecoClipStyles.filterChip,
+                    uploadTag === f.key && {
+                      borderColor: f.color,
+                      backgroundColor: `${f.color}20`,
+                    },
+                  ]}
+                  onPress={() => setUploadTag(f.key)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={ecoClipStyles.filterChipEmoji}>{f.emoji}</Text>
+                  <Text
+                    style={[
+                      ecoClipStyles.filterChipLabel,
+                      uploadTag === f.key && { color: f.color },
+                    ]}
+                  >
+                    {f.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={ecoClipStyles.uploadSubmitBtn}
+              onPress={handleUploadClip}
+              activeOpacity={0.85}
+            >
+              <Text style={ecoClipStyles.uploadSubmitText}>Post EcoClip 🌍</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </View>
+  );
+};
+
+const ecoClipStyles = StyleSheet.create({
+  // Filter bar
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  filterScroll: { paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  filterChipEmoji: { fontSize: 13 },
+  filterChipLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  uploadBtn: { paddingHorizontal: 12, paddingVertical: 8 },
+
+  // Clips
+  clip: { height: SCREEN_HEIGHT - 168, backgroundColor: '#0A0A12', justifyContent: 'flex-end' },
+  adClip: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32, gap: 14 },
+  clipBg: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
+  clipBgEmoji: { fontSize: 160, opacity: 0.08 },
+
+  // SDG Tag
+  sdgTag: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  sdgTagText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+
+  // Impact overlay
+  impactBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  impactNumber: { fontSize: 16, fontWeight: '800', color: '#38EF7D' },
+  impactLabel: {
+    fontSize: 9,
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'center',
+    marginTop: 1,
+    maxWidth: 80,
+  },
+
+  // Bottom overlay
+  clipOverlay: { paddingHorizontal: 16, paddingBottom: 24, paddingTop: 60 },
+  creatorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  clipCreator: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  verifiedBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#38EF7D',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clipCaption: { fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 20, maxWidth: '80%' },
+
+  // Action sidebar
+  actions: { position: 'absolute', right: 14, bottom: 80, gap: 20, alignItems: 'center' },
+  actionBtn: { alignItems: 'center', gap: 4 },
+  actionCount: { fontSize: 12, color: '#fff', fontWeight: '600' },
+
+  // Ad slot
+  adLabel: {
+    fontSize: 10,
+    letterSpacing: 1.5,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.4)',
+    textTransform: 'uppercase',
+  },
+  adEmoji: { fontSize: 48 },
+  adTitle: { fontSize: 18, fontWeight: '800', color: '#fff', textAlign: 'center', lineHeight: 26 },
+  adSub: { fontSize: 13, color: 'rgba(255,255,255,0.55)', textAlign: 'center', lineHeight: 18 },
+  adPlayBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#38EF7D',
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 14,
+    marginTop: 6,
+  },
+  adPlayBtnLoading: {
+    backgroundColor: 'rgba(56,239,125,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(56,239,125,0.3)',
+  },
+  adPlayBtnText: { fontSize: 15, fontWeight: '800', color: '#0A0A0C' },
+  adPlayBtnTextLoading: { color: 'rgba(255,255,255,0.5)' },
+  adVoluntaryNote: { fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center' },
+
+  // Donation banner
+  donationBanner: {
+    backgroundColor: 'rgba(56,239,125,0.12)',
+    borderBottomWidth: 1,
+    borderColor: 'rgba(56,239,125,0.3)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  donationBannerText: { fontSize: 12, color: '#38EF7D', fontWeight: '600', textAlign: 'center' },
+
+  // Comments / Upload sheet
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+  commentsSheet: {
+    backgroundColor: '#13141F',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    maxHeight: SCREEN_HEIGHT * 0.72,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  sheetTitle: { fontSize: 17, fontWeight: '800', color: '#fff', marginBottom: 16 },
+
+  // Comment items
+  commentRow: { flexDirection: 'row', gap: 10, marginBottom: 14, alignItems: 'flex-start' },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(56,239,125,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  commentAvatarText: { fontSize: 13, fontWeight: '700', color: '#38EF7D' },
+  commentNameRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 2 },
+  commentUser: { fontSize: 13, fontWeight: '700', color: '#fff' },
+  commentText: { fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 18 },
+  noComments: { textAlign: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 13, marginTop: 20 },
+
+  // Comment input
+  commentInputRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  commentSendBtn: {
+    backgroundColor: '#38EF7D',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  commentSendText: { fontSize: 14, fontWeight: '800', color: '#0A0A0C' },
+
+  // Upload form
+  uploadLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  uploadInput: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 15,
+    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    minHeight: 90,
+    textAlignVertical: 'top',
+    marginBottom: 4,
+  },
+  uploadCharCount: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.3)',
+    textAlign: 'right',
+    marginBottom: 16,
+  },
+  uploadSubmitBtn: {
+    backgroundColor: '#38EF7D',
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  uploadSubmitText: { fontSize: 16, fontWeight: '800', color: '#0A0A0C' },
+});
+
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 import RealTimeSocialDashboard from '../../components/RealTimeSocialDashboard';
 
 const TABS = [
   {
+    key: 'EcoClips',
+    label: 'EcoClips',
+    icon: <Play size={20} color='#FF2D55' weight='duotone' />,
+  },
+  {
     key: 'Live',
     label: 'Live',
-    icon: <Lightning size={20} color='#FF2D55' weight='duotone' />,
+    icon: <Lightning size={20} color='#FF6B00' weight='duotone' />,
   },
   {
     key: 'Leaderboard',
@@ -533,21 +1341,10 @@ const TABS = [
 ];
 
 const SocialScreen = () => {
-  const [activeTab, setActiveTab] = useState('Live');
+  const [activeTab, setActiveTab] = useState('EcoClips');
 
   return (
-    <View style={styles.container}>
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
-
+    <SpaceBackground earthPosition='top-left' enableComets={true}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🌍 Community</Text>
@@ -555,31 +1352,38 @@ const SocialScreen = () => {
       </View>
 
       {/* Tab bar */}
-      <View style={styles.tabBar}>
-        {TABS.map(tab => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tabItem, activeTab === tab.key && styles.tabItemActive]}
-            onPress={() => setActiveTab(tab.key)}
-          >
-            <View style={styles.tabItemContent}>
-              {tab.icon}
-              <Text style={[styles.tabLabel, activeTab === tab.key && styles.tabLabelActive]}>
-                {tab.label}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabBarScroll}
+        >
+          {TABS.map(tab => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[styles.tabItem, activeTab === tab.key && styles.tabItemActive]}
+              onPress={() => setActiveTab(tab.key)}
+            >
+              <View style={styles.tabItemContent}>
+                {tab.icon}
+                <Text style={[styles.tabLabel, activeTab === tab.key && styles.tabLabelActive]}>
+                  {tab.label}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Tab content */}
       <View style={styles.flexContainer}>
+        {activeTab === 'EcoClips' && <EcoClipsTab />}
         {activeTab === 'Leaderboard' && <LeaderboardTab />}
         {activeTab === 'Challenges' && <ChallengesTab />}
         {activeTab === 'Groups' && <GroupsTab />}
         {activeTab === 'Live' && <RealTimeSocialDashboard />}
       </View>
-    </View>
+    </SpaceBackground>
   );
 };
 
@@ -599,18 +1403,18 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
 
   // Tab bar
-  tabBar: {
+  tabBarScroll: {
     flexDirection: 'row',
     paddingHorizontal: 12,
     paddingBottom: 10,
     marginTop: 10,
   },
   tabItem: {
-    flex: 1,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 20,
-    marginHorizontal: 3,
+    marginHorizontal: 4,
   },
   tabItemActive: {
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -703,8 +1507,8 @@ const styles = StyleSheet.create({
   lbPoints: { fontSize: 16, fontWeight: 'bold', color: '#38EF7D' },
 
   // Challenges
-  pillScroll: { maxHeight: 48 },
-  pillContent: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  pillScroll: { height: 46, marginTop: 10, marginBottom: 4 },
+  pillContent: { paddingHorizontal: 16, alignItems: 'center', gap: 8 },
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 6,
@@ -714,11 +1518,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   pillActive: {
-    backgroundColor: 'rgba(56,239,125,0.2)',
-    borderColor: '#38EF7D',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   pillText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
-  pillTextActive: { color: '#38EF7D', fontWeight: 'bold' },
+  pillTextActive: { color: '#FFFFFF', fontWeight: '700' },
   challengeCard: {
     padding: 16,
     marginBottom: 14,
@@ -753,14 +1557,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   typeText: { fontSize: 10, fontWeight: '700' },
-  progressTrack: {
-    height: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginVertical: 10,
-  },
-  progressFill: { height: '100%', borderRadius: 4 },
   challengeMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -906,13 +1702,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   nudgeBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
   flexContainer: {
     flex: 1,
   },

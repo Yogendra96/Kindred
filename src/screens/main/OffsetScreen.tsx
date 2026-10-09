@@ -10,34 +10,25 @@ import {
   Modal,
   TextInput,
   Alert,
+  RefreshControl,
 } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { useSelector, useDispatch } from 'react-redux';
+import { useCarbon } from '../../hooks/useFirebaseData';
 import { ShieldCheck, Certificate, Globe, Info, X, CreditCard } from 'phosphor-react-native';
 import { useToast } from '../../contexts/ToastContext';
 import HapticFeedbackService from '../../services/HapticFeedbackService';
 import type { VerifiedProject } from '../../services/OffsetProviderService';
 import { offsetProviderService } from '../../services/OffsetProviderService';
-import type { OffsetTransaction } from '../../store/slices/carbonSlice';
-import { addOffsetTransaction, updateOffsetSubscription } from '../../store/slices/carbonSlice';
-import type { RootState } from '../../store';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import EmptyState from '../../components/ui/EmptyState';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 export default function OffsetScreen() {
-  const dispatch = useDispatch();
+  const carbonData = useCarbon();
   const { showToast } = useToast();
 
-  const history = useSelector((state: RootState) => state.carbon?.history ?? []);
-  const offsets = useSelector((state: RootState) => state.carbon?.offsets) ?? {
+  const history = carbonData.history ?? [];
+  const offsets = (carbonData as any).offsets ?? {
     transactions: [],
     subscription: {
       active: false,
@@ -65,7 +56,7 @@ export default function OffsetScreen() {
   // Modals States
   const [selectedProject, setSelectedProject] = useState<VerifiedProject | null>(null);
   const [purchaseProject, setPurchaseProject] = useState<VerifiedProject | null>(null);
-  const [activeCert, setActiveCert] = useState<OffsetTransaction | null>(null);
+  const [activeCert, setActiveCert] = useState<any | null>(null);
 
   // Instant Purchase Form State
   const [offsetTonsText, setOffsetTonsText] = useState('1.0');
@@ -128,17 +119,6 @@ export default function OffsetScreen() {
     const nextActive = !subscription.active;
     const { monthlyCost, tonsOffset } = getSubCostAndTons(subscription.tier);
 
-    dispatch(
-      updateOffsetSubscription({
-        active: nextActive,
-        monthlyCost,
-        offsetTonsPerMonth: tonsOffset,
-        nextBillingDate: nextActive
-          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
-          : '',
-      }),
-    );
-
     HapticFeedbackService.triggerSuccess();
     if (nextActive) {
       showToast('Carbon Neutral Subscription Activated! 🌱', 'success');
@@ -149,16 +129,6 @@ export default function OffsetScreen() {
 
   const handleSelectTier = (tierName: 'starter' | 'neutral' | 'positive') => {
     const { monthlyCost, tonsOffset } = getSubCostAndTons(tierName);
-
-    dispatch(
-      updateOffsetSubscription({
-        tier: tierName,
-        active: true,
-        monthlyCost,
-        offsetTonsPerMonth: tonsOffset,
-        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-      }),
-    );
 
     HapticFeedbackService.triggerSuccess();
     showToast(`Upgraded to ${tierName.toUpperCase()} tier!`, 'success');
@@ -184,7 +154,6 @@ export default function OffsetScreen() {
         if (!purchaseProject) return;
 
         const tx = offsetProviderService.purchaseOffset(purchaseProject.id, tons);
-        dispatch(addOffsetTransaction(tx));
 
         HapticFeedbackService.triggerSuccess();
         showToast(
@@ -206,26 +175,20 @@ export default function OffsetScreen() {
     }, 2000);
   };
 
-  return (
-    <View style={styles.container}>
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Direct Offsetting</Text>
-        <Text style={styles.subtitle}>
-          Neutralize emissions through verified, audit-proof registry certificates.
-        </Text>
-      </View>
+  return (
+    <SpaceBackground earthPosition='bottom-left' enableComets={true}>
+      <SubScreenHeader
+        title='Direct Offsetting'
+        subtitle='Neutralize emissions through verified audit-proof certificates.'
+      />
 
       {/* Frosted Tab Bar */}
       <View style={styles.tabBar}>
@@ -264,7 +227,18 @@ export default function OffsetScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
         {/* TAB 1: OFFSETS LIST & RETIREMENT SUMMARY */}
         {activeTab === 'offsets' && (
           <View>
@@ -422,14 +396,11 @@ export default function OffsetScreen() {
           <View>
             <Text style={styles.sectionTitle}>Retirement History</Text>
             {transactions.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Certificate size={48} color='rgba(255,255,255,0.2)' weight='thin' />
-                <Text style={styles.emptyText}>No carbon offset retirements found.</Text>
-                <Text style={styles.emptySub}>
-                  Retire custom weights or configure a subscription to generate legal registry
-                  certificates.
-                </Text>
-              </View>
+              <EmptyState
+                emoji='🎫'
+                message='No carbon offset retirements found.'
+                sub='Retire custom weights or configure a subscription to generate legal registry certificates.'
+              />
             ) : (
               transactions.map(tx => (
                 <TouchableOpacity key={tx.id} activeOpacity={0.8} onPress={() => setActiveCert(tx)}>
@@ -702,31 +673,11 @@ export default function OffsetScreen() {
           </GlassCard>
         </View>
       </Modal>
-    </View>
+    </SpaceBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f2027',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#ccc',
-    lineHeight: 18,
-  },
   tabBar: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -760,13 +711,6 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 60,
-  },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
   },
   summaryCard: {
     paddingVertical: 20,
@@ -1059,26 +1003,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#aaa',
   },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySub: {
-    fontSize: 12,
-    color: '#aaa',
-    textAlign: 'center',
-    paddingHorizontal: 32,
-    lineHeight: 16,
-  },
-
   // Modal styles
   modalBg: {
     flex: 1,

@@ -1,29 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { useSelector } from 'react-redux';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  RefreshControl,
+} from 'react-native';
+import auth from '@react-native-firebase/auth';
 import { carbonTwinEngine } from '../../services/CarbonTwinEngine';
 import { ImmersiveDashboard } from '../../components/ImmersiveDashboard';
 import { useToast } from '../../contexts/ToastContext';
 import HapticFeedbackService from '../../services/HapticFeedbackService';
-import type { RootState } from '../../store';
-import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
 import { Dna, Sparkle, Carrot, Car, House, CaretRight } from 'phosphor-react-native';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 const CarbonTwinScreen = () => {
   const [status, setStatus] = useState('Idle');
   const { showToast } = useToast();
-  const user = useSelector((state: RootState) => state.user);
-  const profileName = user?.profile?.name || 'Eco Explorer';
+  const user = auth().currentUser;
+  const profileName = user?.displayName || 'Eco Explorer';
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
   const handleCreateTwin = async () => {
     try {
@@ -40,28 +47,21 @@ const CarbonTwinScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Animated Gradient Background */}
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
+    <SpaceBackground earthPosition='bottom-left' enableComets={true}>
+      <SubScreenHeader title='Carbon Twin' subtitle='AI-Powered Digital Lifestyle Model' />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <View style={styles.headerIconWrapper}>
-            <Dna size={32} color='#38EF7D' weight='duotone' />
-          </View>
-          <Text style={styles.title}>Carbon Twin</Text>
-          <Text style={styles.subtitle}>AI-Powered Digital Lifestyle Model</Text>
-        </View>
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
         {/* Bio-Digital Twin Visualization */}
         <View style={styles.dashboardContainer}>
           <ImmersiveDashboard />
@@ -109,8 +109,8 @@ const CarbonTwinScreen = () => {
                 <Car size={24} color='#38EF7D' weight='duotone' />
               </View>
               <View style={styles.simInfo}>
-                <Text style={styles.simTitle}>EV Adoption</Text>
-                <Text style={styles.simDesc}>Projected Impact: -2.4 tons CO₂e/year</Text>
+                <Text style={styles.simTitle}>Electric Vehicle</Text>
+                <Text style={styles.simDesc}>Projected Impact: -2.1 tons CO₂e/year</Text>
               </View>
               <CaretRight size={18} color='rgba(255, 255, 255, 0.4)' />
             </GlassCard>
@@ -129,41 +129,13 @@ const CarbonTwinScreen = () => {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SpaceBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollContent: {
     paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 20,
-  },
-  headerIconWrapper: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(56, 239, 125, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginTop: 4,
   },
   dashboardContainer: {
     marginHorizontal: 20,
@@ -256,14 +228,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'rgba(255, 255, 255, 0.5)',
     marginTop: 2,
-  },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-    padding: 16,
   },
 });
 

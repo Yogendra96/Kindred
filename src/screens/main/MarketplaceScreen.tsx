@@ -8,24 +8,18 @@ import {
   TextInput,
   FlatList,
   Alert,
+  RefreshControl,
 } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store';
+import { useCarbon } from '../../hooks/useFirebaseData';
 import { mockData } from '../../data/mockData';
 import { useToast } from '../../contexts/ToastContext';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
 import { MagnifyingGlass, X, Plus, ShieldCheck } from 'phosphor-react-native';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
+import EmptyState from '../../components/ui/EmptyState';
+import CategoryChip from '../../components/ui/CategoryChip';
 
 // ─── Thrift Store Mock Data ──────────────────────────────────────────────────
 
@@ -192,6 +186,14 @@ const ThriftStoreTab = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
   const filtered = THRIFT_ITEMS.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
@@ -276,34 +278,35 @@ const ThriftStoreTab = () => {
         contentContainerStyle={styles.categoryContent}
       >
         {CATEGORIES.map(cat => (
-          <TouchableOpacity
+          <CategoryChip
             key={cat}
-            style={[styles.categoryPill, selectedCategory === cat && styles.categoryPillActive]}
+            label={cat}
+            active={selectedCategory === cat}
             onPress={() => setSelectedCategory(cat)}
-          >
-            <Text
-              style={[styles.categoryText, selectedCategory === cat && styles.categoryTextActive]}
-            >
-              {cat}
-            </Text>
-          </TouchableOpacity>
+            activeColor='rgba(56, 239, 125, 0.2)'
+            style={[styles.categoryPill, selectedCategory === cat && styles.categoryPillActive]}
+            textStyle={[styles.categoryText, selectedCategory === cat && styles.categoryTextActive]}
+          />
         ))}
       </ScrollView>
 
       {/* Items list */}
       <FlatList
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
         data={filtered}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <ThriftItemCard item={item} onPress={() => handleItemPress(item)} />
         )}
         contentContainerStyle={styles.thriftList}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🌿</Text>
-            <Text style={styles.emptyText}>No items match your search.</Text>
-          </View>
-        }
+        ListEmptyComponent={<EmptyState emoji='🌿' message='No items match your search.' />}
         showsVerticalScrollIndicator={false}
       />
 
@@ -317,7 +320,7 @@ const ThriftStoreTab = () => {
           )
         }
       >
-        <Plus size={20} color='#0f2027' weight='bold' style={styles.plusIcon} />
+        <Plus size={20} color='#FFFFFF' weight='bold' style={styles.plusIcon} />
         <Text style={styles.listItemText}>List a Pre-Loved Item</Text>
       </TouchableOpacity>
     </View>
@@ -329,19 +332,36 @@ const ThriftStoreTab = () => {
 const CarbonOffsetTab = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
-  const subscription = useSelector(
-    (state: RootState) =>
-      state.carbon?.offsets?.subscription ?? {
-        active: false,
-        tier: 'none',
-        monthlyCost: 0,
-      },
-  );
+  const carbonData = useCarbon();
+  const subscription = (carbonData as any).offsets?.subscription ?? {
+    active: false,
+    planId: null,
+    amount: 0,
+    nextBillingDate: '',
+  };
 
   const projects = mockData.offsetProjects;
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor='#FFFFFF'
+          colors={['#38EF7D']}
+        />
+      }
+    >
       {/* Active Subscription Banner */}
       <GlassCard style={styles.subBanner}>
         <View style={styles.subBannerHeader}>
@@ -395,18 +415,7 @@ const MarketplaceScreen = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <View style={styles.container}>
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
-
+    <SpaceBackground earthPosition='bottom-right' enableComets={true}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🛍️ Kindred Market</Text>
@@ -432,7 +441,7 @@ const MarketplaceScreen = () => {
       <View style={styles.flexContainer}>
         {activeTab === 0 ? <ThriftStoreTab /> : <CarbonOffsetTab />}
       </View>
-    </View>
+    </SpaceBackground>
   );
 };
 
@@ -516,7 +525,7 @@ const styles = StyleSheet.create({
   clearSearch: { paddingHorizontal: 4 },
 
   // Category pills
-  categoryScroll: { maxHeight: 50, marginTop: 10 },
+  categoryScroll: { height: 46, marginTop: 10, marginBottom: 4 },
   categoryContent: { paddingHorizontal: 16, alignItems: 'center' },
   categoryPill: {
     paddingHorizontal: 14,
@@ -528,15 +537,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   categoryPillActive: {
-    backgroundColor: 'rgba(56,239,125,0.2)',
-    borderColor: '#38EF7D',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   categoryText: {
     fontSize: 13,
     color: 'rgba(255,255,255,0.6)',
     fontWeight: '500',
   },
-  categoryTextActive: { color: '#38EF7D', fontWeight: 'bold' },
+  categoryTextActive: { color: '#FFFFFF', fontWeight: '700' },
 
   // Thrift item card
   thriftList: { padding: 16, paddingBottom: 80 },
@@ -597,30 +606,22 @@ const styles = StyleSheet.create({
   },
   badgeText: { fontSize: 10, fontWeight: '700' },
 
-  // Empty state
-  emptyState: { alignItems: 'center', paddingTop: 60 },
-  emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyText: { color: 'rgba(255,255,255,0.6)', fontSize: 16 },
-
   // List item CTA
   listItemButton: {
     position: 'absolute',
     bottom: 16,
     left: 24,
     right: 24,
-    backgroundColor: '#38EF7D',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1,
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    shadowColor: '#38EF7D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
   },
-  listItemText: { color: '#0f2027', fontWeight: '800', fontSize: 16 },
+  listItemText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
 
   // Carbon offset tab
   content: { padding: 16, paddingBottom: 32 },
@@ -669,13 +670,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: { color: '#38EF7D', fontWeight: '700', fontSize: 14 },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
   flexContainer: {
     flex: 1,
   },

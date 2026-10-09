@@ -11,13 +11,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import {
-  colors,
-  spacing,
-  radii,
-  typography,
-  shadows,
-} from '../../constants/theme';
+import { colors, spacing, radii, typography, shadows } from '../../constants/theme';
 
 interface StatCardProps {
   emoji: string;

@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // =============================================================
+    // USERS — own document: full access to self, read others' public
+    // =============================================================
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false; // server-managed account deletion only
+
+      // Wallet balance is server-authoritative — client may not write it
+      match /wallet {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+
+      // Transactions: client may CREATE (claim activity / request redemption),
+      // server aggregates wallet via onTransactionCreated
+      match /transactions/{txId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      // Activity history: client may CREATE, then read own
+      match /history/{historyId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      // Rate-limit tracker is server-only (written by Cloud Functions)
+      match /_rateLimits/{docId} {
+        allow read, write: if false;
+      }
+    }
+
+    // =============================================================
+    // COMPANIES — corporate leaderboard: readable by authenticated
+    // users, written only by Cloud Functions (onActivityLogged)
+    // =============================================================
+    match /companies/{domain} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // =============================================================
+    // VERIFICATIONS — email codes are server-only, never client-visible
+    // =============================================================
+    match /verifications/{uid} {
+      allow read, write: if false;
+    }
+  }
+}

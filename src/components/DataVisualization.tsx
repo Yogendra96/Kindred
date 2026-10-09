@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import HapticFeedbackService from '../services/HapticFeedbackService';
 import SkeletonLoader from './SkeletonLoader';
@@ -159,6 +158,7 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
   const renderPieChart = () => {
     const pieData = (data as DataPoint[]).map((item, index) => ({
       ...item,
+      population: item.value,
       color: item.color || colors[index % colors.length],
       legendFontColor: theme.colors.onSurface,
       legendFontSize: 12,

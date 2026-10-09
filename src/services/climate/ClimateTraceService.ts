@@ -53,13 +53,7 @@ export type Subsector =
 export type GasType = 'co2' | 'ch4' | 'n2o' | 'co2e' | 'co2e_20yr' | 'co2e_100yr';
 
 export type Continent =
-  | 'Asia'
-  | 'South America'
-  | 'North America'
-  | 'Oceania'
-  | 'Antarctica'
-  | 'Africa'
-  | 'Europe';
+  'Asia' | 'South America' | 'North America' | 'Oceania' | 'Antarctica' | 'Africa' | 'Europe';
 
 export interface EmissionSource {
   type: 'Feature';

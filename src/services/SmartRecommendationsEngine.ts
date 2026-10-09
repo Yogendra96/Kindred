@@ -1,8 +1,7 @@
-// @ts-nocheck
 /* eslint-disable */
 import CarbonAPIService from './CarbonAPIService';
 import { createSingleton } from '../utils/Singleton';
-import { MLCarbonPredictionService } from './MLCarbonPrediction';
+import { mlCarbonPredictionService } from './MLCarbonPrediction';
 import { modernAPMService } from './ModernAPMService';
 
 // Types for Recommendations
@@ -136,7 +135,7 @@ export interface LearningModel {
 }
 
 class SmartRecommendationsEngine {
-  private mlService: MLCarbonPredictionService;
+  private mlService: typeof mlCarbonPredictionService;
   private carbonAPI: typeof CarbonAPIService;
   private performanceMonitor: typeof modernAPMService;
   private userModels: Map<string, LearningModel> = new Map();
@@ -144,7 +143,7 @@ class SmartRecommendationsEngine {
   private feedbackBuffer: RecommendationFeedback[] = [];
 
   constructor() {
-    this.mlService = new MLCarbonPredictionService();
+    this.mlService = mlCarbonPredictionService;
     this.carbonAPI = CarbonAPIService;
     this.performanceMonitor = modernAPMService;
 
@@ -157,7 +156,8 @@ class SmartRecommendationsEngine {
 
   private async initializeModels(): Promise<void> {
     try {
-      await this.mlService.initialize();
+      // mlCarbonPredictionService is a self-initializing singleton — no extra
+      // initialization step is required.
       console.log('Smart Recommendations Engine initialized successfully');
     } catch (error) {
       console.error('Failed to initialize recommendations engine:', error);
@@ -166,19 +166,28 @@ class SmartRecommendationsEngine {
 
   private startBackgroundProcessing(): void {
     // Process feedback every 5 minutes
-    setInterval(() => {
-      this.processFeedbackBuffer();
-    }, 5 * 60 * 1000);
+    setInterval(
+      () => {
+        this.processFeedbackBuffer();
+      },
+      5 * 60 * 1000,
+    );
 
     // Update user models every hour
-    setInterval(() => {
-      this.updateUserModels();
-    }, 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.updateUserModels();
+      },
+      60 * 60 * 1000,
+    );
 
     // Clear expired recommendations every day
-    setInterval(() => {
-      this.clearExpiredRecommendations();
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.clearExpiredRecommendations();
+      },
+      24 * 60 * 60 * 1000,
+    );
   }
 
   // Main recommendation generation
@@ -193,7 +202,7 @@ class SmartRecommendationsEngine {
       maxDifficulty?: 'easy' | 'medium' | 'hard';
     } = {},
   ): Promise<Recommendation[]> {
-    const trace = this.performanceMonitor.startTrace('generate-recommendations');
+    const trace = await this.performanceMonitor.startTrace('generate-recommendations');
 
     try {
       const { count = 10, categories, types, minImpact = 0, maxDifficulty = 'hard' } = options;
@@ -202,7 +211,7 @@ class SmartRecommendationsEngine {
       const cacheKey = this.generateCacheKey(userProfile.id, context, options);
       const cached = this.recommendationCache.get(cacheKey);
       if (cached && cached.length > 0) {
-        trace.stop();
+        await trace?.stop();
         return cached.slice(0, count);
       }
 
@@ -245,12 +254,12 @@ class SmartRecommendationsEngine {
       // Cache results
       this.recommendationCache.set(cacheKey, rankedRecommendations);
 
-      trace.putAttribute('recommendations_generated', rankedRecommendations.length);
-      trace.stop();
+      trace?.putAttribute('recommendations_generated', rankedRecommendations.length);
+      await trace?.stop();
 
       return rankedRecommendations.slice(0, count);
     } catch (error) {
-      trace.stop();
+      await trace?.stop();
       throw error;
     }
   }

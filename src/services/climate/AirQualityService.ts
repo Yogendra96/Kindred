@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * Air Quality Service
@@ -56,12 +55,7 @@ export type PollutantType =
   | 'bc'; // Black carbon
 
 export type AQICategory =
-  | 'good'
-  | 'moderate'
-  | 'unhealthy-sensitive'
-  | 'unhealthy'
-  | 'very-unhealthy'
-  | 'hazardous';
+  'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'very-unhealthy' | 'hazardous';
 
 export interface AQIRecommendation {
   category: AQICategory;
@@ -228,7 +222,7 @@ class AirQualityService {
       // Return fallback
       return this.getFallbackAirQuality(lat, lng);
     } catch (error) {
-      loggingService.error('Error fetching air quality', { error, lat, lng });
+      loggingService.error('AirQualityService', 'Error fetching air quality', { error, lat, lng });
       return this.getFallbackAirQuality(lat, lng);
     }
   }
@@ -297,7 +291,7 @@ class AirQualityService {
         source: 'openaq',
       };
     } catch (error) {
-      loggingService.warn('OpenAQ API error', { error });
+      loggingService.warn('AirQualityService', 'OpenAQ API error', { error });
       return null;
     }
   }
@@ -348,7 +342,7 @@ class AirQualityService {
         source: 'iqair',
       };
     } catch (error) {
-      loggingService.warn('IQAir API error', { error });
+      loggingService.warn('AirQualityService', 'IQAir API error', { error });
       return null;
     }
   }
@@ -443,7 +437,7 @@ class AirQualityService {
         })
         .sort((a: NearbyStation, b: NearbyStation) => a.distance - b.distance);
     } catch (error) {
-      loggingService.error('Error fetching nearby stations', { error });
+      loggingService.error('AirQualityService', 'Error fetching nearby stations', { error });
       return [];
     }
   }
@@ -576,8 +570,8 @@ class AirQualityService {
           category === 'good'
             ? 'Great for walking! Reduces your carbon footprint'
             : category === 'moderate'
-            ? 'Walking is fine, reduces emissions'
-            : 'Consider limiting walking distance',
+              ? 'Walking is fine, reduces emissions'
+              : 'Consider limiting walking distance',
       },
       cycling: {
         recommended: ['good', 'moderate'].includes(category),
@@ -585,8 +579,8 @@ class AirQualityService {
           category === 'good'
             ? 'Perfect for cycling! Zero emissions transport'
             : category === 'moderate'
-            ? 'Cycling is okay, keep pace moderate'
-            : 'Heavy breathing while cycling increases pollutant intake',
+              ? 'Cycling is okay, keep pace moderate'
+              : 'Heavy breathing while cycling increases pollutant intake',
       },
       publicTransit: {
         recommended: true,
@@ -706,7 +700,7 @@ class AirQualityService {
         }),
       );
     } catch (error) {
-      loggingService.warn('Cache write failed', { key, error });
+      loggingService.warn('AirQualityService', 'Cache write failed', { key, error });
     }
   }
 
@@ -719,7 +713,7 @@ class AirQualityService {
       const aqKeys = keys.filter(k => k.startsWith(this.CACHE_PREFIX));
       await AsyncStorage.multiRemove(aqKeys);
     } catch (error) {
-      loggingService.error('Failed to clear AQ cache', { error });
+      loggingService.error('AirQualityService', 'Failed to clear AQ cache', { error });
     }
   }
 }

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 
 import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
 
@@ -40,15 +34,9 @@ export const ModernDonutChart: React.FC<BaseChartProps> = ({
 
   return (
     <View style={[styles.chartContainer, { height }]}>
-      {title && (
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          {title}
-        </Text>
-      )}
+      {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
       {subtitle && (
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          {subtitle}
-        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>
       )}
 
       <View style={styles.legendContainer}>
@@ -84,15 +72,9 @@ export const ModernBarChart: React.FC<BaseChartProps> = ({
 
   return (
     <View style={[styles.chartContainer, { height }]}>
-      {title && (
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          {title}
-        </Text>
-      )}
+      {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
       {subtitle && (
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          {subtitle}
-        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>
       )}
 
       <View style={styles.barContainer}>
@@ -111,15 +93,10 @@ export const ModernBarChart: React.FC<BaseChartProps> = ({
                   ]}
                 />
               </View>
-              <Text
-                style={[styles.barLabel, { color: theme.colors.text }]}
-                numberOfLines={2}
-              >
+              <Text style={[styles.barLabel, { color: theme.colors.text }]} numberOfLines={2}>
                 {item.label}
               </Text>
-              <Text
-                style={[styles.barValue, { color: theme.colors.textSecondary }]}
-              >
+              <Text style={[styles.barValue, { color: theme.colors.textSecondary }]}>
                 {item.value}
               </Text>
             </View>
@@ -139,24 +116,13 @@ export const ModernLineChart: React.FC<BaseChartProps> = ({
 }) => {
   return (
     <View style={[styles.chartContainer, { height }]}>
-      {title && (
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          {title}
-        </Text>
-      )}
+      {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
       {subtitle && (
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          {subtitle}
-        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>
       )}
 
       <View style={styles.lineChartPlaceholder}>
-        <Text
-          style={[
-            styles.placeholderText,
-            { color: theme.colors.textSecondary },
-          ]}
-        >
+        <Text style={[styles.placeholderText, { color: theme.colors.textSecondary }]}>
           Line Chart: {data.length} data points
         </Text>
         {data.map((item, index) => (
@@ -193,9 +159,7 @@ export const ModernProgressRing: React.FC<{
   return (
     <View style={[styles.progressRing, { width: size, height: size }]}>
       <View style={styles.progressContent}>
-        <Text style={[styles.progressText, { color: theme.colors.text }]}>
-          {percentage}%
-        </Text>
+        <Text style={[styles.progressText, { color: theme.colors.text }]}>{percentage}%</Text>
         {children}
       </View>
     </View>
@@ -210,15 +174,7 @@ export const ModernMetricCard: React.FC<{
   theme?: any;
   icon?: React.ReactNode;
   onPress?: () => void;
-}> = ({
-  title,
-  value,
-  trend,
-  color,
-  theme = ModernDesignSystem.LightTheme,
-  icon,
-  onPress,
-}) => {
+}> = ({ title, value, trend, color, theme = ModernDesignSystem.LightTheme, icon, onPress }) => {
   const Component = onPress ? TouchableOpacity : View;
 
   return (
@@ -228,19 +184,11 @@ export const ModernMetricCard: React.FC<{
     >
       <View style={styles.metricHeader}>
         {icon && <View style={styles.metricIcon}>{icon}</View>}
-        <Text
-          style={[styles.metricTitle, { color: theme.colors.textSecondary }]}
-        >
-          {title}
-        </Text>
+        <Text style={[styles.metricTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
       </View>
-      <Text style={[styles.metricValue, { color: color || theme.colors.text }]}>
-        {value}
-      </Text>
+      <Text style={[styles.metricValue, { color: color || theme.colors.text }]}>{value}</Text>
       {trend && (
-        <Text
-          style={[styles.metricTrend, { color: getTrendColor(trend, theme) }]}
-        >
+        <Text style={[styles.metricTrend, { color: getTrendColor(trend, theme) }]}>
           {getTrendSymbol(trend)} {trend}
         </Text>
       )}

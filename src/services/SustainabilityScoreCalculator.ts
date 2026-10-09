@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import CarbonAPIService from './CarbonAPIService';
 import { createSingleton } from '../utils/Singleton';
@@ -180,9 +179,12 @@ class SustainabilityScoreCalculator {
     this.loadBenchmarks();
 
     // Update benchmarks daily
-    setInterval(() => {
-      this.updateBenchmarks();
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.updateBenchmarks();
+      },
+      24 * 60 * 60 * 1000,
+    );
   }
 
   // Main score calculation

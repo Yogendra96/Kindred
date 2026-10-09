@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * 🚀 Advanced Performance Engine
@@ -12,7 +11,7 @@ import { Platform, DeviceEventEmitter, NativeModules } from 'react-native';
 import type {
   PerformanceMetric,
   CoreVitalMetric,
-  MemoryMetrics,
+  NativeMemoryMetrics,
   NetworkMetrics,
   OptimizationRecommendation,
 } from '../types/performance';
@@ -333,8 +332,8 @@ class AIPerformanceOptimizer {
         context.networkType === 'wifi'
           ? 'positive'
           : context.networkType === '4g'
-          ? 'neutral'
-          : 'negative';
+            ? 'neutral'
+            : 'negative';
       factors.push({
         factor: 'Network Type',
         weight: 0.2,
@@ -552,7 +551,7 @@ export class AdvancedPerformanceEngine {
         name: 'advanced_performance_engine_init',
         value: Date.now(),
         unit: 'timestamp',
-        severity: 'info',
+        severity: 'low',
       });
     } catch (error) {
       console.error('❌ Failed to initialize Advanced Performance Engine:', error);

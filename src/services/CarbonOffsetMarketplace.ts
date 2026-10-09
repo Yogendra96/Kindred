@@ -1,10 +1,23 @@
-// @ts-nocheck
 /* eslint-disable */
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import { queryClient, queryKeys } from './QueryService';
 import { modernAPMService } from './ModernAPMService';
 // Types for Carbon Offset Marketplace
+
+/** Trace handle returned by modernAPMService.trackNetworkRequest */
+type NetworkTrace = Awaited<ReturnType<typeof modernAPMService.trackNetworkRequest>>;
+
+/**
+ * QueryClient from QueryService is a minimal mock without cache-invalidation
+ * helpers. Declare the member we call so the mock stays untouched.
+ */
+interface QueryClientWithCacheInvalidation {
+  invalidateQueries: (options: { queryKey: readonly unknown[] }) => Promise<void>;
+}
+
+/** Traces keyed by their axios config (avoids clobbering request-level metadata). */
+const requestTraces = new WeakMap<InternalAxiosRequestConfig, NetworkTrace>();
 
 // Types for Carbon Offset Marketplace
 export interface CarbonOffset {
@@ -14,11 +27,7 @@ export interface CarbonOffset {
   pricePerTon: number;
   currency: string;
   projectType:
-    | 'forestry'
-    | 'renewable_energy'
-    | 'methane_capture'
-    | 'direct_air_capture'
-    | 'blue_carbon';
+    'forestry' | 'renewable_energy' | 'methane_capture' | 'direct_air_capture' | 'blue_carbon';
   location: {
     country: string;
     region: string;
@@ -152,7 +161,7 @@ class CarbonOffsetMarketplaceService {
           config.url || '',
           config.method?.toUpperCase() || 'GET',
         );
-        config.metadata = { trace, startTime: performance.now() };
+        requestTraces.set(config, trace);
         return config;
       },
       error => Promise.reject(error),
@@ -161,16 +170,19 @@ class CarbonOffsetMarketplaceService {
     // Response interceptor
     this.apiClient.interceptors.response.use(
       response => {
-        const { trace } = response.config.metadata || {};
+        const trace = requestTraces.get(response.config);
         if (trace) {
           trace.stop(response.status, JSON.stringify(response.data).length);
+          requestTraces.delete(response.config);
         }
         return response;
       },
       error => {
-        const { trace } = error.config?.metadata || {};
+        const errorConfig = error.config;
+        const trace = errorConfig ? requestTraces.get(errorConfig) : undefined;
         if (trace) {
           trace.stop(error.response?.status || 0);
+          if (errorConfig) requestTraces.delete(errorConfig);
         }
         return Promise.reject(error);
       },
@@ -241,8 +253,9 @@ class CarbonOffsetMarketplaceService {
       });
 
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.marketplace() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.user() });
+      const invalidatingClient = queryClient as QueryClientWithCacheInvalidation;
+      invalidatingClient.invalidateQueries({ queryKey: queryKeys.marketplace() });
+      invalidatingClient.invalidateQueries({ queryKey: queryKeys.user() });
 
       return response.data;
     } catch (error) {

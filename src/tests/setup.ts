@@ -187,6 +187,67 @@ jest.mock('@react-native-firebase/firestore', () => {
 });
 
 jest.mock(
+  '@react-native-firebase/functions',
+  () => {
+    const mockFunctions = jest.fn(() => ({
+      httpsCallable: jest.fn(() => jest.fn(() => Promise.resolve({ data: { success: true } }))),
+    }));
+    return {
+      __esModule: true,
+      default: mockFunctions,
+      functions: mockFunctions,
+    };
+  },
+  { virtual: true },
+);
+
+jest.mock(
+  '@react-native-firebase/app-check',
+  () => {
+    const mockAppCheck = jest.fn(() => ({
+      activate: jest.fn(),
+      getToken: jest.fn(() => Promise.resolve({ token: 'mock-token' })),
+    }));
+    return {
+      __esModule: true,
+      default: mockAppCheck,
+      appCheck: mockAppCheck,
+    };
+  },
+  { virtual: true },
+);
+
+// Mock react-native-google-mobile-ads
+jest.mock('react-native-google-mobile-ads', () => {
+  const mockAd = {
+    addAdEventListener: jest.fn((_event: string, _handler: any) => jest.fn()),
+    load: jest.fn(),
+    show: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    RewardedAd: {
+      createForAdRequest: jest.fn(() => mockAd),
+    },
+    RewardedAdEventType: {
+      LOADED: 'rewarded_loaded',
+      EARNED_REWARD: 'rewarded_earned_reward',
+    },
+    AdEventType: {
+      LOADED: 'loaded',
+      ERROR: 'error',
+      CLOSED: 'closed',
+      OPENED: 'opened',
+    },
+    TestIds: {
+      REWARDED: 'ca-app-pub-3940256099942544/1712485313',
+      BANNER: 'ca-app-pub-3940256099942544/2934735716',
+      INTERSTITIAL: 'ca-app-pub-3940256099942544/4411468910',
+    },
+  };
+});
+
+jest.mock(
   '@react-native-firebase/analytics',
   () => {
     const mockAnalytics = jest.fn(() => ({
@@ -355,35 +416,6 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
   },
 }));
 
-// Mock Redux
-jest.mock('react-redux', () => {
-  const actual = jest.requireActual('react-redux');
-  return {
-    ...actual,
-    useSelector: jest.fn(),
-    useDispatch: () => jest.fn(),
-  };
-});
-
-// Mock Redux Persist
-jest.mock('redux-persist', () => {
-  const actual = jest.requireActual('redux-persist');
-  return {
-    ...actual,
-    persistStore: jest.fn().mockReturnValue({
-      pause: jest.fn(),
-      persist: jest.fn(),
-      purge: jest.fn(),
-      flush: jest.fn(),
-    }),
-    persistReducer: jest.fn().mockImplementation((config, reducer) => reducer),
-  };
-});
-
-jest.mock('redux-persist/integration/react', () => ({
-  PersistGate: ({ children }: any) => children,
-}));
-
 // Mock TanStack Query
 jest.mock('@tanstack/react-query', () => {
   const actual = jest.requireActual('@tanstack/react-query');
@@ -431,12 +463,16 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
-jest.mock('expo-barcode-scanner', () => ({
-  BarCodeScanner: {
-    requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
-    Constants: { BarCodeType: { qr: 'qr', ean13: 'ean13', ean8: 'ean8', code128: 'code128' } },
-  },
-}));
+jest.mock(
+  'expo-barcode-scanner',
+  () => ({
+    BarCodeScanner: {
+      requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+      Constants: { BarCodeType: { qr: 'qr', ean13: 'ean13', ean8: 'ean8', code128: 'code128' } },
+    },
+  }),
+  { virtual: true },
+);
 
 jest.mock('expo-linear-gradient', () => ({
   LinearGradient: 'LinearGradient',

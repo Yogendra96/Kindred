@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import { colors, spacing, radii, typography } from '../../constants/theme';
 
 interface CategoryChipProps {
@@ -11,6 +12,9 @@ interface CategoryChipProps {
   active: boolean;
   onPress: () => void;
   activeColor?: string;
+  icon?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 const CategoryChip: React.FC<CategoryChipProps> = ({
@@ -18,6 +22,9 @@ const CategoryChip: React.FC<CategoryChipProps> = ({
   active,
   onPress,
   activeColor = colors.green800,
+  icon,
+  style,
+  textStyle,
 }) => (
   <TouchableOpacity
     onPress={onPress}
@@ -25,14 +32,19 @@ const CategoryChip: React.FC<CategoryChipProps> = ({
     style={[
       styles.chip,
       active && { backgroundColor: activeColor, borderColor: activeColor },
+      style,
     ]}
   >
-    <Text style={[styles.text, active && styles.textActive]}>{label}</Text>
+    {icon}
+    <Text style={[styles.text, active && styles.textActive, textStyle]}>{label}</Text>
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs + 2,
     borderRadius: radii.pill,

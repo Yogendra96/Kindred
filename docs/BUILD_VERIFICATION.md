@@ -31,8 +31,8 @@ Architecture (Fabric + TurboModules + JSI) fully enabled on both iOS and Android
   "react-native-screens": "4.10.1 → 4.17.1",
   "react-native-gesture-handler": "2.25.0 → 2.28.0",
   "react-native-reanimated": "3.18.0 → 3.19.3",
-  "@reduxjs/toolkit": "2.7.0 → 2.9.0",
-  "react-redux": "9.2.0",
+  "zustand": "5.0.14",
+  "@tanstack/react-query": "5.x",
   "jest": "29.7.0",
   "@testing-library/react-native": "12.4.3 → 12.9.0"
 }
@@ -261,7 +261,7 @@ bun android
 
 - [ ] App launches without crashes
 - [ ] All 53 services initialize correctly
-- [ ] Redux store (6 slices) working
+- [ ] Zustand stores + Firebase hooks working
 - [ ] Navigation between screens smooth
 - [ ] Carbon tracking functional
 - [ ] Analytics dashboard loads

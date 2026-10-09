@@ -195,10 +195,7 @@ export class CircularBuffer<T> {
   /**
    * Calculate percentile (0-100)
    */
-  getPercentile(
-    percentile: number,
-    valueExtractor: (item: T) => number,
-  ): number | null {
+  getPercentile(percentile: number, valueExtractor: (item: T) => number): number | null {
     if (this._size === 0 || percentile < 0 || percentile > 100) {
       return null;
     }

@@ -7,16 +7,16 @@ import {
   TouchableOpacity,
   Animated,
   Alert,
+  RefreshControl,
 } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
+import { useCarbon } from '../../hooks/useFirebaseData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useToast } from '../../contexts/ToastContext';
 import HapticFeedbackService from '../../services/HapticFeedbackService';
-import type { RootState } from '../../store';
-import { updateEcosystem } from '../../store';
 import type { Badge, Achievement, UserAchievementStats } from '../../services/AchievementSystem';
 import achievementSystem from '../../services/AchievementSystem';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { GlassCard } from '../../components/common/GlassCard';
 import Svg, {
   LinearGradient as SvgLinearGradient,
   Defs,
@@ -36,15 +36,6 @@ import {
   CheckCircle,
   Coins,
 } from 'phosphor-react-native';
-
-interface GlassCardProps {
-  style?: StyleProp<ViewStyle>;
-  children: React.ReactNode;
-}
-
-const GlassCard = ({ style, children }: GlassCardProps) => (
-  <View style={[styles.glassCard, style]}>{children}</View>
-);
 
 // Store item interface
 interface StoreItem {
@@ -158,19 +149,16 @@ const INITIAL_TOURNAMENTS: Tournament[] = [
 ];
 
 const AchievementsScreen = () => {
-  const dispatch = useDispatch();
   const { showToast } = useToast();
-  const ecosystem = useSelector(
-    (state: RootState) =>
-      state.carbon?.ecosystem ?? {
-        health: 0.5,
-        treeCount: 0,
-        biodiversity: 0.3,
-        waterClarity: 0.5,
-        airQuality: 0.5,
-        lastUpdated: '',
-      },
-  );
+  const carbonData = useCarbon();
+  const ecosystem = (carbonData as any).ecosystem || {
+    health: 0.5,
+    treeCount: 0,
+    biodiversity: 0.3,
+    waterClarity: 0.5,
+    airQuality: 0.5,
+    lastUpdated: '',
+  };
 
   // Tabs
   const [activeTab, setActiveTab] = useState<'badges' | 'buddy' | 'store' | 'tournaments'>(
@@ -186,6 +174,13 @@ const AchievementsScreen = () => {
   const [purchasedRewardIds, setPurchasedRewardIds] = useState<string[]>([]);
   const [joinedTournamentIds, setJoinedTournamentIds] = useState<string[]>([]);
   const [ecoBuddyPointsSpent, setEcoBuddyPointsSpent] = useState<number>(0);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
 
   // Animation values
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -260,7 +255,7 @@ const AchievementsScreen = () => {
 
     HapticFeedbackService.triggerSuccess();
     const newHealth = Math.min(1.0, ecosystem.health + 0.1);
-    dispatch(updateEcosystem({ health: newHealth }));
+    // dispatch(updateEcosystem({ health: newHealth }));
 
     const newSpent = ecoBuddyPointsSpent + 50;
     setEcoBuddyPointsSpent(newSpent);
@@ -294,7 +289,7 @@ const AchievementsScreen = () => {
     HapticFeedbackService.triggerSuccess();
     const newHealth = Math.min(1.0, ecosystem.health + 0.15);
     const newTreeCount = ecosystem.treeCount + 1;
-    dispatch(updateEcosystem({ health: newHealth, treeCount: newTreeCount }));
+    // dispatch(updateEcosystem({ health: newHealth, treeCount: newTreeCount }));
 
     const newSpent = ecoBuddyPointsSpent + 150;
     setEcoBuddyPointsSpent(newSpent);
@@ -313,7 +308,7 @@ const AchievementsScreen = () => {
 
     HapticFeedbackService.triggerSuccess();
     const newBiodiversity = Math.min(1.0, ecosystem.biodiversity + 0.12);
-    dispatch(updateEcosystem({ biodiversity: newBiodiversity }));
+    // dispatch(updateEcosystem({ biodiversity: newBiodiversity }));
 
     const newSpent = ecoBuddyPointsSpent + 100;
     setEcoBuddyPointsSpent(newSpent);
@@ -366,8 +361,93 @@ const AchievementsScreen = () => {
   };
 
   // RENDER SECTIONS
+
+  // SDG Milestones data
+  const SDG_MILESTONES = [
+    {
+      id: 'sdg7',
+      sdg: 7,
+      emoji: '⚡',
+      title: 'Clean Energy Pioneer',
+      desc: 'Reduce your home energy usage by connecting a smart device and saving 10 kWh.',
+      hint: 'Connect a smart plug or thermostat to unlock.',
+      color: '#FF9500',
+      unlocked: false,
+    },
+    {
+      id: 'sdg11',
+      sdg: 11,
+      emoji: '🏙️',
+      title: 'Sustainable Commuter',
+      desc: 'Log 10 eco-friendly commutes (walking, cycling, or public transit).',
+      hint: 'Log your first eco-commute on the Map screen.',
+      color: '#2B86FA',
+      unlocked: false,
+    },
+    {
+      id: 'sdg12',
+      sdg: 12,
+      emoji: '♻️',
+      title: 'Conscious Consumer',
+      desc: 'Purchase 3 secondhand items from the Thrift Store or log 5 recycling actions.',
+      hint: 'Visit the Marketplace Thrift tab to start.',
+      color: '#F2C94C',
+      unlocked: false,
+    },
+    {
+      id: 'sdg13',
+      sdg: 13,
+      emoji: '🌡️',
+      title: 'Climate Champion',
+      desc: 'Save a cumulative total of 50 kg CO₂ across all your logged activities.',
+      hint: 'Log activities daily to build your CO₂ savings.',
+      color: '#38EF7D',
+      unlocked: false,
+    },
+    {
+      id: 'sdg15',
+      sdg: 15,
+      emoji: '🌿',
+      title: 'Life on Land Ally',
+      desc: 'Log 10 vegan or plant-based meals to protect biodiversity and land.',
+      hint: 'Log your first vegan meal from the Home screen.',
+      color: '#27AE60',
+      unlocked: false,
+    },
+  ];
+
   const renderBadgesTab = () => (
     <View style={styles.tabContent}>
+      {/* Voluntary Ad Donation Card */}
+      <GlassCard style={achStyles.adCard}>
+        <View style={achStyles.adCardHeader}>
+          <Text style={achStyles.adCardEmoji}>🌍</Text>
+          <View style={achStyles.adCardTextGroup}>
+            <Text style={achStyles.adCardTitle}>Play Ads to Support SDG Causes</Text>
+            <Text style={achStyles.adCardSub}>
+              100% of ad revenue is donated to UN Sustainable Development Goals of your choice.
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={achStyles.adCardBtn}
+          onPress={() =>
+            Alert.alert(
+              '🌍 Support SDG Causes',
+              'Watch a short ad and 100% of the revenue will be donated to the UN SDG cause of your choice. Completely optional.',
+              [
+                { text: 'Play Ad', style: 'default' },
+                { text: 'Maybe Later', style: 'cancel' },
+              ],
+            )
+          }
+          activeOpacity={0.8}
+        >
+          <Text style={achStyles.adCardBtnText}>▶ Play an Ad</Text>
+        </TouchableOpacity>
+      </GlassCard>
+
+      {/* Original Badges */}
       <Text style={styles.sectionTitle}>Your Badge Collection</Text>
       <View style={styles.list}>
         {badges.map(badge => {
@@ -422,6 +502,39 @@ const AchievementsScreen = () => {
             </GlassCard>
           );
         })}
+      </View>
+
+      {/* UN SDG Goal Milestones */}
+      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>🌍 UN SDG Milestones</Text>
+      <View style={styles.list}>
+        {SDG_MILESTONES.map(m => (
+          <GlassCard key={m.id} style={[styles.card, !m.unlocked && styles.cardLocked]}>
+            <View style={[styles.iconWrapper, !m.unlocked && styles.iconWrapperLocked]}>
+              {m.unlocked ? (
+                <Text style={styles.icon}>{m.emoji}</Text>
+              ) : (
+                <Lock size={24} color='rgba(255,255,255,0.4)' />
+              )}
+            </View>
+            <View style={styles.info}>
+              <View style={styles.badgeHeader}>
+                <Text style={[styles.name, !m.unlocked && styles.nameLocked]}>{m.title}</Text>
+                <Text style={[styles.rarityLabel, { color: m.color }]}>SDG {m.sdg}</Text>
+              </View>
+              <Text style={styles.desc}>{m.desc}</Text>
+              {m.unlocked ? (
+                <View style={styles.rewardCompletedRow}>
+                  <CheckCircle size={16} color='#38EF7D' weight='fill' />
+                  <Text style={styles.pointsEarnedText}>Milestone achieved!</Text>
+                </View>
+              ) : (
+                <Text style={[styles.desc, { color: 'rgba(255,255,255,0.3)', marginTop: 4 }]}>
+                  {m.hint}
+                </Text>
+              )}
+            </View>
+          </GlassCard>
+        ))}
       </View>
     </View>
   );
@@ -616,18 +729,7 @@ const AchievementsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Svg height='100%' width='100%' style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient id='bgGrad' x1='0' y1='0' x2='0' y2='1'>
-            <Stop offset='0' stopColor='#0f2027' stopOpacity='1' />
-            <Stop offset='0.5' stopColor='#203a43' stopOpacity='1' />
-            <Stop offset='1' stopColor='#2c5364' stopOpacity='1' />
-          </SvgLinearGradient>
-        </Defs>
-        <Rect x='0' y='0' width='100%' height='100%' fill='url(#bgGrad)' />
-      </Svg>
-
+    <SpaceBackground earthPosition='center-left' enableComets={true}>
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
           <Trophy size={36} color='#FFD700' weight='duotone' />
@@ -699,14 +801,25 @@ const AchievementsScreen = () => {
         </ScrollView>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor='#FFFFFF'
+            colors={['#38EF7D']}
+          />
+        }
+      >
         {activeTab === 'badges' && renderBadgesTab()}
         {activeTab === 'buddy' && renderBuddyTab()}
         {activeTab === 'store' && renderStoreTab()}
         {activeTab === 'tournaments' && renderTournamentsTab()}
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </View>
+    </SpaceBackground>
   );
 };
 
@@ -752,8 +865,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   tabButtonActive: {
-    backgroundColor: '#38EF7D',
-    borderColor: '#38ef7d',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   tabButtonText: {
     fontSize: 13,
@@ -762,15 +875,6 @@ const styles = StyleSheet.create({
   },
   tabButtonTextActive: {
     color: '#fff',
-  },
-
-  // Glass Card
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
   },
 
   tabContent: {
@@ -1044,7 +1148,9 @@ const styles = StyleSheet.create({
   joinButton: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    backgroundColor: '#38EF7D',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
     borderRadius: 8,
   },
   joinButtonJoined: {
@@ -1052,8 +1158,8 @@ const styles = StyleSheet.create({
   },
   joinButtonText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#0f2027',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   tournamentDesc: {
     fontSize: 13,
@@ -1112,6 +1218,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 'bold',
     color: '#fff',
+  },
+});
+
+const achStyles = StyleSheet.create({
+  adCard: {
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(56,239,125,0.25)',
+    backgroundColor: 'rgba(56,239,125,0.06)',
+  },
+  adCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 14,
+  },
+  adCardEmoji: { fontSize: 32 },
+  adCardTextGroup: { flex: 1 },
+  adCardTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  adCardSub: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.55)',
+    lineHeight: 17,
+  },
+  adCardBtn: {
+    backgroundColor: '#38EF7D',
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  adCardBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0A0A0C',
   },
 });
 

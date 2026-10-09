@@ -11,21 +11,17 @@ import {
   Platform,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useSelector, useDispatch } from 'react-redux';
-import { acceptPrivacyConsent } from '../../store/slices/settingsSlice';
-import type { RootState } from '../../store';
+import { useAppStore } from '../../store/useAppStore';
 import { Shield, EyeSlash, MapPin, Database } from 'phosphor-react-native';
 import HapticFeedbackService from '../../services/HapticFeedbackService';
 
 export const PrivacyConsentModal: React.FC = () => {
-  const dispatch = useDispatch();
-  const consentAccepted = useSelector(
-    (state: RootState) => state.settings?.privacy?.consentAccepted ?? false,
-  );
+  const consentAccepted = useAppStore(state => state.preferences.consentAccepted);
+  const updatePreferences = useAppStore(state => state.updatePreferences);
 
   const handleAgree = () => {
     HapticFeedbackService.triggerSuccess();
-    dispatch(acceptPrivacyConsent());
+    updatePreferences({ consentAccepted: true });
   };
 
   const handleOpenPrivacyPolicy = async () => {

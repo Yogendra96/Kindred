@@ -13,10 +13,7 @@
 // Service Exports
 // =============================================================================
 
-export {
-  climateTraceService,
-  default as ClimateTraceService,
-} from './ClimateTraceService';
+export { climateTraceService, default as ClimateTraceService } from './ClimateTraceService';
 
 export type {
   Sector,
@@ -29,10 +26,7 @@ export type {
   NearbyEmitter,
 } from './ClimateTraceService';
 
-export {
-  globalContextService,
-  default as GlobalContextService,
-} from './GlobalContextService';
+export { globalContextService, default as GlobalContextService } from './GlobalContextService';
 
 export type {
   CountryData,
@@ -41,10 +35,7 @@ export type {
   HistoricalComparison,
 } from './GlobalContextService';
 
-export {
-  gridCarbonService,
-  default as GridCarbonService,
-} from './GridCarbonService';
+export { gridCarbonService, default as GridCarbonService } from './GridCarbonService';
 
 export type {
   GridCarbonIntensity,
@@ -57,10 +48,7 @@ export type {
   GridZone,
 } from './GridCarbonService';
 
-export {
-  airQualityService,
-  default as AirQualityService,
-} from './AirQualityService';
+export { airQualityService, default as AirQualityService } from './AirQualityService';
 
 export type {
   AirQualityData,
@@ -138,15 +126,12 @@ class UnifiedClimateService {
     userFootprint: number,
   ): Promise<LocationClimateContext> {
     // Fetch all data in parallel
-    const [globalContext, gridZone, airQuality, nearbyEmitters] =
-      await Promise.all([
-        globalContextService.getUserGlobalContext(userFootprint, countryCode),
-        gridCarbonService.findZoneByLocation(lat, lng),
-        airQualityService.getCurrentAirQuality(lat, lng),
-        climateTraceService
-          .getNearbyEmitters(lat, lng, 25, countryCode)
-          .catch(() => []),
-      ]);
+    const [globalContext, gridZone, airQuality, nearbyEmitters] = await Promise.all([
+      globalContextService.getUserGlobalContext(userFootprint, countryCode),
+      gridCarbonService.findZoneByLocation(lat, lng),
+      airQualityService.getCurrentAirQuality(lat, lng),
+      climateTraceService.getNearbyEmitters(lat, lng, 25, countryCode).catch(() => []),
+    ]);
 
     // Get grid carbon for the zone
     const zone = gridZone || countryCode;
@@ -178,9 +163,7 @@ class UnifiedClimateService {
     const [gridZone, airQuality, nearbyEmitters] = await Promise.all([
       gridCarbonService.findZoneByLocation(lat, lng),
       airQualityService.getCurrentAirQuality(lat, lng),
-      climateTraceService
-        .getNearbyEmitters(lat, lng, 10, countryCode)
-        .catch(() => []),
+      climateTraceService.getNearbyEmitters(lat, lng, 10, countryCode).catch(() => []),
     ]);
 
     const zone = gridZone || countryCode;
@@ -188,19 +171,15 @@ class UnifiedClimateService {
 
     // Determine statuses
     const gridStatus: 'clean' | 'average' | 'dirty' =
-      grid.carbonIntensity < 200
-        ? 'clean'
-        : grid.carbonIntensity < 400
-        ? 'average'
-        : 'dirty';
+      grid.carbonIntensity < 200 ? 'clean' : grid.carbonIntensity < 400 ? 'average' : 'dirty';
 
     const aqCategory = airQuality.aqi.category;
     const airStatus: 'good' | 'moderate' | 'unhealthy' =
       aqCategory === 'good'
         ? 'good'
         : ['moderate', 'unhealthy-sensitive'].includes(aqCategory)
-        ? 'moderate'
-        : 'unhealthy';
+          ? 'moderate'
+          : 'unhealthy';
 
     // Generate recommendation
     let recommendation: string;

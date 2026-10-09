@@ -47,7 +47,7 @@ Empower users to track, understand, and reduce their environmental impact throug
 
 - **React Native 0.73.6** with Hermes JavaScript engine
 - **TypeScript** with strict mode and comprehensive type safety
-- **Redux Toolkit** for state management with slice pattern
+- **Zustand + Firebase hooks** for state management
 - **React Navigation** for type-safe navigation
 - **Expo modules** for native device capabilities
 
@@ -194,7 +194,7 @@ Empower users to track, understand, and reduce their environmental impact throug
 
 - **428 comprehensive E2E tests** covering all user scenarios
 - **Unit tests** with React Native Testing Library
-- **Integration tests** for Redux and navigation flows
+- **Integration tests** for state management and navigation flows
 - **Performance tests** with automated benchmarking
 - **Accessibility tests** with screen reader validation
 

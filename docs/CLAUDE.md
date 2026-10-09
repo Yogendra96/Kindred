@@ -1,6 +1,93 @@
-# CLAUDE.md
+# Kindred — Development Guide
 
-## 🔄 CONTINUITY FILES - READ FIRST
+## Quick Start
+
+```bash
+npm install --legacy-peer-deps
+npx tsc --noEmit
+npx jest --no-coverage
+```
+
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `npx tsc --noEmit` | TypeScript type check |
+| `npx jest --no-coverage` | Run all tests |
+| `npx jest --no-coverage <path>` | Run specific test |
+| `npx prettier --write src/` | Format all source files |
+| `npx eslint .` | Lint all files |
+| `npm start` | Start Metro bundler |
+| `npx react-native run-ios` | Run on iOS |
+| `npx react-native run-android` | Run on Android |
+
+## Architecture
+
+### State Management (Zustand + Firebase hooks — Redux was fully removed)
+
+**Two Zustand stores** for local UI state:
+- `src/store/useAppStore.ts` — theme, notifications, consent preferences
+
+**Four Firebase onSnapshot hooks** for real-time server state:
+- `src/hooks/useFirebaseData.ts` — `useWallet`, `useCarbon`, `useSDG`, `useCorporate`
+
+**TanStack Query** for API caching (`src/hooks/useQueries.ts`)
+
+**No Redux.** No Redux Provider. No slices. Zustand stores are accessed directly via hooks.
+
+### Cloud Functions (`functions/src/index.ts`)
+
+| Function | Type | Purpose |
+|---|---|---|
+| `onTransactionCreated` | Firestore trigger | Server-authoritative wallet aggregation |
+| `onActivityLogged` | Firestore trigger | SDG/ESG/corporate scoring |
+| `requestWorkEmailVerification` | Callable | Corporate email verification |
+| `verifyWorkEmailCode` | Callable | Validate 6-digit code |
+| `redeemGiftCard` | Callable | Tremendous gift card payout |
+| `onAdRewardVerified` | Callable | AdMob rewarded ad SSV |
+
+All callable functions have auth guards + rate limiting (`functions/src/rateLimit.ts`).
+
+### Fraud Prevention
+- Firebase AppCheck (`src/utils/firebaseInit.ts`)
+- Per-user rate limiting on all callable Cloud Functions
+- Server-authoritative wallet math (no client-side balance calculation)
+
+## Key Files
+
+| File | Purpose |
+|---|---|
+| `src/store/useAppStore.ts` | Zustand preferences store |
+| `src/hooks/useFirebaseData.ts` | Firebase onSnapshot hooks |
+| `src/hooks/useRewardedAd.ts` | AdMob rewarded ad hook |
+| `src/screens/main/WalletScreen.tsx` | Wallet + gift card redemption UI |
+| `src/screens/main/HomeScreen.tsx` | Activity logging + ad prompt |
+| `src/screens/main/ProfileScreen.tsx` | Profile + corporate email linking |
+| `functions/src/index.ts` | All Cloud Functions |
+| `functions/src/rateLimit.ts` | Per-user rate limiter |
+| `src/utils/firebaseInit.ts` | Firebase + AppCheck init |
+| `src/tests/setup.ts` | Jest test setup |
+
+## Dependencies (key)
+
+| Package | Version | Purpose |
+|---|---|---|
+| react-native | 0.81.4 | Framework |
+| typescript | 7.0.2 | Type system |
+| zustand | 5.0.14 | Local state |
+| @tanstack/react-query | 5.x | API caching |
+| @react-native-firebase/* | 25.1.0 | Firebase (all aligned) |
+| react-native-google-mobile-ads | 16.x | AdMob ads |
+| prettier | 3.9.5 | Code formatting |
+
+## Conventions
+
+- **Imports**: Path aliases (`@components/`, `@screens/`, `@hooks/`, etc.) in tsconfig + metro.config
+- **Types**: Prefer `type-imports` style (`import type { X } from '...'`)
+- **State**: Local UI → Zustand. Server data → Firebase onSnapshot hooks. API cache → TanStack Query.
+- **Tests**: Jest with React Native Testing Library. Run `npx jest --no-coverage` to verify.
+- **Formatting**: Prettier 3 with `printWidth: 100`, single quotes, trailing commas.
+- **Lint**: ESLint flat config (`eslint.config.mjs`). Run `npx eslint .` before PR.
 
 **For seamless handoff between Claude instances, always check these files first:**
 
@@ -67,7 +154,7 @@ Built with React Native 0.73.6, TypeScript, and modern development practices.
 ### System Architecture Pattern
 
 - **Modular Service-Oriented Architecture (SOA)** with KISS principle
-- **Redux Slice Pattern** for predictable state management
+- **Zustand + Firebase hooks** for predictable state management
 - **Component Hierarchy** with clear data flow and error boundaries
 - **Performance-First Design** with real-time monitoring integration
 
@@ -160,7 +247,7 @@ src/
 ├── components/          # Reusable UI components with Storybook stories
 ├── screens/            # Screen components (auth/, main/)
 ├── navigation/         # Navigation configuration
-├── store/              # Redux Toolkit store with slices (auth, user, carbon)
+├── store/              # Zustand store (useAppStore for local state)
 ├── services/           # 8 Enhanced business logic services
 ├── utils/              # Utility functions and helpers
 ├── hooks/              # Custom React hooks with performance monitoring
@@ -230,7 +317,7 @@ The app follows a **revolutionary service-oriented architecture** with breakthro
 ### Key Technologies
 
 - **Package Manager**: Bun (required - specified in engines)
-- **State Management**: Redux Toolkit with slices pattern (auth, user, carbon)
+- **State Management**: Zustand (local) + Firebase hooks (server state)
 - **Navigation**: React Navigation with typed navigation
 - **AI/ML**: TensorFlow.js with neural networks (64→32→16→4 architecture)
 - **Testing**: Jest + Detox E2E + Maestro + 75% coverage requirement
@@ -246,7 +333,7 @@ Use absolute imports with `@` prefixes:
 import { Button } from '@components/Button';
 import { usePerformanceMonitoring } from '@hooks/usePerformanceMonitoring';
 import { CarbonAPIService } from '@services/CarbonAPIService';
-import { userSlice } from '@store/slices/userSlice';
+import { useAppStore } from '@store/useAppStore';
 ```
 
 ## Application Features
@@ -320,7 +407,7 @@ When working with this codebase, follow these architectural principles:
 ### Testing Strategy
 
 - **Unit tests**: Jest + React Native Testing Library
-- **Integration tests**: Redux and navigation testing
+- **Integration tests**: State management and navigation testing
 - **E2E tests**: Detox with iOS Simulator (iPhone 15 Pro) and Android Emulator (Pixel 9 Pro XL
   API 35)
 - **Performance tests**: Custom performance monitoring
@@ -953,8 +1040,8 @@ const data = await CarbonAPIService.calculateEmissions(input); // No try/catch
 // ❌ DON'T: Store sensitive data unencrypted
 AsyncStorage.setItem('password', userPassword); // Security risk!
 
-// ❌ DON'T: Bypass the Redux store
-setUserData(newData); // Should use Redux actions
+// ❌ DON'T: Mutate state directly outside the store
+setUserData(newData); // Should use Zustand store actions or Firebase hooks
 
 // ❌ DON'T: Ignore performance thresholds
 // Component taking 50ms to render with no optimization

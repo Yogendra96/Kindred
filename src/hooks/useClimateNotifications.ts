@@ -41,10 +41,7 @@ export const notifyStreak = (streakDays: number): void => {
   });
 };
 
-export const notifyChallengeComplete = (
-  challengeName: string,
-  reward: string,
-): void => {
+export const notifyChallengeComplete = (challengeName: string, reward: string): void => {
   log.info('challenge completed', { challengeName, reward });
   sendChallengeNotification({
     id: `challenge_${Date.now()}`,

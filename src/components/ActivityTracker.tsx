@@ -1,4 +1,3 @@
-import { updateFootprint, updateEcosystem } from '../store/slices/carbonSlice';
 import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +19,6 @@ import {
   FlatList,
 } from 'react-native';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { useDispatch } from 'react-redux';
 
 interface Activity {
   id: string;
@@ -57,12 +55,7 @@ const ActivityTracker: React.FC = () => {
     start: subDays(new Date(), 30),
     end: new Date(),
   });
-  const [selectedCategory, _setSelectedCategory] = useState<string | null>(
-    null,
-  );
-
-  const dispatch = useDispatch();
-
+  const [selectedCategory, _setSelectedCategory] = useState<string | null>(null);
   // Calculate activity summary metrics
   const summary = useMemo((): ActivitySummary => {
     const filteredActivities = activities.filter(
@@ -85,8 +78,7 @@ const ActivityTracker: React.FC = () => {
       categoryBreakdown: filteredActivities.reduce(
         (acc, activity) => ({
           ...acc,
-          [activity.type]:
-            (acc[activity.type] || 0) + (activity.completed ? 1 : 0),
+          [activity.type]: (acc[activity.type] || 0) + (activity.completed ? 1 : 0),
         }),
         {},
       ),
@@ -99,18 +91,14 @@ const ActivityTracker: React.FC = () => {
     const data = dates.map(date => {
       const dayActivities = activities.filter(
         activity =>
-          format(new Date(activity.timestamp), 'yyyy-MM-dd') ===
-            format(date, 'yyyy-MM-dd') &&
+          format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') &&
           activity.completed &&
           (!selectedCategory || activity.type === selectedCategory),
       );
 
       return {
         date: format(date, 'MMM dd'),
-        impact: dayActivities.reduce(
-          (sum, activity) => sum + activity.impact,
-          0,
-        ),
+        impact: dayActivities.reduce((sum, activity) => sum + activity.impact, 0),
       };
     });
 
@@ -142,17 +130,11 @@ const ActivityTracker: React.FC = () => {
             (await AsyncStorage.getItem(OFFLINE_ACTIONS_KEY)) || '[]',
           );
           offlineActions.push({ activity, timestamp: Date.now() });
-          await AsyncStorage.setItem(
-            OFFLINE_ACTIONS_KEY,
-            JSON.stringify(offlineActions),
-          );
+          await AsyncStorage.setItem(OFFLINE_ACTIONS_KEY, JSON.stringify(offlineActions));
 
           // Update local state
           setActivities(updatedActivities);
-          await AsyncStorage.setItem(
-            CACHE_KEY,
-            JSON.stringify(updatedActivities),
-          );
+          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
           return;
         }
 
@@ -164,13 +146,9 @@ const ActivityTracker: React.FC = () => {
 
         // Update carbon footprint if completing activity
         if (!activity.completed) {
-          dispatch(updateFootprint({ [activity.type]: activity.impact }));
-
           // Update Ecosystem State (Bio-Digital Twin)
           // Logic: Different activities impact different ecosystem aspects
-          let ecosystemUpdates: Partial<
-            import('../store/slices/carbonSlice').EcosystemState
-          > = {};
+          let ecosystemUpdates: Partial<any> = {};
 
           switch (activity.type) {
             case 'transportation':
@@ -200,21 +178,18 @@ const ActivityTracker: React.FC = () => {
           }
 
           // Apply updates via Redux
-          dispatch(updateEcosystem(ecosystemUpdates));
+          // dispatch(updateEcosystem(ecosystemUpdates));
         }
 
         setActivities(updatedActivities);
-        await AsyncStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify(updatedActivities),
-        );
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(updatedActivities));
         setError(null);
       } catch (err) {
         console.error('Error updating activity:', err);
         setError('Failed to update activity');
       }
     },
-    [activities, isOnline, dispatch],
+    [activities, isOnline],
   );
 
   const syncOfflineActions = useCallback(async () => {
@@ -237,10 +212,7 @@ const ActivityTracker: React.FC = () => {
     if (!user) return;
 
     try {
-      const snapshot = await firestore()
-        .collection('daily_activities')
-        .doc(user.uid)
-        .get();
+      const snapshot = await firestore().collection('daily_activities').doc(user.uid).get();
 
       const data = snapshot.data()?.activities;
       if (data) {
@@ -309,10 +281,7 @@ const ActivityTracker: React.FC = () => {
   const renderActivity = useCallback(
     ({ item: activity }: { item: Activity }) => (
       <TouchableOpacity
-        style={[
-          styles.activityCard,
-          activity.completed && styles.completedCard,
-        ]}
+        style={[styles.activityCard, activity.completed && styles.completedCard]}
         onPress={() => handleActivityCompletion(activity)}
         disabled={loading}
         accessible={true}
@@ -327,10 +296,7 @@ const ActivityTracker: React.FC = () => {
           <Text style={styles.activityTitle} accessibilityRole='text'>
             {activity.title}
           </Text>
-          <Text
-            style={styles.points}
-            accessibilityLabel={`${activity.points} points`}
-          >
+          <Text style={styles.points} accessibilityLabel={`${activity.points} points`}>
             +{activity.points} pts
           </Text>
         </View>
@@ -344,9 +310,7 @@ const ActivityTracker: React.FC = () => {
             disabled={loading}
             accessible={true}
             accessibilityRole='button'
-            accessibilityLabel={`${activity.completed ? 'Uncheck' : 'Check'} ${
-              activity.title
-            }`}
+            accessibilityLabel={`${activity.completed ? 'Uncheck' : 'Check'} ${activity.title}`}
             accessibilityHint={`Mark this activity as ${
               activity.completed ? 'incomplete' : 'complete'
             }`}
@@ -357,11 +321,7 @@ const ActivityTracker: React.FC = () => {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
-              name={
-                activity.completed
-                  ? 'checkmark-circle'
-                  : 'checkmark-circle-outline'
-              }
+              name={activity.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
               size={24}
               color={activity.completed ? '#2ecc71' : '#666'}
               accessibilityElementsHidden={true}
@@ -391,12 +351,7 @@ const ActivityTracker: React.FC = () => {
           <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>
             {summary.totalPoints}
           </Text>
-          <Text
-            style={[
-              styles.summaryLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
             Total Points
           </Text>
         </View>
@@ -404,12 +359,7 @@ const ActivityTracker: React.FC = () => {
           <Text style={[styles.summaryValue, { color: theme.colors.success }]}>
             {summary.carbonSaved.toFixed(1)}t
           </Text>
-          <Text
-            style={[
-              styles.summaryLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
             CO₂ Saved
           </Text>
         </View>
@@ -417,12 +367,7 @@ const ActivityTracker: React.FC = () => {
           <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>
             {summary.streakDays}
           </Text>
-          <Text
-            style={[
-              styles.summaryLabel,
-              { color: theme.colors.text.secondary },
-            ]}
-          >
+          <Text style={[styles.summaryLabel, { color: theme.colors.text.secondary }]}>
             Day Streak
           </Text>
         </View>
@@ -432,9 +377,7 @@ const ActivityTracker: React.FC = () => {
 
   const renderCharts = () => (
     <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
-        Impact Timeline
-      </Text>
+      <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>Impact Timeline</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <LineChart
           data={chartData}
@@ -471,9 +414,7 @@ const ActivityTracker: React.FC = () => {
       <View accessible={true} accessibilityRole='image'>
         <Text
           accessibilityLiveRegion='polite'
-          accessibilityLabel={`Activity breakdown chart: ${Object.entries(
-            summary.categoryBreakdown,
-          )
+          accessibilityLabel={`Activity breakdown chart: ${Object.entries(summary.categoryBreakdown)
             .map(([category, count]) => `${category}: ${count} activities`)
             .join(', ')}`}
           style={{ position: 'absolute', left: -10000 }}
@@ -514,10 +455,7 @@ const ActivityTracker: React.FC = () => {
   if (loading) {
     return (
       <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
+        style={[styles.loadingContainer, { backgroundColor: theme.colors.surface }]}
         accessible={true}
         accessibilityRole='progressbar'
         accessibilityLabel='Loading activities'

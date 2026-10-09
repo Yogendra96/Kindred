@@ -1,5 +1,6 @@
 /* global NodeJS */
 /* global window, navigator */
+declare var window: any;
 /**
  * @fileoverview Unified Error Boundary Component
  *
@@ -34,12 +35,7 @@ import {
   View,
 } from 'react-native';
 
-import {
-  COLORS,
-  SPACING,
-  FONT_SIZES,
-  LOG_PREFIXES,
-} from '../../utils/constants';
+import { COLORS, SPACING, FONT_SIZES, LOG_PREFIXES } from '../../utils/constants';
 import { createLogger } from '../../utils/loggingUtils';
 
 // Helper logging functions
@@ -74,11 +70,7 @@ const logRecoveryAttempt = (
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: (
-    error: Error,
-    errorInfo: ErrorInfo,
-    retry: () => void,
-  ) => ReactNode;
+  fallback?: (error: Error, errorInfo: ErrorInfo, retry: () => void) => ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo, errorId: string) => void;
   enableReporting?: boolean;
   showDetails?: boolean;
@@ -135,10 +127,7 @@ export interface ErrorReport {
  * Unified Error Boundary that consolidates all error handling features
  * into a single, reusable, configurable component
  */
-class UnifiedErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+class UnifiedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private logger = createLogger('ERROR_BOUNDARY');
   private resetTimeoutId: NodeJS.Timeout | null = null;
   private retryTimeoutId: NodeJS.Timeout | null = null;
@@ -213,10 +202,7 @@ class UnifiedErrorBoundary extends Component<
     }
 
     // Attempt automatic recovery if configured
-    if (
-      this.props.autoRetryDelay &&
-      this.state.retryCount < (this.props.maxRetries || 3)
-    ) {
+    if (this.props.autoRetryDelay && this.state.retryCount < (this.props.maxRetries || 3)) {
       this.scheduleAutoRetry();
     }
   }
@@ -226,11 +212,7 @@ class UnifiedErrorBoundary extends Component<
     const { hasError } = this.state;
 
     // Reset error boundary when specific props change
-    if (
-      resetOnPropsChange &&
-      hasError &&
-      this.hasResetKeysChanged(prevProps.resetKeys)
-    ) {
+    if (resetOnPropsChange && hasError && this.hasResetKeysChanged(prevProps.resetKeys)) {
       this.handleRetry();
     }
   }
@@ -248,11 +230,7 @@ class UnifiedErrorBoundary extends Component<
   // ERROR HANDLING METHODS
   // ===================================================================
 
-  private reportError(
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorId: string,
-  ): void {
+  private reportError(error: Error, errorInfo: ErrorInfo, errorId: string): void {
     try {
       const report: ErrorReport = {
         errorId,
@@ -285,10 +263,7 @@ class UnifiedErrorBoundary extends Component<
       // import { captureException } from '@sentry/react-native';
       // captureException(error, { extra: report });
     } catch (reportingError) {
-      this.logger.error(
-        `Failed to report error: ${error.message}`,
-        reportingError as Error,
-      );
+      this.logger.error(`Failed to report error: ${error.message}`, reportingError as Error);
     }
   }
 
@@ -360,32 +335,28 @@ class UnifiedErrorBoundary extends Component<
   };
 
   private handleRestart = (): void => {
-    Alert.alert(
-      'Restart App',
-      'This will restart the app to recover from the error. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Restart',
-          style: 'destructive',
-          onPress: () => {
-            this.logger.info('User requested app restart', {
-              errorId: this.state.errorId,
-              component: this.props.component,
-            });
+    Alert.alert('Restart App', 'This will restart the app to recover from the error. Continue?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Restart',
+        style: 'destructive',
+        onPress: () => {
+          this.logger.info('User requested app restart', {
+            errorId: this.state.errorId,
+            component: this.props.component,
+          });
 
-            // In React Native, we would typically use:
-            // import { RNRestart } from 'react-native-restart';
-            // RNRestart.Restart();
+          // In React Native, we would typically use:
+          // import { RNRestart } from 'react-native-restart';
+          // RNRestart.Restart();
 
-            // For web, we could use:
-            if (typeof window !== 'undefined') {
-              window.location.reload();
-            }
-          },
+          // For web, we could use:
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   private toggleDetails = (): void => {
@@ -405,11 +376,7 @@ class UnifiedErrorBoundary extends Component<
     if (hasError) {
       // Use custom fallback if provided
       if (fallback && this.state.error && this.state.errorInfo) {
-        return fallback(
-          this.state.error,
-          this.state.errorInfo,
-          this.handleRetry,
-        );
+        return fallback(this.state.error, this.state.errorInfo, this.handleRetry);
       }
 
       // Default error UI
@@ -420,8 +387,7 @@ class UnifiedErrorBoundary extends Component<
   }
 
   private renderDefaultErrorUI(): ReactNode {
-    const { error, errorInfo, errorId, retryCount, isRetrying, showDetails } =
-      this.state;
+    const { error, errorInfo, errorId, retryCount, isRetrying, showDetails } = this.state;
     const { maxRetries = 3, component, screen } = this.props;
 
     const canRetry = retryCount < maxRetries;
@@ -435,9 +401,7 @@ class UnifiedErrorBoundary extends Component<
           <Text style={styles.title} accessibilityRole='header'>
             {errorTitle}
           </Text>
-          <Text style={styles.subtitle}>
-            We encountered an unexpected error
-          </Text>
+          <Text style={styles.subtitle}>We encountered an unexpected error</Text>
         </View>
 
         {/* Error Details */}
@@ -472,9 +436,7 @@ class UnifiedErrorBoundary extends Component<
               </TouchableOpacity>
 
               <View style={styles.debugContent}>
-                {error?.stack && (
-                  <Text style={styles.stackTrace}>{error.stack}</Text>
-                )}
+                {error?.stack && <Text style={styles.stackTrace}>{error.stack}</Text>}
 
                 {errorInfo?.componentStack && (
                   <Text style={styles.componentStack}>
@@ -491,19 +453,13 @@ class UnifiedErrorBoundary extends Component<
         <View style={styles.actions}>
           {canRetry && (
             <TouchableOpacity
-              style={[
-                styles.button,
-                styles.primaryButton,
-                isRetrying && styles.buttonDisabled,
-              ]}
+              style={[styles.button, styles.primaryButton, isRetrying && styles.buttonDisabled]}
               onPress={() => this.handleRetry()}
               disabled={isRetrying}
               accessibilityRole='button'
               accessibilityLabel={isRetrying ? 'Retrying...' : 'Try again'}
             >
-              <Text style={styles.buttonText}>
-                {isRetrying ? 'Retrying...' : 'Try Again'}
-              </Text>
+              <Text style={styles.buttonText}>{isRetrying ? 'Retrying...' : 'Try Again'}</Text>
             </TouchableOpacity>
           )}
 
@@ -513,9 +469,7 @@ class UnifiedErrorBoundary extends Component<
             accessibilityRole='button'
             accessibilityLabel='Restart app'
           >
-            <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-              Restart App
-            </Text>
+            <Text style={[styles.buttonText, styles.secondaryButtonText]}>Restart App</Text>
           </TouchableOpacity>
 
           {__DEV__ && (

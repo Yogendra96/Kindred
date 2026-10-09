@@ -4,13 +4,7 @@
  */
 
 import React, { useMemo, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import type { AirQualityData } from '../../services/climate';
 
@@ -44,8 +38,7 @@ export const AirQualityBadge: React.FC<Props> = ({
         level: 'Moderate',
         color: '#EAB308',
         emoji: '🙂',
-        advice:
-          'Acceptable. Unusually sensitive people should reduce outdoor exertion.',
+        advice: 'Acceptable. Unusually sensitive people should reduce outdoor exertion.',
         shortAdvice: 'OK for most people',
       };
     }
@@ -54,8 +47,7 @@ export const AirQualityBadge: React.FC<Props> = ({
         level: 'Unhealthy for Sensitive',
         color: '#F97316',
         emoji: '😐',
-        advice:
-          'Sensitive groups may experience health effects. Limit prolonged outdoor exertion.',
+        advice: 'Sensitive groups may experience health effects. Limit prolonged outdoor exertion.',
         shortAdvice: 'Limit outdoor time',
       };
     }
@@ -64,8 +56,7 @@ export const AirQualityBadge: React.FC<Props> = ({
         level: 'Unhealthy',
         color: '#EF4444',
         emoji: '😷',
-        advice:
-          'Everyone may experience health effects. Avoid prolonged outdoor exertion.',
+        advice: 'Everyone may experience health effects. Avoid prolonged outdoor exertion.',
         shortAdvice: 'Avoid outdoors',
       };
     }
@@ -101,9 +92,7 @@ export const AirQualityBadge: React.FC<Props> = ({
       so2: { name: 'SO₂', emoji: '🏭' },
       co: { name: 'CO', emoji: '💨' },
     };
-    return (
-      pollutantMap[pollutant.toLowerCase()] || { name: pollutant, emoji: '🌡️' }
-    );
+    return pollutantMap[pollutant.toLowerCase()] || { name: pollutant, emoji: '🌡️' };
   };
 
   // Helper to get PM2.5 value from measurements
@@ -114,9 +103,7 @@ export const AirQualityBadge: React.FC<Props> = ({
 
   if (isLoading) {
     return (
-      <View
-        style={[styles.badgeLoading, { backgroundColor: theme.colors.surface }]}
-      >
+      <View style={[styles.badgeLoading, { backgroundColor: theme.colors.surface }]}>
         <ActivityIndicator size='small' color={theme.colors.primary} />
       </View>
     );
@@ -130,9 +117,7 @@ export const AirQualityBadge: React.FC<Props> = ({
         activeOpacity={0.7}
       >
         <Text style={styles.emptyEmoji}>🌬️</Text>
-        <Text
-          style={[styles.emptyText, { color: theme.colors.text.secondary }]}
-        >
+        <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
           Check air quality
         </Text>
       </TouchableOpacity>
@@ -183,12 +168,8 @@ export const AirQualityBadge: React.FC<Props> = ({
           <Text style={styles.aqiLabel}>AQI</Text>
         </View>
         <View style={styles.aqiDetails}>
-          <Text style={[styles.levelText, { color: aqiInfo.color }]}>
-            {aqiInfo.level}
-          </Text>
-          <Text
-            style={[styles.adviceText, { color: theme.colors.text.secondary }]}
-          >
+          <Text style={[styles.levelText, { color: aqiInfo.color }]}>{aqiInfo.level}</Text>
+          <Text style={[styles.adviceText, { color: theme.colors.text.secondary }]}>
             {aqiInfo.advice}
           </Text>
         </View>
@@ -196,45 +177,24 @@ export const AirQualityBadge: React.FC<Props> = ({
 
       {/* Pollutants Bar */}
       <View style={styles.pollutants}>
-        <View
-          style={[
-            styles.pollutantRow,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
+        <View style={[styles.pollutantRow, { backgroundColor: theme.colors.background }]}>
           <View style={styles.pollutantMain}>
             <Text style={styles.pollutantEmoji}>{pollutantInfo.emoji}</Text>
             <View>
-              <Text
-                style={[
-                  styles.pollutantLabel,
-                  { color: theme.colors.text.secondary },
-                ]}
-              >
+              <Text style={[styles.pollutantLabel, { color: theme.colors.text.secondary }]}>
                 Main Pollutant
               </Text>
-              <Text
-                style={[
-                  styles.pollutantName,
-                  { color: theme.colors.text.primary },
-                ]}
-              >
+              <Text style={[styles.pollutantName, { color: theme.colors.text.primary }]}>
                 {pollutantInfo.name}
               </Text>
             </View>
           </View>
           {pm25Value !== null && (
             <View style={styles.pollutantValue}>
-              <Text
-                style={[styles.pmValue, { color: theme.colors.text.primary }]}
-              >
+              <Text style={[styles.pmValue, { color: theme.colors.text.primary }]}>
                 {pm25Value.toFixed(1)}
               </Text>
-              <Text
-                style={[styles.pmUnit, { color: theme.colors.text.tertiary }]}
-              >
-                μg/m³
-              </Text>
+              <Text style={[styles.pmUnit, { color: theme.colors.text.tertiary }]}>μg/m³</Text>
             </View>
           )}
         </View>
@@ -242,18 +202,11 @@ export const AirQualityBadge: React.FC<Props> = ({
 
       {/* Carbon Impact Note */}
       {data.aqi.value > 100 && (
-        <View
-          style={[
-            styles.impactNote,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
+        <View style={[styles.impactNote, { backgroundColor: theme.colors.background }]}>
           <Text style={styles.impactEmoji}>💡</Text>
-          <Text
-            style={[styles.impactText, { color: theme.colors.text.secondary }]}
-          >
-            Poor air quality often correlates with high local emissions.
-            Consider reducing car usage and supporting clean energy.
+          <Text style={[styles.impactText, { color: theme.colors.text.secondary }]}>
+            Poor air quality often correlates with high local emissions. Consider reducing car usage
+            and supporting clean energy.
           </Text>
         </View>
       )}
@@ -263,9 +216,7 @@ export const AirQualityBadge: React.FC<Props> = ({
         <Text style={[styles.timestamp, { color: theme.colors.text.tertiary }]}>
           Updated: {new Date(data.timestamp).toLocaleTimeString()}
         </Text>
-        <Text style={[styles.source, { color: theme.colors.text.tertiary }]}>
-          {data.source}
-        </Text>
+        <Text style={[styles.source, { color: theme.colors.text.tertiary }]}>{data.source}</Text>
       </View>
     </TouchableOpacity>
   );

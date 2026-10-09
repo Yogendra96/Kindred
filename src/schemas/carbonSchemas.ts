@@ -1,7 +1,16 @@
-// @ts-nocheck
 /* eslint-disable */
 import { z } from 'zod';
 import { VALIDATION_LIMITS, VALIDATION_MESSAGES } from '../utils/constants';
+
+// Zod v4 error map: distinguish "field missing" (input === undefined) from
+// "field present but wrong type", matching the old required_error /
+// invalid_type_error behavior.
+const numberFieldError = (requiredError: string, invalidTypeError: string) => (
+  issue: { input?: unknown },
+) =>
+  issue.input === undefined
+    ? { message: requiredError }
+    : { message: invalidTypeError };
 
 // --- Base Field Schemas ---
 
@@ -12,14 +21,12 @@ const descriptionSchema = z
 
 export const transportModeSchema = z.enum(
   ['car', 'bus', 'train', 'plane', 'bike', 'walk', 'scooter', 'motorcycle'],
-  {
-    errorMap: () => ({ message: 'Please select a valid transportation mode' }),
-  },
+  'Please select a valid transportation mode',
 );
 
 export const fuelTypeSchema = z.enum(
   ['gasoline', 'diesel', 'electric', 'hybrid', 'plugin-hybrid', 'natural-gas'],
-  { errorMap: () => ({ message: 'Please select a valid fuel type' }) },
+  'Please select a valid fuel type',
 );
 
 // --- Form Schemas ---
@@ -28,8 +35,7 @@ export const TransportationSchema = z.object({
   mode: transportModeSchema,
   distance: z
     .number({
-      required_error: 'Distance is required',
-      invalid_type_error: 'Must be a number',
+      error: numberFieldError('Distance is required', 'Must be a number'),
     })
     .min(0.1, VALIDATION_MESSAGES.INVALID_DISTANCE)
     .max(VALIDATION_LIMITS.DISTANCE_MAX_KM, VALIDATION_MESSAGES.DISTANCE_TOO_HIGH),
@@ -42,9 +48,9 @@ export const TransportationSchema = z.object({
 });
 
 export const EnergySchema = z.object({
-  energyType: z.string({ required_error: 'Please select an energy type' }),
+  energyType: z.string({ error: 'Please select an energy type' }),
   amount: z
-    .number({ required_error: 'Energy amount is required' })
+    .number({ error: 'Energy amount is required' })
     .positive(VALIDATION_MESSAGES.INVALID_ENERGY)
     .max(
       VALIDATION_LIMITS.ENERGY_MAX_KWH,
@@ -54,9 +60,9 @@ export const EnergySchema = z.object({
 });
 
 export const FoodSchema = z.object({
-  foodType: z.string({ required_error: 'Please select a food category' }),
+  foodType: z.string({ error: 'Please select a food category' }),
   amount: z
-    .number({ required_error: 'Food amount is required' })
+    .number({ error: 'Food amount is required' })
     .positive(VALIDATION_MESSAGES.INVALID_FOOD)
     .max(VALIDATION_LIMITS.FOOD_MAX_KG, 'Food amount seems unusually high. Please verify.'),
   description: descriptionSchema,

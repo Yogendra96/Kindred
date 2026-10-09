@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * 🎨 Modern Button Component
@@ -19,7 +18,7 @@ import {
 } from 'react-native';
 import type { Theme } from '../../design-system/ModernDesignSystem';
 import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
-import { hapticFeedbackService } from '../../services/HapticFeedbackService';
+import hapticFeedbackService from '../../services/HapticFeedbackService';
 import analyticsService from '../../services/AnalyticsService';
 
 // Advanced Button Configuration
@@ -277,12 +276,12 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
 
     // Haptic feedback
     if (hapticFeedback) {
-      hapticFeedbackService.impact('light');
+      hapticFeedbackService.triggerImpact('light');
     }
 
     // Press animation
     if (pressAnimation !== 'none') {
-      const animations = [];
+      const animations: Animated.CompositeAnimation[] = [];
 
       if (pressAnimation === 'scale') {
         animations.push(
@@ -382,7 +381,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     if (disabled || isLoading || !onLongPress) return;
 
     if (hapticFeedback) {
-      hapticFeedbackService.impact('medium');
+      hapticFeedbackService.triggerImpact('medium');
     }
 
     onLongPress();

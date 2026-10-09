@@ -588,11 +588,7 @@ interface CarbonGestureContext {
 }
 
 interface CarbonGestureAction {
-  readonly action:
-    | 'log_activity'
-    | 'view_impact'
-    | 'set_goal'
-    | 'compare_alternatives';
+  readonly action: 'log_activity' | 'view_impact' | 'set_goal' | 'compare_alternatives';
   readonly gesture: string;
   readonly efficiency: number;
   readonly learning_curve: number;
@@ -606,11 +602,7 @@ interface ImpactGesture {
 }
 
 interface AchievementGesture {
-  readonly achievement_type:
-    | 'milestone'
-    | 'streak'
-    | 'improvement'
-    | 'community';
+  readonly achievement_type: 'milestone' | 'streak' | 'improvement' | 'community';
   readonly gesture: string;
   readonly celebration: CelebrationConfig;
 }
@@ -1769,10 +1761,7 @@ export class NextGenInteractionEngineService {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error(
-        '❌ Failed to initialize Next-Generation Interaction Engine:',
-        error,
-      );
+      console.error('❌ Failed to initialize Next-Generation Interaction Engine:', error);
       throw error;
     }
   }
@@ -1789,16 +1778,10 @@ export class NextGenInteractionEngineService {
       const features = await this.extractGestureFeatures(processedData);
 
       // Run recognition algorithms
-      const recognitionResults = await this.runGestureRecognition(
-        features,
-        context,
-      );
+      const recognitionResults = await this.runGestureRecognition(features, context);
 
       // Post-process and validate
-      const result = await this.postProcessRecognition(
-        recognitionResults,
-        context,
-      );
+      const result = await this.postProcessRecognition(recognitionResults, context);
 
       // Learn from recognition
       await this.learnFromGestureRecognition(gestureData, result, context);
@@ -1840,10 +1823,7 @@ export class NextGenInteractionEngineService {
         description: `Custom gesture created by user ${userId}`,
         pattern,
         training_data: validatedData,
-        performance: await this.evaluateGesturePerformance(
-          model,
-          validatedData,
-        ),
+        performance: await this.evaluateGesturePerformance(model, validatedData),
       };
 
       // Store gesture
@@ -1872,9 +1852,7 @@ export class NextGenInteractionEngineService {
   ): Promise<AdaptiveInterfaceConfiguration> {
     try {
       // Analyze user behavior
-      const behaviorAnalysis = await this.analyzeUserBehavior(
-        interactionHistory,
-      );
+      const behaviorAnalysis = await this.analyzeUserBehavior(interactionHistory);
 
       // Assess current context
       const contextAnalysis = await this.analyzeCurrentContext(currentContext);
@@ -1906,9 +1884,7 @@ export class NextGenInteractionEngineService {
 
   private async initializeLearningSystem(): Promise<void> {}
 
-  private async preprocessGestureData(
-    data: GestureInputData,
-  ): Promise<GestureInputData> {
+  private async preprocessGestureData(data: GestureInputData): Promise<GestureInputData> {
     return data;
   }
 
@@ -1953,15 +1929,11 @@ export class NextGenInteractionEngineService {
     // Learning logic
   }
 
-  private async validateTrainingData(
-    data: GestureTrainingData[],
-  ): Promise<GestureTrainingData[]> {
+  private async validateTrainingData(data: GestureTrainingData[]): Promise<GestureTrainingData[]> {
     return data;
   }
 
-  private async extractGesturePattern(
-    _data: GestureTrainingData[],
-  ): Promise<GesturePattern> {
+  private async extractGesturePattern(_data: GestureTrainingData[]): Promise<GesturePattern> {
     return {
       points: [],
       timing: [],
@@ -1992,10 +1964,7 @@ export class NextGenInteractionEngineService {
     };
   }
 
-  private async storeUserGesture(
-    _userId: string,
-    _gesture: UserGesture,
-  ): Promise<void> {
+  private async storeUserGesture(_userId: string, _gesture: UserGesture): Promise<void> {
     // Storage logic
   }
 

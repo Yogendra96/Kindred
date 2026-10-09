@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * 🧠 Predictive Memory Manager
@@ -33,10 +32,7 @@ interface MemoryLeakSignature {
   readonly id: string;
   readonly type: 'component' | 'event-listener' | 'timer' | 'network' | 'cache' | 'unknown';
   readonly pattern:
-    | 'linear-growth'
-    | 'exponential-growth'
-    | 'periodic-spike'
-    | 'gradual-accumulation';
+    'linear-growth' | 'exponential-growth' | 'periodic-spike' | 'gradual-accumulation';
   readonly severity: 'low' | 'medium' | 'high' | 'critical';
   readonly growthRate: number; // bytes per second
   readonly detectedAt: number;
@@ -76,7 +72,7 @@ interface ComponentLifecycleTracker {
 }
 
 // Advanced Object Pool
-class AdvancedObjectPool<T> {
+class AdvancedObjectPool<T extends object> {
   private readonly pool: T[] = [];
   private readonly activeObjects = new WeakSet<T>();
   private readonly config: MemoryPoolConfig;
@@ -581,19 +577,19 @@ export class PredictiveMemoryManager {
   }): void {
     const tracker = this.componentTrackers.get(data.componentName);
     if (tracker) {
+      const memoryDelta = data.memoryUsage - tracker.memoryAtMount;
+
+      // Analyze for suspicious activity (a >5MB positive delta suggests a leak)
+      const isSuspicious = memoryDelta > 5 * 1024 * 1024;
+
       const updatedTracker: ComponentLifecycleTracker = {
         ...tracker,
         unmountTime: data.timestamp,
         memoryAtUnmount: data.memoryUsage,
-        memoryDelta: data.memoryUsage - tracker.memoryAtMount,
+        memoryDelta,
+        suspiciousActivity: isSuspicious,
+        leakRisk: isSuspicious ? 'high' : tracker.leakRisk,
       };
-
-      // Analyze for suspicious activity
-      if (updatedTracker.memoryDelta > 5 * 1024 * 1024) {
-        // 5MB leak
-        updatedTracker.suspiciousActivity = true;
-        updatedTracker.leakRisk = 'high';
-      }
 
       this.analyzer.addComponentLifecycle(updatedTracker);
       this.componentTrackers.delete(data.componentName);
@@ -701,7 +697,7 @@ export class PredictiveMemoryManager {
   }
 
   // Public API
-  createObjectPool<T>(
+  createObjectPool<T extends object>(
     name: string,
     factory: () => T,
     config?: Partial<MemoryPoolConfig>,
@@ -713,7 +709,7 @@ export class PredictiveMemoryManager {
     return pool;
   }
 
-  getObjectPool<T>(name: string): AdvancedObjectPool<T> | undefined {
+  getObjectPool<T extends object>(name: string): AdvancedObjectPool<T> | undefined {
     return this.objectPools.get(name);
   }
 

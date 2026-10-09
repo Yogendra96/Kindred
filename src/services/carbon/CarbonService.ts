@@ -287,8 +287,8 @@ export class CarbonService {
     const apiOverallStatus = apiStatuses.includes('healthy')
       ? 'healthy'
       : apiStatuses.includes('degraded')
-      ? 'degraded'
-      : 'unhealthy';
+        ? 'degraded'
+        : 'unhealthy';
 
     // Calculate metrics
     const totalRequests = this.metrics.totalCalculations;
@@ -304,8 +304,8 @@ export class CarbonService {
     const overallStatus = Object.values(services).includes('unhealthy')
       ? 'unhealthy'
       : Object.values(services).includes('degraded')
-      ? 'degraded'
-      : 'healthy';
+        ? 'degraded'
+        : 'healthy';
 
     return {
       status: overallStatus,

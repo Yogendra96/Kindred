@@ -231,7 +231,7 @@ describe('ExampleComponent', () => {
 
 - **API testing**: Mock API responses
 - **Navigation testing**: Test screen transitions
-- **State management**: Test Redux actions and reducers
+- **State management**: Test Zustand store actions and Firebase hook logic
 
 ### End-to-End Testing
 

@@ -36,14 +36,14 @@
 - [x] `BackgroundSyncService` — background drain via expo-task-manager
 - [x] `CacheService v2` — LRU memory + disk TTL policies
 - [x] `OfflineBanner` — 4-state animated status banner
-- [x] Redux store: field filters, compression, migration versioning
+- [x] Local store: field filters, compression, migration versioning
 - [x] `useNetworkStatus v2` — auto-triggers drain on reconnect
 - [x] 10/10 unit tests passing
 
 ### Path B4: Advanced Insights Dashboard
 
 - [x] Period selector tab bar (Week / Month / Year)
-- [x] Carbon overview hero card wired to real Redux history
+- [x] Carbon overview hero card wired to real data history
 - [x] GitHub-style activity heatmap (`CarbonHeatmap.tsx`)
 - [x] Category donut chart + animated breakdown bars (circular Svg segments)
 - [x] Predictive forecasting (linear regression on history)
@@ -66,7 +66,7 @@
 
 - [x] Built first-launch `PrivacyConsentModal` overlay detailing location processing, telemetry, and
       caching.
-- [x] Dynamic telemetry & analytics opt-out toggles synced between Settings Redux store and Firebase
+- [x] Dynamic telemetry & analytics opt-out toggles synced between Settings store and Firebase
       Analytics.
 - [x] Local Eco-location tracking toggle in Settings.
 - [x] Self-service account deletion and data purge flow in ProfileScreen.
@@ -75,7 +75,7 @@
 
 - [x] Standardized badges gallery distinguishing unlocked vs locked achievements with criteria
       targets
-- [x] Interactive Eco-Buddy "Carbon Pet" SVG seedling growing dynamically based on Redux ecosystem
+- [x] Interactive Eco-Buddy "Carbon Pet" SVG seedling growing dynamically based on local ecosystem state
       health
 - [x] Water Buddy, Plant Seedling, and Nurture Biodiversity points-based interactions
 - [x] Virtual Rewards Store for custom themes, vouchers, and certificates utilizing `AsyncStorage`

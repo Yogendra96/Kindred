@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * 📦 Intelligent Bundle Optimizer
@@ -162,7 +161,8 @@ class DynamicImportManager {
       case 'camera-module':
         return import('react-native-vision-camera') as Promise<T>;
       case 'ml-kit':
-        return import('@react-native-ml-kit/text-recognition') as Promise<T>;
+        // Lazy import — package may not be installed; resolve at runtime.
+        return import('@react-native-ml-kit/text-recognition' as any) as Promise<T>;
       case 'maps':
         return import('react-native-maps') as Promise<T>;
       case 'animations':
@@ -375,7 +375,8 @@ class BundleSizeMonitor {
     const projection = last.size + growthRate * 30;
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
-    if (growthRate > 1024 * 100) trend = 'increasing'; // >100KB/day
+    if (growthRate > 1024 * 100)
+      trend = 'increasing'; // >100KB/day
     else if (growthRate < -1024 * 100) trend = 'decreasing';
 
     return { trend, growthRate, projection };
@@ -630,7 +631,12 @@ export class IntelligentBundleOptimizer {
 
   async getOptimizationReport(): Promise<{
     currentAnalysis: BundleAnalysis;
-    recommendations: Awaited<ReturnType<typeof this.generateOptimizationRecommendations>>;
+    recommendations: {
+      immediate: string[];
+      shortTerm: string[];
+      longTerm: string[];
+      estimatedSavings: number;
+    };
     statistics: ReturnType<DynamicImportManager['getImportStatistics']>;
     sizeGrowth: ReturnType<BundleSizeMonitor['getSizeGrowthTrend']>;
   }> {

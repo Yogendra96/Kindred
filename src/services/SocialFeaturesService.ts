@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -295,7 +294,7 @@ class SocialFeaturesService {
 
       const userDoc = await firestore().collection('users').doc(uid).get();
 
-      if (userDoc.exists) {
+      if (userDoc.exists()) {
         const userData = userDoc.data() as UserProfile;
         this.currentUser = userData;
         await this.saveCachedData();
@@ -666,7 +665,7 @@ class SocialFeaturesService {
         .doc(`${type}_${period}_${category || 'overall'}`)
         .get();
 
-      if (leaderboardDoc.exists) {
+      if (leaderboardDoc.exists()) {
         const leaderboardData = leaderboardDoc.data() as Leaderboard;
 
         await this.performanceService.stopTraceSimple('load_leaderboard', {

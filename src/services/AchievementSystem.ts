@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import SocialFeaturesService from './SocialFeaturesService';
@@ -20,6 +19,14 @@ const ensureFirebase = () => {
       });
     } catch (e) {}
   }
+};
+
+// The installed RNFB Firestore SDK exposes `exists()` as a method, while some
+// mocks and legacy shapes expose it as a boolean property. Accept both so the
+// same code works against the real SDK and test mocks.
+const snapshotExists = (snapshot: { exists: boolean | (() => boolean) }): boolean => {
+  const { exists } = snapshot;
+  return typeof exists === 'function' ? exists() : exists;
 };
 
 // Types for Achievement System
@@ -817,9 +824,11 @@ class AchievementSystemService {
         .collection('users')
         .doc(userId)
         .onSnapshot(async doc => {
-          if (doc.exists) {
+          if (snapshotExists(doc)) {
             const userData = doc.data();
-            await this.checkForNewAchievements(userId, userData.stats);
+            if (userData) {
+              await this.checkForNewAchievements(userId, userData.stats);
+            }
           }
         });
 
@@ -1094,8 +1103,8 @@ class AchievementSystemService {
           achievement.badge.rarity === 'legendary'
             ? 'high'
             : achievement.badge.rarity === 'epic'
-            ? 'medium'
-            : 'low',
+              ? 'medium'
+              : 'low',
         actions: [
           {
             label: 'Share',
@@ -1145,7 +1154,7 @@ class AchievementSystemService {
     try {
       const statsDoc = await firestore().collection('userAchievementStats').doc(userId).get();
 
-      if (statsDoc.exists) {
+      if (snapshotExists(statsDoc)) {
         const stats = statsDoc.data() as UserAchievementStats;
         this.userStats = stats;
         return stats;
@@ -1331,10 +1340,15 @@ class AchievementSystemService {
         type: 'badge_earned',
         title: `I earned the "${achievement.badge.name}" badge!`,
         description: achievement.badge.description,
+        data: {
+          badgeId: achievement.badgeId,
+          category: achievement.badge.category,
+        },
         timestamp: achievement.unlockedDate,
         isPublic: true,
         likes: { count: 0, users: [] },
         comments: [],
+        shares: { count: 0, users: [] },
       });
 
       // Update share count

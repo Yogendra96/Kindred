@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { SmartCameraCapture } from '../../components/SmartCameraCapture';
 import type { ImageClassificationResult } from '../../services/AIVisionService';
 import { useToast } from '../../contexts/ToastContext';
+import { SpaceBackground } from '../../components/common/SpaceBackground';
+import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 
 type CameraMode = 'waste' | 'food' | 'transport' | 'energy';
 
 const VisionCameraScreen = () => {
-  const navigation = useNavigation();
   const { showToast } = useToast();
 
   const [activeMode, setActiveMode] = useState<CameraMode | null>(null);
@@ -17,9 +17,9 @@ const VisionCameraScreen = () => {
   const handleResult = (result: ImageClassificationResult) => {
     setActiveMode(null);
     showToast(
-      `Detected: ${result.subcategory || result.category} (${(
-        result.confidence * 100
-      ).toFixed(0)}%)\nImpact: ${result.carbonImpact.toFixed(2)}kg CO₂`,
+      `Detected: ${result.subcategory || result.category} (${(result.confidence * 100).toFixed(
+        0,
+      )}%)\nImpact: ${result.carbonImpact.toFixed(2)}kg CO₂`,
       'success',
     );
   };
@@ -57,17 +57,8 @@ const VisionCameraScreen = () => {
   ];
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name='arrow-back' size={28} color='#fff' />
-        </TouchableOpacity>
-        <Text style={styles.title}>📷 Reality Lens</Text>
-      </View>
+    <SpaceBackground earthPosition='bottom-right' enableComets={true}>
+      <SubScreenHeader title='Reality Lens' />
 
       <Text style={styles.promptText}>
         Select a lens mode below to analyze real-world carbon impact:
@@ -100,23 +91,11 @@ const VisionCameraScreen = () => {
           onClose={() => setActiveMode(null)}
         />
       )}
-    </View>
+    </SpaceBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#1E1E1E',
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  backButton: { marginRight: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
   promptText: {
     color: '#aaa',
     fontSize: 16,
