@@ -10,7 +10,12 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
-import { useWallet, usePayoutToUPI, useRedeemVoucher } from '../../hooks/useFirebaseData';
+import {
+  useWallet,
+  useTransactions,
+  usePayoutToUPI,
+  useRedeemVoucher,
+} from '../../hooks/useFirebaseData';
 import { useToast } from '../../contexts/ToastContext';
 import {
   ArrowLeft,
@@ -22,7 +27,7 @@ import {
   Lightning,
   CheckCircle,
 } from 'phosphor-react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type Props = NativeStackScreenProps<any, 'Wallet'>;
 
@@ -39,16 +44,44 @@ const MOCK_CHARITIES = [
 ];
 
 const VOUCHER_OPTIONS = [
-  { id: 'AMAZON_IN', name: 'Amazon Pay India', emoji: '🛍️', denomination: 250, currency: 'INR', costCents: 313 },
-  { id: 'FLIPKART', name: 'Flipkart Voucher', emoji: '🛒', denomination: 250, currency: 'INR', costCents: 313 },
-  { id: 'SWIGGY', name: 'Swiggy Food Money', emoji: '🍔', denomination: 150, currency: 'INR', costCents: 188 },
-  { id: 'GLOBAL_VISA', name: 'Prepaid Visa (Global)', emoji: '💳', denomination: 5, currency: 'USD', costCents: 500 },
+  {
+    id: 'AMAZON_IN',
+    name: 'Amazon Pay India',
+    emoji: '🛍️',
+    denomination: 250,
+    currency: 'INR',
+    costCents: 313,
+  },
+  {
+    id: 'FLIPKART',
+    name: 'Flipkart Voucher',
+    emoji: '🛒',
+    denomination: 250,
+    currency: 'INR',
+    costCents: 313,
+  },
+  {
+    id: 'SWIGGY',
+    name: 'Swiggy Food Money',
+    emoji: '🍔',
+    denomination: 150,
+    currency: 'INR',
+    costCents: 188,
+  },
+  {
+    id: 'GLOBAL_VISA',
+    name: 'Prepaid Visa (Global)',
+    emoji: '💳',
+    denomination: 5,
+    currency: 'USD',
+    costCents: 500,
+  },
 ];
 
 export default function WalletScreen({ navigation }: Props) {
   const wallet = useWallet();
+  const transactions = useTransactions();
   const balanceCents = wallet?.balanceCents ?? 0;
-  const transactions = (wallet as any)?.transactions ?? [];
   const [activeTab, setActiveTab] = useState<'rewards' | 'donate'>('rewards');
   const [upiId, setUpiId] = useState('');
   const [selectedUpiAmount, setSelectedUpiAmount] = useState<number>(100);
@@ -61,20 +94,29 @@ export default function WalletScreen({ navigation }: Props) {
 
   const handleUpiTransfer = async () => {
     if (!upiId.trim()) {
-      Alert.alert('UPI ID Required', 'Please enter your UPI ID (e.g. yourname@okhdfcbank or 9876543210@paytm).');
+      Alert.alert(
+        'UPI ID Required',
+        'Please enter your UPI ID (e.g. yourname@okhdfcbank or 9876543210@paytm).',
+      );
       return;
     }
 
     const neededCents = Math.round(selectedUpiAmount * 1.25);
     if (balanceCents < neededCents) {
-      Alert.alert('Insufficient Balance', `You need $${(neededCents / 100).toFixed(2)} to withdraw ₹${selectedUpiAmount}.`);
+      Alert.alert(
+        'Insufficient Balance',
+        `You need $${(neededCents / 100).toFixed(2)} to withdraw ₹${selectedUpiAmount}.`,
+      );
       return;
     }
 
     try {
       const res = await payout(selectedUpiAmount, upiId.trim());
       if (res.success) {
-        showToast(`₹${selectedUpiAmount} transferred via UPI! Ref: ${res.referenceId.slice(-6)}`, 'success');
+        showToast(
+          `₹${selectedUpiAmount} transferred via UPI! Ref: ${res.referenceId.slice(-6)}`,
+          'success',
+        );
         setUpiId('');
       }
     } catch (err: any) {
@@ -104,7 +146,10 @@ export default function WalletScreen({ navigation }: Props) {
               });
               if (res.success) {
                 const codeMsg = res.voucherCode ? `\nCode: ${res.voucherCode}` : '';
-                Alert.alert('Voucher Redeemed! 🎉', `${voucher.name} ready.${codeMsg}\nDetails sent to your email.`);
+                Alert.alert(
+                  'Voucher Redeemed! 🎉',
+                  `${voucher.name} ready.${codeMsg}\nDetails sent to your email.`,
+                );
                 showToast(`${voucher.name} redeemed!`, 'success');
               }
             } catch (err: any) {
@@ -146,30 +191,22 @@ export default function WalletScreen({ navigation }: Props) {
       return;
     }
 
-    Alert.prompt(
-      'Donate to ' + item.name,
-      `Enter amount to donate (Available: $${(balanceCents / 100).toFixed(2)})`,
+    const defaultDonation = Math.min(balanceCents, 500); // Up to $5.00 or current balance
+    Alert.alert(
+      `Donate to ${item.name}`,
+      `Donate $${(defaultDonation / 100).toFixed(2)} to support ${item.cause}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Donate',
-          onPress: value => {
-            const amount = parseFloat(value ?? '0');
-            const cents = Math.floor(amount * 100);
-            if (isNaN(cents) || cents <= 0 || cents > balanceCents) {
-              Alert.alert('Invalid Amount', 'Please enter a valid amount within your balance.');
-              return;
-            }
+          text: `Donate $${(defaultDonation / 100).toFixed(2)}`,
+          onPress: () => {
             Alert.alert(
               'Thank You! 💚',
-              `You have successfully donated $${(cents / 100).toFixed(2)} to ${item.name}.`,
+              `You have successfully pledged $${(defaultDonation / 100).toFixed(2)} to ${item.name}.`,
             );
           },
         },
       ],
-      'plain-text',
-      (balanceCents / 100).toFixed(2),
-      'decimal-pad',
     );
   };
 
@@ -189,7 +226,9 @@ export default function WalletScreen({ navigation }: Props) {
           <Wallet size={32} color='#38EF7D' weight='duotone' />
           <Text style={styles.balanceLabel}>Available Kindred Cash</Text>
           <Text style={styles.balanceAmount}>${(balanceCents / 100).toFixed(2)}</Text>
-          <Text style={styles.balanceSubtext}>≈ ₹{approxINR} INR · Earned from verified impact</Text>
+          <Text style={styles.balanceSubtext}>
+            ≈ ₹{approxINR} INR · Earned from verified impact
+          </Text>
         </View>
 
         {/* Instant UPI Transfer Card (Cashfree) */}
@@ -201,7 +240,9 @@ export default function WalletScreen({ navigation }: Props) {
               <Text style={styles.badgeText}>Cashfree</Text>
             </View>
           </View>
-          <Text style={styles.payoutSubtext}>Transfer cash directly to your Indian bank account 24/7</Text>
+          <Text style={styles.payoutSubtext}>
+            Transfer cash directly to your Indian bank account 24/7
+          </Text>
 
           <TextInput
             style={styles.upiInput}

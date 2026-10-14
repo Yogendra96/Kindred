@@ -1,9 +1,6 @@
-// @ts-nocheck
-import * as admin from 'firebase-admin';
+import { getFirestore, FieldValue, Transaction } from 'firebase-admin/firestore';
 
-const db = admin.firestore();
-
-interface RateLimitConfig {
+export interface RateLimitConfig {
   /** Max operations allowed in the window */
   maxOps: number;
   /** Window duration in milliseconds */
@@ -16,21 +13,31 @@ const DEFAULT_CONFIG: RateLimitConfig = {
 };
 
 /**
- * Per-user rate limiter backed by Firestore.
- * Tracks operation count in a subcollection under the user document.
+ * Per-user, per-operation rate limiter backed by Firestore.
+ * Tracks operation count in `users/{userId}/_rateLimits/{opKey}`.
  * Returns true if the operation is allowed, false if rate limited.
  */
 export async function checkRateLimit(
   userId: string,
-  config: RateLimitConfig = DEFAULT_CONFIG,
+  opKeyOrConfig: string | RateLimitConfig = 'operations',
+  maybeConfig?: RateLimitConfig,
 ): Promise<boolean> {
-  const rateRef = db
-    .collection('users')
-    .doc(userId)
-    .collection('_rateLimits')
-    .doc('operations');
+  let opKey = 'operations';
+  let config: RateLimitConfig = DEFAULT_CONFIG;
 
-  const result = await db.runTransaction(async (transaction) => {
+  if (typeof opKeyOrConfig === 'string') {
+    opKey = opKeyOrConfig;
+    if (maybeConfig) {
+      config = maybeConfig;
+    }
+  } else if (typeof opKeyOrConfig === 'object' && opKeyOrConfig !== null) {
+    config = opKeyOrConfig;
+  }
+
+  const db = getFirestore();
+  const rateRef = db.collection('users').doc(userId).collection('_rateLimits').doc(opKey);
+
+  const result = await db.runTransaction(async (transaction: Transaction) => {
     const doc = await transaction.get(rateRef);
     const now = Date.now();
 
@@ -44,8 +51,8 @@ export async function checkRateLimit(
     }
 
     const data = doc.data()!;
-    const windowStart = data.windowStart as number;
-    const count = data.count as number;
+    const windowStart = (data.windowStart as number) || now;
+    const count = (data.count as number) || 0;
 
     if (now - windowStart > config.windowMs) {
       // Window expired — reset
@@ -63,7 +70,7 @@ export async function checkRateLimit(
 
     // Increment
     transaction.update(rateRef, {
-      count: admin.firestore.FieldValue.increment(1),
+      count: FieldValue.increment(1),
     });
     return true;
   });

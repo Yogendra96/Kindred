@@ -166,6 +166,62 @@ export function useCarbon() {
   return carbon;
 }
 
+export interface TransactionItem {
+  id: string;
+  type: 'EARN' | 'SPEND';
+  amountCents: number;
+  description?: string;
+  category?: string;
+  status?: string;
+  createdAt?: any;
+}
+
+export function useTransactions() {
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const user = auth().currentUser;
+      if (!user) return undefined;
+
+      const subscriber = firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
+        .orderBy('createdAt', 'desc')
+        .limit(20)
+        .onSnapshot(
+          querySnapshot => {
+            if (!querySnapshot) return;
+            const items: TransactionItem[] = [];
+            querySnapshot.forEach(doc => {
+              const data = doc.data();
+              items.push({
+                id: doc.id,
+                type: data.type || 'SPEND',
+                amountCents: data.amountCents || 0,
+                description: data.description || 'Transaction',
+                category: data.category,
+                status: data.status,
+                createdAt: data.createdAt,
+              });
+            });
+            setTransactions(items);
+          },
+          () => {
+            // Silently handle missing index or permissions in dev/tests
+          },
+        );
+
+      return () => subscriber();
+    } catch {
+      return undefined;
+    }
+  }, []);
+
+  return transactions;
+}
+
 export function useRedeemGiftCard() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,7 +255,12 @@ export function usePayoutToUPI() {
     try {
       const payoutFn = functions().httpsCallable('payoutToUPI');
       const result = await payoutFn({ amountINR, vpa, recipientName });
-      return result.data as { success: boolean; referenceId: string; status: string; message: string };
+      return result.data as {
+        success: boolean;
+        referenceId: string;
+        status: string;
+        message: string;
+      };
     } catch (err: any) {
       const message = err.message || 'Failed to process UPI payout. Please try again.';
       setError(message);
@@ -247,4 +308,3 @@ export function useRedeemVoucher() {
 
   return { redeemVoucher, isLoading, error };
 }
-

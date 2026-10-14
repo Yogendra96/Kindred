@@ -37,10 +37,7 @@ export class CrashReportingService {
   static async logError(error: Error, context?: ErrorContext): Promise<void> {
     try {
       // Log to crashlytics
-      await crashlytics().recordError(
-        error,
-        JSON.stringify({ ...context, timestamp: Date.now() }),
-      );
+      await crashlytics().recordError(error, JSON.stringify({ ...context, timestamp: Date.now() }));
 
       // Log to analytics
       await analytics().logEvent('app_error', {

@@ -1,4 +1,27 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "badges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "rarity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "history",
+      "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "createdAt", "order": "DESCENDING" }]
+    }
+  ],
   "fieldOverrides": []
 }

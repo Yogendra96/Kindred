@@ -58,8 +58,13 @@ export async function executeCashfreeUpiTransfer(
     throw new Error('Transfer amount must be greater than 0 INR.');
   }
 
-  // 1. Simulation fallback for local development / test environments
+  // 1. Simulation fallback for local development / test environments ONLY
   if (!CASHFREE_CLIENT_ID || !CASHFREE_CLIENT_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Cashfree payout credentials (CASHFREE_CLIENT_ID / CASHFREE_CLIENT_SECRET) are missing in production.',
+      );
+    }
     console.log(
       `[SIMULATED CASHFREE PAYOUT] TransferId: ${transferId}, Amount: ₹${amountINR}, VPA: ${vpa}`,
     );

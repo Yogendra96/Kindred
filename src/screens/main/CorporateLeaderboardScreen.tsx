@@ -30,7 +30,7 @@ export default function CorporateLeaderboardScreen() {
   const userTotalPoints = Math.floor((sdg?.esg?.total ?? 0) * 150) || 150;
 
   // Insert or update the user's linked company into the mock list
-  let companies = [...MOCK_COMPANIES];
+  const companies = [...MOCK_COMPANIES];
   if (corporate?.isLinked && corporate?.linkedCompany) {
     const existingIndex = companies.findIndex(c => c.name === corporate?.linkedCompany);
     if (existingIndex >= 0) {

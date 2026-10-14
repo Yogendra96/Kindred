@@ -38,9 +38,7 @@ const BASE_URL =
  * Creates and dispatches a voucher/gift card order via Xoxoday Plum.
  * Falls back to simulation mode in dev/staging when API credentials are not set.
  */
-export async function executeXoxodayOrder(
-  params: XoxodayOrderParams,
-): Promise<XoxodayOrderResult> {
+export async function executeXoxodayOrder(params: XoxodayOrderParams): Promise<XoxodayOrderResult> {
   const {
     orderId,
     productId,
@@ -59,8 +57,13 @@ export async function executeXoxodayOrder(
     throw new Error('Voucher denomination must be greater than 0.');
   }
 
-  // 1. Simulation fallback for local development / test environments
+  // 1. Simulation fallback for local development / test environments ONLY
   if (!XOXODAY_CLIENT_ID || !XOXODAY_CLIENT_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Xoxoday Plum credentials (XOXODAY_CLIENT_ID / XOXODAY_CLIENT_SECRET) are missing in production.',
+      );
+    }
     const mockCode = `XOXO-${productId.toUpperCase().slice(0, 4)}-${Math.random()
       .toString(36)
       .substring(2, 8)
@@ -97,7 +100,9 @@ export async function executeXoxodayOrder(
     const tokenData = (await tokenRes.json()) as any;
     const accessToken = tokenData.access_token;
     if (!accessToken) {
-      throw new Error(`Xoxoday authentication failed: ${tokenData.error_description || 'No token returned'}`);
+      throw new Error(
+        `Xoxoday authentication failed: ${tokenData.error_description || 'No token returned'}`,
+      );
     }
 
     // Step B: Place Voucher Order

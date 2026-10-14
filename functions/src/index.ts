@@ -1,6 +1,6 @@
-// @ts-nocheck
 import * as functions from 'firebase-functions/v1';
-import * as admin from 'firebase-admin';
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore, FieldValue, Timestamp, Transaction } from 'firebase-admin/firestore';
 import sgMail from '@sendgrid/mail';
 import { checkRateLimit } from './rateLimit';
 import { executeCashfreeUpiTransfer, isValidUPI } from './payouts/cashfree';
@@ -12,8 +12,10 @@ if (SENDGRID_API_KEY) {
 }
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'no-reply@kindred.app';
 
-admin.initializeApp();
-const db = admin.firestore();
+if (!getApps().length) {
+  initializeApp();
+}
+const db = getFirestore();
 
 // -------------------------------------------------------------------------- //
 // 1. Transaction Aggregation
@@ -23,13 +25,19 @@ export const onTransactionCreated = functions.firestore
   .onCreate(async (snap, context) => {
     const { userId } = context.params;
     const tx = snap.data();
+    if (!tx) return;
+
+    // If transaction was already deducted atomically (such as in payoutToUPI / redeemVoucher), skip deducting again
+    if (tx.settled) {
+      return;
+    }
 
     const userRef = db.collection('users').doc(userId);
-    
-    return db.runTransaction(async (transaction) => {
+
+    return db.runTransaction(async (transaction: Transaction) => {
       const userDoc = await transaction.get(userRef);
       const userData = userDoc.data() || {};
-      
+
       let balanceCents = userData.wallet?.balanceCents || 0;
       let totalEarnedCents = userData.wallet?.totalEarnedCents || 0;
 
@@ -40,12 +48,16 @@ export const onTransactionCreated = functions.firestore
         balanceCents -= tx.amountCents;
       }
 
-      transaction.set(userRef, {
-        wallet: {
-          balanceCents,
-          totalEarnedCents,
-        }
-      }, { merge: true });
+      transaction.set(
+        userRef,
+        {
+          wallet: {
+            balanceCents,
+            totalEarnedCents,
+          },
+        },
+        { merge: true },
+      );
     });
   });
 
@@ -57,41 +69,40 @@ export const onActivityLogged = functions.firestore
   .onCreate(async (snap, context) => {
     const { userId } = context.params;
     const activity = snap.data();
+    if (!activity) return null;
 
-    // In a real app, you would inspect `activity.type` or `activity.footprint`
-    // and route the points to specific SDG buckets (sdg7, sdg11, etc.)
-    // For MVP, we will extract the total points awarded and increment them.
     const pointsAwarded = activity.points || 0;
     if (pointsAwarded <= 0) return null;
 
     const userRef = db.collection('users').doc(userId);
 
-    return db.runTransaction(async (transaction) => {
+    return db.runTransaction(async (transaction: Transaction) => {
       const userDoc = await transaction.get(userRef);
       const userData = userDoc.data() || {};
 
-      // 2a. Update User's ESG / SDG Mock Metrics
       let currentTotalScore = userData.sdg?.esg?.total || 0;
-      // Convert points to a mock ESG increment for the demo
-      currentTotalScore = Math.min(100, currentTotalScore + (pointsAwarded / 1000));
+      currentTotalScore = Math.min(100, currentTotalScore + pointsAwarded / 1000);
 
       const updatedSdg = {
         esg: {
-          total: currentTotalScore
-        }
+          total: currentTotalScore,
+        },
       };
 
       transaction.set(userRef, { sdg: updatedSdg }, { merge: true });
 
-      // 2b. Corporate Aggregation
       const corporate = userData.corporate;
       if (corporate && corporate.isLinked && corporate.isVerified && corporate.companyDomain) {
         const companyRef = db.collection('companies').doc(corporate.companyDomain);
-        transaction.set(companyRef, {
-          name: corporate.linkedCompany,
-          points: admin.firestore.FieldValue.increment(pointsAwarded),
-          lastActive: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        transaction.set(
+          companyRef,
+          {
+            name: corporate.linkedCompany,
+            points: FieldValue.increment(pointsAwarded),
+            lastActive: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
       }
     });
   });
@@ -105,7 +116,10 @@ export const requestWorkEmailVerification = functions.https.onCall(async (data, 
   }
 
   // Rate limiting: max 5 email verification requests per minute
-  const allowed = await checkRateLimit(context.auth.uid, { maxOps: 5, windowMs: 60_000 });
+  const allowed = await checkRateLimit(context.auth.uid, 'email_verification', {
+    maxOps: 5,
+    windowMs: 60_000,
+  });
   if (!allowed) {
     throw new functions.https.HttpsError(
       'resource-exhausted',
@@ -113,27 +127,27 @@ export const requestWorkEmailVerification = functions.https.onCall(async (data, 
     );
   }
 
-  const { email, companyName } = data;
+  const { email, companyName } = data || {};
   if (!email || !email.includes('@')) {
     throw new functions.https.HttpsError('invalid-argument', 'Valid email required.');
   }
 
   const domain = email.split('@')[1];
-  
+
   // Generate a random 6 digit code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Store it in Firestore temporarily (expires in 10 mins)
+  // Store in Firestore temporarily (expires in 10 mins)
   const verificationRef = db.collection('verifications').doc(context.auth.uid);
   await verificationRef.set({
     code,
     email,
     companyName,
     domain,
-    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
+    expiresAt: Timestamp.fromMillis(Date.now() + 10 * 60 * 1000),
   });
 
-  // Send the verification code by email (SendGrid when configured, console fallback for local dev)
+  // Send the verification code by email
   if (SENDGRID_API_KEY) {
     await sgMail.send({
       to: email,
@@ -156,7 +170,7 @@ export const verifyWorkEmailCode = functions.https.onCall(async (data, context) 
     throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
   }
 
-  const { code } = data;
+  const { code } = data || {};
   const verificationRef = db.collection('verifications').doc(context.auth.uid);
   const doc = await verificationRef.get();
 
@@ -165,7 +179,7 @@ export const verifyWorkEmailCode = functions.https.onCall(async (data, context) 
   }
 
   const vData = doc.data()!;
-  
+
   if (Date.now() > vData.expiresAt.toMillis()) {
     throw new functions.https.HttpsError('deadline-exceeded', 'Code expired.');
   }
@@ -176,14 +190,17 @@ export const verifyWorkEmailCode = functions.https.onCall(async (data, context) 
 
   // Update user's corporate status
   const userRef = db.collection('users').doc(context.auth.uid);
-  await userRef.set({
-    corporate: {
-      linkedCompany: vData.companyName,
-      companyDomain: vData.domain,
-      isLinked: true,
-      isVerified: true
-    }
-  }, { merge: true });
+  await userRef.set(
+    {
+      corporate: {
+        linkedCompany: vData.companyName,
+        companyDomain: vData.domain,
+        isLinked: true,
+        isVerified: true,
+      },
+    },
+    { merge: true },
+  );
 
   // Cleanup
   await verificationRef.delete();
@@ -208,7 +225,10 @@ export const onAdRewardVerified = functions.https.onCall(async (_data, context) 
   }
 
   // Rate limiting: max 10 ad reward claims per minute
-  const allowed = await checkRateLimit(context.auth.uid, { maxOps: 10, windowMs: 60_000 });
+  const allowed = await checkRateLimit(context.auth.uid, 'ad_reward', {
+    maxOps: 10,
+    windowMs: 60_000,
+  });
   if (!allowed) {
     throw new functions.https.HttpsError(
       'resource-exhausted',
@@ -225,14 +245,14 @@ export const onAdRewardVerified = functions.https.onCall(async (_data, context) 
     type: 'EARN',
     amountCents,
     source: 'rewarded_ad',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
   });
 
   return { success: true, amountCents };
 });
 
 // -------------------------------------------------------------------------- //
-// 4. Instant UPI Payout (Cashfree Payouts - India)
+// 5. Instant UPI Payout (Cashfree Payouts - India)
 // -------------------------------------------------------------------------- //
 export const payoutToUPI = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -247,7 +267,10 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
   }
 
   // Rate limiting: max 3 UPI payouts per 5 minutes
-  const allowed = await checkRateLimit(context.auth.uid, { maxOps: 3, windowMs: 300_000 });
+  const allowed = await checkRateLimit(context.auth.uid, 'upi_payout', {
+    maxOps: 3,
+    windowMs: 300_000,
+  });
   if (!allowed) {
     throw new functions.https.HttpsError(
       'resource-exhausted',
@@ -256,7 +279,7 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
   }
 
   const uid = context.auth.uid;
-  const { vpa, amountINR, recipientName } = data;
+  const { vpa, amountINR, recipientName } = data || {};
 
   if (!vpa || !isValidUPI(vpa)) {
     throw new functions.https.HttpsError(
@@ -278,7 +301,7 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
   const txRef = db.collection('users').doc(uid).collection('transactions').doc();
 
   // Step 1: Atomic Balance Check and Deduction
-  await db.runTransaction(async (transaction) => {
+  await db.runTransaction(async (transaction: Transaction) => {
     const userDoc = await transaction.get(userRef);
     const userData = userDoc.data() || {};
     const balanceCents = userData.wallet?.balanceCents || 0;
@@ -290,6 +313,17 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
       );
     }
 
+    // Immediate atomic balance deduction
+    transaction.set(
+      userRef,
+      {
+        wallet: {
+          balanceCents: balanceCents - costCents,
+        },
+      },
+      { merge: true },
+    );
+
     transaction.set(txRef, {
       type: 'SPEND',
       category: 'UPI_PAYOUT',
@@ -297,9 +331,10 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
       amountINR,
       vpa,
       status: 'PROCESSING',
+      settled: true, // Marked settled so onTransactionCreated does not double-deduct
       provider: 'CASHFREE',
       description: `Instant UPI Payout to ${vpa}`,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
   });
 
@@ -317,7 +352,7 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
       status: result.status,
       referenceId: result.referenceId,
       isSimulated: result.isSimulated ?? false,
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
+      completedAt: FieldValue.serverTimestamp(),
     });
 
     return {
@@ -330,19 +365,26 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
     console.error('UPI payout error, executing rollback:', err);
 
     // Rollback: refund user wallet balance and mark transaction as FAILED
-    await db.runTransaction(async (transaction) => {
+    await db.runTransaction(async (transaction: Transaction) => {
       const userDoc = await transaction.get(userRef);
       const userData = userDoc.data() || {};
       const currentBalance = userData.wallet?.balanceCents || 0;
 
-      transaction.update(userRef, {
-        'wallet.balanceCents': currentBalance + costCents,
-      });
+      transaction.set(
+        userRef,
+        {
+          wallet: {
+            balanceCents: currentBalance + costCents,
+          },
+        },
+        { merge: true },
+      );
 
       transaction.update(txRef, {
         status: 'FAILED',
+        settled: false,
         failureReason: err.message || 'Transfer failed',
-        refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+        refundedAt: FieldValue.serverTimestamp(),
       });
     });
 
@@ -351,7 +393,7 @@ export const payoutToUPI = functions.https.onCall(async (data, context) => {
 });
 
 // -------------------------------------------------------------------------- //
-// 5. Rewards & Gift Card Redemption (Xoxoday Plum - Global & India)
+// 6. Rewards & Gift Card Redemption (Xoxoday Plum - Global & India)
 // -------------------------------------------------------------------------- //
 export const redeemVoucher = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -366,7 +408,10 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
   }
 
   // Rate limiting: max 5 voucher redemptions per 5 minutes
-  const allowed = await checkRateLimit(context.auth.uid, { maxOps: 5, windowMs: 300_000 });
+  const allowed = await checkRateLimit(context.auth.uid, 'voucher_redemption', {
+    maxOps: 5,
+    windowMs: 300_000,
+  });
   if (!allowed) {
     throw new functions.https.HttpsError(
       'resource-exhausted',
@@ -381,7 +426,7 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
     currency = 'INR',
     recipientEmail,
     recipientName,
-  } = data;
+  } = data || {};
 
   const emailToUse = recipientEmail || context.auth.token.email;
   if (!emailToUse) {
@@ -399,7 +444,7 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
   const txRef = db.collection('users').doc(uid).collection('transactions').doc();
 
   // Step 1: Atomic Balance Check and Deduction
-  await db.runTransaction(async (transaction) => {
+  await db.runTransaction(async (transaction: Transaction) => {
     const userDoc = await transaction.get(userRef);
     const userData = userDoc.data() || {};
     const balanceCents = userData.wallet?.balanceCents || 0;
@@ -411,6 +456,17 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
       );
     }
 
+    // Immediate atomic balance deduction
+    transaction.set(
+      userRef,
+      {
+        wallet: {
+          balanceCents: balanceCents - costCents,
+        },
+      },
+      { merge: true },
+    );
+
     transaction.set(txRef, {
       type: 'SPEND',
       category: 'VOUCHER_REDEMPTION',
@@ -420,9 +476,10 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
       currency,
       recipientEmail: emailToUse,
       status: 'PROCESSING',
+      settled: true, // Marked settled so onTransactionCreated does not double-deduct
       provider: 'XOXODAY',
       description: `${productId} Voucher (${denomination} ${currency})`,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
   });
 
@@ -443,7 +500,7 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
       voucherPin: result.voucherPin || null,
       expiryDate: result.expiryDate || null,
       isSimulated: result.isSimulated ?? false,
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
+      completedAt: FieldValue.serverTimestamp(),
     });
 
     return {
@@ -456,19 +513,26 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
     console.error('Xoxoday order error, executing rollback:', err);
 
     // Rollback: refund user wallet balance and mark transaction as FAILED
-    await db.runTransaction(async (transaction) => {
+    await db.runTransaction(async (transaction: Transaction) => {
       const userDoc = await transaction.get(userRef);
       const userData = userDoc.data() || {};
       const currentBalance = userData.wallet?.balanceCents || 0;
 
-      transaction.update(userRef, {
-        'wallet.balanceCents': currentBalance + costCents,
-      });
+      transaction.set(
+        userRef,
+        {
+          wallet: {
+            balanceCents: currentBalance + costCents,
+          },
+        },
+        { merge: true },
+      );
 
       transaction.update(txRef, {
         status: 'FAILED',
+        settled: false,
         failureReason: err.message || 'Voucher creation failed',
-        refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+        refundedAt: FieldValue.serverTimestamp(),
       });
     });
 
@@ -478,14 +542,19 @@ export const redeemVoucher = functions.https.onCall(async (data, context) => {
 
 // Backward-compatible alias for existing frontend calls
 export const redeemGiftCard = functions.https.onCall(async (data, context) => {
-  return redeemVoucher(
-    {
-      productId: 'AMAZON_IN',
-      denomination: data.amountCents ? Math.round(data.amountCents / 1.25) : 500,
-      currency: 'INR',
-      recipientEmail: data.recipientEmail,
-    },
-    context,
-  );
-});
+  const payload = {
+    productId: 'AMAZON_IN',
+    denomination: data?.amountCents ? Math.round(data.amountCents / 1.25) : 500,
+    currency: 'INR',
+    recipientEmail: data?.recipientEmail,
+  };
 
+  const fakeReq = {
+    auth: context.auth,
+    app: context.app,
+    rawRequest: context.rawRequest,
+  };
+
+  // Execute internal voucher redemption directly
+  return redeemVoucher.run(payload, fakeReq as any);
+});

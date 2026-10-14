@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Dimensions, ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import Svg, {
   LinearGradient as SvgLinearGradient,
   Defs,
