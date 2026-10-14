@@ -3,12 +3,13 @@
 <div align="center">
 
 ![React Native](https://img.shields.io/badge/React_Native-0.81.4-61DAFB?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-3178C6?logo=typescript)
 ![Zustand](https://img.shields.io/badge/Zustand-5-7B68EE)
 ![Firebase](https://img.shields.io/badge/Firebase-25.1.0-FFCA28?logo=firebase)
 ![License](https://img.shields.io/badge/License-Private-red)
 
-[Quick Start](#-quick-start) • [Screens](#-app-screens) • [Architecture](#-architecture) • [Testing](#-testing)
+[Quick Start](#-quick-start) • [Screens](#-app-screens) • [Architecture](#-architecture) •
+[Testing](#-testing)
 
 </div>
 
@@ -16,15 +17,19 @@
 
 ## What is Kindred?
 
-Kindred is a React Native app that helps people track, understand, and reduce their carbon footprint. It combines real-time Firebase data sync with local state management for a responsive mobile experience.
+Kindred is a React Native app that helps people track, understand, and reduce their carbon
+footprint. It combines real-time Firebase data sync with local state management for a responsive
+mobile experience.
 
 ### Current State
 
 - **245 tests across 15 suites**, all passing
-- **6 Firebase Cloud Functions** handling server-side logic
-- **AdMob rewarded ads** with server-side verification
-- **Tremendous payout integration** for gift card redemptions
-- **Corporate email verification** flow for work domains
+- **7 Firebase Cloud Functions** handling server-side logic & secure payouts
+- **AdMob rewarded ads** with server-side verification (SSV)
+- **Cashfree Payouts integration** for 24/7 instant UPI & bank transfers (India)
+- **Xoxoday Plum integration** for 100+ country brand vouchers & gift cards
+- **Hardened Firestore Security Rules** (client write protection on wallets & transactions)
+- **Corporate email verification** flow with SendGrid & domain scoring
 - **AppCheck + rate limiting** on all callable functions
 
 ---
@@ -93,24 +98,25 @@ npx react-native start --reset-cache   # Start with clean cache
 ### Navigation
 
 - **Bottom Tab Bar:** Home · Map · Profile · Social · Market · Awards
-- **Stack Screens (from Home):** Carbon Twin · AI Vision · Verification · Vegan Calculator · Analytics · Learning Center
+- **Stack Screens (from Home):** Carbon Twin · AI Vision · Verification · Vegan Calculator ·
+  Analytics · Learning Center
 
 ### Implemented Screens
 
-| Screen | Tab | Features |
-|---|---|---|
-| **Home** | Home | Carbon footprint tracker, daily breakdown, quick-access to stack screens |
-| **Local Impact Map** | Map | Eco-location listings (recycling, organic, EV charging, thrift, green space), category filter |
-| **Profile** | Profile | Avatar, stats (CO₂ saved, streak, points), badges, notification/privacy/theme settings |
-| **Community** | Social | Leaderboard (friends/global), challenges (daily/weekly/monthly/global), accountability groups |
-| **Kindred Market** | Market | Sustainable thrift store with search, category filter, CO₂ saved per item + carbon offset marketplace |
-| **Achievements** | Awards | Badge gallery, points display, unlock progress |
-| **Carbon Twin** | Stack | Bio-digital twin visualization dashboard |
-| **AI Vision** | Stack | Camera-based product carbon scanning |
-| **Verification Center** | Stack | Community verification and trust network |
-| **Vegan Calculator** | Stack | Live tickers (animals/CO₂/water), global vs personal mode, ad-reward credits, tree planting |
-| **Analytics Dashboard** | Stack | Weekly chart, category breakdown, reduction goals |
-| **Learning Center** | Stack | Articles, videos, quizzes filterable by topic (Diet/Energy/Transport/Waste/Nature) |
+| Screen                  | Tab     | Features                                                                                              |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| **Home**                | Home    | Carbon footprint tracker, daily breakdown, quick-access to stack screens                              |
+| **Local Impact Map**    | Map     | Eco-location listings (recycling, organic, EV charging, thrift, green space), category filter         |
+| **Profile**             | Profile | Avatar, stats (CO₂ saved, streak, points), badges, notification/privacy/theme settings                |
+| **Community**           | Social  | Leaderboard (friends/global), challenges (daily/weekly/monthly/global), accountability groups         |
+| **Kindred Market**      | Market  | Sustainable thrift store with search, category filter, CO₂ saved per item + carbon offset marketplace |
+| **Achievements**        | Awards  | Badge gallery, points display, unlock progress                                                        |
+| **Carbon Twin**         | Stack   | Bio-digital twin visualization dashboard                                                              |
+| **AI Vision**           | Stack   | Camera-based product carbon scanning                                                                  |
+| **Verification Center** | Stack   | Community verification and trust network                                                              |
+| **Vegan Calculator**    | Stack   | Live tickers (animals/CO₂/water), global vs personal mode, ad-reward credits, tree planting           |
+| **Analytics Dashboard** | Stack   | Weekly chart, category breakdown, reduction goals                                                     |
+| **Learning Center**     | Stack   | Articles, videos, quizzes filterable by topic (Diet/Energy/Transport/Waste/Nature)                    |
 
 ---
 
@@ -140,8 +146,8 @@ Redux, Redux Toolkit, and Redux Persist were removed in favor of this lighter se
 ┌──────────────────────────────┐
 │       SERVICE LAYER          │
 │  Firebase Auth / Firestore   │
-│  Cloud Functions (6)         │
-│  AdMob / Tremendous / AppCheck│
+│  Cloud Functions (7)         │
+│  Cashfree / Xoxoday / AppCheck│
 └──────────────┬───────────────┘
                ↕
 ┌──────────────────────────────┐
@@ -152,37 +158,41 @@ Redux, Redux Toolkit, and Redux Persist were removed in favor of this lighter se
 
 ### Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Framework** | React Native 0.81.4 |
-| **Language** | TypeScript 7.0.2 |
-| **State (Local)** | Zustand 5 |
-| **State (Server)** | Firebase onSnapshot hooks |
-| **Navigation** | React Navigation 7.x |
-| **Backend** | Firebase Auth, Firestore, Cloud Functions |
-| **Security** | Firebase AppCheck, rate limiting |
-| **Ads** | AdMob rewarded ads with server-side verification |
-| **Payouts** | Tremendous gift card API |
-| **Testing** | Jest, React Testing Library |
-| **Linting** | ESLint (flat config), Prettier 3.9.5 |
-| **Package Manager** | npm |
+| Layer               | Technology                                                      |
+| ------------------- | --------------------------------------------------------------- |
+| **Framework**       | React Native 0.81.4                                             |
+| **Language**        | TypeScript 5.7.3                                                |
+| **State (Local)**   | Zustand 5                                                       |
+| **State (Server)**  | Firebase onSnapshot hooks                                       |
+| **Navigation**      | React Navigation 7.x                                            |
+| **Backend**         | Firebase Auth, Firestore, Cloud Functions                       |
+| **Security**        | Firebase AppCheck, rate limiting, Firestore Rules hardening     |
+| **Ads**             | AdMob rewarded ads with server-side verification                |
+| **Payouts**         | Cashfree Payouts (Instant UPI) & Xoxoday Plum (Global Vouchers) |
+| **Testing**         | Jest, React Testing Library                                     |
+| **Linting**         | ESLint (flat config), Prettier 3.9.5                            |
+| **Package Manager** | npm                                                             |
 
 ### Firebase Cloud Functions
 
-| Function | Purpose |
-|---|---|
-| `onTransactionCreated` | Handle new wallet transactions |
-| `onActivityLogged` | Process carbon activity events |
-| `requestWorkEmailVerification` | Send corporate email verification code |
-| `verifyWorkEmailCode` | Confirm corporate email ownership |
-| `redeemGiftCard` | Process Tremendous gift card payout |
-| `onAdRewardVerified` | Server-side AdMob reward verification |
+| Function                       | Purpose                                                   |
+| ------------------------------ | --------------------------------------------------------- |
+| `onTransactionCreated`         | Handle wallet aggregation and transaction tracking        |
+| `onActivityLogged`             | Process carbon activity events & update SDG scores        |
+| `requestWorkEmailVerification` | Send corporate email verification code via SendGrid       |
+| `verifyWorkEmailCode`          | Confirm corporate email ownership and activate multiplier |
+| `payoutToUPI`                  | Process 24/7 instant UPI bank payout via Cashfree         |
+| `redeemVoucher`                | Redeem brand voucher/gift card via Xoxoday Plum           |
+| `redeemGiftCard`               | Backwards-compatible alias for voucher redemptions        |
+| `onAdRewardVerified`           | Server-side AdMob reward verification                     |
 
-### Fraud Prevention
+### Fraud Prevention & Security
 
-- **AppCheck** on all callable functions prevents unauthorized access
+- **AppCheck** on all callable functions prevents unauthorized API access
 - **Rate limiting** protects against abuse of verification and payout endpoints
-- **Server-side ad verification** ensures rewarded ad claims are legitimate
+- **Hardened Firestore Rules** strictly prohibit client writes to `transactions` or direct balance
+  editing on `users`
+- **Server-side ad verification** ensures rewarded ad claims are authentic
 
 ---
 
@@ -231,9 +241,9 @@ npx jest --no-coverage path/to/test
 
 ## Platform Support
 
-| Platform | Requirements |
-|---|---|
-| **iOS** | iOS 13.0+, Xcode, CocoaPods |
+| Platform    | Requirements                    |
+| ----------- | ------------------------------- |
+| **iOS**     | iOS 13.0+, Xcode, CocoaPods     |
 | **Android** | API 24+, Android Studio, Gradle |
 
 ---

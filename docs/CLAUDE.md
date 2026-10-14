@@ -10,25 +10,27 @@ npx jest --no-coverage
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `npx tsc --noEmit` | TypeScript type check |
-| `npx jest --no-coverage` | Run all tests |
-| `npx jest --no-coverage <path>` | Run specific test |
-| `npx prettier --write src/` | Format all source files |
-| `npx eslint .` | Lint all files |
-| `npm start` | Start Metro bundler |
-| `npx react-native run-ios` | Run on iOS |
-| `npx react-native run-android` | Run on Android |
+| Command                         | Purpose                 |
+| ------------------------------- | ----------------------- |
+| `npx tsc --noEmit`              | TypeScript type check   |
+| `npx jest --no-coverage`        | Run all tests           |
+| `npx jest --no-coverage <path>` | Run specific test       |
+| `npx prettier --write src/`     | Format all source files |
+| `npx eslint .`                  | Lint all files          |
+| `npm start`                     | Start Metro bundler     |
+| `npx react-native run-ios`      | Run on iOS              |
+| `npx react-native run-android`  | Run on Android          |
 
 ## Architecture
 
 ### State Management (Zustand + Firebase hooks — Redux was fully removed)
 
 **Two Zustand stores** for local UI state:
+
 - `src/store/useAppStore.ts` — theme, notifications, consent preferences
 
 **Four Firebase onSnapshot hooks** for real-time server state:
+
 - `src/hooks/useFirebaseData.ts` — `useWallet`, `useCarbon`, `useSDG`, `useCorporate`
 
 **TanStack Query** for API caching (`src/hooks/useQueries.ts`)
@@ -37,54 +39,62 @@ npx jest --no-coverage
 
 ### Cloud Functions (`functions/src/index.ts`)
 
-| Function | Type | Purpose |
-|---|---|---|
-| `onTransactionCreated` | Firestore trigger | Server-authoritative wallet aggregation |
-| `onActivityLogged` | Firestore trigger | SDG/ESG/corporate scoring |
-| `requestWorkEmailVerification` | Callable | Corporate email verification |
-| `verifyWorkEmailCode` | Callable | Validate 6-digit code |
-| `redeemGiftCard` | Callable | Tremendous gift card payout |
-| `onAdRewardVerified` | Callable | AdMob rewarded ad SSV |
+| Function                       | Type              | Purpose                                            |
+| ------------------------------ | ----------------- | -------------------------------------------------- |
+| `onTransactionCreated`         | Firestore trigger | Server-authoritative wallet aggregation            |
+| `onActivityLogged`             | Firestore trigger | SDG/ESG/corporate scoring                          |
+| `requestWorkEmailVerification` | Callable          | Corporate email verification via SendGrid          |
+| `verifyWorkEmailCode`          | Callable          | Validate 6-digit verification code                 |
+| `payoutToUPI`                  | Callable          | Cashfree instant UPI transfer to VPA               |
+| `redeemVoucher`                | Callable          | Xoxoday Plum brand voucher / gift card redemption  |
+| `redeemGiftCard`               | Callable          | Backwards-compatible alias for voucher redemptions |
+| `onAdRewardVerified`           | Callable          | AdMob rewarded ad SSV                              |
 
 All callable functions have auth guards + rate limiting (`functions/src/rateLimit.ts`).
 
-### Fraud Prevention
+### Fraud Prevention & Security
+
 - Firebase AppCheck (`src/utils/firebaseInit.ts`)
 - Per-user rate limiting on all callable Cloud Functions
-- Server-authoritative wallet math (no client-side balance calculation)
+- Hardened Firestore Security Rules: client writes to `transactions` are strictly prohibited
+  (`allow write: if false;`), and `wallet`/`corporate` fields on `users` cannot be modified directly
+  by clients
+- Server-authoritative wallet math via Firestore transaction operations in Cloud Functions
 
 ## Key Files
 
-| File | Purpose |
-|---|---|
-| `src/store/useAppStore.ts` | Zustand preferences store |
-| `src/hooks/useFirebaseData.ts` | Firebase onSnapshot hooks |
-| `src/hooks/useRewardedAd.ts` | AdMob rewarded ad hook |
-| `src/screens/main/WalletScreen.tsx` | Wallet + gift card redemption UI |
-| `src/screens/main/HomeScreen.tsx` | Activity logging + ad prompt |
+| File                                 | Purpose                           |
+| ------------------------------------ | --------------------------------- |
+| `src/store/useAppStore.ts`           | Zustand preferences store         |
+| `src/hooks/useFirebaseData.ts`       | Firebase onSnapshot hooks         |
+| `src/hooks/useRewardedAd.ts`         | AdMob rewarded ad hook            |
+| `src/screens/main/WalletScreen.tsx`  | Wallet + gift card redemption UI  |
+| `src/screens/main/HomeScreen.tsx`    | Activity logging + ad prompt      |
 | `src/screens/main/ProfileScreen.tsx` | Profile + corporate email linking |
-| `functions/src/index.ts` | All Cloud Functions |
-| `functions/src/rateLimit.ts` | Per-user rate limiter |
-| `src/utils/firebaseInit.ts` | Firebase + AppCheck init |
-| `src/tests/setup.ts` | Jest test setup |
+| `functions/src/index.ts`             | All Cloud Functions               |
+| `functions/src/rateLimit.ts`         | Per-user rate limiter             |
+| `src/utils/firebaseInit.ts`          | Firebase + AppCheck init          |
+| `src/tests/setup.ts`                 | Jest test setup                   |
 
 ## Dependencies (key)
 
-| Package | Version | Purpose |
-|---|---|---|
-| react-native | 0.81.4 | Framework |
-| typescript | 7.0.2 | Type system |
-| zustand | 5.0.14 | Local state |
-| @tanstack/react-query | 5.x | API caching |
-| @react-native-firebase/* | 25.1.0 | Firebase (all aligned) |
-| react-native-google-mobile-ads | 16.x | AdMob ads |
-| prettier | 3.9.5 | Code formatting |
+| Package                        | Version | Purpose                |
+| ------------------------------ | ------- | ---------------------- |
+| react-native                   | 0.81.4  | Framework              |
+| typescript                     | 7.0.2   | Type system            |
+| zustand                        | 5.0.14  | Local state            |
+| @tanstack/react-query          | 5.x     | API caching            |
+| @react-native-firebase/*       | 25.1.0  | Firebase (all aligned) |
+| react-native-google-mobile-ads | 16.x    | AdMob ads              |
+| prettier                       | 3.9.5   | Code formatting        |
 
 ## Conventions
 
-- **Imports**: Path aliases (`@components/`, `@screens/`, `@hooks/`, etc.) in tsconfig + metro.config
+- **Imports**: Path aliases (`@components/`, `@screens/`, `@hooks/`, etc.) in tsconfig +
+  metro.config
 - **Types**: Prefer `type-imports` style (`import type { X } from '...'`)
-- **State**: Local UI → Zustand. Server data → Firebase onSnapshot hooks. API cache → TanStack Query.
+- **State**: Local UI → Zustand. Server data → Firebase onSnapshot hooks. API cache → TanStack
+  Query.
 - **Tests**: Jest with React Native Testing Library. Run `npx jest --no-coverage` to verify.
 - **Formatting**: Prettier 3 with `printWidth: 100`, single quotes, trailing commas.
 - **Lint**: ESLint flat config (`eslint.config.mjs`). Run `npx eslint .` before PR.

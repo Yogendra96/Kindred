@@ -1,98 +1,101 @@
 # Kindred Project Status
 
-**Last Updated:** July 16, 2026
-**Build Status:** ✅ App launches and runs on Android emulator
-**Package Manager:** npm (with `--legacy-peer-deps`)
+**Last Updated:** October 14, 2026 **Build Status:** ✅ TypeScript clean, ESLint clean (0 errors),
+15/15 Jest suites passing (245/245) **Package Manager:** bun / npm **Git Branch:**
+`feature/react-native-082-new-architecture` (Synced to remote)
 
 ---
 
 ## Executive Summary
 
-Kindred is a React Native carbon footprint tracking app with real-time social features, AI Vision scanning, fraud prevention, gift card payouts, and ad-based earn/donate mechanics. The app runs stably on Android. All core features are delivered and tested.
+Kindred is a React Native carbon footprint tracking app with real-time social features, AI Vision
+scanning, fraud prevention, instant UPI cash transfers (Cashfree), global & Indian digital vouchers
+(Xoxoday Plum), and ad-based earn/donate mechanics. All core features are delivered,
+security-hardened, and tested with 100% clean builds.
 
 ---
 
 ## What's Working (Confirmed Running)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| App launch & navigation | ✅ Live | All tabs + stack screens |
-| Home Screen | ✅ Live | Carbon footprint card, quick actions, feature grid |
-| Social Screen | ✅ Live | Real-time feed, leaderboards, challenges |
-| AI Vision Camera | ✅ Live | SmartCameraCapture with mock ML fallback |
-| Map Screen | ✅ Live | Eco-location markers |
-| Marketplace | ✅ Live | Thrift store + carbon offset projects |
-| Achievements | ✅ Live | Badge gallery + points display |
-| Profile | ✅ Live | Stats, badges, settings |
-| Analytics Dashboard | ✅ Live | Weekly chart, category breakdown, goals, predictions |
-| Corporate Matching | ✅ Live | Employer-sponsored carbon matching |
-| Wallet & Payouts | ✅ Live | Tremendous gift card redemption |
-| Fraud Prevention | ✅ Live | AppCheck + per-user rate limiting |
-| Ad Earn/Donate | ✅ Live | AdMob rewarded videos with SSV |
-| Corporate Email Verification | ✅ Live | Work email domain verification flow |
-| Cloud Functions | ✅ Live | 6 deployed-ready functions in `/functions` |
+| Feature                      | Status  | Notes                                                                   |
+| ---------------------------- | ------- | ----------------------------------------------------------------------- |
+| App launch & navigation      | ✅ Live | All tabs + stack screens verified on iOS simulator & Android            |
+| Home Screen                  | ✅ Live | Carbon footprint card, SDG badges, ESG score, weekly trend              |
+| Social Screen                | ✅ Live | Real-time feed, leaderboards, corporate ranking                         |
+| AI Vision Camera             | ✅ Live | SmartCameraCapture with mock ML fallback                                |
+| Map Screen                   | ✅ Live | Eco-location markers                                                    |
+| Marketplace                  | ✅ Live | Thrift store + carbon offset projects                                   |
+| Achievements                 | ✅ Live | Badge gallery + points display                                          |
+| Profile                      | ✅ Live | Stats, badges, settings                                                 |
+| Analytics Dashboard          | ✅ Live | Weekly chart, category breakdown, goals, predictions                    |
+| Corporate Matching           | ✅ Live | Employer-sponsored carbon matching + domain verification                |
+| Instant UPI Payouts          | ✅ Live | Cashfree Payouts integration for instant 24/7 bank & UPI transfers      |
+| Digital Vouchers             | ✅ Live | Xoxoday Plum (Giift) vouchers (Amazon Pay, Flipkart, Swiggy, Visa)      |
+| Fraud Prevention             | ✅ Live | AppCheck + per-operation scoped rate limiting                           |
+| Ad Earn/Donate               | ✅ Live | AdMob rewarded videos with server-side verification + App IDs linked    |
+| Corporate Email Verification | ✅ Live | Work email domain verification flow with SendGrid OTP delivery          |
+| Cloud Functions              | ✅ Live | 7 type-safe functions in `/functions` (0 `@ts-nocheck`, 0 build errors) |
+| Firestore Security Rules     | ✅ Live | Production-hardened: client transaction writes disabled, wallet locked  |
 
 ---
 
 ## Current Stack
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| react-native | 0.81.4 | Core framework |
-| TypeScript | 7.0.2 | Language |
-| zustand | 5 | Local/preferences state |
-| @react-native-firebase/* | 25.1.0 | Auth, Firestore, Analytics (state via onSnapshot) |
-| @tanstack/react-query | 5.90.21 | Server state + caching |
-| @tensorflow/tfjs | 4.22.0 | On-device ML |
-| react-native-vector-icons | 10.3.0 | UI icons |
-| moti | 0.30.0 | Declarative animations |
-| expo-task-manager | 55.0.9 | Background tasks |
-| Prettier | 3.9.5 | Code formatting |
+| Package                        | Version | Purpose                                                    |
+| ------------------------------ | ------- | ---------------------------------------------------------- |
+| react-native                   | 0.81.6  | Core framework                                             |
+| TypeScript                     | 5.7.3   | Type checking & language tooling                           |
+| zustand                        | 5.0.15  | Local UI / preferences state                               |
+| @react-native-firebase/*       | 25.1.0  | Auth, Firestore, Functions, AppCheck, Analytics, Messaging |
+| @tanstack/react-query          | 5.90.21 | Server state + caching                                     |
+| @tensorflow/tfjs               | 4.22.0  | On-device ML                                               |
+| react-native-google-mobile-ads | 16.5.0  | Rewarded ads with server verification                      |
+| Prettier                       | 3.9.9   | Code formatting                                            |
+| ESLint                         | 8.57.1  | Static analysis (Flat config, 0 errors)                    |
 
 **State management approach:**
-- **Server state:** Firebase `onSnapshot` hooks (real-time Firestore listeners)
-- **Local/preferences state:** Zustand 5
-- **Redux:** Fully removed — no Redux packages remain in the project
+
+- **Server state:** Firebase `onSnapshot` hooks (real-time Firestore listeners via
+  `useFirebaseData.ts`)
+- **Local/preferences state:** Zustand 5 (`useAppStore.ts`)
+- **Redux:** Fully removed — zero Redux packages remain in the project
 
 **Code quality:**
-- ESLint: Flat config (`eslint.config.mjs`), single configuration
-- Prettier: 3.9.5
-- TypeScript: Strict mode
+
+- ESLint: Passing cleanly with 0 errors (`npm run lint`)
+- TypeScript: Passing cleanly with 0 errors (`npx tsc --noEmit`)
+- Cloud Functions: 100% typed, 0 errors (`npm run build` in `functions/`)
+- Pre-commit & Pre-push: Fully operational without `--no-verify`
 
 ---
 
 ## Test Coverage
 
-| Suite | Tests | Status |
-|-------|-------|--------|
-| All test suites | 245 tests, 15 suites | ✅ All passing |
+| Suite                    | Tests                | Status                       |
+| ------------------------ | -------------------- | ---------------------------- |
+| Unit & Integration Tests | 245 tests, 15 suites | ✅ 100% passing              |
+| Maestro iOS E2E Flow     | Path B user flow     | ✅ 100% passing on iPhone 17 |
 
 ---
 
 ## Key Features Delivered
 
-- **Corporate Matching** — Employer-sponsored carbon offset matching program
-- **Wallet & Payouts** — Tremendous gift card redemption integration
-- **Fraud Prevention** — Firebase AppCheck + per-user rate limiting
-- **Ad Earn/Donate** — AdMob rewarded video ads with server-side verification
-- **Corporate Email Verification** — Work email domain verification flow
+- **Cashfree UPI Instant Payouts** — Direct 24/7 withdrawals to any UPI ID (`username@bank`) in
+  India
+- **Xoxoday Plum Rewards** — Instant digital vouchers for Amazon India, Flipkart, Swiggy, and Global
+  Prepaid Visa
+- **Atomic Balance Safety** — In-flight balance deduction and transactional rollback eliminates
+  double-spending
+- **Hardened Security Rules** — Server-authoritative wallet balance, corporate verification, and
+  locked transaction collection
+- **Corporate Matching** — Employer-sponsored carbon offset matching program with SendGrid OTP
+  verification
+- **Ad Earn/Donate** — AdMob rewarded video ads with server-side verification and native App ID
+  configuration
 - **Offline queue** — FIFO action queue, drain on reconnect, background sync
-- **Real-time Social Dashboard** — WebSocket-powered live activity feed
+- **Real-time Social Dashboard** — Live activity feed and corporate leaderboard
 - **AI Vision for Waste Categorization** — TensorFlow.js with mock fallback
-- **Advanced Insights Dashboard** — Analytics with linear regression, pattern detection
 - **Verified Carbon Marketplace** — Offset projects with Verra/Gold Standard registry IDs
-- **Enhanced Gamification** — Achievements, badges, leagues, store
-
----
-
-## Documentation
-
-| Doc | Status |
-|-----|--------|
-| README | ✅ Updated |
-| ARCHITECTURE.md | ✅ Updated |
-| CLAUDE.md | ✅ Updated |
-| PROJECT_STATUS.md | ✅ This file |
 
 ---
 
@@ -103,6 +106,6 @@ TypeScript files: ~160
 Services: ~55 implementations
 Components: 45+ UI components
 Custom hooks: 15+
-Test suites: 15
+Test suites: 15 (245 tests passing)
 Docs: ~27 markdown files
 ```
