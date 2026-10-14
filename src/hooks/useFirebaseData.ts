@@ -188,3 +188,63 @@ export function useRedeemGiftCard() {
 
   return { redeem, isLoading, error };
 }
+
+export function usePayoutToUPI() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const payout = useCallback(async (amountINR: number, vpa: string, recipientName?: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const payoutFn = functions().httpsCallable('payoutToUPI');
+      const result = await payoutFn({ amountINR, vpa, recipientName });
+      return result.data as { success: boolean; referenceId: string; status: string; message: string };
+    } catch (err: any) {
+      const message = err.message || 'Failed to process UPI payout. Please try again.';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { payout, isLoading, error };
+}
+
+export function useRedeemVoucher() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const redeemVoucher = useCallback(
+    async (params: {
+      productId: string;
+      denomination: number;
+      currency?: 'INR' | 'USD';
+      recipientEmail?: string;
+    }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const redeemFn = functions().httpsCallable('redeemVoucher');
+        const result = await redeemFn(params);
+        return result.data as {
+          success: boolean;
+          orderId: string;
+          voucherCode?: string;
+          message: string;
+        };
+      } catch (err: any) {
+        const message = err.message || 'Failed to redeem voucher. Please try again.';
+        setError(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  return { redeemVoucher, isLoading, error };
+}
+

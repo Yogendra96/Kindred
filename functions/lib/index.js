@@ -36,12 +36,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.redeemGiftCard = exports.onAdRewardVerified = exports.verifyWorkEmailCode = exports.requestWorkEmailVerification = exports.onActivityLogged = exports.onTransactionCreated = void 0;
+exports.redeemGiftCard = exports.redeemVoucher = exports.payoutToUPI = exports.onAdRewardVerified = exports.verifyWorkEmailCode = exports.requestWorkEmailVerification = exports.onActivityLogged = exports.onTransactionCreated = void 0;
 // @ts-nocheck
 const functions = __importStar(require("firebase-functions/v1"));
 const admin = __importStar(require("firebase-admin"));
 const mail_1 = __importDefault(require("@sendgrid/mail"));
 const rateLimit_1 = require("./rateLimit");
+const cashfree_1 = require("./payouts/cashfree");
+const xoxoday_1 = require("./payouts/xoxoday");
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 if (SENDGRID_API_KEY) {
     mail_1.default.setApiKey(SENDGRID_API_KEY);
@@ -223,45 +225,191 @@ exports.onAdRewardVerified = functions.https.onCall(async (_data, context) => {
     return { success: true, amountCents };
 });
 // -------------------------------------------------------------------------- //
-// 4. Gift Card Redemption (Tremendous)
+// 4. Instant UPI Payout (Cashfree Payouts - India)
 // -------------------------------------------------------------------------- //
-exports.redeemGiftCard = functions.https.onCall(async (data, context) => {
+exports.payoutToUPI = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
     }
-    // App Check enforcement (blocks non-app requests in production)
     if (process.env.NODE_ENV === 'production' && !context.app) {
         throw new functions.https.HttpsError('failed-precondition', 'The function must be called from a verified app.');
     }
-    // Rate limiting: max 3 gift card redemptions per minute
-    const allowed = await (0, rateLimit_1.checkRateLimit)(context.auth.uid, { maxOps: 3, windowMs: 60000 });
+    // Rate limiting: max 3 UPI payouts per 5 minutes
+    const allowed = await (0, rateLimit_1.checkRateLimit)(context.auth.uid, { maxOps: 3, windowMs: 300000 });
     if (!allowed) {
-        throw new functions.https.HttpsError('resource-exhausted', 'Too many requests. Please try again later.');
+        throw new functions.https.HttpsError('resource-exhausted', 'Too many payout requests. Please wait a few minutes before trying again.');
     }
     const uid = context.auth.uid;
-    const { amountCents, recipientEmail } = data;
-    if (typeof amountCents !== 'number' || !Number.isInteger(amountCents) || amountCents < 500) {
-        throw new functions.https.HttpsError('invalid-argument', 'Minimum gift card amount is $5.00 (500 cents).');
+    const { vpa, amountINR, recipientName } = data;
+    if (!vpa || !(0, cashfree_1.isValidUPI)(vpa)) {
+        throw new functions.https.HttpsError('invalid-argument', 'Invalid UPI ID format. Expected format: username@bank (e.g., alex@okhdfcbank)');
     }
+    if (typeof amountINR !== 'number' || amountINR < 10) {
+        throw new functions.https.HttpsError('invalid-argument', 'Minimum UPI payout amount is ₹10.00.');
+    }
+    // Conversion: 1 INR = 1.25 cents (₹80 = $1.00 / 100 cents)
+    const costCents = Math.round(amountINR * 1.25);
     const userRef = db.collection('users').doc(uid);
-    return db.runTransaction(async (transaction) => {
+    const txRef = db.collection('users').doc(uid).collection('transactions').doc();
+    // Step 1: Atomic Balance Check and Deduction
+    await db.runTransaction(async (transaction) => {
         const userDoc = await transaction.get(userRef);
         const userData = userDoc.data() || {};
         const balanceCents = userData.wallet?.balanceCents || 0;
-        if (balanceCents < amountCents) {
-            throw new functions.https.HttpsError('failed-precondition', 'Insufficient balance.');
+        if (balanceCents < costCents) {
+            throw new functions.https.HttpsError('failed-precondition', `Insufficient balance. You need ${costCents} cents for a ₹${amountINR} payout.`);
         }
-        const txRef = db.collection('users').doc(uid).collection('transactions').doc();
         transaction.set(txRef, {
             type: 'SPEND',
-            amountCents,
-            recipientEmail: recipientEmail || null,
-            description: 'Gift card redemption',
+            category: 'UPI_PAYOUT',
+            amountCents: costCents,
+            amountINR,
+            vpa,
+            status: 'PROCESSING',
+            provider: 'CASHFREE',
+            description: `Instant UPI Payout to ${vpa}`,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-        // NOTE: Actual Tremendous API call is mocked for now
-        console.log(`[MOCK TREMENDOUS] Order created: amountCents=${amountCents}, recipientEmail=${recipientEmail || uid}`);
-        return { success: true, message: 'Gift card ordered' };
     });
+    // Step 2: Execute Cashfree Transfer
+    try {
+        const result = await (0, cashfree_1.executeCashfreeUpiTransfer)({
+            transferId: txRef.id,
+            amountINR,
+            vpa,
+            recipientName: recipientName || 'Kindred User',
+            remarks: 'Kindred Eco Rewards Payout',
+        });
+        await txRef.update({
+            status: result.status,
+            referenceId: result.referenceId,
+            isSimulated: result.isSimulated ?? false,
+            completedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return {
+            success: true,
+            referenceId: result.referenceId,
+            status: result.status,
+            message: result.message,
+        };
+    }
+    catch (err) {
+        console.error('UPI payout error, executing rollback:', err);
+        // Rollback: refund user wallet balance and mark transaction as FAILED
+        await db.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            const userData = userDoc.data() || {};
+            const currentBalance = userData.wallet?.balanceCents || 0;
+            transaction.update(userRef, {
+                'wallet.balanceCents': currentBalance + costCents,
+            });
+            transaction.update(txRef, {
+                status: 'FAILED',
+                failureReason: err.message || 'Transfer failed',
+                refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        });
+        throw new functions.https.HttpsError('internal', err.message || 'UPI transfer failed.');
+    }
+});
+// -------------------------------------------------------------------------- //
+// 5. Rewards & Gift Card Redemption (Xoxoday Plum - Global & India)
+// -------------------------------------------------------------------------- //
+exports.redeemVoucher = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+    }
+    if (process.env.NODE_ENV === 'production' && !context.app) {
+        throw new functions.https.HttpsError('failed-precondition', 'The function must be called from a verified app.');
+    }
+    // Rate limiting: max 5 voucher redemptions per 5 minutes
+    const allowed = await (0, rateLimit_1.checkRateLimit)(context.auth.uid, { maxOps: 5, windowMs: 300000 });
+    if (!allowed) {
+        throw new functions.https.HttpsError('resource-exhausted', 'Too many requests. Please wait a few minutes before trying again.');
+    }
+    const uid = context.auth.uid;
+    const { productId = 'AMAZON_IN', denomination = 500, currency = 'INR', recipientEmail, recipientName, } = data;
+    const emailToUse = recipientEmail || context.auth.token.email;
+    if (!emailToUse) {
+        throw new functions.https.HttpsError('invalid-argument', 'Recipient email is required for voucher delivery.');
+    }
+    // Cost in points/cents: if currency is INR, 1 INR = 1.25 cents; if USD, 1 USD = 100 cents
+    const costCents = currency === 'USD' ? Math.round(denomination * 100) : Math.round(denomination * 1.25);
+    const userRef = db.collection('users').doc(uid);
+    const txRef = db.collection('users').doc(uid).collection('transactions').doc();
+    // Step 1: Atomic Balance Check and Deduction
+    await db.runTransaction(async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+        const userData = userDoc.data() || {};
+        const balanceCents = userData.wallet?.balanceCents || 0;
+        if (balanceCents < costCents) {
+            throw new functions.https.HttpsError('failed-precondition', `Insufficient balance. You need ${costCents} cents for this voucher.`);
+        }
+        transaction.set(txRef, {
+            type: 'SPEND',
+            category: 'VOUCHER_REDEMPTION',
+            amountCents: costCents,
+            productId,
+            denomination,
+            currency,
+            recipientEmail: emailToUse,
+            status: 'PROCESSING',
+            provider: 'XOXODAY',
+            description: `${productId} Voucher (${denomination} ${currency})`,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    });
+    // Step 2: Dispatch Xoxoday Voucher Order
+    try {
+        const result = await (0, xoxoday_1.executeXoxodayOrder)({
+            orderId: txRef.id,
+            productId,
+            denomination,
+            currency,
+            recipientEmail: emailToUse,
+            recipientName: recipientName || 'Kindred Member',
+        });
+        await txRef.update({
+            status: 'SUCCESS',
+            voucherCode: result.voucherCode || null,
+            voucherPin: result.voucherPin || null,
+            expiryDate: result.expiryDate || null,
+            isSimulated: result.isSimulated ?? false,
+            completedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return {
+            success: true,
+            orderId: result.orderId,
+            voucherCode: result.voucherCode,
+            message: result.message,
+        };
+    }
+    catch (err) {
+        console.error('Xoxoday order error, executing rollback:', err);
+        // Rollback: refund user wallet balance and mark transaction as FAILED
+        await db.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            const userData = userDoc.data() || {};
+            const currentBalance = userData.wallet?.balanceCents || 0;
+            transaction.update(userRef, {
+                'wallet.balanceCents': currentBalance + costCents,
+            });
+            transaction.update(txRef, {
+                status: 'FAILED',
+                failureReason: err.message || 'Voucher creation failed',
+                refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        });
+        throw new functions.https.HttpsError('internal', err.message || 'Voucher redemption failed.');
+    }
+});
+// Backward-compatible alias for existing frontend calls
+exports.redeemGiftCard = functions.https.onCall(async (data, context) => {
+    return (0, exports.redeemVoucher)({
+        productId: 'AMAZON_IN',
+        denomination: data.amountCents ? Math.round(data.amountCents / 1.25) : 500,
+        currency: 'INR',
+        recipientEmail: data.recipientEmail,
+    }, context);
 });
 //# sourceMappingURL=index.js.map

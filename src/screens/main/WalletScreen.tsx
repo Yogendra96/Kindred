@@ -8,10 +8,20 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
-import { useWallet, useRedeemGiftCard } from '../../hooks/useFirebaseData';
+import { useWallet, usePayoutToUPI, useRedeemVoucher } from '../../hooks/useFirebaseData';
 import { useToast } from '../../contexts/ToastContext';
-import { ArrowLeft, Wallet, Gift, Storefront, HandHeart, Coins } from 'phosphor-react-native';
+import {
+  ArrowLeft,
+  Wallet,
+  Gift,
+  Storefront,
+  HandHeart,
+  Coins,
+  Lightning,
+  CheckCircle,
+} from 'phosphor-react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type Props = NativeStackScreenProps<any, 'Wallet'>;
@@ -28,34 +38,82 @@ const MOCK_CHARITIES = [
   { id: 'c3', name: 'City Animal Shelter', cause: 'Pet Rescue & Care', emoji: '🐕' },
 ];
 
+const VOUCHER_OPTIONS = [
+  { id: 'AMAZON_IN', name: 'Amazon Pay India', emoji: '🛍️', denomination: 250, currency: 'INR', costCents: 313 },
+  { id: 'FLIPKART', name: 'Flipkart Voucher', emoji: '🛒', denomination: 250, currency: 'INR', costCents: 313 },
+  { id: 'SWIGGY', name: 'Swiggy Food Money', emoji: '🍔', denomination: 150, currency: 'INR', costCents: 188 },
+  { id: 'GLOBAL_VISA', name: 'Prepaid Visa (Global)', emoji: '💳', denomination: 5, currency: 'USD', costCents: 500 },
+];
+
 export default function WalletScreen({ navigation }: Props) {
   const wallet = useWallet();
   const balanceCents = wallet?.balanceCents ?? 0;
   const transactions = (wallet as any)?.transactions ?? [];
   const [activeTab, setActiveTab] = useState<'rewards' | 'donate'>('rewards');
-  const { redeem, isLoading } = useRedeemGiftCard();
+  const [upiId, setUpiId] = useState('');
+  const [selectedUpiAmount, setSelectedUpiAmount] = useState<number>(100);
+
+  const { payout, isLoading: isUpiLoading } = usePayoutToUPI();
+  const { redeemVoucher, isLoading: isVoucherLoading } = useRedeemVoucher();
   const { showToast } = useToast();
 
-  const GIFT_PRESETS = [
-    { label: '$5', cents: 500 },
-    { label: '$10', cents: 1000 },
-    { label: '$25', cents: 2500 },
-  ];
+  const approxINR = Math.round(balanceCents / 1.25);
 
-  const handleRedeemGiftCard = async (amountCents: number) => {
-    if (balanceCents < amountCents) {
-      Alert.alert('Insufficient Funds', 'You need more Kindred Cash to redeem this gift card.');
+  const handleUpiTransfer = async () => {
+    if (!upiId.trim()) {
+      Alert.alert('UPI ID Required', 'Please enter your UPI ID (e.g. yourname@okhdfcbank or 9876543210@paytm).');
+      return;
+    }
+
+    const neededCents = Math.round(selectedUpiAmount * 1.25);
+    if (balanceCents < neededCents) {
+      Alert.alert('Insufficient Balance', `You need $${(neededCents / 100).toFixed(2)} to withdraw ₹${selectedUpiAmount}.`);
       return;
     }
 
     try {
-      const result = await redeem(amountCents);
-      if (result.success) {
-        showToast(`Gift card for $${(amountCents / 100).toFixed(2)} ordered!`, 'success');
+      const res = await payout(selectedUpiAmount, upiId.trim());
+      if (res.success) {
+        showToast(`₹${selectedUpiAmount} transferred via UPI! Ref: ${res.referenceId.slice(-6)}`, 'success');
+        setUpiId('');
       }
     } catch (err: any) {
-      showToast(err.message || 'Failed to redeem gift card.', 'error');
+      Alert.alert('Transfer Error', err.message || 'Failed to complete UPI transfer.');
     }
+  };
+
+  const handleRedeemVoucher = async (voucher: (typeof VOUCHER_OPTIONS)[0]) => {
+    if (balanceCents < voucher.costCents) {
+      Alert.alert('Insufficient Funds', 'You need more Kindred Cash to redeem this voucher.');
+      return;
+    }
+
+    Alert.alert(
+      `Redeem ${voucher.name}?`,
+      `Spend $${(voucher.costCents / 100).toFixed(2)} for ${voucher.currency === 'INR' ? '₹' : '$'}${voucher.denomination} ${voucher.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Redeem Now',
+          onPress: async () => {
+            try {
+              const res = await redeemVoucher({
+                productId: voucher.id,
+                denomination: voucher.denomination,
+                currency: voucher.currency as any,
+              });
+              if (res.success) {
+                const codeMsg = res.voucherCode ? `\nCode: ${res.voucherCode}` : '';
+                Alert.alert('Voucher Redeemed! 🎉', `${voucher.name} ready.${codeMsg}\nDetails sent to your email.`);
+                showToast(`${voucher.name} redeemed!`, 'success');
+              }
+            } catch (err: any) {
+              Alert.alert('Redemption Failed', err.message || 'Unable to process voucher.');
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleRedeem = (item: (typeof MOCK_BRANDS)[0]) => {
@@ -72,7 +130,6 @@ export default function WalletScreen({ navigation }: Props) {
         {
           text: 'Redeem',
           onPress: () => {
-            // dispatch(spendBalance({ amountCents: item.costCents, description: `Redeemed ${item.name} Offer` }));
             Alert.alert(
               'Success!',
               `You have unlocked the ${item.offer}. A code will be sent to your email.`,
@@ -103,7 +160,6 @@ export default function WalletScreen({ navigation }: Props) {
               Alert.alert('Invalid Amount', 'Please enter a valid amount within your balance.');
               return;
             }
-            // dispatch(spendBalance({ amountCents: cents, description: `Donation to ${item.name}` }));
             Alert.alert(
               'Thank You! 💚',
               `You have successfully donated $${(cents / 100).toFixed(2)} to ${item.name}.`,
@@ -133,46 +189,94 @@ export default function WalletScreen({ navigation }: Props) {
           <Wallet size={32} color='#38EF7D' weight='duotone' />
           <Text style={styles.balanceLabel}>Available Kindred Cash</Text>
           <Text style={styles.balanceAmount}>${(balanceCents / 100).toFixed(2)}</Text>
-          <Text style={styles.balanceSubtext}>Earned from your impact activities</Text>
+          <Text style={styles.balanceSubtext}>≈ ₹{approxINR} INR · Earned from verified impact</Text>
         </View>
 
-        {/* Redeem Gift Cards */}
-        <View style={styles.giftCardSection}>
-          <View style={styles.giftCardHeader}>
-            <Gift size={20} color='#FF6B9D' weight='duotone' />
-            <Text style={styles.giftCardTitle}>Redeem Gift Cards</Text>
+        {/* Instant UPI Transfer Card (Cashfree) */}
+        <View style={styles.payoutCard}>
+          <View style={styles.payoutHeader}>
+            <Lightning size={20} color='#38EF7D' weight='fill' />
+            <Text style={styles.payoutTitle}>Instant UPI Cashout</Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>Cashfree</Text>
+            </View>
           </View>
-          <Text style={styles.giftCardSubtext}>Swap your Kindred Cash for a digital gift card</Text>
-          <View style={styles.giftPresetRow}>
-            {GIFT_PRESETS.map(preset => {
-              const affordable = balanceCents >= preset.cents;
+          <Text style={styles.payoutSubtext}>Transfer cash directly to your Indian bank account 24/7</Text>
+
+          <TextInput
+            style={styles.upiInput}
+            placeholder='Enter UPI ID (e.g. mobile@upi or name@okaxis)'
+            placeholderTextColor='rgba(255,255,255,0.4)'
+            value={upiId}
+            onChangeText={setUpiId}
+            autoCapitalize='none'
+            autoCorrect={false}
+          />
+
+          <View style={styles.chipRow}>
+            {[50, 100, 250, 500].map(amt => (
+              <TouchableOpacity
+                key={amt}
+                style={[styles.chip, selectedUpiAmount === amt && styles.chipActive]}
+                onPress={() => setSelectedUpiAmount(amt)}
+              >
+                <Text style={[styles.chipText, selectedUpiAmount === amt && styles.chipTextActive]}>
+                  ₹{amt}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={[styles.primaryActionBtn, isUpiLoading && styles.btnDisabled]}
+            onPress={handleUpiTransfer}
+            disabled={isUpiLoading}
+          >
+            {isUpiLoading ? (
+              <ActivityIndicator size='small' color='#000' />
+            ) : (
+              <Text style={styles.primaryActionText}>Transfer ₹{selectedUpiAmount} to Bank</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Digital Vouchers Section (Xoxoday Plum) */}
+        <View style={styles.voucherSection}>
+          <View style={styles.voucherHeader}>
+            <Gift size={20} color='#FF6B9D' weight='duotone' />
+            <Text style={styles.voucherTitle}>Digital Vouchers</Text>
+            <View style={[styles.badge, { backgroundColor: 'rgba(255, 107, 157, 0.2)' }]}>
+              <Text style={[styles.badgeText, { color: '#FF6B9D' }]}>Xoxoday</Text>
+            </View>
+          </View>
+          <Text style={styles.voucherSubtext}>Redeem instant gift vouchers (India & Global)</Text>
+
+          <View style={styles.voucherGrid}>
+            {VOUCHER_OPTIONS.map(v => {
+              const affordable = balanceCents >= v.costCents;
               return (
                 <TouchableOpacity
-                  key={preset.cents}
-                  style={[styles.giftPresetBtn, !affordable && styles.giftPresetBtnDisabled]}
-                  onPress={() => handleRedeemGiftCard(preset.cents)}
-                  disabled={!affordable || isLoading}
-                  activeOpacity={0.7}
+                  key={v.id}
+                  style={[styles.voucherCard, !affordable && styles.voucherCardDisabled]}
+                  onPress={() => handleRedeemVoucher(v)}
+                  disabled={!affordable || isVoucherLoading}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator size='small' color='#fff' />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.giftPresetLabel,
-                        !affordable && styles.giftPresetLabelDisabled,
-                      ]}
-                    >
-                      {preset.label}
-                    </Text>
-                  )}
+                  <Text style={styles.voucherEmoji}>{v.emoji}</Text>
+                  <Text style={styles.voucherName} numberOfLines={1}>
+                    {v.name}
+                  </Text>
+                  <Text style={styles.voucherDenom}>
+                    {v.currency === 'INR' ? '₹' : '$'}
+                    {v.denomination}
+                  </Text>
+                  <Text style={styles.voucherCost}>${(v.costCents / 100).toFixed(2)}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
 
-        {/* Tabs */}
+        {/* Tabs for Brand Rewards & Local Causes */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tabBtn, activeTab === 'rewards' && styles.tabBtnActive]}
@@ -281,19 +385,99 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 239, 125, 0.25)',
+  },
+  balanceLabel: { color: '#8E8E93', fontSize: 14, marginTop: 12, marginBottom: 4 },
+  balanceAmount: { color: '#fff', fontSize: 38, fontWeight: '800', letterSpacing: -1 },
+  balanceSubtext: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 6 },
+
+  payoutCard: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: 'rgba(56, 239, 125, 0.2)',
   },
-  balanceLabel: { color: '#8E8E93', fontSize: 14, marginTop: 12, marginBottom: 4 },
-  balanceAmount: { color: '#fff', fontSize: 40, fontWeight: '800', letterSpacing: -1 },
-  balanceSubtext: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 8 },
+  payoutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  payoutTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  badge: {
+    backgroundColor: 'rgba(56, 239, 125, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 'auto',
+  },
+  badgeText: { color: '#38EF7D', fontSize: 11, fontWeight: '700' },
+  payoutSubtext: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 14 },
+  upiInput: {
+    backgroundColor: '#2C2C2E',
+    color: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  chipRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  chip: {
+    flex: 1,
+    backgroundColor: '#2C2C2E',
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  chipActive: { backgroundColor: '#38EF7D' },
+  chipText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  chipTextActive: { color: '#000' },
+  primaryActionBtn: {
+    backgroundColor: '#38EF7D',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryActionText: { color: '#000', fontSize: 15, fontWeight: '800' },
+  btnDisabled: { opacity: 0.5 },
+
+  voucherSection: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 157, 0.2)',
+  },
+  voucherHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  voucherTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  voucherSubtext: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 14 },
+  voucherGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  voucherCard: {
+    width: '48%',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+  },
+  voucherCardDisabled: { opacity: 0.4 },
+  voucherEmoji: { fontSize: 28, marginBottom: 4 },
+  voucherName: { color: '#fff', fontSize: 13, fontWeight: '600', marginBottom: 2 },
+  voucherDenom: { color: '#FF6B9D', fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  voucherCost: { color: 'rgba(255,255,255,0.4)', fontSize: 11 },
+
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#1C1C1E',
     borderRadius: 12,
     padding: 4,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   tabBtn: {
     flex: 1,
@@ -343,7 +527,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   actionBtnTextAlt: { color: '#38EF7D', fontWeight: '700', fontSize: 14 },
-  historySection: { marginTop: 24 },
+  historySection: { marginTop: 20 },
   txRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -355,51 +539,4 @@ const styles = StyleSheet.create({
   txLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   txDesc: { color: '#fff', fontSize: 15 },
   txAmount: { fontSize: 15, fontWeight: '600' },
-  giftCardSection: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 107, 157, 0.2)',
-  },
-  giftCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  giftCardTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  giftCardSubtext: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 13,
-    marginBottom: 16,
-  },
-  giftPresetRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  giftPresetBtn: {
-    flex: 1,
-    backgroundColor: '#FF6B9D',
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  giftPresetBtnDisabled: {
-    backgroundColor: 'rgba(255, 107, 157, 0.2)',
-  },
-  giftPresetLabel: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  giftPresetLabelDisabled: {
-    color: 'rgba(255,255,255,0.4)',
-  },
 });
