@@ -23,12 +23,15 @@ mobile experience.
 
 ### Current State
 
-- **245 tests across 15 suites**, all passing
+- **245 React Native tests across 15 suites**, all passing
+- **22 Firestore Security Rules unit tests** in Firebase emulator, all passing
 - **7 Firebase Cloud Functions** handling server-side logic & secure payouts
 - **AdMob rewarded ads** with server-side verification (SSV)
 - **Cashfree Payouts integration** for 24/7 instant UPI & bank transfers (India)
 - **Xoxoday Plum integration** for 100+ country brand vouchers & gift cards
 - **Hardened Firestore Security Rules** (client write protection on wallets & transactions)
+- **Store Release Ready**: iOS Info.plist usage descriptions, Apple Privacy Manifest, Android 13+
+  permissions
 - **Corporate email verification** flow with SendGrid & domain scoring
 - **AppCheck + rate limiting** on all callable functions
 

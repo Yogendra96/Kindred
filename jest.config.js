@@ -32,6 +32,7 @@ module.exports = {
     '<rootDir>/ios/',
     '<rootDir>/vendor/',
     '<rootDir>/e2e/',
+    '<rootDir>/functions/',
   ],
 
   // Transform ignore patterns

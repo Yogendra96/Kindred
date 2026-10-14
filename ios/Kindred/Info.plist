@@ -32,7 +32,13 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Kindred uses your location to discover nearby eco-friendly locations, recycling centers, and EV chargers on the Impact Map.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Kindred uses your camera to scan products, food items, and receipts for real-time carbon footprint calculations.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Kindred uses your photo library to let you upload product images and customize your profile avatar.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Kindred uses tracking to deliver personalized eco-rewards and relevant sustainability opportunities.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
