@@ -14,3 +14,7 @@ gem 'bigdecimal'
 gem 'logger'
 gem 'benchmark'
 gem 'mutex_m'
+
+# Fastlane for automated iOS and Android release deployment
+gem 'fastlane'
+

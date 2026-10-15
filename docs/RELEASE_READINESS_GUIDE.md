@@ -62,9 +62,27 @@ When submitting the Data Safety form in Google Play Console:
 
 ---
 
-## 4. Production Build & Release Commands
+## 4. Production Build & Release Commands (Fastlane & Manual)
 
-### Android (Release AAB for Google Play):
+### Automated Fastlane Releases (Recommended):
+
+Run from repository root:
+
+```bash
+# Automated iOS build & upload to TestFlight:
+npm run fastlane:ios
+# or: fastlane ios beta
+
+# Automated Android bundle & upload to Google Play Internal track:
+npm run fastlane:android
+# or: fastlane android beta
+```
+
+---
+
+### Manual Compilation:
+
+#### Android (Release AAB for Google Play):
 
 1. Generate your production upload keystore (if not already done):
    ```bash
@@ -76,7 +94,7 @@ When submitting the Data Safety form in Google Play Console:
    ```
    _Artifact generated:_ `android/app/build/outputs/bundle/release/app-release.aab`
 
-### iOS (Release Archive for App Store Connect):
+#### iOS (Release Archive for App Store Connect):
 
 1. Open Xcode:
    ```bash
@@ -85,3 +103,19 @@ When submitting the Data Safety form in Google Play Console:
 2. Select your Team under **Signing & Capabilities**.
 3. Choose **Product → Archive** to compile and distribute directly to TestFlight / App Store
    Connect.
+
+---
+
+## 5. Automated CI/CD (Strategy 1)
+
+Located at: `.github/workflows/ci.yml`
+
+- **Triggers:** Push to `main`, `master`, `develop`, `feature/**`, and all Pull Requests.
+- **Runner:** Ubuntu Linux (`ubuntu-latest`, 1x multiplier, 100% within free monthly tier).
+- **Execution Matrix:**
+  1. Java 21 OpenJDK setup (for local Firestore emulator)
+  2. Node.js 20 setup with npm cache
+  3. `npm run typecheck` (TypeScript 0 errors)
+  4. `npm run lint` (ESLint 0 errors)
+  5. `npm test -- --no-coverage` (245 Jest React Native tests)
+  6. `npm run test:rules` (22 Firestore security rules tests in emulator)

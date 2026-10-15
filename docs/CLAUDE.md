@@ -10,17 +10,19 @@ npx jest --no-coverage
 
 ## Commands
 
-| Command                         | Purpose                               |
-| ------------------------------- | ------------------------------------- |
-| `npx tsc --noEmit`              | TypeScript type check                 |
-| `npx jest --no-coverage`        | Run all tests                         |
-| `npx jest --no-coverage <path>` | Run specific test                     |
-| `npm run test:rules`            | Run Firestore rules tests in emulator |
-| `npx prettier --write src/`     | Format all source files               |
-| `npx eslint .`                  | Lint all files                        |
-| `npm start`                     | Start Metro bundler                   |
-| `npx react-native run-ios`      | Run on iOS                            |
-| `npx react-native run-android`  | Run on Android                        |
+| Command                         | Purpose                                |
+| ------------------------------- | -------------------------------------- |
+| `npx tsc --noEmit`              | TypeScript type check                  |
+| `npx jest --no-coverage`        | Run all tests                          |
+| `npx jest --no-coverage <path>` | Run specific test                      |
+| `npm run test:rules`            | Run Firestore rules tests in emulator  |
+| `npx prettier --write src/`     | Format all source files                |
+| `npx eslint .`                  | Lint all files                         |
+| `npm start`                     | Start Metro bundler                    |
+| `npx react-native run-ios`      | Run on iOS                             |
+| `npx react-native run-android`  | Run on Android                         |
+| `npm run fastlane:ios`          | Build & upload to TestFlight           |
+| `npm run fastlane:android`      | Build & upload to Google Play Internal |
 
 ## Architecture
 

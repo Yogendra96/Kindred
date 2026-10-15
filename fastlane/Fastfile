@@ -1,0 +1,67 @@
+default_platform(:ios)
+
+# ==============================================================================
+# iOS Deployment Lanes
+# ==============================================================================
+platform :ios do
+  desc "Run pre-flight checks (TypeScript and 267 test suite)"
+  lane :test do
+    sh("npm run typecheck")
+    sh("npm test -- --no-coverage")
+    sh("npm run test:rules")
+  end
+
+  desc "Build iOS release binary (.ipa)"
+  lane :build do
+    cocoapods(podfile: "ios/Podfile")
+    build_app(
+      workspace: "ios/Kindred.xcworkspace",
+      scheme: "Kindred",
+      configuration: "Release",
+      output_directory: "./build/ios",
+      export_method: "app-store"
+    )
+  end
+
+  desc "Build and upload iOS release to Apple TestFlight"
+  lane :beta do
+    test
+    # increment_build_number(xcodeproj: "ios/Kindred.xcodeproj")
+    build
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
+
+# ==============================================================================
+# Android Deployment Lanes
+# ==============================================================================
+platform :android do
+  desc "Run pre-flight checks (TypeScript and 267 test suite)"
+  lane :test do
+    sh("npm run typecheck")
+    sh("npm test -- --no-coverage")
+    sh("npm run test:rules")
+  end
+
+  desc "Build Android release App Bundle (.aab)"
+  lane :build do
+    gradle(
+      task: "bundleRelease",
+      project_dir: "android/"
+    )
+  end
+
+  desc "Build and upload Android release to Google Play Internal Testing track"
+  lane :beta do
+    test
+    build
+    upload_to_play_store(
+      track: "internal",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end

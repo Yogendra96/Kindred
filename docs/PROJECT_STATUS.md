@@ -19,27 +19,29 @@ security-hardened, and tested with 100% clean builds.
 
 ## What's Working (Confirmed Running)
 
-| Feature                      | Status  | Notes                                                                    |
-| ---------------------------- | ------- | ------------------------------------------------------------------------ |
-| App launch & navigation      | ✅ Live | All tabs + stack screens verified on iOS simulator & Android             |
-| Home Screen                  | ✅ Live | Carbon footprint card, SDG badges, ESG score, weekly trend               |
-| Social Screen                | ✅ Live | Real-time feed, leaderboards, corporate ranking                          |
-| AI Vision Camera             | ✅ Live | SmartCameraCapture with mock ML fallback                                 |
-| Map Screen                   | ✅ Live | Eco-location markers                                                     |
-| Marketplace                  | ✅ Live | Thrift store + carbon offset projects                                    |
-| Achievements                 | ✅ Live | Badge gallery + points display                                           |
-| Profile                      | ✅ Live | Stats, badges, settings                                                  |
-| Analytics Dashboard          | ✅ Live | Weekly chart, category breakdown, goals, predictions                     |
-| Corporate Matching           | ✅ Live | Employer-sponsored carbon matching + domain verification                 |
-| Instant UPI Payouts          | ✅ Live | Cashfree Payouts integration for instant 24/7 bank & UPI transfers       |
-| Digital Vouchers             | ✅ Live | Xoxoday Plum (Giift) vouchers (Amazon Pay, Flipkart, Swiggy, Visa)       |
-| Fraud Prevention             | ✅ Live | AppCheck + per-operation scoped rate limiting                            |
-| Ad Earn/Donate               | ✅ Live | AdMob rewarded videos with server-side verification + App IDs linked     |
-| Corporate Email Verification | ✅ Live | Work email domain verification flow with SendGrid OTP delivery           |
-| Cloud Functions              | ✅ Live | 7 type-safe functions in `/functions` (0 `@ts-nocheck`, 0 build errors)  |
-| Firestore Security Rules     | ✅ Live | Production-hardened: client transaction writes disabled, wallet locked   |
-| Rules Unit Testing           | ✅ Live | 22 automated tests via Firebase emulator verifying zero tampering        |
-| Store Release Readiness      | ✅ Live | iOS Info.plist, Apple PrivacyInfo.xcprivacy, AndroidManifest permissions |
+| Feature                      | Status  | Notes                                                                        |
+| ---------------------------- | ------- | ---------------------------------------------------------------------------- |
+| App launch & navigation      | ✅ Live | All tabs + stack screens verified on iOS simulator & Android                 |
+| Home Screen                  | ✅ Live | Carbon footprint card, SDG badges, ESG score, weekly trend                   |
+| Social Screen                | ✅ Live | Real-time feed, leaderboards, corporate ranking                              |
+| AI Vision Camera             | ✅ Live | SmartCameraCapture with mock ML fallback                                     |
+| Map Screen                   | ✅ Live | Eco-location markers                                                         |
+| Marketplace                  | ✅ Live | Thrift store + carbon offset projects                                        |
+| Achievements                 | ✅ Live | Badge gallery + points display                                               |
+| Profile                      | ✅ Live | Stats, badges, settings                                                      |
+| Analytics Dashboard          | ✅ Live | Weekly chart, category breakdown, goals, predictions                         |
+| Corporate Matching           | ✅ Live | Employer-sponsored carbon matching + domain verification                     |
+| Instant UPI Payouts          | ✅ Live | Cashfree Payouts integration for instant 24/7 bank & UPI transfers           |
+| Digital Vouchers             | ✅ Live | Xoxoday Plum (Giift) vouchers (Amazon Pay, Flipkart, Swiggy, Visa)           |
+| Fraud Prevention             | ✅ Live | AppCheck + per-operation scoped rate limiting                                |
+| Ad Earn/Donate               | ✅ Live | AdMob rewarded videos with server-side verification + App IDs linked         |
+| Corporate Email Verification | ✅ Live | Work email domain verification flow with SendGrid OTP delivery               |
+| Cloud Functions              | ✅ Live | 7 type-safe functions in `/functions` (0 `@ts-nocheck`, 0 build errors)      |
+| Firestore Security Rules     | ✅ Live | Production-hardened: client transaction writes disabled, wallet locked       |
+| Rules Unit Testing           | ✅ Live | 22 automated tests via Firebase emulator verifying zero tampering            |
+| Store Release Readiness      | ✅ Live | iOS Info.plist, Apple PrivacyInfo.xcprivacy, AndroidManifest permissions     |
+| GitHub Actions CI Pipeline   | ✅ Live | Ubuntu Linux PR validation (TypeScript, ESLint, 267 tests) in <2 min         |
+| Fastlane Release Automation  | ✅ Live | Local one-command deployments (`fastlane ios beta`, `fastlane android beta`) |
 
 ---
 

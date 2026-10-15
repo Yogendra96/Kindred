@@ -1,0 +1,8 @@
+# Information about your app for App Store Connect and Google Play Console
+
+app_identifier("com.kindred") # The bundle identifier of your app
+package_name("com.kindred")   # Your Android package name
+
+# Apple Developer Account (Set in environment or fastlane credentials)
+# apple_id(ENV["APPLE_ID"])
+# itc_team_id(ENV["ITC_TEAM_ID"])
