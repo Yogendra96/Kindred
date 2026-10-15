@@ -26,12 +26,14 @@ mobile experience.
 - **245 React Native tests across 15 suites**, all passing
 - **22 Firestore Security Rules unit tests** in Firebase emulator, all passing
 - **7 Firebase Cloud Functions** handling server-side logic & secure payouts
+- **Strategy 1 CI/CD**: GitHub Actions automated PR test pipeline (Ubuntu Linux) + local one-command
+  Fastlane release deployments
+- **Store Release Ready**: iOS Info.plist usage descriptions, Apple Privacy Manifest, Android 13+
+  permissions
 - **AdMob rewarded ads** with server-side verification (SSV)
 - **Cashfree Payouts integration** for 24/7 instant UPI & bank transfers (India)
 - **Xoxoday Plum integration** for 100+ country brand vouchers & gift cards
 - **Hardened Firestore Security Rules** (client write protection on wallets & transactions)
-- **Store Release Ready**: iOS Info.plist usage descriptions, Apple Privacy Manifest, Android 13+
-  permissions
 - **Corporate email verification** flow with SendGrid & domain scoring
 - **AppCheck + rate limiting** on all callable functions
 
@@ -86,9 +88,14 @@ npx eslint .               # Lint check
 npx prettier --check .     # Format check
 
 # Testing
-npx jest --no-coverage     # Run all tests (no coverage)
+npx jest --no-coverage     # Run all unit tests (245 tests)
+npm run test:rules         # Run Firestore rules tests in emulator (22 tests)
 npx jest --coverage        # Run with coverage report
 npx jest --watch           # Watch mode
+
+# Deployment (Fastlane)
+npm run fastlane:ios       # Build and deploy iOS to TestFlight
+npm run fastlane:android   # Build and deploy Android to Google Play Internal
 
 # Maintenance
 npx react-native start --reset-cache   # Start with clean cache
@@ -161,20 +168,22 @@ Redux, Redux Toolkit, and Redux Persist were removed in favor of this lighter se
 
 ### Tech Stack
 
-| Layer               | Technology                                                      |
-| ------------------- | --------------------------------------------------------------- |
-| **Framework**       | React Native 0.81.4                                             |
-| **Language**        | TypeScript 5.7.3                                                |
-| **State (Local)**   | Zustand 5                                                       |
-| **State (Server)**  | Firebase onSnapshot hooks                                       |
-| **Navigation**      | React Navigation 7.x                                            |
-| **Backend**         | Firebase Auth, Firestore, Cloud Functions                       |
-| **Security**        | Firebase AppCheck, rate limiting, Firestore Rules hardening     |
-| **Ads**             | AdMob rewarded ads with server-side verification                |
-| **Payouts**         | Cashfree Payouts (Instant UPI) & Xoxoday Plum (Global Vouchers) |
-| **Testing**         | Jest, React Testing Library                                     |
-| **Linting**         | ESLint (flat config), Prettier 3.9.5                            |
-| **Package Manager** | npm                                                             |
+| Layer                  | Technology                                                      |
+| ---------------------- | --------------------------------------------------------------- |
+| **Framework**          | React Native 0.81.4                                             |
+| **Language**           | TypeScript 5.7.3                                                |
+| **State (Local)**      | Zustand 5                                                       |
+| **State (Server)**     | Firebase onSnapshot hooks                                       |
+| **Navigation**         | React Navigation 7.x                                            |
+| **Backend**            | Firebase Auth, Firestore, Cloud Functions                       |
+| **Security**           | Firebase AppCheck, rate limiting, Firestore Rules hardening     |
+| **Ads**                | AdMob rewarded ads with server-side verification                |
+| **Payouts**            | Cashfree Payouts (Instant UPI) & Xoxoday Plum (Global Vouchers) |
+| **Testing**            | Jest, React Testing Library, Firebase Emulator Rules Suite      |
+| **CI/CD**              | GitHub Actions (Ubuntu Linux, 1x multiplier, PR validation)     |
+| **Release Automation** | Fastlane (TestFlight & Google Play Internal tracks)             |
+| **Linting**            | ESLint (flat config), Prettier 3.9.5                            |
+| **Package Manager**    | npm                                                             |
 
 ### Firebase Cloud Functions
 
@@ -213,7 +222,9 @@ KindredFixed/
 │   ├── utils/             # Utility functions
 │   ├── types/             # TypeScript definitions
 │   └── config/            # App configuration
-├── functions/             # Firebase Cloud Functions (6)
+├── functions/             # Firebase Cloud Functions (7)
+├── fastlane/              # Fastlane release automation (iOS & Android)
+├── .github/workflows/     # GitHub Actions CI pipeline
 ├── ios/                   # iOS native code
 ├── android/               # Android native code
 ├── __tests__/             # Jest tests (245 tests, 15 suites)
@@ -225,10 +236,13 @@ KindredFixed/
 ## Testing
 
 ```bash
-# Run all tests without coverage (fast)
+# Run React Native unit tests without coverage (fast)
 npx jest --no-coverage
 
-# Run with coverage
+# Run Firestore Security Rules tests in local emulator
+npm run test:rules
+
+# Run with coverage report
 npx jest --coverage
 
 # Watch mode
@@ -238,7 +252,8 @@ npx jest --watch
 npx jest --no-coverage path/to/test
 ```
 
-**Current:** 245 tests across 15 suites, all passing.
+**Current:** 267 total tests (245 React Native unit tests + 22 Firestore emulator rules tests), all
+passing.
 
 ---
 

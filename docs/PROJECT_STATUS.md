@@ -80,6 +80,7 @@ security-hardened, and tested with 100% clean builds.
 | Suite                    | Tests                | Status                       |
 | ------------------------ | -------------------- | ---------------------------- |
 | Unit & Integration Tests | 245 tests, 15 suites | ✅ 100% passing              |
+| Firestore Rules Tests    | 22 tests, 6 suites   | ✅ 100% passing (emulator)   |
 | Maestro iOS E2E Flow     | Path B user flow     | ✅ 100% passing on iPhone 17 |
 
 ---
@@ -112,6 +113,6 @@ TypeScript files: ~160
 Services: ~55 implementations
 Components: 45+ UI components
 Custom hooks: 15+
-Test suites: 15 (245 tests passing)
-Docs: ~27 markdown files
+Test suites: 21 suites (267 total tests passing)
+Docs: ~28 markdown files
 ```
