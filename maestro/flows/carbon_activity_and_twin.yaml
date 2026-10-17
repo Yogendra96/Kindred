@@ -1,0 +1,58 @@
+# Carbon Activity Logging and Digital Twin Journey Flow
+appId: org.reactjs.native.example.Kindred
+---
+- launchApp:
+    clearState: false
+
+# Dismiss initial onboarding or consent modals if present
+- runFlow:
+    when:
+      visible: "Agree & Continue"
+    commands:
+      - tapOn: "Agree & Continue"
+
+- runFlow:
+    when:
+      visible: "Keep Going 🌱"
+    commands:
+      - tapOn: "Keep Going 🌱"
+
+- extendedWaitUntil:
+    visible: "Home, tab, 1 of 6"
+    timeout: 30000
+
+# 1. Navigate to Map / Mobility Activity Tab
+- tapOn: "Map, tab, 2 of 6"
+- extendedWaitUntil:
+    visible: ".*Map.*|.*Track.*|.*Activity.*"
+    timeout: 15000
+
+# 2. Activity / Route Logging Interaction
+- runFlow:
+    when:
+      visible: ".*Start Tracking.*|.*Log Trip.*|.*Walk.*"
+    commands:
+      - tapOn: ".*Start Tracking.*|.*Log Trip.*|.*Walk.*"
+      - wait: 2000
+
+# 3. Navigate back to Home and open Carbon Twin
+- tapOn: "Home, tab, 1 of 6"
+- extendedWaitUntil:
+    visible: ".*Kindred.*"
+    timeout: 10000
+
+- swipe:
+    direction: UP
+- runFlow:
+    when:
+      visible: ".*Carbon Twin.*|.*Digital Twin.*"
+    commands:
+      - tapOn: ".*Carbon Twin.*|.*Digital Twin.*"
+      - extendedWaitUntil:
+          visible: ".*Twin.*|.*Footprint.*|.*Emissions.*"
+          timeout: 15000
+      - runFlow:
+          when:
+            visible: ".*Back.*|.*Close.*"
+          commands:
+            - tapOn: ".*Back.*|.*Close.*"

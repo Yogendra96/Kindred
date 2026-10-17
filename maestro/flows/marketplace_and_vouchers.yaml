@@ -1,0 +1,48 @@
+# Marketplace, Carbon Offsets, and Voucher Redemption Flow
+appId: org.reactjs.native.example.Kindred
+---
+- launchApp:
+    clearState: false
+
+# Dismiss initial onboarding or consent modals if present
+- runFlow:
+    when:
+      visible: "Agree & Continue"
+    commands:
+      - tapOn: "Agree & Continue"
+
+- runFlow:
+    when:
+      visible: "Keep Going 🌱"
+    commands:
+      - tapOn: "Keep Going 🌱"
+
+- extendedWaitUntil:
+    visible: "Home, tab, 1 of 6"
+    timeout: 30000
+
+# 1. Navigate to Market Tab
+- tapOn: "Market, tab, 5 of 6"
+- extendedWaitUntil:
+    visible: ".*Market.*|.*Rewards.*|.*Offset.*"
+    timeout: 15000
+
+# 2. Browse Marketplace Items & Verified Carbon Projects
+- swipe:
+    direction: UP
+- wait: 1000
+- swipe:
+    direction: DOWN
+
+# 3. Inspect Marketplace Project / Item Card
+- runFlow:
+    when:
+      visible: ".*Carbon Offset.*|.*Voucher.*|.*Tree Planting.*"
+    commands:
+      - tapOn: ".*Carbon Offset.*|.*Voucher.*|.*Tree Planting.*"
+      - wait: 1500
+      - runFlow:
+          when:
+            visible: ".*Close.*|.*Back.*|.*Cancel.*"
+          commands:
+            - tapOn: ".*Close.*|.*Back.*|.*Cancel.*"

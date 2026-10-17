@@ -1,0 +1,67 @@
+# Ad Reward, Wallet Growth, and UPI Cashout Flow
+appId: org.reactjs.native.example.Kindred
+---
+- launchApp:
+    clearState: false
+
+# Dismiss initial onboarding or consent modals if present
+- runFlow:
+    when:
+      visible: "Agree & Continue"
+    commands:
+      - tapOn: "Agree & Continue"
+
+- runFlow:
+    when:
+      visible: "Keep Going 🌱"
+    commands:
+      - tapOn: "Keep Going 🌱"
+
+- extendedWaitUntil:
+    visible: "Home, tab, 1 of 6"
+    timeout: 30000
+
+# 1. Earn Section / Ad Reward Interaction
+- tapOn: "Home, tab, 1 of 6"
+- extendedWaitUntil:
+    visible: ".*Kindred.*"
+    timeout: 10000
+
+# Look for reward trigger or ad action card
+- runFlow:
+    when:
+      visible: ".*Watch Ad.*|.*Earn.*|.*Daily Reward.*"
+    commands:
+      - tapOn: ".*Watch Ad.*|.*Earn.*|.*Daily Reward.*"
+      - wait: 2000
+
+# 2. Wallet & Financial Profile Navigation
+- tapOn: "Profile, tab, 3 of 6"
+- extendedWaitUntil:
+    visible: ".*Profile.*|.*Wallet.*"
+    timeout: 10000
+
+# Verify financial wallet balances
+- assertVisible:
+    text: ".*Balance.*|.*Earnings.*|.*Cents.*|.*₹.*"
+
+# 3. Cashout / UPI Payout Modal
+- runFlow:
+    when:
+      visible: ".*Withdraw.*|.*Cashout.*|.*Payout.*"
+    commands:
+      - tapOn: ".*Withdraw.*|.*Cashout.*|.*Payout.*"
+      - extendedWaitUntil:
+          visible: ".*UPI.*"
+          timeout: 5000
+      - runFlow:
+          when:
+            visible: ".*UPI ID.*|.*VPA.*"
+          commands:
+            - tapOn: ".*UPI ID.*|.*VPA.*"
+            - inputText: "kindred.user@okhdfcbank"
+      - runFlow:
+          when:
+            visible: ".*Cancel.*|.*Close.*"
+          commands:
+            - tapOn: ".*Cancel.*|.*Close.*"

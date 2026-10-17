@@ -185,10 +185,12 @@ suites:
     description: "Full regression test suite"
     flows:
       - "authentication"
-      - "carbon-tracking"
-      - "social-features"
-      - "achievements"
-      - "barcode-scanner"
+      - "app-launch"
+      - "ad_reward_and_wallet_cashout"
+      - "marketplace_and_vouchers"
+      - "carbon_activity_and_twin"
+      - "path_b_features"
+      - "data_connections"
 
   performance:
     description: "Performance test suite"
