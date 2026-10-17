@@ -286,13 +286,13 @@ training-data/
 *.jks
 *.keystore
 *.asc
-secrets/
-credentials/
-auth/
-certificates/
-private-keys/
-api-keys/
-service-account-keys/
+/secrets/
+/credentials/
+/auth/
+/certificates/
+/private-keys/
+/api-keys/
+/service-account-keys/
 *.service-account.json
 firebase-adminsdk-*.json
 
