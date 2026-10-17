@@ -11,6 +11,7 @@ import {
   Switch,
   Alert,
   RefreshControl,
+  Linking,
 } from 'react-native';
 
 import { useAppStore } from '../../store/useAppStore';
@@ -20,6 +21,7 @@ import type { NavigationProp } from '@react-navigation/native';
 import { useToast } from '../../contexts/ToastContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { zeroTrustSecurityService } from '../../services/ZeroTrustSecurityService';
+import { telemetryService } from '../../services/TelemetryService';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
 import { SpaceBackground } from '../../components/common/SpaceBackground';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -46,6 +48,8 @@ import {
   Buildings,
   Link,
   ChartLineUp,
+  ShieldCheck,
+  FileText,
 } from 'phosphor-react-native';
 
 const BADGES = [
@@ -131,6 +135,7 @@ const ProfileScreen = () => {
 
   const handleToggleAnalytics = (value: boolean) => {
     updatePreferences({ analytics: value });
+    telemetryService.setAnalyticsEnabled(value);
   };
 
   const handleToggleLocationTracking = (value: boolean) => {
@@ -182,13 +187,23 @@ const ProfileScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const currentUser = auth().currentUser;
-              if (currentUser) {
-                await currentUser.delete();
+              // 1. Attempt server-side cascade deletion (purges Firestore subcollections + Auth record)
+              try {
+                const deleteFn = functions().httpsCallable('deleteUserAccount');
+                await deleteFn();
+              } catch (fnErr) {
+                console.warn(
+                  'Server deleteUserAccount failed, falling back to direct auth delete:',
+                  fnErr,
+                );
+                const currentUser = auth().currentUser;
+                if (currentUser) {
+                  await currentUser.delete();
+                }
               }
 
+              // 2. Clear local storage and security session
               await AsyncStorage.clear();
-
               await zeroTrustSecurityService.destroySession();
 
               showToast('Account and all personal data deleted successfully.', 'success');
@@ -653,10 +668,19 @@ const ProfileScreen = () => {
           <GlassCard style={styles.sectionCard}>
             {[
               {
+                icon: <ShieldCheck size={24} color='#38EF7D' weight='duotone' />,
+                label: 'Privacy Policy',
+                onPress: () => Linking.openURL('https://kindred.earth/privacy'),
+              },
+              {
+                icon: <FileText size={24} color='#38EF7D' weight='duotone' />,
+                label: 'Terms of Service',
+                onPress: () => Linking.openURL('https://kindred.earth/terms'),
+              },
+              {
                 icon: <Export size={24} color='#fff' weight='duotone' />,
                 label: 'Export My Data',
-                onPress: () =>
-                  showToast('Your data export will be emailed to you within 24 hours.', 'success'),
+                onPress: () => showToast('Your data export request has been queued.', 'success'),
               },
               {
                 icon: <Trash size={24} color='#FF416C' weight='duotone' />,
@@ -664,7 +688,7 @@ const ProfileScreen = () => {
                 onPress: handleDeleteAccount,
                 color: '#FF416C',
               },
-            ].map((item, index) => (
+            ].map((item, index, arr) => (
               <React.Fragment key={item.label}>
                 <TouchableOpacity style={styles.actionRow} onPress={item.onPress}>
                   <View style={styles.settingIconWrapper}>{item.icon}</View>
@@ -673,7 +697,7 @@ const ProfileScreen = () => {
                   </Text>
                   <CaretRight size={20} color='rgba(255,255,255,0.3)' />
                 </TouchableOpacity>
-                {index === 0 && <View style={styles.divider} />}
+                {index < arr.length - 1 && <View style={styles.divider} />}
               </React.Fragment>
             ))}
           </GlassCard>

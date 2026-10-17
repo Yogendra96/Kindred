@@ -12,6 +12,7 @@ import * as Sentry from '@sentry/react-native';
 import PostHog from 'posthog-react-native';
 import Config from 'react-native-config';
 import logger from './LoggerService';
+import { useAppStore } from '../store/useAppStore';
 
 const log = logger.withTag('TelemetryService');
 
@@ -28,6 +29,7 @@ export class TelemetryService {
   private static instance: TelemetryService | null = null;
   private posthog: PostHog | null = null;
   private isInitialized = false;
+  private isAnalyticsEnabled = true;
 
   private readonly posthogApiKey: string;
   private readonly posthogHost: string;
@@ -64,6 +66,20 @@ export class TelemetryService {
         persistence: 'file',
         enablePersistSessionIdAcrossRestart: true,
       });
+
+      // Sync initial analytics preference from store if available
+      try {
+        const storedPref = useAppStore.getState?.()?.preferences?.analytics;
+        if (typeof storedPref === 'boolean') {
+          this.isAnalyticsEnabled = storedPref;
+        }
+      } catch {
+        // Safe fallback if called prior to store hydration
+      }
+
+      if (!this.isAnalyticsEnabled) {
+        this.posthog.optOut();
+      }
 
       // 2. Initialize Sentry (if valid DSN provided)
       const hasValidSentryDsn =
@@ -137,11 +153,38 @@ export class TelemetryService {
   }
 
   /**
+   * Sets the analytics opt-in / opt-out state.
+   * When disabled, PostHog opts out and tracking/screen events are suppressed.
+   */
+  public setAnalyticsEnabled(enabled: boolean): void {
+    this.isAnalyticsEnabled = enabled;
+    try {
+      if (this.posthog) {
+        if (enabled) {
+          this.posthog.optIn();
+        } else {
+          this.posthog.optOut();
+        }
+      }
+      log.info(`Telemetry analytics ${enabled ? 'enabled' : 'disabled (opted out)'}`);
+    } catch (error) {
+      log.warn('Failed to update analytics opt-in state', error);
+    }
+  }
+
+  /**
+   * Returns whether telemetry analytics tracking is currently enabled.
+   */
+  public getAnalyticsEnabled(): boolean {
+    return this.isAnalyticsEnabled;
+  }
+
+  /**
    * Identifies user across both PostHog and Sentry
    */
   public identify(userId: string, traits?: UserTraits): void {
     try {
-      if (this.posthog) {
+      if (this.posthog && this.isAnalyticsEnabled) {
         this.posthog.identify(userId, traits);
       }
 
@@ -152,7 +195,9 @@ export class TelemetryService {
         ...traits,
       });
 
-      Sentry.setTag('posthog_distinct_id', userId);
+      if (this.isAnalyticsEnabled) {
+        Sentry.setTag('posthog_distinct_id', userId);
+      }
       log.debug(`User identified for telemetry: ${userId}`);
     } catch (error) {
       log.warn('Failed to identify user in telemetry', error);
@@ -177,9 +222,13 @@ export class TelemetryService {
   /**
    * Tracks a custom action or business event in PostHog
    * and leaves a breadcrumb in Sentry.
+   * Suppressed if user has opted out of analytics.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public track(event: string, properties?: Record<string, any>): void {
+    if (!this.isAnalyticsEnabled) {
+      return;
+    }
     try {
       if (this.posthog) {
         this.posthog.capture(event, properties);
@@ -197,10 +246,14 @@ export class TelemetryService {
   }
 
   /**
-   * Tracks a screen navigation in PostHog and records a Sentry breadcrumb
+   * Tracks a screen navigation in PostHog and records a Sentry breadcrumb.
+   * Suppressed if user has opted out of analytics.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public screen(screenName: string, properties?: Record<string, any>): void {
+    if (!this.isAnalyticsEnabled) {
+      return;
+    }
     try {
       if (this.posthog) {
         this.posthog.screen(screenName, properties);

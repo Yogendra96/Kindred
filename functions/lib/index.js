@@ -57,7 +57,9 @@ var __importDefault =
     return mod && mod.__esModule ? mod : { default: mod };
   };
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.redeemGiftCard =
+exports.deleteUserAccount =
+  exports.onUserDeleted =
+  exports.redeemGiftCard =
   exports.redeemVoucher =
   exports.payoutToUPI =
   exports.onAdRewardVerified =
@@ -546,5 +548,21 @@ exports.redeemGiftCard = functions.https.onCall(async (data, context) => {
   };
   // Execute internal voucher redemption directly
   return exports.redeemVoucher.run(payload, fakeReq);
+});
+// -------------------------------------------------------------------------- //
+// 5. Account Deletion & Right to Erasure (GDPR / Apple Guideline 5.1.1(v))
+// -------------------------------------------------------------------------- //
+var accountDeletion_1 = require('./accountDeletion');
+Object.defineProperty(exports, 'onUserDeleted', {
+  enumerable: true,
+  get: function () {
+    return accountDeletion_1.onUserDeleted;
+  },
+});
+Object.defineProperty(exports, 'deleteUserAccount', {
+  enumerable: true,
+  get: function () {
+    return accountDeletion_1.deleteUserAccount;
+  },
 });
 //# sourceMappingURL=index.js.map

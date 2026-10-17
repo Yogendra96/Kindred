@@ -34,8 +34,10 @@ Both platform manifests are configured with user-facing purpose strings and scop
 
 Located at: `ios/Kindred/PrivacyInfo.xcprivacy`
 
-Apple requires privacy manifests for third-party SDKs and apps accessing designated APIs. Kindred
-declares:
+Apple requires privacy manifests for third-party SDKs and apps accessing designated APIs and
+collecting user data. Kindred declares:
+
+### Designated API Access:
 
 - **`NSPrivacyAccessedAPICategoryFileTimestamp`** (Reasons `C617.1`, `0A2A.1`, `3B52.1`): Local
   bundle file management.
@@ -45,6 +47,35 @@ declares:
   cache evictions.
 - **`NSPrivacyAccessedAPICategorySystemBootTime`** (Reason `35F9.1`): Performance telemetry and
   timestamp calculations.
+
+### Collected Data Types (`NSPrivacyCollectedDataTypes`):
+
+- **`NSPrivacyCollectedDataTypePreciseLocation`**: App Functionality (Impact Map, Eco-places),
+  Linked to user.
+- **`NSPrivacyCollectedDataTypeUserID`**: App Functionality, Analytics, Linked to user.
+- **`NSPrivacyCollectedDataTypeEmailAddress`**: App Functionality (Account & OTP), Linked to user.
+- **`NSPrivacyCollectedDataTypeProductInteraction`**: Analytics (PostHog telemetry), Linked to user.
+  Gated by user opt-out toggle.
+- **`NSPrivacyCollectedDataTypeCrashData` & `NSPrivacyCollectedDataTypePerformanceData`**: App
+  Functionality / Diagnostics (Sentry, Crashlytics), Not linked to user.
+- **`NSPrivacyCollectedDataTypeDeviceID`**: Third-Party Advertising & Analytics (AdMob IDFA),
+  Linked, Tracking: `true`.
+
+### Tracking & ATT Transparency:
+
+- **`NSPrivacyTracking`**: Set to `<true/>` to align with `NSUserTrackingUsageDescription` and AdMob
+  personalized rewarded ads.
+- **`NSPrivacyTrackingDomains`**: Discloses `googleads.g.doubleclick.net`,
+  `pubads.g.doubleclick.net`, and `pagead2.googlesyndication.com`.
+
+### Account Deletion & Right to Erasure (App Store Guideline 5.1.1(v) & GDPR Art. 17):
+
+- **Cloud Function Cascade**: Server-side callable `deleteUserAccount` and Auth trigger
+  `onUserDeleted` purge `/users/{uid}`, all subcollections (`activities`, `transactions`,
+  `offsets`), plus auxiliary documents in `emailVerifications` and `_rateLimits`.
+- **Client In-App Flow**: Accessible directly in `ProfileScreen` with immediate confirmation dialog,
+  local cache eviction (`AsyncStorage.clear()`), zero-trust session termination, and live links to
+  Privacy Policy and Terms of Service.
 
 ---
 

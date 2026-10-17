@@ -117,4 +117,50 @@ describe('TelemetryService', () => {
       }),
     );
   });
+
+  it('respects analytics opt-out and suppresses tracking and screen breadcrumbs', () => {
+    const posthog = telemetry.getPostHogClient();
+    telemetry.setAnalyticsEnabled(false);
+
+    expect(telemetry.getAnalyticsEnabled()).toBe(false);
+    expect(posthog.optOut).toHaveBeenCalled();
+
+    telemetry.track('should_not_track_event', { key: 'value' });
+    expect(posthog.capture).not.toHaveBeenCalledWith('should_not_track_event', expect.anything());
+    expect(Sentry.addBreadcrumb).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'should_not_track_event',
+      }),
+    );
+
+    telemetry.screen('HiddenScreen');
+    expect(posthog.screen).not.toHaveBeenCalledWith('HiddenScreen', expect.anything());
+    expect(Sentry.addBreadcrumb).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Navigated to HiddenScreen',
+      }),
+    );
+  });
+
+  it('re-enables tracking when analytics opt-in is restored', () => {
+    const posthog = telemetry.getPostHogClient();
+    telemetry.setAnalyticsEnabled(false);
+    telemetry.setAnalyticsEnabled(true);
+
+    expect(telemetry.getAnalyticsEnabled()).toBe(true);
+    expect(posthog.optIn).toHaveBeenCalled();
+
+    telemetry.track('resumed_event', { key: 'value' });
+    expect(posthog.capture).toHaveBeenCalledWith('resumed_event', { key: 'value' });
+  });
+
+  it('suppresses PostHog user identification when opted out', () => {
+    const posthog = telemetry.getPostHogClient();
+    telemetry.setAnalyticsEnabled(false);
+
+    telemetry.identify('opted_out_user', { email: 'private@test.com' });
+    expect(posthog.identify).not.toHaveBeenCalledWith('opted_out_user', expect.anything());
+    expect(Sentry.setUser).toHaveBeenCalledWith(expect.objectContaining({ id: 'opted_out_user' }));
+    expect(Sentry.setTag).not.toHaveBeenCalledWith('posthog_distinct_id', 'opted_out_user');
+  });
 });

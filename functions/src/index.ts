@@ -558,3 +558,8 @@ export const redeemGiftCard = functions.https.onCall(async (data, context) => {
   // Execute internal voucher redemption directly
   return redeemVoucher.run(payload, fakeReq as any);
 });
+
+// -------------------------------------------------------------------------- //
+// 5. Account Deletion & Right to Erasure (GDPR / Apple Guideline 5.1.1(v))
+// -------------------------------------------------------------------------- //
+export { onUserDeleted, deleteUserAccount } from './accountDeletion';

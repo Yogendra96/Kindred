@@ -81,16 +81,22 @@ security-hardened, and tested with 100% clean builds.
 
 ## Test Coverage
 
-| Suite                    | Tests                | Status                       |
-| ------------------------ | -------------------- | ---------------------------- |
-| Unit & Integration Tests | 252 tests, 16 suites | ✅ 100% passing              |
-| Firestore Rules Tests    | 22 tests, 6 suites   | ✅ 100% passing (emulator)   |
-| Maestro iOS E2E Flow     | Path B user flow     | ✅ 100% passing on iPhone 17 |
+| Suite                           | Tests                | Status                       |
+| ------------------------------- | -------------------- | ---------------------------- |
+| Unit & Integration Tests        | 255 tests, 16 suites | ✅ 100% passing              |
+| Firestore Rules & Cascade Tests | 23 tests, 7 suites   | ✅ 100% passing (emulator)   |
+| Maestro iOS E2E Flow            | Path B user flow     | ✅ 100% passing on iPhone 17 |
 
 ---
 
 ## Key Features Delivered
 
+- **Account Deletion & Data Cascade** — Complete GDPR Art. 17 & Apple 5.1.1(v) cascade erasure via
+  Cloud Function & Auth trigger
+- **Apple Privacy Manifest (`PrivacyInfo.xcprivacy`)** — Full declarations of collected data types,
+  tracking domains, and accessed APIs
+- **Telemetry Opt-Out Gating** — User preference controls suppressing PostHog capture and Sentry
+  user action breadcrumbs
 - **Cashfree UPI Instant Payouts** — Direct 24/7 withdrawals to any UPI ID (`username@bank`) in
   India
 - **Xoxoday Plum Rewards** — Instant digital vouchers for Amazon India, Flipkart, Swiggy, and Global
