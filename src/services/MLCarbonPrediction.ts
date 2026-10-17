@@ -1,6 +1,5 @@
-// @ts-nocheck
 /* eslint-disable */
-import loggingService from './/LoggerService';
+import loggingService from './LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
@@ -100,7 +99,7 @@ class MLCarbonPredictionService {
   private model: tf.LayersModel | null = null;
   private isModelLoaded = false;
   private modelVersion = '1.0.0';
-  private logger = loggingService;
+  private logger = loggingService.withTag('MLCarbonPrediction');
   private trainingData: UserBehaviorData[] = [];
   private modelMetrics: ModelMetrics | null = null;
 
@@ -148,7 +147,9 @@ class MLCarbonPredictionService {
         await this.createNewModel();
       }
     } catch (error) {
-      this.logger.error('Error loading model', { error: error.message });
+      this.logger.error('Error loading model', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       await this.createNewModel();
     }
   }
@@ -198,7 +199,9 @@ class MLCarbonPredictionService {
         await this.trainModel();
       }
     } catch (error) {
-      this.logger.error('Error creating model', { error: error.message });
+      this.logger.error('Error creating model', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -279,8 +282,8 @@ class MLCarbonPredictionService {
       throw new Error('Model not loaded');
     }
 
+    const startTime = Date.now();
     try {
-      const startTime = Date.now();
       this.logger.debug('Starting ML carbon prediction');
 
       // Preprocess input data
@@ -334,7 +337,7 @@ class MLCarbonPredictionService {
       };
     } catch (error) {
       this.logger.error('ML carbon prediction failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         duration: Date.now() - startTime,
       });
       throw error;
@@ -545,7 +548,9 @@ class MLCarbonPredictionService {
         await this.trainModel();
       }
     } catch (error) {
-      this.logger.error('Error adding training data', { error: error.message });
+      this.logger.error('Error adding training data', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -557,7 +562,7 @@ class MLCarbonPredictionService {
       }
     } catch (error) {
       this.logger.error('Error loading training data', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -567,8 +572,8 @@ class MLCarbonPredictionService {
       return;
     }
 
+    const trainingStartTime = Date.now();
     try {
-      const trainingStartTime = Date.now();
       this.logger.info('Starting ML model training', {
         dataSize: this.trainingData.length,
       });
@@ -598,12 +603,13 @@ class MLCarbonPredictionService {
       });
 
       // Update model metrics
+      const lastValMae = history.history.val_mae?.[history.history.val_mae.length - 1];
+      const lastValLoss = history.history.val_loss?.[history.history.val_loss.length - 1];
+
       this.modelMetrics = {
         accuracy: 0.85, // Calculate from validation
-        meanAbsoluteError: history.history.val_mae?.[history.history.val_mae.length - 1] || 0,
-        rootMeanSquareError: Math.sqrt(
-          history.history.val_loss?.[history.history.val_loss.length - 1] || 0,
-        ),
+        meanAbsoluteError: typeof lastValMae === 'number' ? lastValMae : 0,
+        rootMeanSquareError: Math.sqrt(typeof lastValLoss === 'number' ? lastValLoss : 0),
         r2Score: 0.8, // Calculate R² score
         lastTrainingDate: new Date().toISOString(),
         trainingDataSize: this.trainingData.length,
@@ -619,12 +625,12 @@ class MLCarbonPredictionService {
 
       this.logger.info('Model training completed successfully', {
         trainingDataSize: this.trainingData.length,
-        finalLoss: history.history.loss?.[history.history.loss.length - 1] || 0,
+        finalLoss: Number(history.history.loss?.[history.history.loss.length - 1] ?? 0),
         duration: Date.now() - trainingStartTime,
       });
     } catch (error) {
       this.logger.error('Error training model', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         duration: Date.now() - trainingStartTime,
       });
     }
@@ -648,13 +654,17 @@ class MLCarbonPredictionService {
       const modelData = await this.model.save(
         tf.io.withSaveHandler(async artifacts => {
           await AsyncStorage.setItem('carbon_prediction_model', JSON.stringify(artifacts));
-          return { modelArtifactsInfo: { dateSaved: new Date() } };
+          return {
+            modelArtifactsInfo: { dateSaved: new Date(), modelTopologyType: 'JSON' as const },
+          };
         }),
       );
 
       this.logger.info('Model saved successfully');
     } catch (error) {
-      this.logger.error('Error saving model', { error: error.message });
+      this.logger.error('Error saving model', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -664,7 +674,7 @@ class MLCarbonPredictionService {
       return data ? JSON.parse(data) : [];
     } catch (error) {
       this.logger.error('Error getting historical data', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId,
       });
       return [];
@@ -682,7 +692,9 @@ class MLCarbonPredictionService {
 
     const modelData = await this.model.save(
       tf.io.withSaveHandler(async artifacts => {
-        return { modelArtifactsInfo: { dateSaved: new Date() } };
+        return {
+          modelArtifactsInfo: { dateSaved: new Date(), modelTopologyType: 'JSON' as const },
+        };
       }),
     );
 

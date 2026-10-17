@@ -9,7 +9,13 @@ export interface UserPreferences {
   pushEnabled: boolean;
   emailEnabled: boolean;
   weeklyReports: boolean;
+  weeklyReport?: boolean;
   consentAccepted: boolean;
+  privateProfile?: boolean;
+  analytics?: boolean;
+  locationTracking?: boolean;
+  ecoChargingScreen?: boolean;
+  units?: 'metric' | 'imperial';
 }
 
 interface AppState {

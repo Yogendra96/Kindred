@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * @fileoverview Carbon Service - Main Orchestrator
@@ -284,7 +283,7 @@ export class CarbonService {
     // Check API adapter health
     const apiHealth = await this.apiAdapter.healthCheck();
     const apiStatuses = Object.values(apiHealth).map(h => h.status);
-    const apiOverallStatus = apiStatuses.includes('healthy')
+    const apiOverallStatus: 'healthy' | 'degraded' | 'unhealthy' = apiStatuses.includes('healthy')
       ? 'healthy'
       : apiStatuses.includes('degraded')
         ? 'degraded'
@@ -323,7 +322,7 @@ export class CarbonService {
    * Get service statistics
    */
   getStats(): {
-    calculations: typeof this.metrics;
+    calculations: CarbonService['metrics'];
     cache: ReturnType<CarbonCacheManager['getStats']>;
   } {
     return {
@@ -408,5 +407,4 @@ export type {
   CarbonCalculationResponse,
   CarbonEmissionCalculation,
   CarbonEmissionFactor,
-  ServiceHealthCheck,
 };

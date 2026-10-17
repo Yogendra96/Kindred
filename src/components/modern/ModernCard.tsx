@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable */
 /**
  * 🎨 Modern Card Component
  * Ultra-sophisticated card with micro-interactions, gestures, and adaptive layouts
@@ -8,21 +6,19 @@
 
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
   PanGestureHandler,
   TapGestureHandler,
   LongPressGestureHandler,
   State as GestureState,
-  Dimensions,
-} from 'react-native';
+} from 'react-native-gesture-handler';
 import type { Theme } from '../../design-system/ModernDesignSystem';
 import { ModernDesignSystem } from '../../design-system/ModernDesignSystem';
-import { hapticFeedbackService } from '../../services/HapticFeedbackService';
+import { getHapticFeedbackService } from '../../services/HapticFeedbackService';
 import analyticsService from '../../services/AnalyticsService';
+
+const hapticFeedbackService = getHapticFeedbackService();
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -94,11 +90,11 @@ interface CardAction {
 
 // Card Gesture Manager
 class CardGestureManager {
-  private panX = new Animated.Value(0);
-  private panY = new Animated.Value(0);
-  private scale = new Animated.Value(1);
-  private rotation = new Animated.Value(0);
-  private opacity = new Animated.Value(1);
+  public panX = new Animated.Value(0);
+  public panY = new Animated.Value(0);
+  public scale = new Animated.Value(1);
+  public rotation = new Animated.Value(0);
+  public opacity = new Animated.Value(1);
 
   constructor(private onGesture?: (gesture: string, data: any) => void) {}
 

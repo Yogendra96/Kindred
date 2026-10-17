@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * @fileoverview Carbon API Adapter Service
@@ -135,15 +134,11 @@ export class CarbonAPIAdapter {
           return result;
         }
       } catch (error) {
-        this.logger.error(
-          `API call failed with ${provider.name}`,
-          {
-            requestId,
-            provider: provider.name,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          },
-          error as Error,
-        );
+        this.logger.error(`API call failed with ${provider.name}`, {
+          requestId,
+          provider: provider.name,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
 
         // Continue to next provider
         continue;
@@ -531,7 +526,7 @@ export class CarbonAPIAdapter {
     // Request interceptor
     api.interceptors.request.use(
       config => {
-        config.metadata = {
+        (config as any).metadata = {
           requestId: this.generateRequestId(),
           startTime: Date.now(),
           provider: providerName,
@@ -544,7 +539,8 @@ export class CarbonAPIAdapter {
     // Response interceptor
     api.interceptors.response.use(
       response => {
-        const duration = Date.now() - response.config.metadata.startTime;
+        const startTime = (response.config as any).metadata?.startTime ?? Date.now();
+        const duration = Date.now() - startTime;
         this.updateRateLimit(providerName, response);
         return response;
       },

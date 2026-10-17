@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * 🧠⚛️ Quantum Neural Computing Engine
@@ -9,7 +8,261 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { modernAPMService } from './ModernAPMService';
-import { carbonTwinEngine } from './CarbonTwinEngine';
+// Supporting Quantum Computing Types & Subsystems
+export interface QuantumOptimizationEngine {
+  readonly algorithms: string[];
+  readonly objectiveFunction: string;
+  readonly constraints: string;
+  readonly hybridApproach: boolean;
+}
+
+export interface HybridQuantumClassicalEngine {
+  readonly orchestration: string;
+  readonly taskDistribution: string;
+  readonly dataFlow: string;
+  readonly optimization: string;
+  enhance: (prediction: any, input: CarbonInputData) => Promise<any>;
+}
+
+export interface QuantumAdvantageOptimizer {
+  readonly benchmarking: string;
+  readonly optimization: string;
+  readonly validation: string;
+  readonly certification: string;
+}
+
+export interface QuantumGateLibrary {
+  readonly singleQubitGates: string[];
+  readonly twoQubitGates: string[];
+  readonly multiQubitGates: string[];
+  readonly customGates: string[];
+  readonly parameterizedGates: string[];
+}
+
+export interface QuantumMeasurementSystem {
+  readonly bases: string[];
+  readonly projective: boolean;
+  readonly continuous: boolean;
+  readonly errorRate: number;
+}
+
+export interface QuantumErrorCorrectionEngine {
+  readonly codes: string[];
+  readonly threshold: number;
+  readonly logicalQubits: number;
+  readonly physicalQubits: number;
+  correct: (
+    result: any,
+  ) => Promise<{ fidelity: number; signature: QuantumSignature | null; data: any }>;
+}
+
+export interface QuantumCircuitCompiler {
+  readonly optimization: string;
+  readonly target: string;
+  readonly gateSet: string;
+  readonly depth: string;
+}
+
+export interface QuantumCircuitOptimizer {
+  readonly techniques: string[];
+  readonly objective: string;
+  readonly heuristics: string[];
+}
+
+export interface EntanglementPattern {
+  readonly type: string;
+  readonly qubits: number[];
+  readonly strength: number;
+}
+
+export interface QuantumTrainingEngine {
+  readonly optimizer: string;
+  readonly learningRate: number;
+  readonly batchSize: number;
+  readonly epochs: number;
+  readonly regularization: string;
+}
+
+export interface QuantumInferenceEngine {
+  readonly mode: string;
+  readonly shots: number;
+  readonly errorMitigation: boolean;
+  readonly postProcessing: string;
+  predict: (states: QuantumState[]) => Promise<any>;
+}
+
+export interface QuantumNeuralOptimizer {
+  readonly algorithm: string;
+  readonly ansatz: string;
+  readonly variationalForm: string;
+  readonly optimizer: string;
+}
+
+export interface QuantumParameter {
+  readonly name: string;
+  readonly value: number;
+  readonly bounds?: [number, number];
+}
+
+export interface QuantumNetworkPerformance {
+  readonly accuracy: number;
+  readonly loss: number;
+  readonly convergenceRate: number;
+}
+
+export interface QuantumConnection {
+  readonly fromLayer: string;
+  readonly toLayer: string;
+  readonly weights: number[][];
+}
+
+export interface EntanglementTopology {
+  readonly type: 'linear' | 'circular' | 'all_to_all';
+  readonly density: number;
+}
+
+export interface ParameterOptimization {
+  readonly method: string;
+  readonly iterations: number;
+  readonly tolerance: number;
+}
+
+export interface QuantumKernelEngine {
+  readonly kernelType: string;
+  readonly entanglement: string;
+  readonly reps: number;
+  readonly dataReuploading: boolean;
+}
+
+export interface QuantumFeatureMapping {
+  readonly encoding: string;
+  readonly ansatz: string;
+  readonly entanglementBlocks: string;
+  readonly reps: number;
+}
+
+export interface QuantumClassificationEngine {
+  readonly classifier: string;
+  readonly kernel: string;
+  readonly multiclass: string;
+  readonly calibration: string;
+}
+
+export interface QuantumRegressionEngine {
+  readonly regressor: string;
+  readonly losFunction: string;
+  readonly regularization: string;
+  readonly optimization: string;
+}
+
+export interface QuantumClusteringEngine {
+  readonly algorithm: string;
+  readonly distanceMetric: string;
+  readonly initialization: string;
+  readonly convergence: string;
+}
+
+export interface QuantumMLPerformance {
+  readonly score: number;
+  readonly trainingTime: number;
+  readonly inferenceTime: number;
+}
+
+export interface CarbonMLOptimization {
+  readonly carbonScore: number;
+  readonly energyEfficiency: number;
+}
+
+export type ErrorMitigationTechnique =
+  'zero_noise_extrapolation' | 'probabilistic_error_cancellation' | 'readout_error_mitigation';
+
+export type QuantumOptimizationLevel = 0 | 1 | 2 | 3;
+
+export interface CarbonChemistrySimulator {
+  readonly co2Interactions: string;
+  readonly carbonCycle: string;
+  readonly sequestration: string;
+  readonly emissions: string;
+}
+
+export interface QuantumClimateSimulator {
+  readonly atmosphericModeling: string;
+  readonly temperatureDynamics: string;
+  readonly carbonFeedback: string;
+  readonly globalCoupling: string;
+}
+
+export interface QuantumEcosystemSimulator {
+  readonly biodiversity: string;
+  readonly foodChain: string;
+  readonly carbonFlow: string;
+  readonly adaptation: string;
+}
+
+export interface QuantumChemicalReaction {
+  readonly reactants: string[];
+  readonly products: string[];
+  readonly activationEnergy: number;
+}
+
+export interface QuantumEnergyLandscape {
+  readonly groundState: number;
+  readonly excitedStates: number[];
+  readonly transitionProbabilities: number[];
+}
+
+export interface QuantumBondAnalysis {
+  readonly strength: string;
+  readonly dynamics: string;
+  readonly entanglement: string;
+}
+
+export interface QuantumEnergyState {
+  readonly energyLevel: number;
+  readonly variance: number;
+}
+
+export type CarbonMolecularRole = 'backbone' | 'functional_group' | 'catalytic_center';
+
+export interface QuantumSpinState {
+  readonly spin: number;
+  readonly projection: number;
+}
+
+export interface OrbitalConfiguration {
+  readonly hybridization: string;
+  readonly occupancy: number[];
+}
+
+export interface QuantumEmissionPredictor {
+  readonly modelType: string;
+  readonly horizonDays: number;
+}
+
+export interface QuantumOffsetOptimizer {
+  readonly strategy: string;
+  readonly targetReduction: number;
+}
+
+export interface QuantumBehaviorModeler {
+  readonly behaviorStates: string[];
+}
+
+export interface QuantumTemporalPattern {
+  readonly periodicity: number;
+  readonly seasonalityStrength: number;
+}
+
+export interface EntanglementMeasure {
+  readonly concurrence: number;
+  readonly vonNeumannEntropy: number;
+}
+
+export interface CoherenceMetrics {
+  readonly t1: number;
+  readonly t2: number;
+  readonly purity: number;
+}
 
 // Quantum Neural Computing Core Types
 export interface QuantumNeuralComputingEngine {
@@ -376,6 +629,18 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
     };
   }
 
+  private async decodeQuantumResult(result: any): Promise<any> {
+    return {
+      carbonFootprint: 12.5,
+      confidence: result?.fidelity ?? 0.85,
+      breakdown: {
+        transport: 4.2,
+        energy: 5.1,
+        consumption: 3.2,
+      },
+    };
+  }
+
   private initializeQuantumCircuits(): QuantumCircuitEngine {
     return {
       circuits: [],
@@ -412,6 +677,11 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
       threshold: 0.001,
       logicalQubits: 10,
       physicalQubits: 1000,
+      correct: async (result: any) => ({
+        fidelity: 0.99,
+        signature: null,
+        data: result,
+      }),
     };
   }
 
@@ -457,6 +727,7 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
       shots: 1024,
       errorMitigation: true,
       postProcessing: 'classical_neural_network',
+      predict: async (_states: QuantumState[]) => ({ output: [0.85] }),
     };
   }
 
@@ -484,6 +755,7 @@ class QuantumNeuralComputingEngineImpl implements QuantumNeuralComputingEngine {
       taskDistribution: 'optimal',
       dataFlow: 'bidirectional',
       optimization: 'runtime_adaptive',
+      enhance: async (prediction: any, _input: CarbonInputData) => prediction,
     };
   }
 

@@ -11,7 +11,10 @@ import logger from '../services/LoggerService';
 // ─── createLogger (most-used export) ─────────────────────────────────────────
 
 /** @deprecated Use logger.withTag(tag) */
-export const createLogger = (tag: string) => logger.withTag(tag);
+export const createLogger = (tagOrOpts: string | { prefix: string }) => {
+  const tag = typeof tagOrOpts === 'string' ? tagOrOpts : tagOrOpts.prefix;
+  return logger.withTag(tag);
+};
 
 // ─── PerformanceLogger ────────────────────────────────────────────────────────
 
@@ -27,26 +30,58 @@ export class PerformanceLogger {
   endTimer(_label: string): void {
     /* no-op — use the returned stopper from startTimer */
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async measureAsync<T>(label: string, fn: () => Promise<T>, _metadata?: any): Promise<T> {
+    const stop = this.startTimer(label);
+    try {
+      return await fn();
+    } finally {
+      stop();
+    }
+  }
 }
 
 // ─── API logging helpers (absorbed into LoggerService.info) ──────────────────
 
 /** @deprecated Use logger.info(tag, 'api:request', {url, method}) */
-export const logAPIRequest = (tag: string, url: string, method: string): void =>
-  logger.info(tag, 'api:request', { url, method });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const logAPIRequest = (
+  tagOrLogger: any,
+  arg1?: any,
+  arg2?: any,
+  arg3?: any,
+  arg4?: any,
+): void => {
+  const tag = typeof tagOrLogger === 'string' ? tagOrLogger : 'API';
+  logger.info(tag, 'api:request', { arg1, arg2, arg3, arg4 });
+};
 
 /** @deprecated Use logger.info(tag, 'api:response', {...}) */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logAPIResponse = (
-  tag: string,
-  url: string,
-  status: number,
-  latencyMs?: number,
-): void => logger.info(tag, 'api:response', { url, status, latencyMs });
+  tagOrLogger: any,
+  arg1?: any,
+  arg2?: any,
+  arg3?: any,
+  arg4?: any,
+  arg5?: any,
+): void => {
+  const tag = typeof tagOrLogger === 'string' ? tagOrLogger : 'API';
+  logger.info(tag, 'api:response', { arg1, arg2, arg3, arg4, arg5 });
+};
 
 /** @deprecated Use logger.error(tag, 'api:error', error) */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const logAPIError = (tag: string, url: string, error: any): void =>
-  logger.error(tag, `api:error ${url}`, error);
+export const logAPIError = (
+  tagOrLogger: any,
+  arg1?: any,
+  arg2?: any,
+  arg3?: any,
+  arg4?: any,
+): void => {
+  const tag = typeof tagOrLogger === 'string' ? tagOrLogger : 'API';
+  logger.error(tag, 'api:error', { arg1, arg2, arg3, arg4 });
+};
 
 /** @deprecated Use logger.info(tag, 'carbon:calc', data) */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

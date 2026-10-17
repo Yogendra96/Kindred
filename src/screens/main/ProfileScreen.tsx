@@ -1,4 +1,3 @@
-// @ts-nocheck
 import auth from '@react-native-firebase/auth';
 import functions from '@react-native-firebase/functions';
 
@@ -110,20 +109,20 @@ const ProfileScreen = () => {
   const settings = useAppStore(state => state.preferences);
 
   const notifications = preferences?.notifications ?? true;
-  const weeklyReport = preferences?.weeklyReport ?? true;
+  const weeklyReport = preferences?.weeklyReports ?? preferences?.weeklyReport ?? true;
   const privateProfile = preferences?.privateProfile ?? false;
   const analytics = preferences?.analytics ?? true;
   const locationTracking = preferences?.locationTracking ?? true;
-  const darkMode = (preferences as any)?.app?.theme || 'dark' === 'dark';
-  const metricUnits = (preferences as any)?.app?.units || 'metric' === 'metric';
-  const ecoChargingEnabled = settings?.app?.ecoChargingScreen ?? false;
+  const darkMode = (preferences?.theme ?? 'dark') === 'dark';
+  const metricUnits = (preferences?.units ?? 'metric') === 'metric';
+  const ecoChargingEnabled = settings?.ecoChargingScreen ?? false;
 
   const handleToggleNotifications = (value: boolean) => {
     updatePreferences({ notifications: value });
   };
 
   const handleToggleWeeklyReport = (value: boolean) => {
-    updatePreferences({ weeklyReport: value });
+    updatePreferences({ weeklyReports: value, weeklyReport: value });
   };
 
   const handleTogglePrivateProfile = (value: boolean) => {
@@ -139,17 +138,17 @@ const ProfileScreen = () => {
   };
 
   const handleToggleDarkMode = (value: boolean) => {
-    updatePreferences({ app: { ...(preferences as any)?.app, theme: value ? 'dark' : 'light' } });
+    updatePreferences({ theme: value ? 'dark' : 'light' });
   };
 
   const handleToggleMetricUnits = (value: boolean) => {
     updatePreferences({
-      app: { ...(preferences as any)?.app, units: value ? 'metric' : 'imperial' },
+      units: value ? 'metric' : 'imperial',
     });
   };
 
   const handleToggleEcoChargingScreen = (value: boolean) => {
-    updatePreferences({ app: { ...(preferences as any)?.app, ecoChargingScreen: value } });
+    updatePreferences({ ecoChargingScreen: value });
     if (value) {
       showToast('⚡ Eco Charging Screen enabled! Preview it below.', 'success');
     }
@@ -263,9 +262,13 @@ const ProfileScreen = () => {
                               const verifyCode = functions().httpsCallable('verifyWorkEmailCode');
                               const result = await verifyCode({ code });
 
-                              if (result.data.success) {
+                              const responseData = result.data as {
+                                success?: boolean;
+                                companyName?: string;
+                              };
+                              if (responseData.success) {
                                 showToast(
-                                  `Successfully verified! Linked to ${result.data.companyName}`,
+                                  `Successfully verified! Linked to ${responseData.companyName || 'Corporate Program'}`,
                                   'success',
                                 );
                               }

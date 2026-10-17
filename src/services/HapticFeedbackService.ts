@@ -356,6 +356,12 @@ class HapticFeedbackService {
     await this.triggerHaptic('levelUp', context, { priority: 'high' });
   }
 
+  async impact(type: 'light' | 'medium' | 'heavy' = 'medium'): Promise<void> {
+    const pattern =
+      type === 'light' ? 'buttonPress' : type === 'medium' ? 'refresh' : 'achievement';
+    await this.triggerHaptic(pattern, undefined, { priority: 'low' });
+  }
+
   async triggerButtonPress(): Promise<void> {
     await this.triggerHaptic('buttonPress', undefined, { priority: 'low' });
   }

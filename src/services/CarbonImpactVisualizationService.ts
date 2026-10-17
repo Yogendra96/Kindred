@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { CarbonAPIService } from './CarbonAPIService';
 import { createSingleton } from '../utils/Singleton';
@@ -115,21 +114,23 @@ export interface ScalesConfig {
 }
 
 export interface AxisConfig {
-  type: 'linear' | 'logarithmic' | 'category' | 'time' | 'timeseries';
-  display: boolean;
-  position: 'top' | 'bottom' | 'left' | 'right';
-  title: {
-    display: boolean;
-    text: string;
-    font: FontConfig;
-    color: string;
-  };
-  grid: {
+  type?: 'linear' | 'logarithmic' | 'category' | 'time' | 'timeseries';
+  display?: boolean;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+  title?:
+    | string
+    | {
+        display?: boolean;
+        text: string;
+        font?: FontConfig;
+        color?: string;
+      };
+  grid?: {
     display: boolean;
     color: string;
     lineWidth: number;
   };
-  ticks: {
+  ticks?: {
     display: boolean;
     color: string;
     font: FontConfig;
@@ -542,10 +543,15 @@ class CarbonImpactVisualizationService {
         subtitle: `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`,
         unit: 'kg CO₂',
         period,
-        totalValue: Object.values(emissionsData).reduce((sum, val) => sum + val, 0),
+        totalValue: Object.values(emissionsData).reduce(
+          (sum: number, val: any) => sum + (typeof val === 'number' ? val : 0),
+          0,
+        ),
         averageValue:
-          Object.values(emissionsData).reduce((sum, val) => sum + val, 0) /
-          Object.values(emissionsData).length,
+          Object.values(emissionsData).reduce(
+            (sum: number, val: any) => sum + (typeof val === 'number' ? val : 0),
+            0,
+          ) / (Object.values(emissionsData).length || 1),
         trend: 'stable',
         trendPercentage: 0,
         insights: [
@@ -1002,7 +1008,7 @@ class CarbonImpactVisualizationService {
           padding: theme.spacing.lg,
         },
       },
-      scales: options.scales
+      scales: (options.scales
         ? {
             x: {
               type: 'category',
@@ -1010,7 +1016,10 @@ class CarbonImpactVisualizationService {
               position: 'bottom',
               title: {
                 display: !!options.scales.x?.title,
-                text: options.scales.x?.title || '',
+                text:
+                  typeof options.scales.x?.title === 'string'
+                    ? options.scales.x?.title
+                    : options.scales.x?.title?.text || '',
                 font: theme.fonts.secondary,
                 color: theme.colors.neutral[6],
               },
@@ -1032,7 +1041,10 @@ class CarbonImpactVisualizationService {
               position: 'left',
               title: {
                 display: !!options.scales.y?.title,
-                text: options.scales.y?.title || '',
+                text:
+                  typeof options.scales.y?.title === 'string'
+                    ? options.scales.y?.title
+                    : options.scales.y?.title?.text || '',
                 font: theme.fonts.secondary,
                 color: theme.colors.neutral[6],
               },
@@ -1049,7 +1061,7 @@ class CarbonImpactVisualizationService {
               ...options.scales.y,
             },
           }
-        : undefined,
+        : undefined) as ScalesConfig | undefined,
       animation: {
         duration: 750,
         easing: 'easeInOutQuad',

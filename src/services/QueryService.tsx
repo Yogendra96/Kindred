@@ -1,11 +1,4 @@
-// @ts-nocheck
-/* eslint-disable */
 import React, { type ReactNode } from 'react';
-
-// Global type declarations
-declare global {
-  var __DEV__: boolean;
-}
 
 // Mock QueryClient and QueryClientProvider for development
 interface QueryClientConfig {
@@ -24,9 +17,13 @@ interface QueryClientConfig {
 }
 
 class QueryClient {
-  constructor(config?: QueryClientConfig) {
+  constructor(public config?: QueryClientConfig) {
     // Mock implementation
   }
+
+  async invalidateQueries(_options?: { queryKey: readonly any[] }): Promise<void> {}
+
+  async prefetchQuery(_options?: { queryKey: readonly any[]; staleTime?: number }): Promise<void> {}
 }
 
 interface QueryClientProviderProps {

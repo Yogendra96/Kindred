@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * Climate TRACE API Service
@@ -12,6 +11,8 @@ import type { AxiosInstance, AxiosError } from 'axios';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import loggingService from '../LoggerService';
+
+const log = loggingService.withTag('ClimateTraceService');
 
 // =============================================================================
 // Types & Interfaces
@@ -185,14 +186,14 @@ class ClimateTraceService {
     // Add request/response interceptors for logging
     this.client.interceptors.request.use(
       config => {
-        loggingService.debug('[ClimateTrace] Request:', {
+        log.debug('[ClimateTrace] Request:', {
           url: config.url,
           params: config.params,
         });
         return config;
       },
       error => {
-        loggingService.error('[ClimateTrace] Request error', {
+        log.error('[ClimateTrace] Request error', {
           error: String(error),
         });
         return Promise.reject(error);
@@ -201,7 +202,7 @@ class ClimateTraceService {
 
     this.client.interceptors.response.use(
       response => {
-        loggingService.debug('[ClimateTrace] Response:', {
+        log.debug('[ClimateTrace] Response:', {
           url: response.config.url,
           status: response.status,
           dataLength: Array.isArray(response.data) ? response.data.length : 1,
@@ -209,7 +210,7 @@ class ClimateTraceService {
         return response;
       },
       (error: AxiosError) => {
-        loggingService.error('[ClimateTrace] Response error:', {
+        log.error('[ClimateTrace] Response error:', {
           url: error.config?.url,
           status: error.response?.status,
           message: error.message,
@@ -243,7 +244,7 @@ class ClimateTraceService {
 
       return data as T;
     } catch (error) {
-      loggingService.warn('[ClimateTrace] Cache read error', {
+      log.warn('[ClimateTrace] Cache read error', {
         error: String(error),
       });
       return null;
@@ -258,7 +259,7 @@ class ClimateTraceService {
       };
       await AsyncStorage.setItem(this.CACHE_PREFIX + key, JSON.stringify(cacheData));
     } catch (error) {
-      loggingService.warn('[ClimateTrace] Cache write error', {
+      log.warn('[ClimateTrace] Cache write error', {
         error: String(error),
       });
     }
@@ -298,7 +299,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, response.data, 7 * 24 * 60 * 60 * 1000); // 7 days
       return response.data;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to fetch sectors', {
+      log.error('[ClimateTrace] Failed to fetch sectors', {
         error: String(error),
       });
       // Return default sectors if API fails
@@ -347,7 +348,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, response.data, 7 * 24 * 60 * 60 * 1000); // 7 days
       return response.data;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to fetch countries', {
+      log.error('[ClimateTrace] Failed to fetch countries', {
         error: String(error),
       });
       return [];
@@ -367,7 +368,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, response.data, 7 * 24 * 60 * 60 * 1000);
       return response.data;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to fetch gas types', {
+      log.error('[ClimateTrace] Failed to fetch gas types', {
         error: String(error),
       });
       return ['co2', 'ch4', 'n2o', 'co2e', 'co2e_100yr'];
@@ -415,7 +416,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, response.data);
       return response.data;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to search assets', {
+      log.error('[ClimateTrace] Failed to search assets', {
         error: String(error),
       });
       return [];
@@ -436,7 +437,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, asset);
       return asset;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to get asset details', {
+      log.error('[ClimateTrace] Failed to get asset details', {
         error: String(error),
       });
       return null;
@@ -488,7 +489,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, response.data);
       return response.data;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to get emissions summary', {
+      log.error('[ClimateTrace] Failed to get emissions summary', {
         error: String(error),
       });
       return [];
@@ -564,7 +565,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, result);
       return result;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to get country emissions', {
+      log.error('[ClimateTrace] Failed to get country emissions', {
         error: String(error),
       });
       return null;
@@ -636,7 +637,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, nearbyEmitters, 60 * 60 * 1000);
       return nearbyEmitters;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to get nearby emitters', {
+      log.error('[ClimateTrace] Failed to get nearby emitters', {
         error: String(error),
       });
       return [];
@@ -763,7 +764,7 @@ class ClimateTraceService {
       await this.setCache(cacheKey, result);
       return result;
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to get emissions trend', {
+      log.error('[ClimateTrace] Failed to get emissions trend', {
         error: String(error),
       });
       return [];
@@ -786,14 +787,14 @@ class ClimateTraceService {
       if (!explored.includes(sourceId)) {
         explored.push(sourceId);
         await AsyncStorage.setItem(key, JSON.stringify(explored));
-        loggingService.info('[ClimateTrace] User explored new source:', {
+        log.info('[ClimateTrace] User explored new source:', {
           userId,
           sourceId,
           totalExplored: explored.length,
         });
       }
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to track exploration', {
+      log.error('[ClimateTrace] Failed to track exploration', {
         error: String(error),
       });
     }
@@ -816,7 +817,7 @@ class ClimateTraceService {
         sourceIds: explored,
       };
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to get exploration stats', {
+      log.error('[ClimateTrace] Failed to get exploration stats', {
         error: String(error),
       });
       return { sourcesExplored: 0, sourceIds: [] };
@@ -870,9 +871,9 @@ class ClimateTraceService {
       await AsyncStorage.multiRemove(climateTraceKeys);
       this.sectorsCache = null;
       this.countriesCache = null;
-      loggingService.info('[ClimateTrace] Cache cleared');
+      log.info('[ClimateTrace] Cache cleared');
     } catch (error) {
-      loggingService.error('[ClimateTrace] Failed to clear cache', {
+      log.error('[ClimateTrace] Failed to clear cache', {
         error: String(error),
       });
     }

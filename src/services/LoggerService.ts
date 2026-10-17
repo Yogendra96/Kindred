@@ -180,6 +180,8 @@ class Logger {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       info: (message: string, data?: any) => this.info(tag, message, data),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      success: (message: string, data?: any) => this.info(tag, `✅ ${message}`, data),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       warn: (message: string, data?: any) => this.warn(tag, message, data),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: (message: string, err?: any) => this.error(tag, message, err),

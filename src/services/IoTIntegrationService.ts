@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
@@ -6,6 +5,8 @@ import loggingService from './LoggerService';
 import { webSocketService } from './WebSocketService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
+const log = loggingService.withTag('IoTIntegrationService');
 
 export interface IoTDevice {
   id: string;
@@ -146,13 +147,13 @@ class IoTIntegrationService {
         severity: 'low',
       });
 
-      loggingService.info('IoT Integration Service initialized', {
+      log.info('IoT Integration Service initialized', {
         deviceCount: this.devices.size,
         autoSyncEnabled: this.config.enableAutoSync,
       });
     } catch (error) {
-      loggingService.error('IoT Integration Service initialization failed', {
-        error: error.message,
+      log.error('IoT Integration Service initialization failed', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -202,7 +203,7 @@ class IoTIntegrationService {
           severity: 'low',
         });
 
-        loggingService.info('Thermostat connected successfully', {
+        log.info('Thermostat connected successfully', {
           deviceId: device.id,
           provider: credentials.provider,
         });
@@ -212,8 +213,8 @@ class IoTIntegrationService {
         throw new Error('Failed to connect to thermostat');
       }
     } catch (error) {
-      loggingService.error('Thermostat connection failed', {
-        error: error.message,
+      log.error('Thermostat connection failed', {
+        error: error instanceof Error ? error.message : String(error),
         provider: credentials.provider,
       });
       throw error;
@@ -257,9 +258,9 @@ class IoTIntegrationService {
 
       return null;
     } catch (error) {
-      loggingService.error('Failed to fetch thermostat data', {
+      log.error('Failed to fetch thermostat data', {
         deviceId: device.id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       return null;
     }
@@ -350,8 +351,8 @@ class IoTIntegrationService {
         throw new Error('Failed to connect to vehicle');
       }
     } catch (error) {
-      loggingService.error('Vehicle connection failed', {
-        error: error.message,
+      log.error('Vehicle connection failed', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -391,9 +392,9 @@ class IoTIntegrationService {
 
       return null;
     } catch (error) {
-      loggingService.error('Failed to fetch vehicle data', {
+      log.error('Failed to fetch vehicle data', {
         deviceId: device.id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       return null;
     }
@@ -476,8 +477,8 @@ class IoTIntegrationService {
         throw new Error('Failed to connect to fitness tracker');
       }
     } catch (error) {
-      loggingService.error('Fitness tracker connection failed', {
-        error: error.message,
+      log.error('Fitness tracker connection failed', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -519,9 +520,9 @@ class IoTIntegrationService {
 
       return null;
     } catch (error) {
-      loggingService.error('Failed to fetch fitness data', {
+      log.error('Failed to fetch fitness data', {
         deviceId: device.id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       return null;
     }
@@ -591,7 +592,7 @@ class IoTIntegrationService {
     this.automationRules.set(ruleId, automationRule);
     await this.persistData();
 
-    loggingService.info('Automation rule created', {
+    log.info('Automation rule created', {
       ruleId,
       name: rule.name,
       carbonSavingsPotential: rule.carbonSavingsPotential,
@@ -612,7 +613,7 @@ class IoTIntegrationService {
         }
       }
 
-      loggingService.info('Automation rule executed', {
+      log.info('Automation rule executed', {
         ruleId,
         name: rule.name,
       });
@@ -630,9 +631,9 @@ class IoTIntegrationService {
         priority: 'normal',
       });
     } catch (error) {
-      loggingService.error('Automation rule execution failed', {
+      log.error('Automation rule execution failed', {
         ruleId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -650,7 +651,7 @@ class IoTIntegrationService {
         await this.executeSmartPlugAction(device, action, parameters);
         break;
       default:
-        loggingService.warn('Unsupported device type for automation', {
+        log.warn('Unsupported device type for automation', {
           deviceType: device.type,
           action,
         });
@@ -668,13 +669,13 @@ class IoTIntegrationService {
     switch (action) {
       case 'set_temperature':
         // Implementation would call actual API
-        loggingService.info('Setting thermostat temperature', {
+        log.info('Setting thermostat temperature', {
           deviceId: device.id,
           temperature: parameters.temperature,
         });
         break;
       case 'set_mode':
-        loggingService.info('Setting thermostat mode', {
+        log.info('Setting thermostat mode', {
           deviceId: device.id,
           mode: parameters.mode,
         });
@@ -690,7 +691,7 @@ class IoTIntegrationService {
     switch (action) {
       case 'turn_on':
       case 'turn_off':
-        loggingService.info('Smart plug action', {
+        log.info('Smart plug action', {
           deviceId: device.id,
           action,
         });
@@ -733,7 +734,7 @@ class IoTIntegrationService {
       this.stopDeviceSync(deviceId);
       await this.persistData();
 
-      loggingService.info('Device disconnected', {
+      log.info('Device disconnected', {
         deviceId,
         type: device.type,
       });
@@ -807,15 +808,15 @@ class IoTIntegrationService {
           priority: 'normal',
         });
 
-        loggingService.debug('Device data synced', {
+        log.debug('Device data synced', {
           deviceId,
           type: device.type,
         });
       }
     } catch (error) {
-      loggingService.error('Device sync failed', {
+      log.error('Device sync failed', {
         deviceId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -844,8 +845,8 @@ class IoTIntegrationService {
         });
       }
     } catch (error) {
-      loggingService.error('Failed to load IoT data', {
-        error: error.message,
+      log.error('Failed to load IoT data', {
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -860,8 +861,8 @@ class IoTIntegrationService {
         ),
       ]);
     } catch (error) {
-      loggingService.error('Failed to persist IoT data', {
-        error: error.message,
+      log.error('Failed to persist IoT data', {
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -900,7 +901,7 @@ class IoTIntegrationService {
     this.automationRules.clear();
     this.isInitialized = false;
 
-    loggingService.info('IoT Integration Service cleaned up');
+    log.info('IoT Integration Service cleaned up');
   }
 }
 

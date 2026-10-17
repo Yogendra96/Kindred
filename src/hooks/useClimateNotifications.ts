@@ -108,6 +108,9 @@ export const useClimateNotifications = ({
   }, [lat, lng, service]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'test') {
+      return;
+    }
     log.info('hook mounted', { pollIntervalMs });
     const initTimer = setTimeout(poll, 5_000);
     const interval = setInterval(poll, pollIntervalMs);

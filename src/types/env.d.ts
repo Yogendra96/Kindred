@@ -36,6 +36,7 @@ declare module '@env' {
   export const ENABLE_LOCATION_TRACKING: string;
   export const ENABLE_SOCIAL_FEATURES: string;
   export const ENABLE_ACHIEVEMENTS: string;
+  export const ENABLE_API_MOCKING: string;
 
   // API Endpoints
   export const API_BASE_URL: string;

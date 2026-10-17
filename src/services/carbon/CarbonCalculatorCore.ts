@@ -32,6 +32,11 @@ export interface CarbonCalculationRequest {
     renewable_percentage?: number;
     sustainability_modifier?: number;
     waste_factor?: number;
+    country?: string;
+    state?: string;
+    subtype?: string;
+    location?: string;
+    [key: string]: any;
   };
 }
 

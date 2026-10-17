@@ -1,5 +1,4 @@
-// @ts-nocheck
-/* eslint-disable */
+import { NotificationService } from './NotificationService';
 import { modernAPMService } from './ModernAPMService';
 import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
 import { analyticsService } from './AnalyticsService';
@@ -21,13 +20,13 @@ export interface LocationConfig {
   enableBackgroundLocation: boolean;
   enableGeofencing: boolean;
   enableLocationHistory: boolean;
-  accuracy: 'low' | 'balanced' | 'high' | 'best';
-  distanceInterval: number;
-  timeInterval: number;
+  accuracy: 'low' | 'balanced' | 'high' | 'best' | Location.LocationAccuracy;
+  distanceInterval?: number;
+  timeInterval?: number;
   maxLocationHistory: number;
   enableBatteryOptimization: boolean;
   enableLocationSharing: boolean;
-  privacyMode: 'full' | 'approximate' | 'disabled';
+  privacyMode: 'full' | 'approximate' | 'precise' | 'disabled';
 }
 
 export interface LocationData {
@@ -105,7 +104,7 @@ export interface LocationSharingSettings {
 }
 
 class LocationService {
-  private logger: typeof loggingService;
+  private logger: ReturnType<typeof loggingService.withTag>;
   private securityService: typeof zeroTrustSecurityService;
   private apmService: typeof modernAPMService;
   private analyticsService: typeof analyticsService;
@@ -154,10 +153,27 @@ class LocationService {
     };
 
     // Initialize logging
-    this.logger = loggingService;
+    this.logger = loggingService.withTag('LocationService');
     this.securityService = zeroTrustSecurityService;
     this.apmService = modernAPMService;
     this.analyticsService = analyticsService;
+  }
+
+  private getExpoAccuracy(accuracy: LocationConfig['accuracy']): Location.LocationAccuracy {
+    if (typeof accuracy === 'number') {
+      return accuracy;
+    }
+    switch (accuracy) {
+      case 'low':
+        return Location.LocationAccuracy.Low;
+      case 'high':
+        return Location.LocationAccuracy.High;
+      case 'best':
+        return Location.LocationAccuracy.BestForNavigation;
+      case 'balanced':
+      default:
+        return Location.LocationAccuracy.Balanced;
+    }
   }
 
   async initialize(config?: Partial<LocationConfig>): Promise<void> {
@@ -205,7 +221,7 @@ class LocationService {
       this.metrics.lastError = error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error('Location service initialization failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -225,7 +241,7 @@ class LocationService {
     const startTime = Date.now();
 
     try {
-      let fgResponse = await Location.requestForegroundPermissionsAsync();
+      const fgResponse = await Location.requestForegroundPermissionsAsync();
       let bgResponse;
 
       if (this.config.enableBackgroundLocation && fgResponse.granted) {
@@ -249,7 +265,7 @@ class LocationService {
       return permissions;
     } catch (error) {
       this.logger.error('Location permissions request failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -280,7 +296,7 @@ class LocationService {
       this.metrics.lastError = error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error('Failed to get current location', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -297,7 +313,7 @@ class LocationService {
 
       this.locationSubscription = await Location.watchPositionAsync(
         {
-          accuracy: this.config.accuracy,
+          accuracy: this.getExpoAccuracy(this.config.accuracy),
           timeInterval: this.config.timeInterval,
           distanceInterval: this.config.distanceInterval,
         },
@@ -362,9 +378,9 @@ class LocationService {
       await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
         accuracy: this.config.enableBatteryOptimization
           ? Location.LocationAccuracy.Balanced
-          : this.config.accuracy,
-        timeInterval: this.config.timeInterval * 2, // Less frequent in background
-        distanceInterval: this.config.distanceInterval * 2,
+          : this.getExpoAccuracy(this.config.accuracy),
+        timeInterval: (this.config.timeInterval ?? 30000) * 2, // Less frequent in background
+        distanceInterval: (this.config.distanceInterval ?? 10) * 2,
         deferredUpdatesInterval: 60000, // 1 minute
         foregroundService: {
           notificationTitle: 'Kindred is tracking your location',
@@ -493,7 +509,7 @@ class LocationService {
         (eventType === Location.GeofencingEventType.Exit && geofenceRegion.notifyOnExit);
 
       if (shouldNotify) {
-        await notificationService.displayNotification({
+        await NotificationService.displayNotification({
           title: `${geofenceRegion.name}`,
           body:
             eventType === Location.GeofencingEventType.Enter
@@ -810,7 +826,7 @@ class LocationService {
       }
     } catch (error) {
       this.logger.error('Error loading persisted location data', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -827,7 +843,7 @@ class LocationService {
       ]);
     } catch (error) {
       this.logger.error('Error persisting location data', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -943,12 +959,12 @@ class LocationService {
 
   // Add method to get location from navigator (browser) or native geolocation
   private async getLocationFromNavigator(highAccuracy: boolean): Promise<any> {
-    return Location.getCurrentPositionAsync({
+    return (Location.getCurrentPositionAsync as any)({
       accuracy: highAccuracy
         ? Location.LocationAccuracy.BestForNavigation
         : Location.LocationAccuracy.Balanced,
-      timeout: 15000,
       maximumAge: 30000,
+      timeout: 15000,
     });
   }
 }

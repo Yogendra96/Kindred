@@ -1,9 +1,10 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
 import loggingService from './LoggerService';
 import { Platform } from 'react-native';
+
+const log = loggingService.withTag('WebSocketService');
 
 export interface WebSocketConfig {
   url: string;
@@ -87,7 +88,7 @@ class WebSocketService {
         this.config.authToken = authToken;
       }
 
-      loggingService.info('WebSocket service initialized', {
+      log.info('WebSocket service initialized', {
         url: this.config.url,
         reconnectAttempts: this.config.reconnectAttempts,
       });
@@ -99,16 +100,14 @@ class WebSocketService {
         severity: 'low',
       });
     } catch (error) {
-      loggingService.error('WebSocket service initialization failed', {
-        error: error.message,
-      });
+      log.error('WebSocket service initialization failed', error);
       throw error;
     }
   }
 
   async connect(): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      loggingService.warn('WebSocket already connected');
+      log.warn('WebSocket already connected');
       return;
     }
 
@@ -134,12 +133,10 @@ class WebSocketService {
         severity: 'low',
       });
 
-      loggingService.info('WebSocket connected successfully');
+      log.info('WebSocket connected successfully');
     } catch (error) {
       this.connectionStats.errors++;
-      loggingService.error('WebSocket connection failed', {
-        error: error.message,
-      });
+      log.error('WebSocket connection failed', error);
 
       if (!this.isReconnecting) {
         this.scheduleReconnect();
@@ -163,8 +160,8 @@ class WebSocketService {
           (this.ws as any).binaryType = 'arraybuffer';
         }
 
-        this.ws.onopen = event => {
-          loggingService.info('WebSocket connection opened');
+        this.ws.onopen = () => {
+          log.info('WebSocket connection opened');
           this.setupEventHandlers();
           resolve();
         };
@@ -174,7 +171,7 @@ class WebSocketService {
         };
 
         this.ws.onerror = error => {
-          loggingService.error('WebSocket error', { error });
+          log.error('WebSocket error', error);
           this.connectionStats.errors++;
           reject(new Error(`WebSocket connection error: ${error}`));
         };
@@ -254,22 +251,20 @@ class WebSocketService {
           try {
             await handler(message);
           } catch (error) {
-            loggingService.error('Error in WebSocket message handler', {
+            log.error('Error in WebSocket message handler', {
               messageType: message.type,
-              error: error.message,
+              error,
             });
           }
         });
       }
 
-      loggingService.debug('WebSocket message received', {
+      log.debug('WebSocket message received', {
         type: message.type,
         id: message.id,
       });
     } catch (error) {
-      loggingService.error('Error parsing WebSocket message', {
-        error: error.message,
-      });
+      log.error('Error parsing WebSocket message', error);
     }
   }
 
@@ -288,7 +283,7 @@ class WebSocketService {
 
     this.stopHeartbeat();
 
-    loggingService.warn('WebSocket disconnected', { code, reason });
+    log.warn('WebSocket disconnected', { code, reason });
 
     // Emit disconnection event
     this.emitEvent('connection_lost', {
@@ -305,7 +300,7 @@ class WebSocketService {
 
   private scheduleReconnect(): void {
     if (this.connectionStats.reconnectAttempts >= this.config.reconnectAttempts) {
-      loggingService.error('Max reconnection attempts reached');
+      log.error('Max reconnection attempts reached');
       this.emitEvent('connection_failed', {
         attempts: this.connectionStats.reconnectAttempts,
         timestamp: Date.now(),
@@ -320,16 +315,14 @@ class WebSocketService {
 
     this.reconnectTimer = setTimeout(async () => {
       try {
-        loggingService.info('Attempting WebSocket reconnection', {
+        log.info('Attempting WebSocket reconnection', {
           attempt: this.connectionStats.reconnectAttempts,
         });
 
         await this.connect();
         this.isReconnecting = false;
       } catch (error) {
-        loggingService.error('Reconnection attempt failed', {
-          error: error.message,
-        });
+        log.error('Reconnection attempt failed', error);
         this.scheduleReconnect();
       }
     }, delay);
@@ -389,14 +382,14 @@ class WebSocketService {
 
       this.connectionStats.messagesSent++;
 
-      loggingService.debug('WebSocket message sent', {
+      log.debug('WebSocket message sent', {
         type: message.type,
         id: message.id,
         priority: message.priority,
       });
     } catch (error) {
-      loggingService.error('Error sending WebSocket message', {
-        error: error.message,
+      log.error('Error sending WebSocket message', {
+        error,
         messageType: message.type,
       });
 
@@ -429,7 +422,7 @@ class WebSocketService {
 
     this.connectionStats.queuedMessages = this.messageQueue.length;
 
-    loggingService.debug('Message queued', {
+    log.debug('Message queued', {
       type: message.type,
       priority: message.priority,
       queueSize: this.messageQueue.length,
@@ -457,7 +450,7 @@ class WebSocketService {
 
     this.eventHandlers.get(eventType)!.add(handler);
 
-    loggingService.debug('WebSocket event handler subscribed', { eventType });
+    log.debug('WebSocket event handler subscribed', { eventType });
 
     // Return unsubscribe function
     return () => {
@@ -500,7 +493,7 @@ class WebSocketService {
     this.connectionStats.isConnected = false;
     this.connectionStats.lastDisconnected = new Date();
 
-    loggingService.info('WebSocket disconnected by client');
+    log.info('WebSocket disconnected by client');
   }
 
   getConnectionStats(): ConnectionStats {

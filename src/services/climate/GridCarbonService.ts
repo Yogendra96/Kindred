@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * Grid Carbon Service
@@ -17,6 +16,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import loggingService from '../LoggerService';
 import { Config } from 'react-native-config';
+
+const log = loggingService.withTag('GridCarbonService');
 
 // =============================================================================
 // Types & Interfaces
@@ -256,7 +257,7 @@ class GridCarbonService {
       // Fallback: simple country-based zone mapping
       return this.estimateZoneFromCoordinates(lat, lng);
     } catch (error) {
-      loggingService.error('Error finding grid zone', { error, lat, lng });
+      log.error('Error finding grid zone', { error, lat, lng });
       return null;
     }
   }
@@ -332,7 +333,7 @@ class GridCarbonService {
       // Use fallback
       return this.getFallbackIntensity(zone);
     } catch (error) {
-      loggingService.error('Error fetching grid intensity', { error, zone });
+      log.error('Error fetching grid intensity', { error, zone });
       return this.getFallbackIntensity(zone);
     }
   }
@@ -383,7 +384,7 @@ class GridCarbonService {
         source: 'electricitymaps',
       };
     } catch (error) {
-      loggingService.warn('ElectricityMaps API error', { error, zone });
+      log.warn('ElectricityMaps API error', { error, zone });
       return null;
     }
   }
@@ -426,7 +427,7 @@ class GridCarbonService {
         source: 'watttime',
       };
     } catch (error) {
-      loggingService.warn('WattTime API error', { error, zone });
+      log.warn('WattTime API error', { error, zone });
       return null;
     }
   }
@@ -451,7 +452,7 @@ class GridCarbonService {
         this.wattTimeTokenExpiry = Date.now() + 29 * 60 * 1000; // 29 minutes
       }
     } catch (error) {
-      loggingService.error('WattTime authentication failed', { error });
+      log.error('WattTime authentication failed', { error });
     }
   }
 
@@ -531,7 +532,7 @@ class GridCarbonService {
       // Generate synthetic forecast if no API
       return this.generateSyntheticForecast(zone, hours);
     } catch (error) {
-      loggingService.error('Error fetching grid forecast', { error, zone });
+      log.error('Error fetching grid forecast', { error, zone });
       return this.generateSyntheticForecast(zone, hours);
     }
   }
@@ -708,7 +709,7 @@ class GridCarbonService {
       await this.setCache(cacheKey, result, CACHE_DURATION);
       return result;
     } catch (error) {
-      loggingService.error('Error fetching power breakdown', { error, zone });
+      log.error('Error fetching power breakdown', { error, zone });
       return null;
     }
   }
@@ -820,7 +821,7 @@ class GridCarbonService {
         }),
       );
     } catch (error) {
-      loggingService.warn('Cache write failed', { key, error });
+      log.warn('Cache write failed', { key, error });
     }
   }
 
@@ -833,7 +834,7 @@ class GridCarbonService {
       const gridKeys = keys.filter(k => k.startsWith(this.CACHE_PREFIX));
       await AsyncStorage.multiRemove(gridKeys);
     } catch (error) {
-      loggingService.error('Failed to clear grid cache', { error });
+      log.error('Failed to clear grid cache', { error });
     }
   }
 }

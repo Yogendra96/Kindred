@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * 🔐 Biometric Authentication Service
@@ -10,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, NativeModules } from 'react-native';
 import analyticsService from './AnalyticsService';
 import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
+import { advancedEncryptionService } from './AdvancedEncryptionService';
 
 // Biometric Types and Interfaces
 interface BiometricCapabilities {
@@ -30,8 +30,8 @@ interface BiometricTemplate {
   readonly template: string; // Encrypted biometric template
   readonly quality: number; // 0-100
   readonly enrolledAt: number;
-  readonly lastUsed: number;
-  readonly usageCount: number;
+  lastUsed: number;
+  usageCount: number;
   readonly deviceId: string;
   readonly secureEnclaveId?: string;
   readonly antiSpoofingData: AntiSpoofingData;
@@ -147,7 +147,7 @@ interface BehavioralPattern {
     usage: UsagePattern;
   };
   readonly baseline: BehavioralBaseline;
-  readonly lastUpdated: number;
+  lastUpdated: number;
 }
 
 interface TypingPattern {
@@ -188,11 +188,11 @@ interface UsagePattern {
 }
 
 interface BehavioralBaseline {
-  readonly confidence: number;
+  confidence: number;
   readonly stability: number;
   readonly uniqueness: number;
-  readonly established: boolean;
-  readonly sampleSize: number;
+  established: boolean;
+  sampleSize: number;
 }
 
 // Liveness Detection Engine
@@ -1150,7 +1150,12 @@ export class BiometricAuthenticationService {
       }
 
       // Perform behavioral analysis if enabled
-      let behavioralResult = {
+      let behavioralResult: {
+        isAuthentic: boolean;
+        confidence: number;
+        anomalies: string[];
+        riskScore: number;
+      } = {
         isAuthentic: true,
         confidence: 1.0,
         anomalies: [],
@@ -1266,12 +1271,13 @@ export class BiometricAuthenticationService {
     // This would use proper template extraction algorithms
     const templateData = JSON.stringify({
       features: biometricData.features || 'mock_features',
-      hash: await zeroTrustSecurityService['crypto'].hash(JSON.stringify(biometricData)),
+      hash: await advancedEncryptionService.hashData(JSON.stringify(biometricData)),
       timestamp: Date.now(),
     });
 
     // Encrypt the template
-    return zeroTrustSecurityService.encryptSensitiveData(templateData, 'biometric_template');
+    const encrypted = await advancedEncryptionService.encryptData(templateData);
+    return JSON.stringify(encrypted);
   }
 
   private async findMatchingTemplate(
@@ -1408,6 +1414,15 @@ export class BiometricAuthenticationService {
 
   async performDeviceAttestation(): Promise<DeviceAttestationResult> {
     return this.attestationEngine.performAttestation();
+  }
+
+  async isAvailable(): Promise<boolean> {
+    return Platform.OS === 'ios' || Platform.OS === 'android';
+  }
+
+  async authenticate(): Promise<boolean> {
+    const result = await this.authenticateBiometric('fingerprint', 'mock_biometric');
+    return result.success;
   }
 
   destroy(): void {

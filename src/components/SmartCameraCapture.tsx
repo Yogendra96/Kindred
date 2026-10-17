@@ -1,11 +1,10 @@
-// @ts-nocheck
 /* eslint-disable */
 import type { ImageClassificationResult } from '../services/AIVisionService';
 import { aiVisionService } from '../services/AIVisionService';
 import { webSocketService } from '../services/WebSocketService';
 import { useTheme } from '../theme/ThemeProvider';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Camera, CameraType, FlashMode } from 'expo-camera';
+import { Camera, CameraView, type CameraType, type FlashMode } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -48,13 +47,13 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   visible,
 }) => {
   const theme = useTheme();
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef<CameraView>(null);
 
   const [state, setState] = useState<CaptureState>({
     isProcessing: false,
     hasPermission: false,
-    flashMode: FlashMode.off,
-    cameraType: CameraType.back,
+    flashMode: 'off',
+    cameraType: 'back',
   });
 
   // Animation values
@@ -292,14 +291,14 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
   const toggleFlash = () => {
     setState(prev => ({
       ...prev,
-      flashMode: prev.flashMode === FlashMode.off ? FlashMode.on : FlashMode.off,
+      flashMode: prev.flashMode === 'off' ? 'on' : 'off',
     }));
   };
 
   const toggleCamera = () => {
     setState(prev => ({
       ...prev,
-      cameraType: prev.cameraType === CameraType.back ? CameraType.front : CameraType.back,
+      cameraType: prev.cameraType === 'back' ? 'front' : 'back',
     }));
   };
 
@@ -391,12 +390,11 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
     return (
       <View style={styles.cameraContainer}>
-        <Camera
+        <CameraView
           ref={cameraRef}
           style={styles.camera}
-          type={state.cameraType}
-          flashMode={state.flashMode}
-          ratio='1:1'
+          facing={state.cameraType}
+          flash={state.flashMode}
         >
           <View style={styles.cameraOverlay}>
             {/* Viewfinder */}
@@ -425,7 +423,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
               </View>
             )}
           </View>
-        </Camera>
+        </CameraView>
       </View>
     );
   };
@@ -450,7 +448,7 @@ export const SmartCameraCapture: React.FC<SmartCameraCaptureProps> = ({
 
       <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
         <Ionicons
-          name={state.flashMode === FlashMode.on ? 'flash' : 'flash-off'}
+          name={state.flashMode === 'on' ? 'flash' : 'flash-off'}
           size={24}
           color={theme.colors.onSurface}
         />

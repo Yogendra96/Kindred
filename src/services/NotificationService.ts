@@ -18,6 +18,14 @@ class NotificationService {
       );
     }, 5000);
   }
+
+  static async displayNotification(notification: {
+    title: string;
+    body: string;
+    data?: Record<string, any>;
+  }): Promise<void> {
+    log.info(`📱 NOTIFICATION: ${notification.title} - ${notification.body}`, notification.data);
+  }
 }
 
 export { NotificationService };

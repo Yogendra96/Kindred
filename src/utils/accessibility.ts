@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable */
 /**
  * Accessibility utilities for WCAG 2.1 AA compliance
  * Supports screen readers, high contrast, and keyboard navigation
@@ -55,13 +53,13 @@ class AccessibilityService {
       AccessibilityInfo.addEventListener('screenReaderChanged', this.handleScreenReaderChange);
       AccessibilityInfo.addEventListener('reduceMotionChanged', this.handleReducedMotionChange);
 
-      loggingService.info('Accessibility Service initialized', {
+      loggingService.info('AccessibilityService', 'Accessibility Service initialized', {
         screenReaderEnabled,
         reducedMotionEnabled,
         platform: Platform.OS,
       });
     } catch (error) {
-      loggingService.error('Failed to initialize accessibility service', {
+      loggingService.error('AccessibilityService', 'Failed to initialize accessibility service', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -69,12 +67,12 @@ class AccessibilityService {
 
   private handleScreenReaderChange = (enabled: boolean): void => {
     this.config = { ...this.config, screenReaderEnabled: enabled };
-    loggingService.info('Screen reader status changed', { enabled });
+    loggingService.info('AccessibilityService', 'Screen reader status changed', { enabled });
   };
 
   private handleReducedMotionChange = (enabled: boolean): void => {
     this.config = { ...this.config, reducedMotion: enabled };
-    loggingService.info('Reduced motion status changed', { enabled });
+    loggingService.info('AccessibilityService', 'Reduced motion status changed', { enabled });
   };
 
   /**
@@ -91,9 +89,12 @@ class AccessibilityService {
         AccessibilityInfo.announceForAccessibility(message);
       }
 
-      loggingService.debug('Accessibility announcement', { message, priority });
+      loggingService.debug('AccessibilityService', 'Accessibility announcement', {
+        message,
+        priority,
+      });
     } catch (error) {
-      loggingService.warn('Failed to announce for accessibility', {
+      loggingService.warn('AccessibilityService', 'Failed to announce for accessibility', {
         message,
         error,
       });
@@ -318,7 +319,7 @@ class AccessibilityService {
    */
   updateAccessibilityConfig(updates: Partial<AccessibilityConfig>): void {
     this.config = { ...this.config, ...updates };
-    loggingService.info('Accessibility configuration updated', updates);
+    loggingService.info('AccessibilityService', 'Accessibility configuration updated', updates);
   }
 
   /**
@@ -329,7 +330,7 @@ class AccessibilityService {
     // Listeners are automatically cleaned up when the app unmounts
 
     this.auditResults = [];
-    loggingService.info('Accessibility Service cleaned up');
+    loggingService.info('AccessibilityService', 'Accessibility Service cleaned up');
   }
 }
 

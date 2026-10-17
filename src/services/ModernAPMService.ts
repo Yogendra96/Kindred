@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 /**
  * Modern Application Performance Monitoring (APM) Service
@@ -13,7 +12,7 @@ import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import perf from '@react-native-firebase/perf';
 import firebase from '../utils/firebaseInit';
-import loggingService from './/LoggerService';
+import loggingService from './LoggerService';
 import type {
   PerformanceMetric,
   NativeMemoryMetrics,
@@ -42,7 +41,7 @@ export class ModernAPMService {
   private static instance: ModernAPMService;
 
   // Core dependencies
-  private logger: typeof loggingService;
+  private logger: ReturnType<typeof loggingService.withTag>;
   private config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG;
 
   // Enhanced data storage with circular buffers
@@ -88,7 +87,7 @@ export class ModernAPMService {
   private firebaseTraces: Map<string, any> = new Map();
 
   private constructor() {
-    this.logger = loggingService;
+    this.logger = loggingService.withTag('ModernAPM');
 
     // Initialize circular buffers with optimal capacity for mobile
     this.metricsBuffer = new CircularBuffer<PerformanceMetric>(1000);
@@ -443,7 +442,7 @@ export class ModernAPMService {
   /**
    * Start a Firebase performance trace
    */
-  async startTrace(traceName: string): Promise<FirebasePerformance.Trace | undefined> {
+  async startTrace(traceName: string): Promise<any | undefined> {
     try {
       // Safety check: Don't call perf() if firebase isn't fully initialized with a real project
       if (!firebase.apps.length || firebase.app().options.projectId?.includes('dummy')) {
@@ -455,7 +454,7 @@ export class ModernAPMService {
 
       // Also record as journey event
       this.recordJourneyEvent({
-        eventType: 'feature_usage',
+        eventType: 'performance_event',
         screenName: this.currentScreenName,
         action: `trace_start_${traceName}`,
       });
@@ -652,54 +651,6 @@ export class ModernAPMService {
   }
 
   /**
-   * Measure execution time of a synchronous function (backward compatibility)
-   */
-  measure<T>(
-    name: string,
-    fn: () => T,
-    context?: Record<string, any>,
-  ): { result: T; duration: number } {
-    const startTime = performance.now();
-    try {
-      const result = fn();
-      const duration = performance.now() - startTime;
-      this.recordMetric(name, duration, 'ms', context as Record<string, any>);
-      return { result, duration };
-    } catch (error) {
-      const duration = performance.now() - startTime;
-      this.recordMetric(`${name}_error`, duration, 'ms', {
-        ...(context || {}),
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Measure execution time of a function (backward compatibility)
-   */
-  async measureAsync<T>(
-    name: string,
-    fn: () => Promise<T>,
-    context?: Record<string, any>,
-  ): Promise<{ result: T; duration: number }> {
-    const startTime = performance.now();
-    try {
-      const result = await fn();
-      const duration = performance.now() - startTime;
-      this.recordMetric(name, duration, 'ms', context as Record<string, any>);
-      return { result, duration };
-    } catch (error) {
-      const duration = performance.now() - startTime;
-      this.recordMetric(`${name}_error`, duration, 'ms', {
-        ...(context || {}),
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-      throw error;
-    }
-  }
-
-  /**
    * Simple start trace for backward compatibility
    */
   startTraceSimple(name: string): void {
@@ -729,7 +680,7 @@ export class ModernAPMService {
     url: string,
     method: string = 'GET',
   ): Promise<{
-    metric: FirebaseHttpMetric;
+    metric: any;
     startTime: number;
     stop: (responseCode?: number, responseSize?: number) => Promise<void>;
   }> {
@@ -942,9 +893,9 @@ export class ModernAPMService {
     if (!this.config.features.networkInterception) return;
 
     // Intercept fetch
-    global.fetch = async (url: string | Request, options?: RequestInit) => {
+    (global as any).fetch = async (url: any, options?: RequestInit) => {
       const startTime = performance.now();
-      const requestUrl = typeof url === 'string' ? url : url.url;
+      const requestUrl = typeof url === 'string' ? url : url?.url || String(url);
       const method = options?.method || 'GET';
       const requestSize = this.calculateRequestSize(options);
 
@@ -1185,7 +1136,7 @@ export class ModernAPMService {
   /**
    * Evaluate alerts for a metric
    */
-  private evaluateAlerts(metric: EnhancedPerformanceMetric): void {
+  private evaluateAlerts(metric: PerformanceMetric): void {
     for (const [ruleId, rule] of this.alertRules) {
       if (!rule.enabled) continue;
 
@@ -1229,7 +1180,7 @@ export class ModernAPMService {
   /**
    * Trigger performance alert
    */
-  private triggerAlert(rule: PerformanceAlertRule, metric: EnhancedPerformanceMetric): void {
+  private triggerAlert(rule: PerformanceAlertRule, metric: PerformanceMetric): void {
     const alert: PerformanceAlert = {
       id: this.generateMetricId(),
       ruleId: rule.id,
@@ -1840,10 +1791,10 @@ export class ModernAPMService {
    */
   getRealTimeMetrics(): {
     coreVitals: CoreVitalMetric[];
-    recentMetrics: EnhancedPerformanceMetric[];
+    recentMetrics: PerformanceMetric[];
     activeAlerts: PerformanceAlert[];
     memoryTrend: NativeMemoryMetrics[];
-    networkTrend: EnhancedNetworkMetrics[];
+    networkTrend: NetworkMetrics[];
   } {
     return {
       coreVitals: Array.from(this.coreVitals.values()).flat().slice(-20),
@@ -1917,17 +1868,17 @@ export class ModernAPMService {
     const latest = this.memoryMetrics.getLatest()!;
     const peak = this.memoryMetrics
       .getAll()
-      .reduce((max, metric) => (metric.usedHeapSize > max.usedHeapSize ? metric : max), latest);
+      .reduce((max, metric) => (metric.usedMemory > max.usedMemory ? metric : max), latest);
 
     return {
       current: {
-        used: this.formatBytes(latest.usedHeapSize),
-        total: this.formatBytes(latest.totalHeapSize),
-        limit: this.formatBytes(latest.totalHeapSize),
-        utilization: ((latest.usedHeapSize / latest.totalHeapSize) * 100).toFixed(2) + '%',
+        used: this.formatBytes(latest.usedMemory),
+        total: this.formatBytes(latest.totalMemory),
+        limit: this.formatBytes(latest.totalMemory),
+        utilization: ((latest.usedMemory / (latest.totalMemory || 1)) * 100).toFixed(2) + '%',
       },
       peak: {
-        used: this.formatBytes(peak.usedHeapSize),
+        used: this.formatBytes(peak.usedMemory),
         timestamp: new Date(peak.timestamp).toISOString(),
       },
     };
@@ -1967,14 +1918,6 @@ export class ModernAPMService {
   }
 
   /**
-   * Export performance data (bridging method)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  exportPerformanceData(): any {
-    return this.exportSessionData();
-  }
-
-  /**
    * Record render metric (bridging method)
    */
   recordRenderMetric(
@@ -1983,8 +1926,7 @@ export class ModernAPMService {
     propsCount?: number,
     childrenCount?: number,
   ): void {
-    this.recordCoreVital('FID', renderTime, {
-      component: componentName,
+    this.recordCoreVital('FID', renderTime, componentName, {
       propsCount,
       childrenCount,
     });

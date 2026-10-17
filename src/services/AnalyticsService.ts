@@ -1,17 +1,8 @@
-// @ts-nocheck
 /* eslint-disable */
-import loggingService from './/LoggerService';
+import loggingService from './LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
-
-// Global type declarations
-declare global {
-  var __DEV__: boolean;
-  namespace NodeJS {
-    interface Timeout {}
-  }
-}
 
 interface AnalyticsEvent {
   name: string;
@@ -142,7 +133,7 @@ interface AnalyticsSummary {
  */
 export class AnalyticsService {
   private static instance: AnalyticsService;
-  private logger: typeof loggingService;
+  private logger: ReturnType<typeof loggingService.withTag>;
   // Performance service integration will be added when available
   private config: AnalyticsConfig;
   private currentSession: UserSession | null = null;
@@ -159,7 +150,7 @@ export class AnalyticsService {
   private isAnalyticsEnabled: boolean = true;
 
   private constructor(config: AnalyticsConfig = {}) {
-    this.logger = loggingService;
+    this.logger = loggingService.withTag('AnalyticsService');
     // Performance service integration will be added when available
     this.config = {
       enableAutoTracking: true,
@@ -334,6 +325,13 @@ export class AnalyticsService {
     if (this.userProfile) {
       await AsyncStorage.setItem('analytics_user_profile', JSON.stringify(this.userProfile));
     }
+  }
+
+  /**
+   * Track event (alias for trackEvent)
+   */
+  track(name: string, properties?: Record<string, any>): void {
+    this.trackEvent(name, properties, 'feature_usage');
   }
 
   /**

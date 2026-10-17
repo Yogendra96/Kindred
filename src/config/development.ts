@@ -1,25 +1,9 @@
-// @ts-nocheck
-/* eslint-disable */
 import { analyticsService } from '../services/AnalyticsService';
 import { modernAPMService } from '../services/ModernAPMService';
 import { zeroTrustSecurityService } from '../services/ZeroTrustSecurityService';
 // Services
 import loggingService from '../services/LoggerService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-
-// Global type declarations
-declare global {
-  var __DEV__: boolean;
-  var global: any;
-  var process: {
-    env: {
-      NODE_ENV?: string;
-    };
-  };
-  var require: (id: string) => any;
-}
-
 // Environment variables
 const isDevelopment =
   (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
@@ -112,12 +96,14 @@ export class DevelopmentUtils {
   private static instance: DevelopmentUtils;
   private isInitialized = false;
   private modernAPMService: typeof modernAPMService;
+  private performanceService: typeof modernAPMService;
   private securityService: typeof zeroTrustSecurityService;
   private analyticsService: typeof analyticsService;
   private logger: typeof loggingService;
 
   constructor() {
     this.modernAPMService = modernAPMService;
+    this.performanceService = modernAPMService;
     this.securityService = zeroTrustSecurityService;
     this.analyticsService = analyticsService;
     this.logger = loggingService;
@@ -145,7 +131,10 @@ export class DevelopmentUtils {
       this.setupGlobalDevUtils();
 
       this.isInitialized = true;
-      this.logger.info('🛠️ Development utilities initialized with enhanced services');
+      this.logger.info(
+        'DevelopmentUtils',
+        '🛠️ Development utilities initialized with enhanced services',
+      );
     } catch (error) {
       console.error('Failed to initialize development utilities:', error);
     }
@@ -159,22 +148,22 @@ export class DevelopmentUtils {
       // Initialize performance service
       if (developmentConfig.debugging.enablePerformanceMonitoring) {
         await this.modernAPMService.initialize();
-        this.logger.info('📊 Modern APM Service initialized');
+        this.logger.info('DevelopmentUtils', '📊 Modern APM Service initialized');
       }
 
       // Initialize security service
       if (developmentConfig.debugging.enableSecurityMonitoring) {
         await this.securityService.initialize();
-        this.logger.info('🔒 Enhanced Security Service initialized');
+        this.logger.info('DevelopmentUtils', '🔒 Enhanced Security Service initialized');
       }
 
       // Initialize analytics service
       if (developmentConfig.debugging.enableAnalyticsTracking) {
         await this.analyticsService.initialize();
-        this.logger.info('📈 Analytics Service initialized');
+        this.logger.info('DevelopmentUtils', '📈 Analytics Service initialized');
       }
     } catch (error) {
-      this.logger.error('Failed to initialize enhanced services:', error);
+      this.logger.error('DevelopmentUtils', 'Failed to initialize enhanced services:', error);
     }
   }
 
@@ -188,7 +177,7 @@ export class DevelopmentUtils {
     // Make feature flags globally accessible
     (global as any).featureFlags = flags;
 
-    this.logger.info('🚩 Feature flags initialized:', flags);
+    this.logger.info('DevelopmentUtils', '🚩 Feature flags initialized', flags);
   }
 
   /**
@@ -203,6 +192,7 @@ export class DevelopmentUtils {
         for (const entry of list.getEntries()) {
           if (entry.duration > developmentConfig.performance.slowRenderThreshold) {
             this.logger.warn(
+              'DevelopmentUtils',
               `🐌 Slow operation detected: ${entry.name} took ${entry.duration.toFixed(2)}ms`,
             );
 
@@ -217,19 +207,17 @@ export class DevelopmentUtils {
       try {
         observer.observe({ entryTypes: ['measure', 'navigation'] });
       } catch (error) {
-        this.logger.warn('Performance observer not supported:', error);
+        this.logger.warn('DevelopmentUtils', 'Performance observer not supported', error);
       }
     }
 
-    this.logger.info('📊 Enhanced performance monitoring enabled');
+    this.logger.info('DevelopmentUtils', '📊 Enhanced performance monitoring enabled');
   }
 
   /**
    * Setup enhanced logging
    */
   private async setupLogging(): Promise<void> {
-    const logLevel = developmentConfig.debugging.logLevel;
-
     // Enhanced console logging with timestamps and context
     const originalLog = console.log;
     const originalWarn = console.warn;
@@ -237,23 +225,23 @@ export class DevelopmentUtils {
 
     console.log = (...args) => {
       originalLog(`[${new Date().toISOString()}] [LOG]`, ...args);
-      this.logger.debug(args.join(' '));
+      this.logger.debug('Console', args.join(' '));
     };
 
     console.warn = (...args) => {
       originalWarn(`[${new Date().toISOString()}] [WARN]`, ...args);
-      this.logger.warn(args.join(' '));
+      this.logger.warn('Console', args.join(' '));
     };
 
     console.error = (...args) => {
       originalError(`[${new Date().toISOString()}] [ERROR]`, ...args);
-      this.logger.error(args.join(' '));
+      this.logger.error('Console', args.join(' '));
 
       // Track errors in analytics
       this.analyticsService.trackError(args.join(' '), { source: 'console' });
     };
 
-    this.logger.info('📝 Enhanced logging enabled');
+    this.logger.info('DevelopmentUtils', '📝 Enhanced logging enabled');
   }
 
   /**
@@ -262,8 +250,8 @@ export class DevelopmentUtils {
   private async setupGlobalErrorHandlers(): Promise<void> {
     // Global error handler for unhandled promise rejections
     if (typeof global !== 'undefined') {
-      global.addEventListener?.('unhandledrejection', event => {
-        this.logger.error('🚨 Unhandled Promise Rejection:', event.reason);
+      (global as any).addEventListener?.('unhandledrejection', (event: any) => {
+        this.logger.error('DevelopmentUtils', '🚨 Unhandled Promise Rejection:', event.reason);
 
         // Track in analytics and security
         this.analyticsService.trackError(event.reason, { type: 'unhandled_rejection' }, true);
@@ -271,7 +259,7 @@ export class DevelopmentUtils {
     }
 
     // React Native specific error boundary setup would go here
-    this.logger.info('🛡️ Enhanced global error handlers setup');
+    this.logger.info('DevelopmentUtils', '🛡️ Enhanced global error handlers setup');
   }
 
   /**
@@ -292,7 +280,11 @@ export class DevelopmentUtils {
           const flags = (global as any).featureFlags;
           if (flags && feature in flags) {
             flags[feature] = !flags[feature];
-            this.logger.info(`🔄 Feature '${feature}' toggled to:`, flags[feature]);
+            this.logger.info(
+              'DevelopmentUtils',
+              `🔄 Feature '${feature}' toggled to:`,
+              flags[feature],
+            );
 
             // Track feature toggle
             this.analyticsService.trackEvent(
@@ -313,13 +305,13 @@ export class DevelopmentUtils {
           return this.analyticsService.getAnalyticsSummary();
         },
         getSecuritySummary: () => {
-          return this.securityService.getSecuritySummary();
+          return this.securityService.getSecurityReport();
         },
         exportAllData: () => {
           return {
             performance: this.performanceService.exportPerformanceData(),
             analytics: this.analyticsService.exportAnalyticsData(),
-            security: this.securityService.exportSecurityData(),
+            security: this.securityService.getSecurityReport(),
             timestamp: new Date().toISOString(),
           };
         },
@@ -327,12 +319,12 @@ export class DevelopmentUtils {
           // Clear all storage for testing
           try {
             await AsyncStorage.clear();
-            this.logger.info('🗑️ Storage cleared');
+            this.logger.info('DevelopmentUtils', '🗑️ Storage cleared');
 
             // Track storage clear
             this.analyticsService.trackEvent('storage_cleared', {}, 'custom', 'medium');
           } catch (error) {
-            this.logger.error('Failed to clear storage:', error);
+            this.logger.error('DevelopmentUtils', 'Failed to clear storage:', error);
           }
         },
         clearAllData: async () => {
@@ -340,24 +332,26 @@ export class DevelopmentUtils {
           try {
             this.performanceService.clearData();
             await this.analyticsService.clearAnalyticsData();
-            await this.securityService.clearSecurityData();
-            this.logger.info('🗑️ All service data cleared');
+            this.logger.info('DevelopmentUtils', '🗑️ All service data cleared');
           } catch (error) {
-            this.logger.error('Failed to clear service data:', error);
+            this.logger.error('DevelopmentUtils', 'Failed to clear service data:', error);
           }
         },
         startSession: async (userId?: string) => {
           await this.analyticsService.startSession(userId);
-          this.logger.info('🚀 New analytics session started');
+          this.logger.info('DevelopmentUtils', '🚀 New analytics session started');
         },
         endSession: async () => {
           await this.analyticsService.endSession();
-          this.logger.info('🏁 Analytics session ended');
+          this.logger.info('DevelopmentUtils', '🏁 Analytics session ended');
         },
       };
     }
 
-    this.logger.info('🌐 Enhanced global dev utils available at global.devUtils');
+    this.logger.info(
+      'DevelopmentUtils',
+      '🌐 Enhanced global dev utils available at global.devUtils',
+    );
   }
 
   /**
@@ -392,7 +386,7 @@ export class DevelopmentUtils {
   showDevTools() {
     // This would trigger the DevTools component to show
     // Implementation depends on your app's navigation/modal system
-    this.logger.info('🛠️ Development tools requested');
+    this.logger.info('DevelopmentUtils', '🛠️ Development tools requested');
 
     // Track dev tools usage
     this.analyticsService.trackEvent('dev_tools_opened', {}, 'custom', 'low');

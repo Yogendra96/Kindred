@@ -1,8 +1,9 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
-import loggingService from './/LoggerService';
+import loggingService from './LoggerService';
 import CryptoJS from 'crypto-js';
+
+const log = loggingService.withTag('AdvancedEncryption');
 
 export interface EncryptedData {
   readonly data: readonly number[];
@@ -53,13 +54,13 @@ class AdvancedEncryptionService {
 
       modernAPMService.recordMetric('encryption_service_init', Date.now() - startTime, 'ms');
 
-      loggingService.info('Advanced Encryption Service initialized', {
+      log.info('Advanced Encryption Service initialized', {
         algorithm: this.config.algorithm,
         keyRotationEnabled: this.config.enableKeyRotation,
         hsmEnabled: this.config.enableHSM,
       });
     } catch (error) {
-      loggingService.error('Encryption service initialization failed', {
+      log.error('Encryption service initialization failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -112,7 +113,7 @@ class AdvancedEncryptionService {
         keyId: keyId || 'default',
       };
     } catch (error) {
-      loggingService.error('Data encryption failed', {
+      log.error('Data encryption failed', {
         error: error instanceof Error ? error.message : String(error),
         keyId,
       });
@@ -154,7 +155,7 @@ class AdvancedEncryptionService {
 
       return result;
     } catch (error) {
-      loggingService.error('Data decryption failed', {
+      log.error('Data decryption failed', {
         error: error instanceof Error ? error.message : String(error),
         keyId,
       });
@@ -165,7 +166,7 @@ class AdvancedEncryptionService {
   // Helper to convert numeric arrays back to WordArray
   private numericArrayToWordArray(arr: readonly number[]): CryptoJS.lib.WordArray {
     const uint8Array = new Uint8Array(arr);
-    const words = [];
+    const words: number[] = [];
     for (let i = 0; i < uint8Array.length; i += 4) {
       words.push(
         (uint8Array[i] << 24) |
@@ -206,7 +207,7 @@ class AdvancedEncryptionService {
 
       return key.toString(CryptoJS.enc.Hex);
     } catch (error) {
-      loggingService.error('Key derivation failed', {
+      log.error('Key derivation failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error('Key derivation failed');
@@ -245,7 +246,7 @@ class AdvancedEncryptionService {
       const hash = CryptoJS.SHA256(data);
       return hash.toString(CryptoJS.enc.Hex);
     } catch (error) {
-      loggingService.error('Data hashing failed', {
+      log.error('Data hashing failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error('Hashing failed');
@@ -260,7 +261,7 @@ class AdvancedEncryptionService {
       const hmac = CryptoJS.HmacSHA256(data, secret);
       return hmac.toString(CryptoJS.enc.Hex);
     } catch (error) {
-      loggingService.error('HMAC creation failed', {
+      log.error('HMAC creation failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error('HMAC creation failed');
@@ -275,7 +276,7 @@ class AdvancedEncryptionService {
       const computedSignature = await this.createHMAC(data, secret);
       return this.constantTimeCompare(signature, computedSignature);
     } catch (error) {
-      loggingService.error('HMAC verification failed', {
+      log.error('HMAC verification failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -287,7 +288,7 @@ class AdvancedEncryptionService {
    */
   async rotateKeys(): Promise<void> {
     try {
-      loggingService.info('Starting key rotation');
+      log.info('Starting key rotation');
 
       // Generate new keys
       const newKeys = await this.generateNewKeys();
@@ -298,9 +299,9 @@ class AdvancedEncryptionService {
       // Clear old keys from cache
       this.keyCache.clear();
 
-      loggingService.info('Key rotation completed successfully');
+      log.info('Key rotation completed successfully');
     } catch (error) {
-      loggingService.error('Key rotation failed', {
+      log.error('Key rotation failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -320,7 +321,7 @@ class AdvancedEncryptionService {
       this.keyRotationTimer = undefined;
     }
 
-    loggingService.info('Advanced Encryption Service cleaned up');
+    log.info('Advanced Encryption Service cleaned up');
   }
 
   // Private helper methods
@@ -360,7 +361,7 @@ class AdvancedEncryptionService {
       try {
         await this.rotateKeys();
       } catch (error) {
-        loggingService.error('Scheduled key rotation failed', {
+        log.error('Scheduled key rotation failed', {
           error: error instanceof Error ? error.message : String(error),
         });
       }
@@ -395,7 +396,7 @@ class AdvancedEncryptionService {
     // 2. Decrypting with old keys
     // 3. Encrypting with new keys
     // 4. Updating storage
-    loggingService.info('Re-encryption with new keys completed');
+    log.info('Re-encryption with new keys completed');
   }
 }
 

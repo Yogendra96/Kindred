@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { modernAPMService } from './ModernAPMService';
 import { zeroTrustSecurityService } from './ZeroTrustSecurityService';
@@ -7,6 +6,8 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { decodeJpeg } from '@tensorflow/tfjs-react-native';
 import { Platform } from 'react-native';
+
+const log = loggingService.withTag('AIVisionService');
 
 export interface VisionConfig {
   modelUrls: {
@@ -117,12 +118,12 @@ class AIVisionService {
         severity: 'low',
       });
 
-      loggingService.info('AI Vision Service initialized successfully', {
+      log.info('AI Vision Service initialized successfully', {
         modelsLoaded: this.models.size,
         gpuEnabled: this.config.enableGPU,
       });
     } catch (error) {
-      loggingService.error('AI Vision Service initialization failed', {
+      log.error('AI Vision Service initialization failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -135,7 +136,7 @@ class AIVisionService {
       if (this.config.enableGPU && Platform.OS !== 'web') {
         await tf.ready();
         const backend = tf.getBackend();
-        loggingService.info('TensorFlow.js backend', { backend });
+        log.info('TensorFlow.js backend', { backend });
       }
 
       // Configure memory settings
@@ -143,9 +144,9 @@ class AIVisionService {
       tf.env().set('WEBGL_FORCE_F16_TEXTURES', true);
       tf.env().set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0.5);
 
-      loggingService.info('TensorFlow.js configured successfully');
+      log.info('TensorFlow.js configured successfully');
     } catch (error) {
-      loggingService.error('TensorFlow.js initialization failed', {
+      log.error('TensorFlow.js initialization failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -160,9 +161,9 @@ class AIVisionService {
 
     try {
       await Promise.all(modelPromises);
-      loggingService.info('Critical models preloaded successfully');
+      log.info('Critical models preloaded successfully');
     } catch (error) {
-      loggingService.warn('Some models failed to preload', {
+      log.warn('Some models failed to preload', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -198,22 +199,20 @@ class AIVisionService {
     const modelUrl = this.config.modelUrls[modelType];
 
     try {
-      loggingService.info(`Loading ${modelType} model`, { url: modelUrl });
+      log.info(`Loading ${modelType} model`, { url: modelUrl });
 
       // Check cache first
       if (this.config.cacheModels) {
         const cachedModel = await this.getCachedModel(modelType);
         if (cachedModel) {
-          loggingService.info(`Loaded ${modelType} model from cache`);
+          log.info(`Loaded ${modelType} model from cache`);
           return cachedModel;
         }
       }
 
       // Hack for E2E and emulator: if the URL is local or known fake, return a mock object
       if (modelUrl.includes('kindred.app')) {
-        loggingService.info(
-          `Returning MOCK model for ${modelType} to prevent download failures in E2E`,
-        );
+        log.info(`Returning MOCK model for ${modelType} to prevent download failures in E2E`);
         return {
           predict: (tensor: any) => tf.tensor([0.9, 0.1, 0.0, 0.0]),
           save: async () => ({}),
@@ -235,13 +234,13 @@ class AIVisionService {
         severity: 'low',
       });
 
-      loggingService.info(`${modelType} model loaded successfully`, {
+      log.info(`${modelType} model loaded successfully`, {
         loadTime: Date.now() - startTime,
       });
 
       return model;
     } catch (error) {
-      loggingService.error(`Failed to load ${modelType} model`, {
+      log.error(`Failed to load ${modelType} model`, {
         error: error instanceof Error ? error.message : String(error),
         url: modelUrl,
       });
@@ -260,7 +259,7 @@ class AIVisionService {
         return tf.loadLayersModel(tf.io.fromMemory(cachedData));
       }
     } catch (error) {
-      loggingService.warn(`Failed to load cached model ${modelType}`, {
+      log.warn(`Failed to load cached model ${modelType}`, {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -269,11 +268,21 @@ class AIVisionService {
 
   private async cacheModel(modelType: string, model: tf.LayersModel): Promise<void> {
     try {
-      const modelArtifacts = await model.save(tf.io.withSaveHandler(async artifacts => artifacts));
-      await zeroTrustSecurityService.secureStore(`model_${modelType}`, modelArtifacts);
-      loggingService.debug(`Model ${modelType} cached successfully`);
+      let savedArtifacts: any = null;
+      await model.save(
+        tf.io.withSaveHandler(async artifacts => {
+          savedArtifacts = artifacts;
+          return {
+            modelArtifactsInfo: { dateSaved: new Date(), modelTopologyType: 'JSON' as const },
+          };
+        }),
+      );
+      if (savedArtifacts) {
+        await zeroTrustSecurityService.secureStore(`model_${modelType}`, savedArtifacts);
+      }
+      log.debug(`Model ${modelType} cached successfully`);
     } catch (error) {
-      loggingService.warn(`Failed to cache model ${modelType}`, {
+      log.warn(`Failed to cache model ${modelType}`, {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -311,7 +320,7 @@ class AIVisionService {
         severity: 'low',
       });
 
-      loggingService.info('Waste image classified', {
+      log.info('Waste image classified', {
         category: result.category,
         confidence: result.confidence,
         processingTime: Date.now() - startTime,
@@ -325,7 +334,7 @@ class AIVisionService {
         },
       };
     } catch (error) {
-      loggingService.error('Waste image classification failed', {
+      log.error('Waste image classification failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -366,7 +375,7 @@ class AIVisionService {
         },
       };
     } catch (error) {
-      loggingService.error('Food image recognition failed', {
+      log.error('Food image recognition failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -407,7 +416,7 @@ class AIVisionService {
         },
       };
     } catch (error) {
-      loggingService.error('Transport mode detection failed', {
+      log.error('Transport mode detection failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -442,7 +451,7 @@ class AIVisionService {
 
       return result;
     } catch (error) {
-      loggingService.error('Energy meter reading failed', {
+      log.error('Energy meter reading failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -477,7 +486,7 @@ class AIVisionService {
 
       return batched;
     } catch (error) {
-      loggingService.error('Image preprocessing failed', {
+      log.error('Image preprocessing failed', {
         error: error instanceof Error ? error.message : String(error),
         imageUri,
       });
@@ -766,7 +775,7 @@ class AIVisionService {
           try {
             return await this.classifyWasteImage(uri);
           } catch (error) {
-            loggingService.error('Batch classification failed for image', {
+            log.error('Batch classification failed for image', {
               uri,
               error: error instanceof Error ? error.message : String(error),
             });
@@ -779,11 +788,12 @@ class AIVisionService {
         name: 'batch_image_classification',
         value: Date.now() - startTime,
         unit: 'ms',
+        severity: 'low',
       });
 
       return results;
     } catch (error) {
-      loggingService.error('Batch image classification failed', {
+      log.error('Batch image classification failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -816,9 +826,9 @@ class AIVisionService {
 
       this.isInitialized = false;
 
-      loggingService.info('AI Vision Service cleaned up successfully');
+      log.info('AI Vision Service cleaned up successfully');
     } catch (error) {
-      loggingService.error('AI Vision Service cleanup failed', {
+      log.error('AI Vision Service cleanup failed', {
         error: error instanceof Error ? error.message : String(error),
       });
     }

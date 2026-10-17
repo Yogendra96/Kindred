@@ -1,9 +1,10 @@
-// @ts-nocheck
 /* eslint-disable */
 import { advancedEncryptionService } from './AdvancedEncryptionService';
 import { modernAPMService } from './ModernAPMService';
-import loggingService from './/LoggerService';
+import loggingService from './LoggerService';
 import { Platform } from 'react-native';
+
+const log = loggingService.withTag('DeviceAttestation');
 import DeviceInfo from 'react-native-device-info';
 import * as Keychain from 'react-native-keychain';
 
@@ -102,14 +103,14 @@ class DeviceAttestationService {
 
       modernAPMService.recordMetric('device_attestation_init', Date.now() - startTime, 'ms');
 
-      loggingService.info('Device Attestation Service initialized', {
+      log.info('Device Attestation Service initialized', {
         isValid: attestation.isValid,
         confidence: attestation.confidence,
         integrityChecks: attestation.integrityChecks.length,
         riskFactors: attestation.riskFactors.length,
       });
     } catch (error) {
-      loggingService.error('Device Attestation Service initialization failed', {
+      log.error('Device Attestation Service initialization failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -162,7 +163,7 @@ class DeviceAttestationService {
 
       return attestation;
     } catch (error) {
-      loggingService.error('Device attestation failed', {
+      log.error('Device attestation failed', {
         error: error instanceof Error ? error.message : String(error),
       });
 
@@ -205,7 +206,7 @@ class DeviceAttestationService {
         currentIdentity.hardwareSignature === expectedIdentity.hardwareSignature;
 
       if (!identityMatch) {
-        loggingService.warn('Device identity verification failed', {
+        log.warn('Device identity verification failed', {
           expectedDeviceId: await advancedEncryptionService.hashData(expectedIdentity.deviceId),
           currentDeviceId: await advancedEncryptionService.hashData(currentIdentity.deviceId),
           expectedFingerprint: expectedIdentity.fingerprint.substring(0, 8),
@@ -215,7 +216,7 @@ class DeviceAttestationService {
 
       return identityMatch;
     } catch (error) {
-      loggingService.error('Device identity verification error', {
+      log.error('Device identity verification error', {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -231,7 +232,7 @@ class DeviceAttestationService {
     const currentCount = this.behaviorMetrics.get(activity) || 0;
     this.behaviorMetrics.set(activity, currentCount + 1);
 
-    loggingService.warn('Suspicious activity recorded', {
+    log.warn('Suspicious activity recorded', {
       activity,
       severity,
       count: currentCount + 1,
@@ -335,7 +336,7 @@ class DeviceAttestationService {
         timestamp: Date.now(),
       };
     } catch (error) {
-      loggingService.error('Device identity generation failed', {
+      log.error('Device identity generation failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       return this.generateBasicDeviceIdentity();
@@ -827,7 +828,7 @@ class DeviceAttestationService {
     this.behaviorMetrics.clear();
     this.suspiciousActivityCount = 0;
 
-    loggingService.debug('Behavior monitoring initialized');
+    log.debug('Behavior monitoring initialized');
   }
 
   private isCacheValid(): boolean {
@@ -845,7 +846,7 @@ class DeviceAttestationService {
   private async logAttestationResult(attestation: AttestationResult): Promise<void> {
     const logLevel = attestation.isValid ? 'info' : 'warn';
 
-    loggingService[logLevel]('Device attestation completed', {
+    log[logLevel]('Device attestation completed', {
       isValid: attestation.isValid,
       confidence: attestation.confidence,
       deviceFingerprint: attestation.deviceIdentity.fingerprint.substring(0, 8),
@@ -876,7 +877,7 @@ class DeviceAttestationService {
         },
       );
     } catch (error) {
-      loggingService.error('Failed to store attestation result', {
+      log.error('Failed to store attestation result', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -890,7 +891,7 @@ class DeviceAttestationService {
     this.behaviorMetrics.clear();
     this.suspiciousActivityCount = 0;
 
-    loggingService.info('Device Attestation Service cleaned up');
+    log.info('Device Attestation Service cleaned up');
   }
 }
 
