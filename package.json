@@ -115,7 +115,7 @@
     "expo-image-picker": "^55.0.9",
     "expo-linear-gradient": "^55.0.8",
     "expo-location": "^55.1.2",
-    "expo-modules-core": "~2.2.0",
+    "expo-modules-core": "^55.0.22",
     "expo-sensors": "^55.0.13",
     "expo-task-manager": "^55.0.9",
     "lucide-react-native": "^1.21.0",
