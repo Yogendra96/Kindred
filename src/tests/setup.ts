@@ -244,6 +244,14 @@ jest.mock('react-native-google-mobile-ads', () => {
       BANNER: 'ca-app-pub-3940256099942544/2934735716',
       INTERSTITIAL: 'ca-app-pub-3940256099942544/4411468910',
     },
+    AdsConsent: {
+      gatherConsent: jest.fn(() => Promise.resolve()),
+      requestInfoUpdate: jest.fn(() => Promise.resolve()),
+      showPrivacyOptionsForm: jest.fn(() => Promise.resolve()),
+      loadAndShowConsentFormIfRequired: jest.fn(() => Promise.resolve()),
+      getConsentInfo: jest.fn(() => Promise.resolve({ status: 'OBTAINED' })),
+      reset: jest.fn(),
+    },
   };
 });
 

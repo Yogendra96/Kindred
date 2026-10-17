@@ -14,13 +14,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   AccessibilityInfo,
+  Linking,
 } from 'react-native';
+import { useAppStore } from '../../store/useAppStore';
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
@@ -33,6 +36,11 @@ const RegisterScreen = () => {
     if (!password) errors.push('Password is required');
     if (!confirmPassword) errors.push('Password confirmation is required');
     if (password !== confirmPassword) errors.push('Passwords do not match');
+    if (!agreedToTerms) {
+      errors.push(
+        'You must confirm you are at least 13 years old and agree to the Terms of Service & Privacy Policy',
+      );
+    }
 
     if (errors.length > 0) {
       setFormErrors(errors);
@@ -48,6 +56,7 @@ const RegisterScreen = () => {
       setLoading(true);
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       await userCredential.user.updateProfile({ displayName: name });
+      useAppStore.getState().updatePreferences({ consentAccepted: true });
     } catch (error) {
       console.error('Error during registration:', error);
       const errorMessage =
@@ -127,6 +136,36 @@ const RegisterScreen = () => {
           accessibilityLabel='Confirm password'
           accessibilityHint='Re-enter your password to confirm'
         />
+
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setAgreedToTerms(!agreedToTerms)}
+          accessible={true}
+          accessibilityRole='checkbox'
+          accessibilityState={{ checked: agreedToTerms }}
+          accessibilityLabel='I confirm I am at least 13 years old and agree to the Terms of Service and Privacy Policy'
+        >
+          <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+            {agreedToTerms && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={styles.checkboxLabel}>
+            I confirm I am at least 13 years old and agree to the{' '}
+            <Text
+              style={styles.linkText}
+              onPress={() => Linking.openURL('https://kindred.earth/terms')}
+            >
+              Terms of Service
+            </Text>{' '}
+            and{' '}
+            <Text
+              style={styles.linkText}
+              onPress={() => Linking.openURL('https://kindred.earth/privacy')}
+            >
+              Privacy Policy
+            </Text>
+            .
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.registerButton}
@@ -229,6 +268,43 @@ const styles = StyleSheet.create({
   footerLink: {
     color: '#007AFF',
     fontWeight: 'bold',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    marginTop: 5,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    marginRight: 10,
+    marginTop: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#007AFF',
+  },
+  checkmark: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+  },
+  linkText: {
+    color: '#007AFF',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });
 

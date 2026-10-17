@@ -13,6 +13,7 @@ let RewardedAd: any = null;
 let RewardedAdEventType: any = null;
 let AdEventType: any = null;
 let TestIds: any = null;
+let AdsConsent: any = null;
 
 try {
   if (NativeModules.RNGoogleMobileAdsModule) {
@@ -21,10 +22,26 @@ try {
     RewardedAdEventType = gma.RewardedAdEventType;
     AdEventType = gma.AdEventType;
     TestIds = gma.TestIds;
+    AdsConsent = gma.AdsConsent;
   }
 } catch {
   // Gracefully fallback when native module is missing from the binary
 }
+
+/**
+ * Opens Google's Privacy Options Form if available/required by EU User Consent Policy
+ */
+export const showAdPrivacyOptions = async (): Promise<boolean> => {
+  try {
+    if (AdsConsent && typeof AdsConsent.showPrivacyOptionsForm === 'function') {
+      await AdsConsent.showPrivacyOptionsForm();
+      return true;
+    }
+  } catch (error) {
+    console.warn('Failed to display Ad Privacy Options form:', error);
+  }
+  return false;
+};
 
 interface UseRewardedAdReturn {
   /** True when the ad has loaded and is ready to show */
@@ -53,31 +70,56 @@ export const useRewardedAd = (): UseRewardedAdReturn => {
       return undefined;
     }
 
+    let isMounted = true;
+
     try {
       const ad = RewardedAd.createForAdRequest(AD_UNIT_ID);
       adRef.current = ad;
 
       const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
-        setIsLoaded(true);
-        setAdError(null);
+        if (isMounted) {
+          setIsLoaded(true);
+          setAdError(null);
+        }
       });
 
       const unsubEarned = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
-        setIsWatched(true);
+        if (isMounted) {
+          setIsWatched(true);
+        }
       });
 
       const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
-        setIsLoaded(false);
+        if (isMounted) {
+          setIsLoaded(false);
+        }
       });
 
       const unsubError = ad.addAdEventListener(AdEventType.ERROR, (error: any) => {
-        setAdError(error?.message ?? 'Ad failed to load');
-        setIsLoaded(false);
+        if (isMounted) {
+          setAdError(error?.message ?? 'Ad failed to load');
+          setIsLoaded(false);
+        }
       });
 
-      ad.load();
+      // Gather EU / UK consent via User Messaging Platform (UMP) before requesting ad
+      const initiateAdLoad = async () => {
+        try {
+          if (AdsConsent && typeof AdsConsent.gatherConsent === 'function') {
+            await AdsConsent.gatherConsent();
+          }
+        } catch (consentErr) {
+          console.warn('AdMob UMP consent gathering notice:', consentErr);
+        }
+        if (isMounted) {
+          ad.load();
+        }
+      };
+
+      initiateAdLoad();
 
       return () => {
+        isMounted = false;
         unsubLoaded?.();
         unsubEarned?.();
         unsubClosed?.();

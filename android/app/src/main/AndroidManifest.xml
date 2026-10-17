@@ -5,10 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
-    <!-- Location Permissions -->
+    <!-- Location Permissions (When In Use for Eco-Map & Route Exploration) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     
     <!-- Firebase Cloud Messaging -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -93,19 +92,5 @@
             </intent-filter>
         </activity>
 
-        <!-- Firebase Messaging Service -->
-        <service
-            android:name=".services.FirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
-        <!-- Background Location Service -->
-        <service
-            android:name=".services.LocationService"
-            android:foregroundServiceType="location"
-            android:exported="false" />
     </application>
 </manifest>

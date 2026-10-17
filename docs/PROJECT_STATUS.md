@@ -83,7 +83,7 @@ security-hardened, and tested with 100% clean builds.
 
 | Suite                           | Tests                | Status                       |
 | ------------------------------- | -------------------- | ---------------------------- |
-| Unit & Integration Tests        | 255 tests, 16 suites | ✅ 100% passing              |
+| Unit & Integration Tests        | 263 tests, 17 suites | ✅ 100% passing              |
 | Firestore Rules & Cascade Tests | 23 tests, 7 suites   | ✅ 100% passing (emulator)   |
 | Maestro iOS E2E Flow            | Path B user flow     | ✅ 100% passing on iPhone 17 |
 
@@ -91,6 +91,16 @@ security-hardened, and tested with 100% clean builds.
 
 ## Key Features Delivered
 
+- **AdMob EU User Consent (UMP)** — Automated TCF v2.2 consent gathering and in-app Ad Privacy
+  Preferences management
+- **Age Gating & Mandatory Terms/Privacy** — Registration consent checkbox enforcing 13+ age
+  requirement (COPPA/GDPR Art. 8)
+- **India DPDP Act Grievance Redressal** — Statutory Grievance Officer contact integration
+  (`grievance@kindred.earth`)
+- **Metric/Imperial Unit Formatting** — Clean conversion between kg ↔ lbs and km ↔ mi bound to user
+  preferences
+- **Android Store Safety** — Pruned unnecessary `ACCESS_BACKGROUND_LOCATION` and legacy service
+  stubs from `AndroidManifest.xml`
 - **Account Deletion & Data Cascade** — Complete GDPR Art. 17 & Apple 5.1.1(v) cascade erasure via
   Cloud Function & Auth trigger
 - **Apple Privacy Manifest (`PrivacyInfo.xcprivacy`)** — Full declarations of collected data types,

@@ -22,6 +22,7 @@ import { useToast } from '../../contexts/ToastContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { zeroTrustSecurityService } from '../../services/ZeroTrustSecurityService';
 import { telemetryService } from '../../services/TelemetryService';
+import { showAdPrivacyOptions } from '../../hooks/useRewardedAd';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
 import { SpaceBackground } from '../../components/common/SpaceBackground';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -676,6 +677,32 @@ const ProfileScreen = () => {
                 icon: <FileText size={24} color='#38EF7D' weight='duotone' />,
                 label: 'Terms of Service',
                 onPress: () => Linking.openURL('https://kindred.earth/terms'),
+              },
+              {
+                icon: <LockKey size={24} color='#38EF7D' weight='duotone' />,
+                label: 'Ad Privacy Preferences',
+                onPress: async () => {
+                  const opened = await showAdPrivacyOptions();
+                  if (!opened) {
+                    showToast('No regional ad consent update required.', 'info');
+                  }
+                },
+              },
+              {
+                icon: <ShieldCheck size={24} color='#38EF7D' weight='duotone' />,
+                label: 'Data Grievance Officer',
+                onPress: () =>
+                  Alert.alert(
+                    'Data Protection & Grievance',
+                    'Pursuant to India DPDP Act 2023 & GDPR:\n\nGrievance Officer: Privacy Redressal Cell\nEmail: grievance@kindred.earth\nResponse SLA: within 48 hours',
+                    [
+                      { text: 'Close', style: 'cancel' },
+                      {
+                        text: 'Email Officer',
+                        onPress: () => Linking.openURL('mailto:grievance@kindred.earth'),
+                      },
+                    ],
+                  ),
               },
               {
                 icon: <Export size={24} color='#fff' weight='duotone' />,
