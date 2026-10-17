@@ -687,6 +687,42 @@ jest.mock(
   { virtual: true },
 );
 
+// Mock PostHog React Native
+jest.mock('posthog-react-native', () => {
+  const mockPostHog = {
+    init: jest.fn(),
+    identify: jest.fn(),
+    reset: jest.fn(),
+    capture: jest.fn(),
+    screen: jest.fn(),
+    flush: jest.fn(),
+    getDistinctId: jest.fn(() => 'test_distinct_id'),
+    getSessionId: jest.fn(() => 'test_session_id'),
+    optIn: jest.fn(),
+    optOut: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    default: jest.fn().mockImplementation(() => mockPostHog),
+    PostHog: jest.fn().mockImplementation(() => mockPostHog),
+    PostHogProvider: ({ children }: { children: any }) => children,
+    usePostHog: () => mockPostHog,
+    useNavigationTracker: jest.fn(),
+  };
+});
+
+// Mock Sentry React Native
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  wrap: (Component: any) => Component,
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  addBreadcrumb: jest.fn(),
+  setUser: jest.fn(),
+  setTag: jest.fn(),
+  setContext: jest.fn(),
+}));
+
 // Global setup
 global.window = {};
 global.window = global;

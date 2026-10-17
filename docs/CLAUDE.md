@@ -66,30 +66,33 @@ All callable functions have auth guards + rate limiting (`functions/src/rateLimi
 
 ## Key Files
 
-| File                                 | Purpose                           |
-| ------------------------------------ | --------------------------------- |
-| `src/store/useAppStore.ts`           | Zustand preferences store         |
-| `src/hooks/useFirebaseData.ts`       | Firebase onSnapshot hooks         |
-| `src/hooks/useRewardedAd.ts`         | AdMob rewarded ad hook            |
-| `src/screens/main/WalletScreen.tsx`  | Wallet + gift card redemption UI  |
-| `src/screens/main/HomeScreen.tsx`    | Activity logging + ad prompt      |
-| `src/screens/main/ProfileScreen.tsx` | Profile + corporate email linking |
-| `functions/src/index.ts`             | All Cloud Functions               |
-| `functions/src/rateLimit.ts`         | Per-user rate limiter             |
-| `src/utils/firebaseInit.ts`          | Firebase + AppCheck init          |
-| `src/tests/setup.ts`                 | Jest test setup                   |
+| File                                 | Purpose                            |
+| ------------------------------------ | ---------------------------------- |
+| `src/store/useAppStore.ts`           | Zustand preferences store          |
+| `src/hooks/useFirebaseData.ts`       | Firebase onSnapshot hooks          |
+| `src/hooks/useRewardedAd.ts`         | AdMob rewarded ad hook             |
+| `src/screens/main/WalletScreen.tsx`  | Wallet + gift card redemption UI   |
+| `src/screens/main/HomeScreen.tsx`    | Activity logging + ad prompt       |
+| `src/screens/main/ProfileScreen.tsx` | Profile + corporate email linking  |
+| `functions/src/index.ts`             | All Cloud Functions                |
+| `functions/src/rateLimit.ts`         | Per-user rate limiter              |
+| `src/utils/firebaseInit.ts`          | Firebase + AppCheck init           |
+| `src/services/TelemetryService.ts`   | PostHog + Sentry unified telemetry |
+| `src/tests/setup.ts`                 | Jest test setup                    |
 
 ## Dependencies (key)
 
-| Package                        | Version | Purpose                |
-| ------------------------------ | ------- | ---------------------- |
-| react-native                   | 0.81.4  | Framework              |
-| typescript                     | 7.0.2   | Type system            |
-| zustand                        | 5.0.14  | Local state            |
-| @tanstack/react-query          | 5.x     | API caching            |
-| @react-native-firebase/*       | 25.1.0  | Firebase (all aligned) |
-| react-native-google-mobile-ads | 16.x    | AdMob ads              |
-| prettier                       | 3.9.5   | Code formatting        |
+| Package                        | Version | Purpose                                        |
+| ------------------------------ | ------- | ---------------------------------------------- |
+| react-native                   | 0.81.4  | Framework                                      |
+| typescript                     | 7.0.2   | Type system                                    |
+| zustand                        | 5.0.14  | Local state                                    |
+| posthog-react-native           | 4.81.2  | Telemetry, autocapture, session replay         |
+| @sentry/react-native           | 8.7.0   | Native/JS error tracking & crash symbolication |
+| @tanstack/react-query          | 5.x     | API caching                                    |
+| @react-native-firebase/*       | 25.1.0  | Firebase (all aligned)                         |
+| react-native-google-mobile-ads | 16.x    | AdMob ads                                      |
+| prettier                       | 3.9.5   | Code formatting                                |
 
 ## Conventions
 

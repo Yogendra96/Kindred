@@ -23,9 +23,12 @@ mobile experience.
 
 ### Current State
 
-- **245 React Native tests across 15 suites**, all passing
+- **252 React Native tests across 16 suites**, all passing
 - **22 Firestore Security Rules unit tests** in Firebase emulator, all passing
+- **274 total automated tests across 22 suites**, 100% passing
 - **7 Firebase Cloud Functions** handling server-side logic & secure payouts
+- **PostHog & Sentry Telemetry**: Automatic click/touch capture, screen tracking, session replays,
+  and native crash symbolication with 1-click replay deep links
 - **Strategy 1 CI/CD**: GitHub Actions automated PR test pipeline (Ubuntu Linux) + local one-command
   Fastlane release deployments
 - **Store Release Ready**: iOS Info.plist usage descriptions, Apple Privacy Manifest, Android 13+
@@ -168,22 +171,24 @@ Redux, Redux Toolkit, and Redux Persist were removed in favor of this lighter se
 
 ### Tech Stack
 
-| Layer                  | Technology                                                      |
-| ---------------------- | --------------------------------------------------------------- |
-| **Framework**          | React Native 0.81.4                                             |
-| **Language**           | TypeScript 5.7.3                                                |
-| **State (Local)**      | Zustand 5                                                       |
-| **State (Server)**     | Firebase onSnapshot hooks                                       |
-| **Navigation**         | React Navigation 7.x                                            |
-| **Backend**            | Firebase Auth, Firestore, Cloud Functions                       |
-| **Security**           | Firebase AppCheck, rate limiting, Firestore Rules hardening     |
-| **Ads**                | AdMob rewarded ads with server-side verification                |
-| **Payouts**            | Cashfree Payouts (Instant UPI) & Xoxoday Plum (Global Vouchers) |
-| **Testing**            | Jest, React Testing Library, Firebase Emulator Rules Suite      |
-| **CI/CD**              | GitHub Actions (Ubuntu Linux, 1x multiplier, PR validation)     |
-| **Release Automation** | Fastlane (TestFlight & Google Play Internal tracks)             |
-| **Linting**            | ESLint (flat config), Prettier 3.9.5                            |
-| **Package Manager**    | npm                                                             |
+| Layer                   | Technology                                                       |
+| ----------------------- | ---------------------------------------------------------------- |
+| **Framework**           | React Native 0.81.4                                              |
+| **Language**            | TypeScript 5.7.3                                                 |
+| **State (Local)**       | Zustand 5                                                        |
+| **State (Server)**      | Firebase onSnapshot hooks                                        |
+| **Navigation**          | React Navigation 7.x                                             |
+| **Backend**             | Firebase Auth, Firestore, Cloud Functions                        |
+| **Security**            | Firebase AppCheck, rate limiting, Firestore Rules hardening      |
+| **Ads**                 | AdMob rewarded ads with server-side verification                 |
+| **Payouts**             | Cashfree Payouts (Instant UPI) & Xoxoday Plum (Global Vouchers)  |
+| **Testing**             | Jest, React Testing Library, Firebase Emulator Rules Suite       |
+| **Telemetry & Actions** | PostHog (Touch Autocapture, Funnels, User Paths, Session Replay) |
+| **Error Monitoring**    | Sentry (Native/JS Crash Symbolication, Deep Replay Linking)      |
+| **CI/CD**               | GitHub Actions (Ubuntu Linux, 1x multiplier, PR validation)      |
+| **Release Automation**  | Fastlane (TestFlight & Google Play Internal tracks)              |
+| **Linting**             | ESLint (flat config), Prettier 3.9.5                             |
+| **Package Manager**     | npm                                                              |
 
 ### Firebase Cloud Functions
 
@@ -252,8 +257,8 @@ npx jest --watch
 npx jest --no-coverage path/to/test
 ```
 
-**Current:** 267 total tests (245 React Native unit tests + 22 Firestore emulator rules tests), all
-passing.
+**Current:** 274 total tests (252 React Native unit tests + 22 Firestore emulator rules tests), all
+passing across 22 suites.
 
 ---
 

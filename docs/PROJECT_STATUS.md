@@ -1,8 +1,8 @@
 # Kindred Project Status
 
-**Last Updated:** October 15, 2026  
-**Build Status:** ✅ TypeScript clean, ESLint clean (0 errors), 15/15 Jest suites passing (245/245),
-6/6 Firestore Rules suites passing (22/22)  
+**Last Updated:** October 17, 2026  
+**Build Status:** ✅ TypeScript clean, ESLint clean (0 errors), 16/16 Jest suites passing (252/252),
+6/6 Firestore Rules suites passing (22/22) — 274 total tests passing  
 **Package Manager:** bun / npm  
 **Git Branch:** `feature/react-native-082-new-architecture` (Synced to remote)
 
@@ -40,8 +40,10 @@ security-hardened, and tested with 100% clean builds.
 | Firestore Security Rules     | ✅ Live | Production-hardened: client transaction writes disabled, wallet locked       |
 | Rules Unit Testing           | ✅ Live | 22 automated tests via Firebase emulator verifying zero tampering            |
 | Store Release Readiness      | ✅ Live | iOS Info.plist, Apple PrivacyInfo.xcprivacy, AndroidManifest permissions     |
-| GitHub Actions CI Pipeline   | ✅ Live | Ubuntu Linux PR validation (TypeScript, ESLint, 267 tests) in <2 min         |
+| GitHub Actions CI Pipeline   | ✅ Live | Ubuntu Linux PR validation (TypeScript, ESLint, 274 tests) in <2 min         |
 | Fastlane Release Automation  | ✅ Live | Local one-command deployments (`fastlane ios beta`, `fastlane android beta`) |
+| PostHog Action Telemetry     | ✅ Live | Touch autocapture, React Navigation tracking, user journeys, session replay  |
+| Sentry Crash Monitoring      | ✅ Live | JS/Native crash symbolication + 1-click deep link to PostHog session replay  |
 
 ---
 
@@ -52,6 +54,8 @@ security-hardened, and tested with 100% clean builds.
 | react-native                   | 0.81.6  | Core framework                                             |
 | TypeScript                     | 5.7.3   | Type checking & language tooling                           |
 | zustand                        | 5.0.15  | Local UI / preferences state                               |
+| posthog-react-native           | 4.81.2  | User action telemetry, autocapture, session replay         |
+| @sentry/react-native           | 8.7.0   | Crash reporting, symbolication, release health             |
 | @react-native-firebase/*       | 25.1.0  | Auth, Firestore, Functions, AppCheck, Analytics, Messaging |
 | @tanstack/react-query          | 5.90.21 | Server state + caching                                     |
 | @tensorflow/tfjs               | 4.22.0  | On-device ML                                               |
@@ -79,7 +83,7 @@ security-hardened, and tested with 100% clean builds.
 
 | Suite                    | Tests                | Status                       |
 | ------------------------ | -------------------- | ---------------------------- |
-| Unit & Integration Tests | 245 tests, 15 suites | ✅ 100% passing              |
+| Unit & Integration Tests | 252 tests, 16 suites | ✅ 100% passing              |
 | Firestore Rules Tests    | 22 tests, 6 suites   | ✅ 100% passing (emulator)   |
 | Maestro iOS E2E Flow     | Path B user flow     | ✅ 100% passing on iPhone 17 |
 
@@ -103,16 +107,18 @@ security-hardened, and tested with 100% clean builds.
 - **Real-time Social Dashboard** — Live activity feed and corporate leaderboard
 - **AI Vision for Waste Categorization** — TensorFlow.js with mock fallback
 - **Verified Carbon Marketplace** — Offset projects with Verra/Gold Standard registry IDs
+- **PostHog & Sentry Unified Observability** — Automatic touch/click telemetry, screen view
+  analytics, and native error monitoring with cross-linked session replays
 
 ---
 
 ## Code Metrics
 
 ```
-TypeScript files: ~160
-Services: ~55 implementations
+TypeScript files: ~161
+Services: ~56 implementations
 Components: 45+ UI components
 Custom hooks: 15+
-Test suites: 21 suites (267 total tests passing)
+Test suites: 22 suites (274 total tests passing)
 Docs: ~28 markdown files
 ```
