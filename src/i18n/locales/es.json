@@ -1,0 +1,51 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando...",
+    "success": "Éxito",
+    "error": "Error",
+    "ok": "Aceptar",
+    "close": "Cerrar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "map": "Mapa de Impacto",
+    "activity": "Actividad",
+    "market": "Mercado",
+    "profile": "Perfil"
+  },
+  "profile": {
+    "title": "Perfil",
+    "editProfile": "Editar Perfil",
+    "account": "Cuenta",
+    "preferences": "Preferencias",
+    "notifications": "Notificaciones Push",
+    "weeklyReport": "Informe Semanal",
+    "privateProfile": "Perfil Privado",
+    "analytics": "Analítica Anónima",
+    "locationTracking": "Rastreo Ecológico de Ubicación",
+    "darkMode": "Modo Oscuro",
+    "metricUnits": "Unidades Métricas (kg, km)",
+    "language": "Idioma",
+    "privacyPolicy": "Política de Privacidad",
+    "termsOfService": "Términos del Servicio",
+    "adPrivacy": "Preferencias de Publicidad",
+    "grievanceOfficer": "Oficial de Protección de Datos",
+    "exportData": "Exportar Mis Datos",
+    "deleteAccount": "Eliminar Cuenta",
+    "signOut": "Cerrar Sesión"
+  },
+  "wallet": {
+    "balance": "Saldo Ecológico",
+    "cashout": "Retiro Instantáneo",
+    "vouchers": "Vales de Regalo Digitales",
+    "transactions": "Historial de Transacciones"
+  },
+  "carbon": {
+    "todayFootprint": "Huella de Hoy",
+    "weeklyAverage": "Promedio Semanal",
+    "offsetImpact": "Compensación Total",
+    "carbonSaved": "Carbono Ahorrado"
+  }
+}

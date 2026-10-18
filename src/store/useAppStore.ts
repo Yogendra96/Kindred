@@ -16,6 +16,7 @@ export interface UserPreferences {
   locationTracking?: boolean;
   ecoChargingScreen?: boolean;
   units?: 'metric' | 'imperial';
+  language?: 'en' | 'hi' | 'es';
 }
 
 interface AppState {

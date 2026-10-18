@@ -12,6 +12,8 @@ import { backgroundSyncService } from './src/services/BackgroundSyncService';
 import { telemetryService } from './src/services/TelemetryService';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { PrivacyConsentModal } from './src/components/ui/PrivacyConsentModal';
+import i18n from './src/i18n';
+import { useAppStore } from './src/store/useAppStore';
 
 // Disable Metro yellow boxes
 LogBox.ignoreAllLogs();
@@ -23,6 +25,12 @@ const App = () => {
   useEffect(() => {
     // Install global JS error handlers
     ErrorHandler.installGlobalHandlers();
+
+    // Sync saved language preference with i18n
+    const savedLanguage = useAppStore.getState().preferences.language;
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
 
     // Initialize telemetry (PostHog + Sentry cross-linking)
     telemetryService.init();

@@ -1,0 +1,51 @@
+{
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "loading": "लोड हो रहा है...",
+    "success": "सफलता",
+    "error": "त्रुटि",
+    "ok": "ठीक है",
+    "close": "बंद करें"
+  },
+  "nav": {
+    "home": "होम",
+    "map": "इम्पैक्ट मैप",
+    "activity": "गतिविधि",
+    "market": "मार्केटप्लेस",
+    "profile": "प्रोफ़ाइल"
+  },
+  "profile": {
+    "title": "प्रोफ़ाइल",
+    "editProfile": "प्रोफ़ाइल संपादित करें",
+    "account": "खाता",
+    "preferences": "प्राथमिकताएं",
+    "notifications": "पुश नोटिफिकेशन",
+    "weeklyReport": "साप्ताहिक रिपोर्ट",
+    "privateProfile": "निजी प्रोफ़ाइल",
+    "analytics": "अनाम एनालिटिक्स",
+    "locationTracking": "इको लोकेशन ट्रैकिंग",
+    "darkMode": "डार्क मोड",
+    "metricUnits": "मीट्रिक इकाइयाँ (kg, km)",
+    "language": "भाषा",
+    "privacyPolicy": "गोपनीयता नीति",
+    "termsOfService": "सेवा की शर्तें",
+    "adPrivacy": "विज्ञापन गोपनीयता प्राथमिकताएं",
+    "grievanceOfficer": "डेटा शिकायत अधिकारी",
+    "exportData": "मेरा डेटा निर्यात करें",
+    "deleteAccount": "खाता हटाएं",
+    "signOut": "साइन आउट"
+  },
+  "wallet": {
+    "balance": "इको बैलेंस",
+    "cashout": "तत्काल UPI निकासी",
+    "vouchers": "डिजिटल उपहार वाउचर",
+    "transactions": "लेन-देन इतिहास"
+  },
+  "carbon": {
+    "todayFootprint": "आज का कार्बन फुटप्रिंट",
+    "weeklyAverage": "साप्ताहिक औसत",
+    "offsetImpact": "कुल कार्बन ऑफसेट",
+    "carbonSaved": "बचाया गया कार्बन"
+  }
+}

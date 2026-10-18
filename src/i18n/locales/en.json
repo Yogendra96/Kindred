@@ -1,0 +1,51 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "ok": "OK",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "map": "Impact Map",
+    "activity": "Activity",
+    "market": "Marketplace",
+    "profile": "Profile"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "account": "Account",
+    "preferences": "Preferences",
+    "notifications": "Push Notifications",
+    "weeklyReport": "Weekly Report",
+    "privateProfile": "Private Profile",
+    "analytics": "Anonymous Analytics",
+    "locationTracking": "Eco Location Tracking",
+    "darkMode": "Dark Mode",
+    "metricUnits": "Metric Units (kg, km)",
+    "language": "Language",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "adPrivacy": "Ad Privacy Preferences",
+    "grievanceOfficer": "Data Grievance Officer",
+    "exportData": "Export My Data",
+    "deleteAccount": "Delete Account",
+    "signOut": "Sign Out"
+  },
+  "wallet": {
+    "balance": "Eco Balance",
+    "cashout": "Instant UPI Cashout",
+    "vouchers": "Digital Gift Vouchers",
+    "transactions": "Transaction History"
+  },
+  "carbon": {
+    "todayFootprint": "Today's Footprint",
+    "weeklyAverage": "Weekly Average",
+    "offsetImpact": "Total Carbon Offset",
+    "carbonSaved": "Carbon Saved"
+  }
+}

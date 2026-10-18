@@ -23,6 +23,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { zeroTrustSecurityService } from '../../services/ZeroTrustSecurityService';
 import { telemetryService } from '../../services/TelemetryService';
 import { showAdPrivacyOptions } from '../../hooks/useRewardedAd';
+import { useTranslation } from 'react-i18next';
+import type { SupportedLanguageCode } from '../../i18n';
+import { SUPPORTED_LANGUAGES } from '../../i18n';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
 import { SpaceBackground } from '../../components/common/SpaceBackground';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -38,6 +41,7 @@ import {
   LockKey,
   Moon,
   Ruler,
+  GlobeSimple,
   Export,
   Trash,
   CaretRight,
@@ -121,6 +125,26 @@ const ProfileScreen = () => {
   const darkMode = (preferences?.theme ?? 'dark') === 'dark';
   const metricUnits = (preferences?.units ?? 'metric') === 'metric';
   const ecoChargingEnabled = settings?.ecoChargingScreen ?? false;
+
+  const { t, i18n } = useTranslation();
+  const currentLanguageCode =
+    preferences?.language || (i18n.language as SupportedLanguageCode) || 'en';
+  const currentLanguage =
+    SUPPORTED_LANGUAGES.find(l => l.code === currentLanguageCode) || SUPPORTED_LANGUAGES[0];
+
+  const handleSelectLanguage = () => {
+    Alert.alert('Language / भाषा / Idioma', 'Select your preferred app language:', [
+      ...SUPPORTED_LANGUAGES.map(lang => ({
+        text: `${lang.nativeLabel} (${lang.label})`,
+        onPress: () => {
+          i18n.changeLanguage(lang.code);
+          updatePreferences({ language: lang.code });
+          showToast(`Language set to ${lang.nativeLabel}`, 'success');
+        },
+      })),
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
 
   const handleToggleNotifications = (value: boolean) => {
     updatePreferences({ notifications: value });
@@ -651,6 +675,23 @@ const ProfileScreen = () => {
                 />
               }
             />
+            <View style={styles.divider} />
+            <TouchableOpacity
+              style={styles.settingRow}
+              onPress={handleSelectLanguage}
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingIconWrapper}>
+                <GlobeSimple size={24} color='#38EF7D' weight='duotone' />
+              </View>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingLabel}>{t('profile.language', 'Language')}</Text>
+                <Text style={styles.settingSubLabel}>
+                  {currentLanguage.nativeLabel} ({currentLanguage.label})
+                </Text>
+              </View>
+              <CaretRight size={20} color='rgba(255,255,255,0.5)' />
+            </TouchableOpacity>
           </GlassCard>
           {ecoChargingEnabled && (
             <TouchableOpacity
