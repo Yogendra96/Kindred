@@ -106,6 +106,7 @@
     "axios": "^1.13.6",
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
+    "expo": "^55.0.14",
     "expo-battery": "^55.0.13",
     "expo-blur": "^55.0.8",
     "expo-camera": "^55.0.9",
