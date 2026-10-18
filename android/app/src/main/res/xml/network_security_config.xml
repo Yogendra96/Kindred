@@ -9,7 +9,7 @@
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">api.kindred.com</domain>
         <domain includeSubdomains="true">cdn.kindred.com</domain>
-        <pin-set expiration="2026-04-20">
+        <pin-set expiration="2028-12-31">
             <!-- Add your SSL certificate pins here -->
             <!-- Example: <pin digest="SHA-256">your-pin-here</pin> -->
         </pin-set>

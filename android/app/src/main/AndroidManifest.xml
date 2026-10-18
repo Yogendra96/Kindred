@@ -45,7 +45,7 @@
         android:largeHeap="true"
         android:hardwareAccelerated="true"
         tools:replace="android:usesCleartextTraffic"
-        tools:targetApi="33">
+        tools:targetApi="35">
 
         <!-- Google Maps Configuration -->
         <meta-data

@@ -12,8 +12,8 @@
 ### 1.1 Store Identifiers
 
 - **App Name:** Kindred: Carbon & Eco Rewards
-- **Bundle Identifier (iOS):** `earth.kindred.app`
-- **Application ID (Android):** `earth.kindred.app`
+- **Bundle Identifier (iOS):** `com.kindred`
+- **Application ID (Android):** `com.kindred`
 - **Version Number:** `1.0.0`
 - **Build Number:** `1`
 - **Primary Category:** Lifestyle / Health & Fitness (Environment & Sustainability)

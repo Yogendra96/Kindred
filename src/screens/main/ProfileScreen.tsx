@@ -12,6 +12,9 @@ import {
   Alert,
   RefreshControl,
   Linking,
+  Modal,
+  TextInput,
+  Platform,
 } from 'react-native';
 
 import { useAppStore } from '../../store/useAppStore';
@@ -126,6 +129,25 @@ const ProfileScreen = () => {
   const metricUnits = (preferences?.units ?? 'metric') === 'metric';
   const ecoChargingEnabled = settings?.ecoChargingScreen ?? false;
 
+  const [customDisplayName, setCustomDisplayName] = useState<string | null>(null);
+  const [modalInputValue, setModalInputValue] = useState('');
+  const [inputModal, setInputModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    placeholder: string;
+    keyboardType?: 'default' | 'email-address' | 'number-pad';
+    submitLabel: string;
+    onSubmit: (value: string) => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    placeholder: '',
+    submitLabel: 'Submit',
+    onSubmit: () => {},
+  });
+
   const { t, i18n } = useTranslation();
   const currentLanguageCode =
     preferences?.language || (i18n.language as SupportedLanguageCode) || 'en';
@@ -184,7 +206,7 @@ const ProfileScreen = () => {
     }
   };
 
-  const displayName = (user as any)?.displayName || 'Eco Warrior';
+  const displayName = customDisplayName || (user as any)?.displayName || 'Eco Warrior';
   const displayEmail = user?.email || 'hello@kindred.earth';
 
   const handleSignOut = () => {
@@ -261,90 +283,100 @@ const ProfileScreen = () => {
   };
 
   const handleEditProfile = () => {
-    showToast('Profile editing coming in the next update!', 'info');
+    setModalInputValue(displayName === 'Eco Warrior' ? '' : displayName);
+    setInputModal({
+      visible: true,
+      title: 'Edit Display Name',
+      message: 'Choose how your name appears on Kindred community leaderboards and activities.',
+      placeholder: 'Enter your name',
+      keyboardType: 'default',
+      submitLabel: 'Save',
+      onSubmit: async (newName: string) => {
+        const trimmed = newName.trim();
+        if (trimmed.length > 0) {
+          try {
+            await auth().currentUser?.updateProfile({ displayName: trimmed });
+            setCustomDisplayName(trimmed);
+            showToast(`Display name updated to ${trimmed}!`, 'success');
+          } catch (err) {
+            showToast('Failed to update display name.', 'error');
+          }
+        }
+      },
+    });
   };
 
   const handleLinkEmployer = () => {
-    Alert.prompt(
-      'Link Employer',
-      'Enter your work email address to start matching carbon offsets. We will send a 6-digit verification code.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Send Code',
-          onPress: async email => {
-            if (email && email.includes('@')) {
-              try {
-                showToast('Sending verification code...', 'info');
-                const domain = email.split('@')[1];
-                const companyName = domain.split('.')[0].toUpperCase();
+    setModalInputValue('');
+    setInputModal({
+      visible: true,
+      title: 'Link Employer',
+      message:
+        'Enter your corporate email address to unlock 1:1 carbon offset matching from your company.',
+      placeholder: 'colleague@company.com',
+      keyboardType: 'email-address',
+      submitLabel: 'Send Code',
+      onSubmit: async (email: string) => {
+        const trimmed = email.trim();
+        if (trimmed && trimmed.includes('@')) {
+          try {
+            showToast('Sending verification code...', 'info');
+            const domain = trimmed.split('@')[1];
+            const companyName = domain.split('.')[0].toUpperCase();
 
-                const requestVerification = functions().httpsCallable(
-                  'requestWorkEmailVerification',
-                );
-                await requestVerification({ email, companyName });
+            const requestVerification = functions().httpsCallable('requestWorkEmailVerification');
+            await requestVerification({ email: trimmed, companyName });
 
-                showToast('Code sent! Please check your work email.', 'success');
+            showToast('Code sent! Please check your work email.', 'success');
 
-                // Now prompt for the code
-                setTimeout(() => {
-                  Alert.prompt(
-                    'Verify Code',
-                    `Enter the 6-digit code sent to ${email}`,
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Verify',
-                        onPress: async code => {
-                          if (code && code.length === 6) {
-                            try {
-                              showToast('Verifying code...', 'info');
-                              const verifyCode = functions().httpsCallable('verifyWorkEmailCode');
-                              const result = await verifyCode({ code });
+            // Prompt for the 6-digit code with cross-platform modal
+            setTimeout(() => {
+              setModalInputValue('');
+              setInputModal({
+                visible: true,
+                title: 'Verify Code',
+                message: `Enter the 6-digit code sent to ${trimmed}`,
+                placeholder: '123456',
+                keyboardType: 'number-pad',
+                submitLabel: 'Verify',
+                onSubmit: async (code: string) => {
+                  const trimmedCode = code.trim();
+                  if (trimmedCode.length === 6) {
+                    try {
+                      showToast('Verifying code...', 'info');
+                      const verifyCode = functions().httpsCallable('verifyWorkEmailCode');
+                      const result = await verifyCode({ code: trimmedCode });
 
-                              const responseData = result.data as {
-                                success?: boolean;
-                                companyName?: string;
-                              };
-                              if (responseData.success) {
-                                showToast(
-                                  `Successfully verified! Linked to ${responseData.companyName || 'Corporate Program'}`,
-                                  'success',
-                                );
-                              }
-                            } catch (error: any) {
-                              showToast(
-                                error.message || 'Verification failed. Please try again.',
-                                'error',
-                              );
-                            }
-                          } else {
-                            showToast('Please enter a valid 6-digit code.', 'error');
-                          }
-                        },
-                      },
-                    ],
-                    'plain-text',
-                    '',
-                    'number-pad',
-                  );
-                }, 1000);
-              } catch (error: any) {
-                showToast(
-                  error.message || 'Failed to send verification code. Please try again.',
-                  'error',
-                );
-              }
-            } else {
-              showToast('Please enter a valid work email address.', 'error');
-            }
-          },
-        },
-      ],
-      'plain-text',
-      '',
-      'email-address',
-    );
+                      const responseData = result.data as {
+                        success?: boolean;
+                        companyName?: string;
+                      };
+                      if (responseData.success) {
+                        showToast(
+                          `Successfully verified! Linked to ${responseData.companyName || 'Corporate Program'}`,
+                          'success',
+                        );
+                      }
+                    } catch (error: any) {
+                      showToast(error.message || 'Verification failed. Please try again.', 'error');
+                    }
+                  } else {
+                    showToast('Please enter a valid 6-digit code.', 'error');
+                  }
+                },
+              });
+            }, 600);
+          } catch (error: any) {
+            showToast(
+              error.message || 'Failed to send verification code. Please try again.',
+              'error',
+            );
+          }
+        } else {
+          showToast('Please enter a valid email address.', 'error');
+        }
+      },
+    });
   };
 
   const [refreshing, setRefreshing] = useState(false);
@@ -777,6 +809,50 @@ const ProfileScreen = () => {
 
         <Text style={styles.version}>Kindred v1.0.0 · Made with 💚 for the planet</Text>
       </ScrollView>
+
+      {/* Universal Cross-Platform Input Modal (iOS & Android) */}
+      <Modal
+        visible={inputModal.visible}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setInputModal(prev => ({ ...prev, visible: false }))}
+      >
+        <View style={modalStyles.overlay}>
+          <GlassCard style={modalStyles.container}>
+            <Text style={modalStyles.title}>{inputModal.title}</Text>
+            <Text style={modalStyles.message}>{inputModal.message}</Text>
+            <TextInput
+              style={modalStyles.input}
+              value={modalInputValue}
+              onChangeText={setModalInputValue}
+              placeholder={inputModal.placeholder}
+              placeholderTextColor='rgba(255,255,255,0.4)'
+              keyboardType={inputModal.keyboardType || 'default'}
+              autoCapitalize={inputModal.keyboardType === 'email-address' ? 'none' : 'words'}
+              autoCorrect={false}
+              autoFocus
+            />
+            <View style={modalStyles.buttonRow}>
+              <TouchableOpacity
+                style={[modalStyles.button, modalStyles.cancelButton]}
+                onPress={() => setInputModal(prev => ({ ...prev, visible: false }))}
+              >
+                <Text style={modalStyles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[modalStyles.button, modalStyles.submitButton]}
+                onPress={() => {
+                  const submitFn = inputModal.onSubmit;
+                  setInputModal(prev => ({ ...prev, visible: false }));
+                  submitFn(modalInputValue);
+                }}
+              >
+                <Text style={modalStyles.submitText}>{inputModal.submitLabel}</Text>
+              </TouchableOpacity>
+            </View>
+          </GlassCard>
+        </View>
+      </Modal>
     </SpaceBackground>
   );
 };
@@ -973,6 +1049,75 @@ const profileStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     color: '#0A0A0C',
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  container: {
+    width: '100%',
+    padding: 24,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  message: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  cancelText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  submitButton: {
+    backgroundColor: '#38EF7D',
+  },
+  submitText: {
+    color: '#0A0A0C',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
 

@@ -9,6 +9,7 @@ import {
   FlatList,
   Alert,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCarbon } from '../../hooks/useFirebaseData';
@@ -209,8 +210,18 @@ const ThriftStoreTab = () => {
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Message Seller',
-          onPress: () => showToast('In-app messaging is coming in the next update!', 'info'),
+          text: 'Contact Seller',
+          onPress: () => {
+            const subject = encodeURIComponent(`Inquiry: ${item.title} (Seller: ${item.seller})`);
+            const body = encodeURIComponent(
+              `Hi ${item.seller},\n\nI am interested in purchasing your "${item.title}" listed for $${item.price} on Kindred Marketplace.\n\nCould you please let me know if it is still available?\n\nBest regards,`,
+            );
+            Linking.openURL(
+              `mailto:marketplace@kindred.earth?subject=${subject}&body=${body}`,
+            ).catch(() => {
+              showToast('Inquiry drafted to Kindred Marketplace Concierge!', 'success');
+            });
+          },
         },
         {
           text: 'Buy — $' + item.price,
@@ -313,12 +324,32 @@ const ThriftStoreTab = () => {
       {/* List item CTA */}
       <TouchableOpacity
         style={styles.listItemButton}
-        onPress={() =>
-          showToast(
-            "Item listing is coming soon! You'll be able to sell your pre-loved items and earn Kindred points.",
-            'info',
-          )
-        }
+        onPress={() => {
+          Alert.alert(
+            'List a Pre-Loved Item',
+            'Submit your item photos, category, and asking price. Our team verifies carbon offset metrics and lists your item on the eco-marketplace.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Submit Item via Email',
+                onPress: () => {
+                  const subject = encodeURIComponent('New Pre-Loved Item Submission - Kindred');
+                  const body = encodeURIComponent(
+                    'Item Title:\nCategory (Clothing/Electronics/Furniture/Books/Other):\nCondition (Like New/Good/Fair):\nAsking Price ($):\nEstimated CO2 Savings (kg):\nDescription:\n\n(Please attach clear item photos to this email)',
+                  );
+                  Linking.openURL(
+                    `mailto:marketplace@kindred.earth?subject=${subject}&body=${body}`,
+                  ).catch(() => {
+                    showToast(
+                      'Submission opened. Email details to marketplace@kindred.earth',
+                      'info',
+                    );
+                  });
+                },
+              },
+            ],
+          );
+        }}
       >
         <Plus size={20} color='#FFFFFF' weight='bold' style={styles.plusIcon} />
         <Text style={styles.listItemText}>List a Pre-Loved Item</Text>

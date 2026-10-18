@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Linking,
+  Platform,
+} from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { useToast } from '../../contexts/ToastContext';
@@ -168,6 +177,22 @@ const IMPACT_STATS = [
 
 const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
   const { showToast } = useToast();
+  const handleOpenDirections = (locationItem: (typeof LOCATIONS)[0]) => {
+    const scheme = Platform.select({
+      ios: `maps:0,0?q=${encodeURIComponent(locationItem.name)}@${locationItem.coordinate.latitude},${locationItem.coordinate.longitude}`,
+      android: `geo:0,0?q=${locationItem.coordinate.latitude},${locationItem.coordinate.longitude}(${encodeURIComponent(locationItem.name)})`,
+    });
+    const webUrl = `https://www.google.com/maps/search/?api=1&query=${locationItem.coordinate.latitude},${locationItem.coordinate.longitude}`;
+
+    if (scheme) {
+      Linking.openURL(scheme).catch(() => {
+        Linking.openURL(webUrl);
+      });
+    } else {
+      Linking.openURL(webUrl);
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -178,7 +203,7 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
           [
             {
               text: 'Directions',
-              onPress: () => showToast('Opens in Maps app — coming in next update!', 'info'),
+              onPress: () => handleOpenDirections(item),
             },
             { text: 'Close', style: 'cancel' },
           ],
