@@ -57,6 +57,9 @@ const RegisterScreen = () => {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       await userCredential.user.updateProfile({ displayName: name });
       useAppStore.getState().updatePreferences({ consentAccepted: true });
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
     } catch (error) {
       console.error('Error during registration:', error);
       const errorMessage =
@@ -73,9 +76,22 @@ const RegisterScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      {navigation.canGoBack() && (
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => navigation.goBack()}
+          accessible={true}
+          accessibilityLabel='Close'
+          accessibilityHint='Dismiss registration screen'
+          accessibilityRole='button'
+        >
+          <Text style={styles.closeButtonText}>✕</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/logo.png')}
+          source={require('../../../assets/logo.png')}
           style={styles.logo}
           resizeMode='contain'
           accessibilityLabel='Kindred app logo'
@@ -305,6 +321,23 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontWeight: '600',
     textDecorationLine: 'underline',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 20,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
 

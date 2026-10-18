@@ -803,9 +803,15 @@ const ProfileScreen = () => {
           </GlassCard>
         </View>
 
-        <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        {user ? (
+          <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.signInBtn} onPress={() => navigation.navigate('Auth')}>
+            <Text style={styles.signInText}>Sign In / Create Account</Text>
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.version}>Kindred v1.0.0 · Made with 💚 for the planet</Text>
       </ScrollView>
@@ -1018,6 +1024,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FF416C',
+  },
+  signInBtn: {
+    marginHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 239, 125, 0.12)',
+    borderWidth: 1,
+    borderColor: '#38EF7D',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  signInText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#38EF7D',
   },
 
   version: {

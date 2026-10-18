@@ -17,6 +17,7 @@ import OffsetScreen from '../screens/main/OffsetScreen';
 import ChargingAdScreen from '../screens/main/ChargingAdScreen';
 import WalletScreen from '../screens/main/WalletScreen';
 import CorporateLeaderboardScreen from '../screens/main/CorporateLeaderboardScreen';
+import AuthNavigator from './AuthNavigator';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
@@ -102,6 +103,14 @@ const AppNavigator = () => {
         />
         <Stack.Screen name='Wallet' component={WalletScreen} />
         <Stack.Screen name='CorporateLeaderboard' component={CorporateLeaderboardScreen} />
+        <Stack.Screen
+          name='Auth'
+          component={AuthNavigator}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
       </Stack.Navigator>
     </AppErrorBoundary>
   );

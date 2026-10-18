@@ -14,6 +14,7 @@ import { OfflineBanner } from './src/components/OfflineBanner';
 import { PrivacyConsentModal } from './src/components/ui/PrivacyConsentModal';
 import i18n from './src/i18n';
 import { useAppStore } from './src/store/useAppStore';
+import { linking } from './src/navigation/linking';
 
 // Disable Metro yellow boxes
 LogBox.ignoreAllLogs();
@@ -71,6 +72,7 @@ const App = () => {
         <ThemeProvider>
           <NavigationContainer
             ref={navigationRef}
+            linking={linking}
             onReady={handleNavigationReady}
             onStateChange={handleNavigationStateChange}
           >

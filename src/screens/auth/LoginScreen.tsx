@@ -16,6 +16,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   AccessibilityInfo,
+  Alert,
 } from 'react-native';
 
 const LoginScreen = () => {
@@ -44,6 +45,9 @@ const LoginScreen = () => {
     try {
       setLoading(true);
       await auth().signInWithEmailAndPassword(email, password);
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       setFormErrors([errorMessage]);
@@ -51,6 +55,46 @@ const LoginScreen = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setFormErrors(['Please enter your email address to receive a password reset link.']);
+      AccessibilityInfo.announceForAccessibility(
+        'Please enter your email address to reset your password',
+      );
+      return;
+    }
+
+    Alert.alert('Reset Password', `Send a password reset email to ${trimmedEmail}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Send Reset Link',
+        onPress: async () => {
+          try {
+            setLoading(true);
+            await auth().sendPasswordResetEmail(trimmedEmail);
+            setFormErrors([]);
+            Alert.alert(
+              'Email Sent',
+              `A password reset link has been dispatched to ${trimmedEmail}. Please check your inbox and follow the instructions.`,
+              [{ text: 'OK' }],
+            );
+            AccessibilityInfo.announceForAccessibility(
+              'Password reset email dispatched successfully',
+            );
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Failed to send password reset email';
+            setFormErrors([errorMessage]);
+            AccessibilityInfo.announceForAccessibility(`Password reset failed: ${errorMessage}`);
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    ]);
   };
 
   const handleGoogleSignIn = async () => {
@@ -66,6 +110,9 @@ const LoginScreen = () => {
       }
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(googleCredential);
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Google sign in failed';
       setFormErrors([errorMessage]);
@@ -80,9 +127,22 @@ const LoginScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      {navigation.canGoBack() && (
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => navigation.goBack()}
+          accessible={true}
+          accessibilityLabel='Close'
+          accessibilityHint='Dismiss login screen'
+          accessibilityRole='button'
+        >
+          <Text style={styles.closeButtonText}>✕</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/logo.png')}
+          source={require('../../../assets/logo.png')}
           style={styles.logo}
           resizeMode='contain'
           accessibilityLabel='Kindred app logo'
@@ -123,6 +183,18 @@ const LoginScreen = () => {
           accessibilityLabel='Password'
           accessibilityHint='Enter your password to log in'
         />
+
+        <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={handleForgotPassword}
+          disabled={loading}
+          accessible={true}
+          accessibilityLabel='Forgot Password?'
+          accessibilityHint='Send a password reset email'
+          accessibilityRole='button'
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.loginButton}
@@ -245,6 +317,33 @@ const styles = StyleSheet.create({
   footerLink: {
     color: '#007AFF',
     fontWeight: 'bold',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 20,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  forgotPasswordButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+    marginTop: -5,
+  },
+  forgotPasswordText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

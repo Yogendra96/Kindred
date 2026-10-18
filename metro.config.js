@@ -31,6 +31,10 @@ const config = {
     // Add svg to source extensions so it's handled by the transformer
     sourceExts: [...defaultConfig.resolver.sourceExts, 'svg'],
 
+    extraNodeModules: {
+      'react-native-fs': path.resolve(__dirname, 'src/utils/emptyMock.js'),
+    },
+
     // Path aliases for cleaner imports
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -51,10 +55,7 @@ const config = {
   },
 
   // Watch folders for faster reloads
-  watchFolders: [
-    path.resolve(__dirname, 'src'),
-    path.resolve(__dirname, 'assets'),
-  ],
+  watchFolders: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'assets')],
 };
 
 module.exports = mergeConfig(defaultConfig, config);

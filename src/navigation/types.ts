@@ -68,10 +68,13 @@ export type AppStackParamList = {
   DataConnections: undefined;
   Offset: undefined;
   ChargingAd: undefined;
+  Wallet: undefined;
+  CorporateLeaderboard: undefined;
+  Auth: undefined;
 };
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends AppStackParamList {}
   }
 }
