@@ -3,6 +3,8 @@ plugins {
     id "org.jetbrains.kotlin.android"
     id "com.facebook.react"
     id "expo-autolinking"
+    id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
 }
 
 /**

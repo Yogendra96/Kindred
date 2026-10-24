@@ -535,11 +535,13 @@ jest.mock('react-native-config', () => ({
   default: {
     API_URL: 'https://api.example.com',
     ENVIRONMENT: 'test',
+    SENTRY_DSN: 'https://testPublicKey@o0.ingest.sentry.io/0',
     getConfig: jest.fn(() => ({})),
   },
   Config: {
     API_URL: 'https://api.example.com',
     ENVIRONMENT: 'test',
+    SENTRY_DSN: 'https://testPublicKey@o0.ingest.sentry.io/0',
     getConfig: jest.fn(() => ({})),
   },
 }));

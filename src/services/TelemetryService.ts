@@ -87,13 +87,15 @@ export class TelemetryService {
         this.sentryDsn !== 'your_sentry_dsn' &&
         this.sentryDsn.startsWith('http');
 
-      Sentry.init({
-        dsn: this.sentryDsn,
-        enabled: hasValidSentryDsn,
-        tracesSampleRate: 1.0,
-        enableAutoSessionTracking: true,
-        attachStacktrace: true,
-      });
+      if (hasValidSentryDsn) {
+        Sentry.init({
+          dsn: this.sentryDsn,
+          enabled: true,
+          tracesSampleRate: 1.0,
+          enableAutoSessionTracking: true,
+          attachStacktrace: true,
+        });
+      }
 
       // 3. Cross-link PostHog with Sentry
       if (hasValidSentryDsn && this.posthog) {
