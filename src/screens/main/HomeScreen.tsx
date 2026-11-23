@@ -42,6 +42,7 @@ import {
   Drop,
   Wind,
   Buildings,
+  AirplaneTilt,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -682,6 +683,16 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: GraduationCap,
                 label: 'Climate Academy',
                 route: 'LearningCenter',
+              },
+              {
+                icon: AirplaneTilt,
+                label: 'Vegan World Travel',
+                route: 'VeganTravel',
+              },
+              {
+                icon: ForkKnife,
+                label: 'Vegan Calculator',
+                route: 'VeganCalculator',
               },
               { icon: Tree, label: 'Carbon Offsetting', route: 'Offset' },
             ].map((feat, index) => (
