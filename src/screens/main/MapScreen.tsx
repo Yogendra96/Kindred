@@ -26,7 +26,9 @@ import {
   Compass,
   CheckCircle,
   Trophy,
+  PawPrint,
 } from 'phosphor-react-native';
+import { useNavigation } from '@react-navigation/native';
 
 interface GlassBadgeProps {
   style?: StyleProp<ViewStyle>;
@@ -39,6 +41,11 @@ const GlassBadge = ({ style, children }: GlassBadgeProps) => (
 
 const CATEGORIES = [
   { id: 'All', icon: null, label: 'All' },
+  {
+    id: '🐾 Animal Rescue',
+    icon: <PawPrint size={16} color='#FF6B8B' weight='duotone' />,
+    label: 'Animal Rescue',
+  },
   {
     id: '♻️ Recycling',
     icon: <Recycle size={16} color='#38EF7D' weight='duotone' />,
@@ -67,6 +74,50 @@ const CATEGORIES = [
 ];
 
 const LOCATIONS = [
+  {
+    id: 'shelter-1',
+    name: 'City Paws Animal Rescue',
+    category: '🐾 Animal Rescue',
+    distance: '1.8 km',
+    rating: 4.9,
+    description: 'Emergency shelter, medical rehabilitation & meals for stray animals.',
+    impact: '🐾 18,450 meals funded',
+    open: true,
+    coordinate: { latitude: 40.7328, longitude: -73.9382 },
+  },
+  {
+    id: 'shelter-2',
+    name: 'WildLife Haven Sanctuary',
+    category: '🐾 Animal Rescue',
+    distance: '4.6 km',
+    rating: 5.0,
+    description: 'Native wildlife hospital for injured foxes, owls & birds with release programs.',
+    impact: '🐾 9,230 wildlife meals',
+    open: true,
+    coordinate: { latitude: 40.7452, longitude: -73.9298 },
+  },
+  {
+    id: 'shelter-3',
+    name: 'Ocean Guardian Marine Rescue',
+    category: '🐾 Animal Rescue',
+    distance: '3.1 km',
+    rating: 4.8,
+    description: 'Coastal sea turtle hospital & injured seal marine rescue center.',
+    impact: '🐾 31,800 marine feeds',
+    open: true,
+    coordinate: { latitude: 40.7188, longitude: -73.9622 },
+  },
+  {
+    id: 'shelter-4',
+    name: 'Sweet Meadows Farm Sanctuary',
+    category: '🐾 Animal Rescue',
+    distance: '5.2 km',
+    rating: 4.9,
+    description: 'Permanent haven for rescued farm animals with lifelong cruelty-free care.',
+    impact: '🐾 15,140 sanctuary feeds',
+    open: true,
+    coordinate: { latitude: 40.758, longitude: -73.915 },
+  },
   {
     id: '1',
     name: 'GrowNYC Greenmarket',
@@ -177,6 +228,9 @@ const IMPACT_STATS = [
 
 const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
   const { showToast } = useToast();
+  const navigation = useNavigation<any>();
+  const isAnimalRescue = item.category.includes('🐾') || item.category.includes('Rescue');
+
   const handleOpenDirections = (locationItem: (typeof LOCATIONS)[0]) => {
     const scheme = Platform.select({
       ios: `maps:0,0?q=${encodeURIComponent(locationItem.name)}@${locationItem.coordinate.latitude},${locationItem.coordinate.longitude}`,
@@ -193,20 +247,30 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
     }
   };
 
+  const alertButtons: any[] = [
+    {
+      text: 'Directions',
+      onPress: () => handleOpenDirections(item),
+    },
+  ];
+
+  if (isAnimalRescue) {
+    alertButtons.unshift({
+      text: '🐾 Feed Rescue Animal',
+      onPress: () => navigation.navigate('Wallet', { initialTab: 'donate', shelterId: item.id }),
+    });
+  }
+
+  alertButtons.push({ text: 'Close', style: 'cancel' });
+
   return (
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={() =>
         Alert.alert(
           `${item.name}`,
-          `${item.description}\n\n📍 ${item.distance} away\n⭐ ${item.rating}/5\n🌱 ${item.impact}`,
-          [
-            {
-              text: 'Directions',
-              onPress: () => handleOpenDirections(item),
-            },
-            { text: 'Close', style: 'cancel' },
-          ],
+          `${item.description}\n\n📍 ${item.distance} away\n⭐ ${item.rating}/5\n${item.impact}`,
+          alertButtons,
         )
       }
     >
@@ -236,9 +300,27 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
           {item.description}
         </Text>
         <View style={styles.impactChip}>
-          <Leaf size={14} color='#38EF7D' weight='duotone' />
-          <Text style={styles.impactText}>{item.impact}</Text>
+          {isAnimalRescue ? (
+            <PawPrint size={14} color='#FF6B8B' weight='fill' />
+          ) : (
+            <Leaf size={14} color='#38EF7D' weight='duotone' />
+          )}
+          <Text style={[styles.impactText, isAnimalRescue && { color: '#FF6B8B' }]}>
+            {item.impact}
+          </Text>
         </View>
+
+        {isAnimalRescue && (
+          <TouchableOpacity
+            style={styles.rescueDonateBtn}
+            onPress={() =>
+              navigation.navigate('Wallet', { initialTab: 'donate', shelterId: item.id })
+            }
+          >
+            <PawPrint size={14} color='#fff' weight='fill' />
+            <Text style={styles.rescueDonateBtnText}>🐾 Donate Meal ($1.00)</Text>
+          </TouchableOpacity>
+        )}
       </GlassCard>
     </TouchableOpacity>
   );
@@ -247,6 +329,7 @@ const LocationCard = ({ item }: { item: (typeof LOCATIONS)[0] }) => {
 const MapScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { isTracking, bufferedCount, startGreenRoute, stopGreenRoute } = useGreenRouteTelemetry();
+  const navigation = useNavigation<any>();
 
   const filtered =
     selectedCategory === 'All' ? LOCATIONS : LOCATIONS.filter(l => l.category === selectedCategory);
@@ -289,20 +372,31 @@ const MapScreen = () => {
               >
                 <View style={[styles.markerBadge, !location.open && styles.markerBadgeClosed]}>
                   <Text style={styles.markerText}>
-                    {location.category.includes('♻️')
-                      ? '♻️'
-                      : location.category.includes('🌱')
-                        ? '🌱'
-                        : location.category.includes('⚡')
-                          ? '⚡'
-                          : location.category.includes('🌳')
-                            ? '🌳'
-                            : location.category.includes('🛍️')
-                              ? '🛍️'
-                              : '📍'}
+                    {location.category.includes('🐾')
+                      ? '🐾'
+                      : location.category.includes('♻️')
+                        ? '♻️'
+                        : location.category.includes('🌱')
+                          ? '🌱'
+                          : location.category.includes('⚡')
+                            ? '⚡'
+                            : location.category.includes('🌳')
+                              ? '🌳'
+                              : location.category.includes('🛍️')
+                                ? '🛍️'
+                                : '📍'}
                   </Text>
                 </View>
-                <Callout>
+                <Callout
+                  onPress={() => {
+                    if (location.category.includes('🐾')) {
+                      navigation.navigate('Wallet', {
+                        initialTab: 'donate',
+                        shelterId: location.id,
+                      });
+                    }
+                  }}
+                >
                   <View style={styles.calloutContainer}>
                     <Text style={styles.calloutTitle}>{location.name}</Text>
                     <Text style={styles.calloutDesc}>{location.description}</Text>
@@ -531,6 +625,22 @@ const styles = StyleSheet.create({
     color: '#38EF7D',
     fontWeight: '600',
     marginLeft: 6,
+  },
+  rescueDonateBtn: {
+    marginTop: 10,
+    backgroundColor: '#FF6B8B',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  rescueDonateBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
   },
 
   fabContainer: {
