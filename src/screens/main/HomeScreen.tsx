@@ -45,6 +45,7 @@ import {
   AirplaneTilt,
   Heart,
   Briefcase,
+  Storefront,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -700,6 +701,11 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: Briefcase,
                 label: 'Cruelty-Free Jobs',
                 route: 'VeganJobs',
+              },
+              {
+                icon: Storefront,
+                label: 'Veggregator & Ethical Shop',
+                route: 'Veggregator',
               },
               {
                 icon: ForkKnife,

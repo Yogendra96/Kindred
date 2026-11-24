@@ -65,6 +65,7 @@ export type AppStackParamList = {
   VeganTravel: undefined;
   VeganMeet: undefined;
   VeganJobs: undefined;
+  Veggregator: undefined;
   Analytics: undefined;
   LearningCenter: undefined;
   SmartDevices: undefined;

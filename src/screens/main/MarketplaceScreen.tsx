@@ -16,7 +16,7 @@ import { useCarbon } from '../../hooks/useFirebaseData';
 import { mockData } from '../../data/mockData';
 import { useToast } from '../../contexts/ToastContext';
 import Svg, { LinearGradient as SvgLinearGradient, Defs, Stop, Rect } from 'react-native-svg';
-import { MagnifyingGlass, X, Plus, ShieldCheck } from 'phosphor-react-native';
+import { MagnifyingGlass, X, Plus, ShieldCheck, Storefront, Sparkle } from 'phosphor-react-native';
 import { SpaceBackground } from '../../components/common/SpaceBackground';
 import { GlassCard } from '../../components/common/GlassCard';
 import EmptyState from '../../components/ui/EmptyState';
@@ -443,6 +443,7 @@ const CarbonOffsetTab = () => {
 const TABS = ['♻️ Thrift Store', '🌍 Carbon Offsets'];
 
 const MarketplaceScreen = () => {
+  const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -452,6 +453,33 @@ const MarketplaceScreen = () => {
         <Text style={styles.title}>🛍️ Kindred Market</Text>
         <Text style={styles.subtitle}>Thrift sustainably. Offset boldly.</Text>
       </View>
+
+      {/* Veggregator Banner */}
+      <TouchableOpacity
+        style={styles.veggregatorBannerTouch}
+        onPress={() => navigation.navigate('Veggregator')}
+        activeOpacity={0.85}
+        testID='go-to-veggregator-banner'
+      >
+        <GlassCard style={styles.veggregatorBannerCard}>
+          <View style={styles.veggregatorBannerLeft}>
+            <View style={styles.veggregatorBannerEmojiBox}>
+              <Text style={styles.veggregatorBannerEmoji}>🌱</Text>
+            </View>
+            <View style={styles.veggregatorBannerTextBox}>
+              <View style={styles.veggregatorBannerTitleRow}>
+                <Text style={styles.veggregatorBannerTitle}>Veggregator & Ethical Shop</Text>
+                <View style={styles.veggregatorNewBadge}>
+                  <Text style={styles.veggregatorNewBadgeText}>NEW</Text>
+                </View>
+              </View>
+              <Text style={styles.veggregatorBannerSub}>
+                100% plant-based snacks, cheese & verified brands →
+              </Text>
+            </View>
+          </View>
+        </GlassCard>
+      </TouchableOpacity>
 
       {/* Top tab switcher */}
       <View style={styles.tabSwitcher}>
@@ -516,6 +544,63 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   tabButtonTextActive: { color: '#fff' },
+
+  // Veggregator banner
+  veggregatorBannerTouch: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  veggregatorBannerCard: {
+    padding: 12,
+    borderRadius: 16,
+    borderColor: 'rgba(56, 239, 125, 0.4)',
+    borderWidth: 1,
+  },
+  veggregatorBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  veggregatorBannerEmojiBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 239, 125, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  veggregatorBannerEmoji: {
+    fontSize: 22,
+  },
+  veggregatorBannerTextBox: {
+    flex: 1,
+  },
+  veggregatorBannerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  veggregatorBannerTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  veggregatorNewBadge: {
+    backgroundColor: '#38EF7D',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  veggregatorNewBadgeText: {
+    color: '#000',
+    fontSize: 9,
+    fontWeight: '900',
+  },
+  veggregatorBannerSub: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 11,
+    marginTop: 2,
+  },
 
   // Stats banner
   statsBanner: {
