@@ -43,6 +43,7 @@ import {
   Wind,
   Buildings,
   AirplaneTilt,
+  Heart,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -688,6 +689,11 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: AirplaneTilt,
                 label: 'Vegan World Travel',
                 route: 'VeganTravel',
+              },
+              {
+                icon: Heart,
+                label: 'Vegan Dating & Meetups',
+                route: 'VeganMeet',
               },
               {
                 icon: ForkKnife,

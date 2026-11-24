@@ -62,13 +62,15 @@ export type AppStackParamList = {
   VisionCamera: undefined;
   Verification: undefined;
   VeganCalculator: undefined;
+  VeganTravel: undefined;
+  VeganMeet: undefined;
   Analytics: undefined;
   LearningCenter: undefined;
   SmartDevices: undefined;
   DataConnections: undefined;
   Offset: undefined;
   ChargingAd: undefined;
-  Wallet: undefined;
+  Wallet: { initialTab?: 'rewards' | 'donate'; shelterId?: string } | undefined;
   CorporateLeaderboard: undefined;
   Auth: undefined;
 };
