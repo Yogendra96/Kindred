@@ -21,6 +21,7 @@ export const linking: LinkingOptions<AppStackParamList> = {
       VeganCalculator: 'vegan',
       VeganTravel: 'travel',
       VeganMeet: 'meet',
+      VeganJobs: 'jobs',
       Analytics: 'analytics',
       LearningCenter: 'learn',
       SmartDevices: 'devices',

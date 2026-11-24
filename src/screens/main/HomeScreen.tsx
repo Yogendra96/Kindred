@@ -44,6 +44,7 @@ import {
   Buildings,
   AirplaneTilt,
   Heart,
+  Briefcase,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -694,6 +695,11 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: Heart,
                 label: 'Vegan Dating & Meetups',
                 route: 'VeganMeet',
+              },
+              {
+                icon: Briefcase,
+                label: 'Cruelty-Free Jobs',
+                route: 'VeganJobs',
               },
               {
                 icon: ForkKnife,

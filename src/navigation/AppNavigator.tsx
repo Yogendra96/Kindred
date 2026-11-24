@@ -11,6 +11,7 @@ import VerificationCenterScreen from '../screens/main/VerificationCenterScreen';
 import VeganCalculatorScreen from '../screens/main/VeganCalculatorScreen';
 import VeganTravelScreen from '../screens/main/VeganTravelScreen';
 import VeganMeetScreen from '../screens/main/VeganMeetScreen';
+import VeganJobsScreen from '../screens/main/VeganJobsScreen';
 import AnalyticsDashboardScreen from '../screens/main/AnalyticsDashboardScreen';
 import LearningCenterScreen from '../screens/main/LearningCenterScreen';
 import SmartDevicesScreen from '../screens/main/SmartDevicesScreen';
@@ -91,6 +92,7 @@ const AppNavigator = () => {
         <Stack.Screen name='VeganCalculator' component={VeganCalculatorScreen} />
         <Stack.Screen name='VeganTravel' component={VeganTravelScreen} />
         <Stack.Screen name='VeganMeet' component={VeganMeetScreen} />
+        <Stack.Screen name='VeganJobs' component={VeganJobsScreen} />
         <Stack.Screen name='Analytics' component={AnalyticsDashboardScreen} />
         <Stack.Screen name='LearningCenter' component={LearningCenterScreen} />
         <Stack.Screen name='SmartDevices' component={SmartDevicesScreen} />
