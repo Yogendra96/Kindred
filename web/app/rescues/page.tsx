@@ -73,6 +73,57 @@ export default function RescuesPage() {
         </p>
       </div>
 
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,107,139,0.2) 0%, rgba(56,239,125,0.15) 100%)',
+          border: '1px solid rgba(255,107,139,0.35)',
+          borderRadius: '20px',
+          padding: '24px',
+          marginBottom: '40px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '20px',
+        }}
+      >
+        <div>
+          <span
+            style={{
+              background: '#FF6B8B',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: '800',
+              padding: '3px 8px',
+              borderRadius: '8px',
+            }}
+          >
+            NEW FEATURE
+          </span>
+          <h2 style={{ fontSize: '22px', fontWeight: '800', marginTop: '8px', marginBottom: '4px' }}>
+            🐾 Swipe to Save: Tinder for Rescued Animal Bills
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', maxWidth: '640px', margin: 0 }}>
+            Swipe right on your phone to sponsor $3–$15 itemized veterinary and nutrition bills for rescued calves, injured dogs, senior pigs, and donkeys.
+          </p>
+        </div>
+        <a
+          href="kindred://rescueswipe"
+          style={{
+            background: '#FF6B8B',
+            color: '#fff',
+            padding: '12px 24px',
+            borderRadius: '12px',
+            fontWeight: '800',
+            fontSize: '14px',
+            textDecoration: 'none',
+            display: 'inline-block',
+          }}
+        >
+          Open Swipe to Save in App 📱
+        </a>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
         {RESCUES.map(rescue => (
           <div

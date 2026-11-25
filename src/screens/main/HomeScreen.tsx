@@ -47,6 +47,7 @@ import {
   Briefcase,
   Storefront,
   House,
+  PawPrint,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -712,6 +713,11 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: House,
                 label: 'Vegan Stays & Homestays',
                 route: 'VeganStays',
+              },
+              {
+                icon: PawPrint,
+                label: '🐾 Swipe to Save (Animal Bills)',
+                route: 'RescueSwipe',
               },
               {
                 icon: Sparkle,

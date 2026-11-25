@@ -32,6 +32,7 @@ import {
   ShareNetwork,
   X,
   Sparkle,
+  CaretRight,
 } from 'phosphor-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RescueShelter, MealReceipt } from '../../data/rescueShelterData';
@@ -529,6 +530,27 @@ export default function WalletScreen({ navigation, route }: Props) {
                   <Text style={styles.rescueHeroStatLbl}>Verified Nearby</Text>
                 </View>
               </View>
+
+              {/* Swipe to Save Banner */}
+              <TouchableOpacity
+                testID='wallet-swipe-to-save-banner'
+                style={styles.swipeToSaveBanner}
+                onPress={() => navigation.navigate('RescueSwipe')}
+              >
+                <View style={styles.swipeBannerLeft}>
+                  <Text style={styles.swipeBannerEmoji}>🐾</Text>
+                  <View style={styles.swipeBannerInfo}>
+                    <View style={styles.swipeBannerTagRow}>
+                      <Text style={styles.swipeBannerBadge}>NEW · SWIPE TO SAVE</Text>
+                    </View>
+                    <Text style={styles.swipeBannerTitle}>Fund Urgent Animal Bills</Text>
+                    <Text style={styles.swipeBannerSub}>
+                      Swipe right on cards to sponsor $3–$15 vet bills
+                    </Text>
+                  </View>
+                </View>
+                <CaretRight size={18} color='#FF6B8B' weight='bold' />
+              </TouchableOpacity>
             </View>
 
             {/* Rescue Categories */}
@@ -998,6 +1020,50 @@ const styles = StyleSheet.create({
   rescueHeroStatVal: { color: '#fff', fontSize: 16, fontWeight: '800' },
   rescueHeroStatLbl: { color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 },
   rescueHeroStatDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.1)' },
+
+  swipeToSaveBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 107, 139, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 139, 0.35)',
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 16,
+  },
+  swipeBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  swipeBannerEmoji: {
+    fontSize: 26,
+  },
+  swipeBannerInfo: {
+    flex: 1,
+  },
+  swipeBannerTagRow: {
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  swipeBannerBadge: {
+    color: '#FF6B8B',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  swipeBannerTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  swipeBannerSub: {
+    color: '#8E8E93',
+    fontSize: 11,
+    marginTop: 1,
+  },
 
   rescueCatScroll: { marginBottom: 16 },
   rescueCatContainer: { gap: 8, paddingVertical: 2 },

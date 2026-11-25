@@ -80,11 +80,17 @@ proximity meetups.
      gardens.
    - Integrated booking engine with dates, guest counters, and Kindred Karma discounts.
 
-4. **Animal Shelter & Rescue Hub (`WalletScreen` + `MapScreen`):**
+4. **Animal Shelter & Rescue Hub (`WalletScreen` + `MapScreen` + `RescueSwipeScreen`):**
+   - **🐾 Swipe to Save (Tinder/Bumble-Style Rescue Bills):** Interactive card deck letting users
+     swipe right to sponsor itemized veterinary, nutrition, and bedding bills ($3–$15) for rescued
+     farm animals and companions (Barnaby the calf, Sheru the dog, Clover the sheep, Ollie the pig,
+     Maya the donkey).
+   - **Itemized Veterinary Invoices:** 100% transparent hospital ledger line items audited with zero
+     platform deductions.
+   - **Super Guardian Angel:** Swipe up or tap star for full medical sponsorship and verifiable
+     digital micro-grant certificates.
    - Verified farm sanctuaries: _Catskill Animal Sanctuary, Peepal Farm, Woodstock Farm Sanctuary,
      and Dean Farm Trust_.
-   - Transparent micro-donation tiers to sponsor fresh hay, pediatric calf milk, and surgical trauma
-     care.
    - Interactive map pins with instant "Donate Meal" CTA.
 
 5. **Global Vegan Travel & Dining Flashcards (`VeganTravelScreen`):**

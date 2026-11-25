@@ -171,4 +171,16 @@ describe('WalletScreen & Animal Rescue Hub', () => {
     expect(getByText('Feed & Heal Rescue Animals')).toBeTruthy();
     expect(getByText('City Paws Animal Rescue')).toBeTruthy();
   });
+
+  it('navigates to RescueSwipe from the swipe to save banner', () => {
+    const { getByText, getByTestId } = renderWithProviders(
+      <WalletScreen navigation={mockNavigation} route={{ key: 'Wallet', name: 'Wallet' } as any} />,
+    );
+
+    fireEvent.press(getByText('🐾 Animal Rescues'));
+    const banner = getByTestId('wallet-swipe-to-save-banner');
+    expect(banner).toBeTruthy();
+    fireEvent.press(banner);
+    expect(mockNavigation.navigate).toHaveBeenCalledWith('RescueSwipe');
+  });
 });
