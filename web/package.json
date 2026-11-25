@@ -1,0 +1,23 @@
+{
+  "name": "kindred-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kindred Companion Web Portal — SEO & Public Discovery Engine (Next.js 15)",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev -p 3000",
+    "lint": "next lint",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}

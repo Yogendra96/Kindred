@@ -22,7 +22,10 @@ import {
   ForkKnife,
   ChatText,
   Lightbulb,
+  Play,
+  VideoCamera,
 } from 'phosphor-react-native';
+import { useNavigation } from '@react-navigation/native';
 import { MotiView } from 'moti';
 import { SubScreenHeader } from '../../components/common/SubScreenHeader';
 import { SpaceBackground } from '../../components/common/SpaceBackground';
@@ -43,12 +46,14 @@ const DIFFICULTY_COLORS: Record<CountryVeganGuide['difficulty'], string> = {
 };
 
 export const VeganTravelScreen = () => {
+  const navigation = useNavigation<any>();
   const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<RegionFilter>('All');
   const [activeCountry, setActiveCountry] = useState<CountryVeganGuide | null>(null);
-  const [countryTab, setCountryTab] = useState<'safe' | 'traps' | 'phrases'>('safe');
+  const [countryTab, setCountryTab] = useState<'safe' | 'traps' | 'phrases' | 'vlogs'>('safe');
   const [isFlashcardOpen, setIsFlashcardOpen] = useState(false);
+  const [selectedVlog, setSelectedVlog] = useState<any>(null);
 
   // Filtered country list
   const filteredCountries = useMemo(() => {
@@ -203,6 +208,7 @@ export const VeganTravelScreen = () => {
                 HapticFeedbackService.triggerSelection();
                 setCountryTab('phrases');
               }}
+              testID='tab-phrases'
             >
               <ChatText
                 size={16}
@@ -213,6 +219,24 @@ export const VeganTravelScreen = () => {
                 style={[styles.subTabText, countryTab === 'phrases' && styles.subTabTextActive]}
               >
                 Phrases
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.subTabButton, countryTab === 'vlogs' && styles.subTabButtonActive]}
+              onPress={() => {
+                HapticFeedbackService.triggerSelection();
+                setCountryTab('vlogs');
+              }}
+              testID='tab-vlogs'
+            >
+              <VideoCamera
+                size={16}
+                color={countryTab === 'vlogs' ? '#FF2D55' : 'rgba(255,255,255,0.5)'}
+                weight={countryTab === 'vlogs' ? 'fill' : 'regular'}
+              />
+              <Text style={[styles.subTabText, countryTab === 'vlogs' && styles.subTabTextActive]}>
+                Vlogs ({activeCountry.vlogs?.length || 0})
               </Text>
             </TouchableOpacity>
           </View>
@@ -277,6 +301,65 @@ export const VeganTravelScreen = () => {
               ))}
             </View>
           )}
+
+          {/* Tab 4: Food Vlogs & Creator Reels */}
+          {countryTab === 'vlogs' && (
+            <View style={styles.sectionWrap}>
+              <Text style={styles.groupHeading}>Local Street Food Vlogs & Hacks</Text>
+              {(activeCountry.vlogs || []).map((vlog, idx) => (
+                <TouchableOpacity
+                  key={vlog.id || idx}
+                  activeOpacity={0.85}
+                  onPress={() => setSelectedVlog(vlog)}
+                  testID={`vlog-card-${vlog.id}`}
+                >
+                  <GlassCard style={styles.vlogCard}>
+                    <View style={styles.vlogHeader}>
+                      <View style={styles.vlogThumbBox}>
+                        <Text style={styles.vlogThumbEmoji}>{vlog.thumbnailEmoji || '🎥'}</Text>
+                        <View style={styles.vlogDurationBadge}>
+                          <Text style={styles.vlogDurationText}>{vlog.duration}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.vlogMainInfo}>
+                        <Text style={styles.vlogTitle} numberOfLines={2}>
+                          {vlog.title}
+                        </Text>
+                        <Text style={styles.vlogCreator}>By {vlog.creator}</Text>
+                        <Text style={styles.vlogViews}>👁️ {vlog.viewsCount}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.vlogTakeawayBox}>
+                      <Text style={styles.vlogTakeawayLabel}>💡 Local Hack:</Text>
+                      <Text style={styles.vlogTakeawayText}>{vlog.keyTakeaway}</Text>
+                    </View>
+                  </GlassCard>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* ─── VEGAN STAYS & SANCTUARY HOMESTAY CTA ───────────────────────── */}
+          <TouchableOpacity
+            style={styles.veganStaysCta}
+            onPress={() => navigation.navigate('VeganStays' as any)}
+            activeOpacity={0.85}
+            testID='open-vegan-stays-btn'
+          >
+            <GlassCard style={styles.veganStaysCtaCard}>
+              <View style={styles.veganStaysLeft}>
+                <Text style={styles.veganStaysEmoji}>🏡</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.veganStaysTitle}>
+                    Vegan Stays & Homestays in {activeCountry.name}
+                  </Text>
+                  <Text style={styles.veganStaysSub}>
+                    Book 100% plant-based sanctuary cottages & eco-hosts →
+                  </Text>
+                </View>
+              </View>
+            </GlassCard>
+          </TouchableOpacity>
         </ScrollView>
       ) : (
         // ─── COUNTRY LIST VIEW ─────────────────────────────────────────────
@@ -454,6 +537,73 @@ export const VeganTravelScreen = () => {
           </View>
         </View>
       </Modal>
+
+      {/* ─── LOCAL VLOG REEL MODAL ─────────────────────────────────────────── */}
+      {selectedVlog && (
+        <Modal
+          visible={!!selectedVlog}
+          animationType='slide'
+          transparent={true}
+          onRequestClose={() => setSelectedVlog(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.vlogModalCard}>
+              <View style={styles.modalHeader}>
+                <View style={styles.modalTitleRow}>
+                  <Text style={styles.modalFlag}>{selectedVlog.thumbnailEmoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.modalTitle} numberOfLines={1}>
+                      {selectedVlog.title}
+                    </Text>
+                    <Text style={styles.modalSub}>
+                      {selectedVlog.creator} • {selectedVlog.duration}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setSelectedVlog(null)}
+                  style={styles.modalCloseBtn}
+                  testID='close-vlog-modal-btn'
+                >
+                  <X size={20} color='#FFFFFF' />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.vlogModalBody}>
+                {/* Simulated open stream player container */}
+                <View style={styles.vlogVideoPlaceholder}>
+                  <Text style={styles.vlogPlayIcon}>▶️</Text>
+                  <Text style={styles.vlogPlayerText}>
+                    Streaming via Open Piped / Invidious API
+                  </Text>
+                  <Text style={styles.vlogPlayerSubText}>
+                    {selectedVlog.viewsCount} • 1080p Ad-Free
+                  </Text>
+                </View>
+
+                <View style={styles.vlogTipCard}>
+                  <Text style={styles.vlogTipTitle}>💡 Secret Street Food Hack:</Text>
+                  <Text style={styles.vlogTipBody}>{selectedVlog.keyTakeaway}</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.vlogKarmaBtn}
+                  onPress={() => {
+                    showToast(
+                      '🎉 +15 Kindred Travel Karma earned for learning local dining!',
+                      'success',
+                    );
+                    setSelectedVlog(null);
+                  }}
+                  testID='complete-vlog-karma-btn'
+                >
+                  <Text style={styles.vlogKarmaBtnText}>Mark as Watched (+15 Karma)</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SpaceBackground>
   );
 };
@@ -928,6 +1078,177 @@ const styles = StyleSheet.create({
     color: '#0D1117',
     fontSize: 14,
     fontWeight: '700',
+  },
+
+  // Vlog cards
+  vlogCard: {
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 12,
+  },
+  vlogHeader: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 10,
+  },
+  vlogThumbBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 45, 85, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  vlogThumbEmoji: {
+    fontSize: 28,
+  },
+  vlogDurationBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  vlogDurationText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  vlogMainInfo: {
+    flex: 1,
+  },
+  vlogTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  vlogCreator: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+  },
+  vlogViews: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  vlogTakeawayBox: {
+    backgroundColor: 'rgba(56, 239, 125, 0.08)',
+    borderLeftWidth: 3,
+    borderLeftColor: '#38EF7D',
+    borderRadius: 8,
+    padding: 8,
+  },
+  vlogTakeawayLabel: {
+    color: '#38EF7D',
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  vlogTakeawayText: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 11,
+    lineHeight: 15,
+  },
+
+  // Vegan Stays CTA
+  veganStaysCta: {
+    marginTop: 20,
+    marginBottom: 24,
+  },
+  veganStaysCtaCard: {
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 239, 125, 0.35)',
+  },
+  veganStaysLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  veganStaysEmoji: {
+    fontSize: 28,
+  },
+  veganStaysTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  veganStaysSub: {
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 11,
+    marginTop: 2,
+  },
+
+  // Vlog Modal
+  vlogModalCard: {
+    backgroundColor: '#161B22',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: '75%',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  vlogModalBody: {
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  vlogVideoPlaceholder: {
+    height: 180,
+    backgroundColor: '#0D1117',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 45, 85, 0.3)',
+  },
+  vlogPlayIcon: {
+    fontSize: 40,
+    marginBottom: 8,
+  },
+  vlogPlayerText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  vlogPlayerSubText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  vlogTipCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  vlogTipTitle: {
+    color: '#38EF7D',
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  vlogTipBody: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  vlogKarmaBtn: {
+    backgroundColor: '#38EF7D',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  vlogKarmaBtnText: {
+    color: '#0D1117',
+    fontSize: 14,
+    fontWeight: '800',
   },
 });
 

@@ -46,6 +46,7 @@ import {
   Heart,
   Briefcase,
   Storefront,
+  House,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -706,6 +707,16 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: Storefront,
                 label: 'Veggregator & Ethical Shop',
                 route: 'Veggregator',
+              },
+              {
+                icon: House,
+                label: 'Vegan Stays & Homestays',
+                route: 'VeganStays',
+              },
+              {
+                icon: Sparkle,
+                label: 'Ethical Launchpad (Plant VC)',
+                route: 'EthicalLaunchpad',
               },
               {
                 icon: ForkKnife,

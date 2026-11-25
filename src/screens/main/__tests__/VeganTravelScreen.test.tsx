@@ -127,4 +127,33 @@ describe('VeganTravelScreen', () => {
     // Tap Done to close modal
     fireEvent.press(getByText('Done'));
   });
+
+  it('switches to Vlogs tab, views video guide card, and earns travel karma', async () => {
+    const { getByText, getByTestId, queryByTestId } = renderWithProviders(<VeganTravelScreen />);
+
+    // Select Japan
+    fireEvent.press(getByText('Japan'));
+
+    // Switch to Vlogs sub-tab
+    const vlogsTab = getByTestId('tab-vlogs');
+    fireEvent.press(vlogsTab);
+
+    expect(getByText('Local Street Food Vlogs & Hacks')).toBeTruthy();
+    expect(getByText(/How to Order 100% Vegan Street Food in Tokyo/)).toBeTruthy();
+
+    // Tap on vlog card
+    const vlogCard = getByTestId('vlog-card-vlog-jp-1');
+    fireEvent.press(vlogCard);
+
+    // Modal should open
+    expect(getByText('Streaming via Open Piped / Invidious API')).toBeTruthy();
+    expect(getByText('💡 Secret Street Food Hack:')).toBeTruthy();
+
+    // Mark as watched
+    const karmaBtn = getByTestId('complete-vlog-karma-btn');
+    fireEvent.press(karmaBtn);
+
+    // Modal should close
+    expect(queryByTestId('complete-vlog-karma-btn')).toBeNull();
+  });
 });
