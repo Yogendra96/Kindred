@@ -58,6 +58,7 @@ import {
   ChartLineUp,
   ShieldCheck,
   FileText,
+  QrCode,
 } from 'phosphor-react-native';
 
 const BADGES = [
@@ -428,6 +429,40 @@ const ProfileScreen = () => {
             <Text style={styles.statValue}>3,990</Text>
             <Text style={styles.statLabel}>total points</Text>
           </GlassCard>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Digital Business Card</Text>
+          <TouchableOpacity
+            testID='profile-open-ethical-card-btn'
+            onPress={() => navigation.navigate('EthicalCard' as never)}
+            activeOpacity={0.8}
+          >
+            <GlassCard
+              style={[
+                styles.sectionCard,
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                },
+              ]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <QrCode size={28} color='#38EF7D' weight='duotone' />
+                <View>
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                    My Ethical Card & Bio Hub
+                  </Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                    Scan QR, share vCard & tree-free bio
+                  </Text>
+                </View>
+              </View>
+              <CaretRight size={20} color='#666' />
+            </GlassCard>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>

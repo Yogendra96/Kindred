@@ -113,6 +113,19 @@ proximity meetups.
    - Upvoting system with optimistic karma rewards.
    - Backer seed tiers with prototype perks and impact certificates.
 
+8. **Digital Business Card & Bio Hub (`EthicalCardScreen` + `/card` & `/u/[username]`):**
+   - **Better than Linktree:** Tree-free, zero-waste digital business card and public profile.
+   - **On-Screen QR Code:** Displays an ultra-sharp vector QR code on your phone screen so anyone at
+     conferences, meetups, or cafes can scan with their phone camera to save your details.
+   - **1-Tap vCard Export (`.vcf`):** Direct export into Apple Contacts & Google Contacts with zero
+     paper waste.
+   - **Live Ethical Impact Badges:** Showcases verified years plant-based, kg CO₂ avoided, and
+     animal lives protected.
+   - **Endorsed Sanctuary Micro-Donation:** Highlights your endorsed sanctuary so connections can
+     sponsor a $3 meal with you.
+   - **Instant Exchange & Rolodex:** Scan another Kindred member's card to instantly add them to
+     your searchable Ethical Rolodex and earn `+25 Kindred Karma`.
+
 ---
 
 ## 🏛️ Dual-Stack Architecture

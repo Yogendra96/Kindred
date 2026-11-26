@@ -69,6 +69,7 @@ export default function RootLayout({
               <a href="/stays">🏡 Vegan Stays</a>
               <a href="/rescues">🐾 Animal Rescues</a>
               <a href="/travel">🌍 Travel Guides</a>
+              <a href="/card">📇 Ethical Card</a>
             </nav>
 
             <a href="kindred://home" className="btn-get-app">
@@ -99,6 +100,7 @@ export default function RootLayout({
                 <li><a href="/stays">Sanctuary Homestays</a></li>
                 <li><a href="/rescues">Sponsor Rescued Animals</a></li>
                 <li><a href="/travel">Global Vegan Travel Guides</a></li>
+                <li><a href="/card">Tree-Free Ethical Cards</a></li>
               </ul>
             </div>
             <div className="footer-col">

@@ -26,6 +26,7 @@ export const linking: LinkingOptions<AppStackParamList> = {
       VeganStays: 'stays',
       EthicalLaunchpad: 'launchpad',
       RescueSwipe: 'rescueswipe',
+      EthicalCard: 'card',
       Analytics: 'analytics',
       LearningCenter: 'learn',
       SmartDevices: 'devices',

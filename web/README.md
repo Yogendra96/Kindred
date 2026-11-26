@@ -25,6 +25,13 @@ into the native mobile application via **Universal Deep Links (`kindred://` &
 6. **Smart App Banners:**
    - Universal links and Apple Smart App Banners directing web visitors to download the native iOS
      and Android apps for background carbon tracking and proximity dating.
+7. **Digital Business Cards & Bio Hubs (`/card` & `/u/:username`):**
+   - High-fidelity Linktree alternative with Schema.org `Person` JSON-LD.
+   - On-screen vector QR code generation (`toqr`).
+   - 1-click client-side vCard `.vcf` download for direct addition to Apple Contacts and Google
+     Contacts.
+   - Live carbon avoidance and animal lives saved counter.
+   - Universal link deep-linking to `kindred://card`.
 
 ---
 

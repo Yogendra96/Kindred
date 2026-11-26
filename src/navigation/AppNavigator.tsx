@@ -16,6 +16,7 @@ import VeggregatorScreen from '../screens/main/VeggregatorScreen';
 import VeganStaysScreen from '../screens/main/VeganStaysScreen';
 import EthicalLaunchpadScreen from '../screens/main/EthicalLaunchpadScreen';
 import RescueSwipeScreen from '../screens/main/RescueSwipeScreen';
+import EthicalCardScreen from '../screens/main/EthicalCardScreen';
 import AnalyticsDashboardScreen from '../screens/main/AnalyticsDashboardScreen';
 import LearningCenterScreen from '../screens/main/LearningCenterScreen';
 import SmartDevicesScreen from '../screens/main/SmartDevicesScreen';
@@ -101,6 +102,7 @@ const AppNavigator = () => {
         <Stack.Screen name='VeganStays' component={VeganStaysScreen} />
         <Stack.Screen name='EthicalLaunchpad' component={EthicalLaunchpadScreen} />
         <Stack.Screen name='RescueSwipe' component={RescueSwipeScreen} />
+        <Stack.Screen name='EthicalCard' component={EthicalCardScreen} />
         <Stack.Screen name='Analytics' component={AnalyticsDashboardScreen} />
         <Stack.Screen name='LearningCenter' component={LearningCenterScreen} />
         <Stack.Screen name='SmartDevices' component={SmartDevicesScreen} />

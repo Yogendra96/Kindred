@@ -69,6 +69,7 @@ export type AppStackParamList = {
   VeganStays: undefined;
   EthicalLaunchpad: undefined;
   RescueSwipe: undefined;
+  EthicalCard: { username?: string } | undefined;
   Analytics: undefined;
   LearningCenter: undefined;
   SmartDevices: undefined;
