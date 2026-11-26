@@ -183,4 +183,16 @@ describe('WalletScreen & Animal Rescue Hub', () => {
     fireEvent.press(banner);
     expect(mockNavigation.navigate).toHaveBeenCalledWith('RescueSwipe');
   });
+
+  it('navigates to SanctuaryAssurance from the assurance pool banner', () => {
+    const { getByText, getByTestId } = renderWithProviders(
+      <WalletScreen navigation={mockNavigation} route={{ key: 'Wallet', name: 'Wallet' } as any} />,
+    );
+
+    fireEvent.press(getByText('🐾 Animal Rescues'));
+    const banner = getByTestId('wallet-assurance-pool-banner');
+    expect(banner).toBeTruthy();
+    fireEvent.press(banner);
+    expect(mockNavigation.navigate).toHaveBeenCalledWith('SanctuaryAssurance');
+  });
 });

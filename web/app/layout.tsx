@@ -67,9 +67,10 @@ export default function RootLayout({
               <a href="/jobs">💼 Careers</a>
               <a href="/veggregator">🛒 Veggregator</a>
               <a href="/stays">🏡 Vegan Stays</a>
-              <a href="/rescues">🐾 Animal Rescues</a>
-              <a href="/travel">🌍 Travel Guides</a>
-              <a href="/card">📇 Ethical Card</a>
+              <a href="/rescues">🐾 Rescues</a>
+              <a href="/assurance">🛡️ Assurance</a>
+              <a href="/card">📇 Card</a>
+              <a href="/beacon">📡 Beacon</a>
             </nav>
 
             <a href="kindred://home" className="btn-get-app">
@@ -99,7 +100,8 @@ export default function RootLayout({
                 <li><a href="/veggregator">Veggregator Marketplace</a></li>
                 <li><a href="/stays">Sanctuary Homestays</a></li>
                 <li><a href="/rescues">Sponsor Rescued Animals</a></li>
-                <li><a href="/travel">Global Vegan Travel Guides</a></li>
+                <li><a href="/assurance">Sanctuary Emergency Pool</a></li>
+                <li><a href="/beacon">Crossed Paths Radar</a></li>
                 <li><a href="/card">Tree-Free Ethical Cards</a></li>
               </ul>
             </div>

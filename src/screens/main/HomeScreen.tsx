@@ -49,6 +49,7 @@ import {
   House,
   PawPrint,
   QrCode,
+  Broadcast,
 } from 'phosphor-react-native';
 import { TouchableOpacity, Alert } from 'react-native';
 
@@ -724,6 +725,16 @@ const HomeScreen = ({ navigation }: any) => {
                 icon: QrCode,
                 label: '📇 Ethical Card & Bio Hub',
                 route: 'EthicalCard',
+              },
+              {
+                icon: Broadcast,
+                label: '📡 Crossed Paths (Beacon)',
+                route: 'CrossedPaths',
+              },
+              {
+                icon: ShieldCheck,
+                label: '🛡️ Sanctuary Assurance (Pool)',
+                route: 'SanctuaryAssurance',
               },
               {
                 icon: Sparkle,

@@ -126,6 +126,27 @@ proximity meetups.
    - **Instant Exchange & Rolodex:** Scan another Kindred member's card to instantly add them to
      your searchable Ethical Rolodex and earn `+25 Kindred Karma`.
 
+9. **Kindred Beacon & Crossed Paths Radar (`CrossedPathsScreen` + `/beacon`):**
+   - **Conscious "Happn-Style" Encounters:** Discover plant-forward folks, ethical innovators, and
+     sanctuary volunteers you crossed paths with throughout the day.
+   - **Strict Anti-Stalking Privacy Shield:** 300m–500m geohash spatial fuzzing, zero exact GPS
+     coordinate storage on servers, and automatic private safe zones around residential homes.
+   - **1-Tap Ghost Mode:** Instantly cloaks your radar broadcasting while keeping full access to
+     sanctuary feeds and wallet perks.
+   - **Mutual Consent Wave Protocol:** Say hello with a Kindred Wave; direct conscious messaging
+     unlocks only when both parties mutually wave, awarding `+15 Kindred Karma`.
+
+10. **Sanctuary Assurance Pool (`SanctuaryAssuranceScreen` + `/assurance`):**
+    - **Decentralized Sanctuary Mutual-Aid:** High-transparency community health pool covering
+      critical veterinary surgeries and emergency rescue treatments.
+    - **Cryptographic Audit Ledger:** Real-time SHA-256 settlement proof hashes (`0x...`) verifying
+      hospital invoice payouts within 2.4 hours with zero bureaucratic delay.
+    - **Community Underwriting Tiers:** Back the pool with USDC or debit pledges (Sanctuary
+      Guardian, Lifeline Angel, Heroic Benefactor) earning immutable on-chain donor certificates and
+      governance voting rights.
+    - **Emergency Sanctuary Portal:** Verified 501(c)(3) and registered rescue organizations submit
+      emergency claims with itemized vet clinic invoices for automated community underwriting.
+
 ---
 
 ## 🏛️ Dual-Stack Architecture

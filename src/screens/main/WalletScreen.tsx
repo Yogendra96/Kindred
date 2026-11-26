@@ -551,6 +551,29 @@ export default function WalletScreen({ navigation, route }: Props) {
                 </View>
                 <CaretRight size={18} color='#FF6B8B' weight='bold' />
               </TouchableOpacity>
+
+              {/* Sanctuary Assurance Emergency Pool Banner */}
+              <TouchableOpacity
+                testID='wallet-assurance-pool-banner'
+                style={styles.assurancePoolBanner}
+                onPress={() => navigation.navigate('SanctuaryAssurance')}
+              >
+                <View style={styles.swipeBannerLeft}>
+                  <Text style={styles.swipeBannerEmoji}>🛡️</Text>
+                  <View style={styles.swipeBannerInfo}>
+                    <View style={styles.swipeBannerTagRow}>
+                      <Text style={[styles.swipeBannerBadge, { color: '#38EF7D' }]}>
+                        DECENTRALIZED HEALTH POOL · $52.4K RESERVES
+                      </Text>
+                    </View>
+                    <Text style={styles.swipeBannerTitle}>Sanctuary Emergency Pool</Text>
+                    <Text style={styles.swipeBannerSub}>
+                      Cryptographic mutual-aid insuring 1,840 rescued animals
+                    </Text>
+                  </View>
+                </View>
+                <CaretRight size={18} color='#38EF7D' weight='bold' />
+              </TouchableOpacity>
             </View>
 
             {/* Rescue Categories */}
@@ -1063,6 +1086,17 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontSize: 11,
     marginTop: 1,
+  },
+  assurancePoolBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(56, 239, 125, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 239, 125, 0.3)',
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 10,
   },
 
   rescueCatScroll: { marginBottom: 16 },

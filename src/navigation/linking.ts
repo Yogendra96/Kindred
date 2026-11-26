@@ -27,6 +27,8 @@ export const linking: LinkingOptions<AppStackParamList> = {
       EthicalLaunchpad: 'launchpad',
       RescueSwipe: 'rescueswipe',
       EthicalCard: 'card',
+      CrossedPaths: 'crossedpaths',
+      SanctuaryAssurance: 'assurance',
       Analytics: 'analytics',
       LearningCenter: 'learn',
       SmartDevices: 'devices',
